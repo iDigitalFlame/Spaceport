@@ -1,0 +1,42 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#  sysupdate
+#  Update wrapper script for ArchLinux package manager (pacman).
+#
+# Usage:
+#  sysupdate
+#
+#  Updates the system, python packages and host block lists to the latest versions.
+#  Takes no parameters and will block until completed.
+#
+# Exit Codes:
+#  0 - Completion without exceptions or errors.
+#  1 - Permissions error or exception occurred while running the script.
+
+if [ $UID -eq 0 ]; then
+    printf "[!] This script cannot be run as root!\n"
+    exit 1
+fi
+
+printf "[+] Starting system update..\n"
+
+if [ -f "$HOME/.local/apps/updateHosts/updateHostsFile.py" ]; then
+    printf "[+] Updating hosts blocklist file..\n"
+    sg iptables-web -c "/usr/bin/python3 $HOME/.local/apps/updateHosts/updateHostsFile.py --auto --compress --minimise"
+    export USER_HOSTS="$HOME/.local/apps/updateHosts/hosts"
+else
+    export USER_HOSTS="/etc/hosts"
+fi
+
+printf "[+] Starting pacman..\n"
+sudo sh -c "sg iptables-web -c \"mount -o rw,remount /boot; /usr/bin/pacman -Syu\"; sync; cp \"$USER_HOSTS\" /etc/hosts; printf \"\n127.0.0.1\thydra\\n\" >> /etc/hosts; systemctl restart systemd-resolved; mount -o ro,remount /boot"
+printf "[+] Starting pacaur..\n"
+sg iptables-web -c "/usr/bin/pacaur -Syua"
+printf "[+] Orphan Packages:\n"
+pacman -Qtdq
+printf "[+] Listing *.pac* files:\n"
+find /etc/ -type f -name *.pac* -ls 2> /dev/null
+printf "[+] Done.\n"
+
+# EOF

@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-enable-tap
+#  Uses grep and for loops to enable Tap to Click on all eligible input devices.
+#
+# Usage:
+#  smd-enable-tap
+#
+#  Does not accept any parameters. Will enable Tap to Click on all supported devices.
+#  Exit code is always 0.
+
+for device_id in $(xinput list --id-only); do
+    device_tapping=$(xinput list-props $device_id | grep "Tapping Enabled (")
+    if [ ! -z "$device_tapping" ]; then
+        device_tapping_id=$(echo $device_tapping | awk '{print $4}' | sed -e 's/(//g' | sed -e 's/)//g' | sed -e 's/://g')
+        /usr/bin/xinput set-prop "$device_id" "$device_tapping_id" 1
+    fi
+done
+exit 0
+
+# EOF

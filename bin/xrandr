@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Intercepts and fixes any monitor setting issues with xrandr.
+
+_args="$@"
+
+/usr/bin/xrandr $_args
+xreturn=$?
+
+if ! [[ -z $(echo "$_args" | grep "mode") ]]; then
+    /opt/spaceport/libexec/smd-video "/usr/bin/xrandr $_args"
+fi
+
+exit $xreturn
+
+# EOF

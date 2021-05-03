@@ -1,0 +1,17 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# User Systemd Unit file for the Client process.
+
+[Unit]
+Description = System Management Client Daemon
+
+[Service]
+Type        = simple
+KillSignal  = SIGINT
+Environment = DISPLAY=:1
+Environment = XAUTHORITY=%h/.Xauthority
+ExecStart   = /opt/spaceport/libexec/smd-client -f
+
+[Install]
+WantedBy    = default.target

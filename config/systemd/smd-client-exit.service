@@ -1,0 +1,14 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# User Systemd Unit file for the Client exit process.
+
+[Unit]
+Description = System Management Client Daemon Exit
+
+[Service]
+Type        = oneshot
+ExecStart   = /usr/bin/systemctl --user stop smd-client.service
+
+[Install]
+WantedBy    = exit.target

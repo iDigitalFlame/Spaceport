@@ -1,0 +1,29 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-hibernate-pre
+#  Script used by systemd before the system hibernates and starts the pre-hibernate process.
+#  Should only be called by systemd. Exit code is always 0.
+
+/opt/spaceport/libexec/smd-reset-display
+/opt/spaceport/libexec/smd-message com.spaceport.sleep -p '{ "state": "pre"}'
+/usr/bin/rmmod hid_sensor_incl_3d
+/usr/bin/rmmod hid_sensor_accel_3d
+/usr/bin/rmmod hid_sensor_magn_3d
+/usr/bin/rmmod hid_sensor_gyro_3d
+/usr/bin/rmmod hid_sensor_rotation
+/usr/bin/rmmod hid_sensor_trigger
+/usr/bin/rmmod hid_sensor_iio_common
+/usr/bin/rmmod hid_sensor_hub
+/usr/bin/rmmod wacom
+/usr/bin/rmmod intel_ishtp_hid
+/usr/bin/rmmod intel_ish_ipc
+/usr/bin/rmmod intel_ishtp
+/usr/bin/cpupower frequency-set -u 3.9GHz
+/usr/bin/cpupower frequency-set -d 400MHz
+/usr/bin/cpupower frequency-set -g performance
+/usr/bin/sleep 1
+exit 0
+
+# EOF

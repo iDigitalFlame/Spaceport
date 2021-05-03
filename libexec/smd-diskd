@@ -1,0 +1,29 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-diskd
+#  Wrapper for devmon and udev to automount and send notifications of disk mounts.
+#
+# Usage:
+#  smd-diskd
+#
+#  Takes no parameters and will block until completed.
+#  Not to be directly run by users and instead called by systemd-user. Exit code is always 0.
+
+if [ ! -d "/tmp/.mounts/$USER" ]; then
+  /usr/bin/mkdir "/tmp/.mounts/$USER" 2> /dev/null
+fi
+/usr/bin/killall devmon-git
+/usr/bin/systemctl --user start dunst.service
+/usr/bin/devmon-git \
+--sync \
+--no-gui \
+--always-exec \
+--exec-on-remove "/usr/bin/notify-send -a \"Disk Daemon\" \"%f was Removed\"" \
+--exec-on-unmount "/usr/bin/notify-send -a \"Disk Daemon\" \"%f was Un-mounted\"" \
+--exec-on-disc "/usr/bin/notify-send -a \"Disk Daemon\" \"Mounted %l\"  \"On \$(echo %d | sed -e 's/\/tmp\/./\//g')\"" \
+--exec-on-drive "/usr/bin/notify-send -a \"Disk Daemon\" \"Mounted %l\"  \"On \$(echo %d | sed -e 's/\/tmp\/./\//g')\""
+exit 0
+
+# EOF

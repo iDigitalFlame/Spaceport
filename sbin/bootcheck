@@ -1,0 +1,48 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Boot checking script that hashes and eamines the files in /boot.
+
+HASH_DISK="/boot"
+HASH_CHECK="/tmp/boot-check.log"
+HASH_DIFF="/tmp/boot-check-last.log"
+HASH_FILE="/var/cache/boot-check.log"
+
+check() {
+    find "$HASH_DISK" -type f -exec sha512sum {} \; 1> "$HASH_CHECK" 2> /dev/null
+    diff -ZbB "$HASH_FILE" "$HASH_CHECK" 1> "$HASH_DIFF" 2> /dev/null
+    if [ $? -ne 0 ]; then
+        printf "Hash check failed! \"$HASH_DISK\" has been modified since last check!\n"
+        exit 1
+    fi
+}
+
+update() {
+    rm -f "$HASH_FILE" 2> /dev/null
+    find "$HASH_DISK" -type f -exec sha512sum {} \; 1> "$HASH_FILE" 2> /dev/null
+}
+
+if [ $# -ne 1 ]; then
+    printf "$0 <update|check>\n"
+    exit 0
+fi
+
+case "$1" in
+    "update")
+        update
+        ;;
+    "check")
+        check
+        ;;
+    *)
+        printf "Bootcheck Utility\n\t$0 <update|reset|check>\n"
+        printf "\ncheck\t-\tChecks the boot volume for changes.\n"
+        printf "update\t-\tDeletes the hash check file and regenerates it.\n\n"
+        exit 2
+        ;;
+esac
+
+exit 0
+
+# EOF

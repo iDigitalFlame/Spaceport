@@ -1,0 +1,30 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-hibernate-post
+#  Script used by systemd after the system resumes from hibernate and starts the post-hibernate process.
+#  Should only be called by systemd. Exit code is always 0.
+
+/opt/spaceport/libexec/smd-reset-display
+/usr/bin/xset -display :1 dpms force on
+/opt/spaceport/libexec/smd-message com.spaceport.sleep -p '{ "state": "post"}'
+/usr/bin/sleep 3
+/usr/bin/modprobe intel_ishtp
+/usr/bin/modprobe intel_ish_ipc
+/usr/bin/modprobe intel_ishtp_hid
+/usr/bin/sleep 3
+/usr/bin/modprobe hid_sensor_incl_3d
+/usr/bin/modprobe hid_sensor_accel_3d
+/usr/bin/modprobe hid_sensor_magn_3d
+/usr/bin/modprobe hid_sensor_gyro_3d
+/usr/bin/modprobe hid_sensor_rotation
+/usr/bin/modprobe hid_sensor_trigger
+/usr/bin/modprobe hid_sensor_iio_common
+/usr/bin/modprobe hid_sensor_hub
+/usr/bin/modprobe wacom
+/usr/bin/sleep 2
+/opt/spaceport/libexec/smd-message com.spaceport.sleep -p '{ "state": "post-driver"}'
+exit 0
+
+# EOF

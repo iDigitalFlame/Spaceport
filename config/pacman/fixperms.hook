@@ -1,0 +1,16 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Update file permissions after updates Pacman Hook.
+
+[Trigger]
+Type        = Package
+Target      = *
+Operation   = Install
+Operation   = Upgrade
+Operation   = Remove
+
+[Action]
+Description = Fixing permissions for system files..
+When        = PostTransaction
+Exec        = /opt/spaceport/sbin/permissions

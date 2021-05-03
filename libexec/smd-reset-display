@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+# Spaceport Project - System Management Daemon
+# iDigitalFlame 2018 (Updated: 04/01/2018)
+#  smd-reset-display
+#  Resets the display to only the built-in monitor (for locking/unlocking purposes).
+#
+# Usage:
+# smd-reset-display
+#
+# Does not take any parameters. Uses xrandr to reset the display to the single built in display (eDP1).
+# Exit code is always 0.
+
+MONITOR="eDP1"
+MONITORS=$(/usr/bin/xrandr | grep -E 'connected|disconnected|unknown' | awk '{print $1}' | grep -v $MONITOR)
+COMMAND="/usr/bin/xrandr --output $MONITOR --primary --mode 1920x1080 --pos 0x0 --rotate normal"
+for selected_monitor in $MONITORS; do
+    COMMAND="$COMMAND --output $selected_monitor --off "
+done
+eval "$COMMAND"
+/opt/spaceport/libexec/smd-video "$COMMAND"
+exit 0
+
+# EOF

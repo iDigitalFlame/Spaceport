@@ -1,0 +1,31 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#  syscheck
+#  Simple system status checking utility.
+
+pause() {
+    printf "Press ENTER to continue.."
+    read -s
+    printf "\n"
+}
+
+uname -a
+pause
+systemctl --failed
+pause
+ifconfig
+pause
+netstat -panut
+pause
+ps xfua
+pause
+df -h
+pause
+mount
+pause
+pacman -Syy 1> /dev/null
+printf 'Orphans:\n'
+pacman -Qtdq
+
+# EOF

@@ -1,0 +1,18 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-locker
+#  Script used by xautolock to attempt to lock the system screen.
+#
+# Usage:
+#  smd-locker
+#
+#  Does not accept any parameters. Discouraged for general usage other than xautolock.
+#  If a user is required to lock the system manually, the appropriate command would be to use "powerctl lock [-f]".
+#  Exit code is always 0.
+
+/opt/spaceport/libexec/smd-message com.spaceport.lock
+exit 0
+
+# EOF

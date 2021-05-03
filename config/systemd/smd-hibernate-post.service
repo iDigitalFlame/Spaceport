@@ -1,0 +1,15 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Systemd Unit file for the System Management Daemon Hibernate Post Trigger.
+
+[Unit]
+Description = System Management Daemon Post-Hibernate Trigger
+After       = sleep.target
+
+[Service]
+Type        = oneshot
+ExecStart   = /opt/spaceport/libexec/smd-hibernate-post
+
+[Install]
+WantedBy    = sleep.target

@@ -1,0 +1,33 @@
+#!/usr/bin/sh
+# Spaceport Project - SMB Mounting Manager
+# iDigitalFlame 2018 (Updated: 04/15/2018)
+#
+# smb-mount
+#   Script that allows users to connect to CIFS shares without using sudo.
+#
+# Usage:
+#  smb-mount <share> <path> <options>
+#
+#  Attemps to mount the CIFS share using the following share, path and mount options specified.
+#  Will return the exit codes from mount if script execution is sucessful. Can only be run as root.
+#
+# Exit Codes:
+#  0 - Completion without exceptions or errors.
+#  1 - Permissions issue or incorrect arguments used.
+
+if [ $UID -ne 0 ]; then
+  printf "[!] Only root can use this!\n"
+  exit 1
+fi
+if [ $# -ne 3 ]; then
+  printf "smb-mount <share> <path> <options>\n"
+  exit 1
+fi
+if [ ! -z "$(mount | grep $2)" ]; then
+  printf "[!] \"$2\" is already mounted!\n"
+  exit 1
+fi
+eval "/usr/bin/mount -t cifs $1 $2 -o $3"
+exit $?
+
+# EOF

@@ -1,0 +1,15 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Updates the Pacman cache after upgrades Pacman Hook.
+
+[Trigger]
+Type        = Package
+Target      = *
+Operation   = Upgrade
+Operation   = Remove
+
+[Action]
+Description = Removing old cached packages..
+When        = PostTransaction
+Exec        = /usr/bin/bash -c "paccache -rk2; paccache -ruk0"

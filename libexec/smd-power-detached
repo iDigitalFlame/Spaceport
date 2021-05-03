@@ -1,0 +1,12 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-power-detached
+#  Script used by udev to inform the System Management Daemon that the power adapter was removed.
+#  Should only be called by systemd. Exit code is always 0.
+
+/opt/spaceport/libexec/smd-message com.spaceport.power -p '{ "type": "power", "status": "detached" }'
+exit 0
+
+# EOF

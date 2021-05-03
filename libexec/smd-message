@@ -1,0 +1,64 @@
+#!/usr/bin/python3
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-message
+#  Allows processes and users to communicate to the System Management Daemon through commands.
+#
+# Usage:
+#  smd-message [-s socket_file] [-t (int)wait_seconds] [-t (string)wait_header] [-p (string)json_payload] header
+#
+#  Attempts to connect to the System Management Daemon and send the message specified.
+#  If the parameter "-t" is used, "-w" is implied and will be "0" (forever) by default, which waits until a response
+#  from the daemon matching the header is received.
+#  This command will also output the header and JSON payload (if included) when a message is received.
+#
+# Exit Codes:
+#  0 - Completion/Received message response (if waiting)
+#  1 - Error in parameters or syntax
+#  2 - The wait timeout expired (if waiting)
+
+import sys
+
+sys.path.insert(0, '/opt/spaceport')
+
+from traceback import format_exc
+from lib.constants import SOCKET
+from argparse import ArgumentParser
+from lib.structs.message import send_message
+
+
+if __name__ == '__main__':
+    parameters = ArgumentParser(description='System Management Daemon Messager')
+    parameters.add_argument('header', type=str, action='store', metavar='header', help='Message header to send.')
+    parameters.add_argument('-p', type=str, action='store', metavar='payload', dest='payload',
+                            help='Send a message to the daemon with this JSON payload.', required=False)
+    parameters.add_argument('-w', type=str, action='store', required=False, dest='wait', default=None,
+                            help='Send a message to the daemon and wait for this response header.')
+    parameters.add_argument('-t', type=int, action='store', required=False, dest='timeout', default=0,
+                            help='Specify wait time (in seconds) to wait (implies -w).')
+    parameters.add_argument('-s', type=str, action='store', default=SOCKET, required=False, dest='socket',
+                            help='Specify socket to connect to.')
+    arguments = parameters.parse_args()
+    if arguments.timeout > 0 and arguments.wait is None:
+        print('You must specify to wait with "-w"!', file=sys.stderr)
+        sys.exit(1)
+    try:
+        wait = arguments.wait
+        if isinstance(wait, str) and ',' in wait:
+            wait = [w.strip() for w in wait.split(',')]
+        results = send_message(arguments.socket, arguments.header, wait, arguments.timeout, arguments.payload)
+    except Exception as err:
+        print(format_exc(), file=sys.stderr)
+        sys.exit(1)
+    if arguments.wait is not None:
+        if results is not None:
+            if len(results) > 0:
+                print(results)
+            else:
+                print(results.get_header())
+            sys.exit(0)
+        sys.exit(2)
+    sys.exit(0)
+
+# EOF

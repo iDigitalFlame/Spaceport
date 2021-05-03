@@ -1,0 +1,15 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Boot Check Post-Update Pacman Hook.
+
+[Trigger]
+Type        = Package
+Target      = linux-*
+Target      = systemd
+Operation   = Upgrade
+
+[Action]
+Description = Re-mounting /boot and re-hashing..
+When        = PostTransaction
+Exec        = /opt/spaceport/sbin/bootcheck update

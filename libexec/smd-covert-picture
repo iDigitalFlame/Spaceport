@@ -1,0 +1,33 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# smd-convert-picture
+#  Converts a picture given in the arguments to a cache file to be used for the lockscreen.
+#  Resizes and applies the gradient for the lockscreen.
+#
+# Usage:
+#  smd-convert-picture <resolution> <source> <destination>
+#
+# Exit Codes:
+#  0 - Conversion completed.
+#  1 - Permissions or arguments errors.
+
+if [ $# -ne 3 ]; then
+    printf "$0 <resolution> <source> <destination>\n"
+    exit 1
+fi
+
+screen_rectangles=" "
+screen_rectangles_list=$(xrandr --query | grep ' connected' | grep -o '[0-9][0-9]*x[0-9][0-9]*[^ ]*')
+for rectangle in $screen_rectangles_list; do
+	selected_rectangle=(${rectangle//[x+]/ })
+	selected_x=$((${selected_rectangle[2]} + 25))
+	selected_y=$((${selected_rectangle[1]} - 30))
+	screen_rectangles+="rectangle $selected_x,$selected_y $((selected_x+300)),$((selected_y-80)) "
+done
+convert "$2" -resize "$1""^" -gravity center -extent "$1" "$3"
+convert "$3" -draw "fill rgba(0, 0, 0, 0.75) $screen_rectangles" "$3"
+exit 0
+
+# EOF

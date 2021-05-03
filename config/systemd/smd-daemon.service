@@ -1,0 +1,15 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Systemd Unit file for the Daemon process.
+
+[Unit]
+Description = System Management Daemon
+
+[Service]
+Type        = simple
+KillSignal  = SIGINT
+ExecStart   = /opt/spaceport/libexec/smd-daemon
+
+[Install]
+WantedBy    = multi-user.target

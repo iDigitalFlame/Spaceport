@@ -1,0 +1,10 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Pacman wrapper for IPTables.
+
+_args="$@"
+/usr/bin/sg iptables-web -c "/usr/bin/pacman $_args"
+
+# EOF

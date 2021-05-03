@@ -1,0 +1,210 @@
+#!/usr/bin/sh
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Fixes and resets file permissions on copy/install.
+
+if [ $UID -ne 0 ]; then
+  printf "[!] Only root can do this!\n"
+  exit 1
+fi
+
+BASE_DIR="/opt/spaceport"
+
+# Delete Git Files
+rm -rf "$BASE_DIR/.git" 2> /dev/null
+rm $BASE_DIR/*.code-workspace 2> /dev/null
+
+# Delete Readme and License Files
+find "$BASE_DIR/" -type f -name LICENSE -delete 2> /dev/null
+find "$BASE_DIR/" -type f -name README.md -delete 2> /dev/null
+
+# Delete Cache Files
+find "$BASE_DIR/" -type f -name *.pyc -delete 2> /dev/null
+find "$BASE_DIR/" -type d -name *pycache* -exec rm -rf {} \; 2> /dev/null
+
+# Set Base Permissions
+chmod 555 -R "$BASE_DIR"
+chown root:root -R "$BASE_DIR"
+
+# Set Base File Permissions
+find "$BASE_DIR/" -type f -exec chmod 444 {} \; 2> /dev/null
+
+# Set Directory Permissions
+chmod 555 -R "$BASE_DIR/bin"
+chmod 550 -R "$BASE_DIR/sbin"
+chmod 550 -R "$BASE_DIR/config/udev"
+chmod 550 -R "$BASE_DIR/config/hydra"
+chmod 550 -R "$BASE_DIR/config/pacman"
+chmod 555 -R "$BASE_DIR/config/modules"
+
+# Setup Symlinks for Bin
+for module in $(/usr/bin/python3 /opt/spaceport/bin/powerctl modules 2> /dev/null); do
+    ln -s "$BASE_DIR/bin/powerctl" "$BASE_DIR/bin/$module" 2> /dev/null
+    ln -s "$BASE_DIR/bin/powerctl" "$BASE_DIR/bin/${module}ctl" 2> /dev/null
+done
+
+# Fix seperate file permissions
+chmod 555 $BASE_DIR/libexec/*
+chmod 550 "$BASE_DIR/config/udev"
+chmod 440 $BASE_DIR/config/udev/*
+chmod 550 "$BASE_DIR/config/pacman"
+chmod 440 $BASE_DIR/config/pacman/*
+chmod 555 "$BASE_DIR/config/modules"
+chmod 444 $BASE_DIR/config/modules/*
+chmod 444 $BASE_DIR/config/systemd/*
+chmod 660 $BASE_DIR/config/smd-*.json
+chmod 440 "$BASE_DIR/config/chrony.conf"
+chmod 440 "$BASE_DIR/config/kernel.conf"
+chmod 550 "$BASE_DIR/libexec/smd-daemon"
+chmod 444 "$BASE_DIR/config/firefox.conf"
+chmod 555 "$BASE_DIR/config/profile.conf"
+chmod 440 "$BASE_DIR/config/lightdm.conf"
+chmod 444 "$BASE_DIR/config/resolved.conf"
+chmod 440 "$BASE_DIR/config/iptables.conf"
+chmod 444 "$BASE_DIR/config/networkd.conf"
+chmod 440 "$BASE_DIR/config/security.conf"
+chmod 440 "$BASE_DIR/config/ip6tables.conf"
+chmod 440 "$BASE_DIR/config/mkinitcpio.conf"
+chmod 440 "$BASE_DIR/config/sshd_config.conf"
+chmod 664 "$BASE_DIR/config/smd-constants.json"
+chmod 440 "$BASE_DIR/config/lightdm-users.conf"
+chmod 550 "$BASE_DIR/libexec/smd-hibernate-pre"
+chmod 550 "$BASE_DIR/libexec/smd-hibernate-post"
+chmod 550 "$BASE_DIR/libexec/smd-power-attached"
+chmod 550 "$BASE_DIR/libexec/smd-power-detached"
+chmod 550 "$BASE_DIR/config/chrony_network.conf"
+chmod 440 "$BASE_DIR/config/lightdm-greeter.conf"
+chmod 444 "$BASE_DIR/config/firefox-settings.conf"
+
+# Fix seperate file user/owners
+chown root:kvm -R "$BASE_DIR/config/hydra/novnc"
+chown root:chrony "$BASE_DIR/config/chrony.conf"
+chown root:lightdm "$BASE_DIR/config/lightdm.conf"
+chown root:lightdm "$BASE_DIR/config/lightdm-users.conf"
+chown root:lightdm "$BASE_DIR/config/lightdm-greeter.conf"
+
+# Prevent/Remove these applications from being shown in drun
+chmod 400 /usr/share/applications/exo-* 2> /dev/null
+chmod 400 /usr/share/applications/gcr-* 2> /dev/null
+chmod 400 /usr/share/applications/wine* 2> /dev/null
+chmod 400 /usr/share/applications/gtk3-* 2> /dev/null
+chmod 400 /usr/share/applications/zenmap* 2> /dev/null
+chmod 400 /usr/share/applications/geoclue-* 2> /dev/null
+chmod 400 /usr/share/applications/vim.desktop
+chmod 400 /usr/share/applications/cups.desktop
+chmod 400 /usr/share/applications/bssh.desktop
+chmod 400 /usr/share/applications/bvnc.desktop
+chmod 400 /usr/share/applications/htop.desktop
+chmod 400 /usr/share/applications/gvim.desktop
+chmod 400 /usr/share/applications/qv4l2.desktop
+chmod 400 /usr/share/applications/fluid.desktop
+chmod 400 /usr/share/applications/compton.desktop
+chmod 400 /usr/share/applications/firefox.desktop
+chmod 400 /usr/share/applications/trojita.desktop
+chmod 400 /usr/share/applications/chromium.desktop
+chmod 400 /usr/share/applications/cmake-gui.desktop
+chmod 400 /usr/share/applications/vncviewer.desktop
+chmod 400 /usr/share/applications/nextcloud.desktop
+chmod 400 /usr/share/applications/lxshortcut.desktop
+chmod 400 /usr/share/applications/pavucontrol.desktop
+chmod 400 /usr/share/applications/teensy-loader.desktop
+chmod 400 /usr/share/applications/org.kde.falkon.desktop
+chmod 400 /usr/share/applications/avahi-discover.desktop
+chmod 400 /usr/share/applications/onboard-settings.desktop
+chmod 400 /usr/share/applications/libinput-gestures.desktop
+chmod 400 /usr/share/applications/pcmanfm-desktop-pref.desktop
+chmod 400 /usr/share/applications/org.gnome.FileRoller.desktop
+chmod 400 /usr/share/applications/libreoffice-startcenter.desktop
+chmod 400 /usr/share/applications/xfce4-terminal-settings.desktop
+
+# Create Links to Modules
+ln -s "$BASE_DIR/config/modules/wifi.conf" "/etc/modprobe.d/wifi.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/modules/audio.conf" "/etc/modprobe.d/audio.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/modules/video.conf" "/etc/modprobe.d/video.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/modules/camera.conf" "/etc/modprobe.d/camera.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/modules/pcspkr.conf" "/etc/modprobe.d/pcspkr.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/modules/watchdog.conf" "/etc/modprobe.d/watchdog.conf" 2> /dev/null
+
+# Create Links to Pacman Hooks
+ln -s "$BASE_DIR/config/pacman/findpac.hook" "/etc/pacman.d/hooks/findpac.hook" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman/firefox.hook" "/etc/pacman.d/hooks/firefox.hook" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman/fixperms.hook" "/etc/pacman.d/hooks/fixperms.hook" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman/iptables.hook" "/etc/pacman.d/hooks/iptables.hook" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman/paccache.hook" "/etc/pacman.d/hooks/paccache.hook" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman/bootcheck.hook" "/etc/pacman.d/hooks/bootcheck.hook" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman/bootupdate.hook" "/etc/pacman.d/hooks/bootupdate.hook" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman/mirrorupgrade.hook" "/etc/pacman.d/hooks/mirrorupgrade.hook" 2> /dev/null
+
+# Create Links to Systemd Hooks
+ln -s "$BASE_DIR/config/logind.conf" "/etc/systemd/logind.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/journald.conf" "/etc/systemd/journald.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/resolved.conf" "/etc/systemd/resolved.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/timesyncd.conf" "/etc/systemd/timesyncd.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/coredump.conf" "/etc/systemd/coredump.conf.d/spaceport.conf" 2> /dev/null
+
+# Create Links to Systemd Service Units
+ln -s "$BASE_DIR/config/systemd/smd-client.service" "/etc/systemd/user/smd-client.service" 2> /dev/null
+ln -s "$BASE_DIR/config/systemd/smd-daemon.service" "/etc/systemd/system/smd-daemon.service" 2> /dev/null
+ln -s "$BASE_DIR/config/systemd/smd-client-exit.service" "/etc/systemd/user/smd-client-exit.service" 2> /dev/null
+ln -s "$BASE_DIR/config/systemd/smd-hibernate-pre.service" "/etc/systemd/system/smd-hibernate-pre.service" 2> /dev/null
+ln -s "$BASE_DIR/config/systemd/smd-hibernate-post.service" "/etc/systemd/system/smd-hibernate-post.service" 2> /dev/null
+
+# Create Links to Udev Rules
+ln -s "$BASE_DIR/config/udev/pci.conf" "/etc/udev/rules.d/10-pci.rules" 2> /dev/null
+ln -s "$BASE_DIR/config/udev/usb.conf" "/etc/udev/rules.d/10-usb.rules" 2> /dev/null
+ln -s "$BASE_DIR/config/udev/wifi.conf" "/etc/udev/rules.d/10-wifi.rules" 2> /dev/null
+ln -s "$BASE_DIR/config/udev/video.conf" "/etc/udev/rules.d/10-video.rules" 2> /dev/null
+ln -s "$BASE_DIR/config/udev/power.conf" "/etc/udev/rules.d/10-power.rules" 2> /dev/null
+ln -s "$BASE_DIR/config/udev/interfaces.conf" "/etc/udev/rules.d/10-interfaces.rules" 2> /dev/null
+
+# Create Links to PAM Modules
+ln -s "$BASE_DIR/config/pam-login.conf" "/etc/pam.d/login" 2> /dev/null
+ln -s "$BASE_DIR/config/pam-passwd.conf" "/etc/pam.d/passwd" 2> /dev/null
+
+# Create Links to SSH Configs
+ln -s "$BASE_DIR/config/ssh_config.conf" "/etc/ssh/ssh_config" 2> /dev/null
+ln -s "$BASE_DIR/config/sshd_config.conf" "/etc/ssh/sshd_config" 2> /dev/null
+
+# Create Links to IPTables Configs
+ln -s "$BASE_DIR/config/iptables.conf" "/etc/iptables/iptables.rules" 2> /dev/null
+ln -s "$BASE_DIR/config/ip6tables.conf" "/etc/iptables/ip6tables.rules" 2> /dev/null
+
+# Create Links to LightDM Configs
+ln -s "$BASE_DIR/config/lightdm.conf" "/etc/lightdm/lightdm.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/lightdm-users.conf" "/etc/lightdm/users.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/lightdm-greeter.conf" "/etc/lightdm/lightdm-gtk-greeter.conf" 2> /dev/null
+
+# Create Links to General Configs
+ln -s "$BASE_DIR/config/motd.conf" "/etc/motd" 2> /dev/null
+
+ln -s "$BASE_DIR/config/locale.conf" "/etc/locale.gen" 2> /dev/null
+ln -s "$BASE_DIR/config/chrony.conf" "/etc/chrony.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/pacman.conf" "/etc/pacman.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/makepkg.conf" "/etc/makepkg.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/pulse.conf" "/etc/pulse/default.pa" 2> /dev/null
+ln -s "$BASE_DIR/config/udevil.conf" "/etc/udevil/udevil.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/mkinitcpio.conf" "/etc/mkinitcpio.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/sudoers.conf" "/etc/sudoers.d/spaceport" 2> /dev/null
+ln -s "$BASE_DIR/config/bluetooth.conf" "/etc/bluetooth/main.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/kernel.conf" "/etc/sysctl.d/spaceport.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/profile.conf" "/etc/profile.d/spaceport.sh" 2> /dev/null
+ln -s "$BASE_DIR/config/libreoffice.conf" "/etc/libreoffice/sofficerc" 2> /dev/null
+ln -s "$BASE_DIR/config/font.conf" "/etc/fonts/conf.d/30-spaceport.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/tempfiles.conf" "/etc/tmpfiles.d/10-spaceport.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/xorg.conf" "/etc/X11/xorg.conf.d/10-spaceport.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/keyboard.conf" "/etc/udev/hwdb.d/10-spaceport.hwdb" 2> /dev/null
+ln -s "$BASE_DIR/config/modules/hydra.conf" "/etc/modules-load.d/hydra.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/firefox-settings.conf" "/usr/lib/firefox/firefox.cfg" 2> /dev/null
+ln -s "$BASE_DIR/config/polkit.conf" "/etc/polkit-1/rules.d/10-network.rules" 2> /dev/null
+ln -s "$BASE_DIR/config/networkd.conf" "/etc/systemd/network/unmanaged.network" 2> /dev/null
+ln -s "$BASE_DIR/config/security.conf" "/etc/security/limits.d/10-spaceport.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/network.conf" "/etc/NetworkManager/conf.d/spaceport.conf" 2> /dev/null
+ln -s "$BASE_DIR/config/firefox.conf" "/usr/lib/firefox/defaults/pref/autoconfig.js" 2> /dev/null
+ln -s "$BASE_DIR/config/chrony_network.conf" "/etc/NetworkManager/dispatcher.d/10-chrony" 2> /dev/null
+ln -s "$BASE_DIR/config/firefox-settings.conf" "/usr/lib/firefox/defaults/pref/firefox.cfg" 2> /dev/null
+
+systemctl daemon-reload
+systemctl enable smd-daemon
+systemctl enable smd-hibernate-pre
+systemctl enable smd-hibernate-post
