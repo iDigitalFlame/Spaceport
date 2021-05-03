@@ -13,5 +13,4 @@ __pypackages__/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-*.code-workspace
-etc/udev/rules.d/80-network.rules
+etc/udev/rules.d/85-network.rules
