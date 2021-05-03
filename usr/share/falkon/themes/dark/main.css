@@ -1,0 +1,44 @@
+/*
+    Falkon Dark Theme
+
+    System Management Daemon
+
+    Copyright(C) 2016 - 2020 iDigitalFlame
+
+    This program is free software: you can redistribute it and / or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.If not, see < https://www.gnu.org/licenses/>.
+*/
+
+@import "/usr/share/falkon/themes/linux/main.css";
+
+WebView {
+    background: #191919;
+}
+#tabbar {
+    color: #FFFFFF;
+    background: #191919;
+}
+#mainwindow {
+    background-color: #191919;
+}
+#locationbar {
+    color: #FFFFFF;
+    background: #191919;
+}
+#websearchbar {
+    color: #FFFFFF;
+    background: #191919;
+}
+#locationbar-siteicon {
+    background: #191919;
+}

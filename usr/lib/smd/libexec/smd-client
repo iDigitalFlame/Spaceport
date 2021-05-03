@@ -1,0 +1,130 @@
+#!/usr/bin/python3
+# smd-client
+#  Starts the primary processes and threads for the System Management Client.
+#
+# Usage:
+#  smd-client [-s socket_file] [-l log_file] [-n (int)log_level] [-f]
+#
+#  Starts the system management client. Recommended to be only used by systemd-user or the workspace manager.
+#  The "-s" parameter will specify the socket file that is read by the client.
+#  The "-l" and "-n" parameters specify options on how the daemon will log. The "-l" parameter is a file path,
+#  while the "-n" parameter is a log level specified as an integer. The "-f" parameter will prevent the process from
+#  forking into the background, recommended for systemd units or scripts.
+#
+# Exit Codes:
+#  0 - Completion without exceptions or errors.
+#  1 - Permissions error or exception occurred while running the daemon.
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+import sys
+
+sys.path.insert(0, "/usr/lib/smd")
+
+from os import fork
+from time import sleep
+from lib.client import Client
+from lib.util import print_error
+from argparse import ArgumentParser
+from lib.constants import LOG_PATH_CLIENT, LOG_LEVEL, LOG_LEVELS, SOCKET, CONFIG_CLIENT
+
+
+if __name__ == "__main__":
+    parameters = ArgumentParser(description="System Management Daemon Client")
+    parameters.add_argument(
+        "-s",
+        type=str,
+        dest="socket",
+        help="The server socket to connect to.",
+        action="store",
+        metavar="socket",
+        default=SOCKET,
+        required=False,
+    )
+    parameters.add_argument(
+        "-l",
+        type=str,
+        dest="log_file",
+        help="The log file to output to.",
+        action="store",
+        metavar="log_file",
+        default=LOG_PATH_CLIENT,
+        required=False,
+    )
+    parameters.add_argument(
+        "-n",
+        type=str,
+        dest="log_level",
+        help="The log level for logging.",
+        action="store",
+        metavar="log_level",
+        default=LOG_LEVEL.lower(),
+        choices=LOG_LEVELS.keys(),
+        required=False,
+    )
+    parameters.add_argument(
+        "-c",
+        type=str,
+        dest="config",
+        help="The path to the client configuration file.",
+        action="store",
+        metavar="config",
+        default=CONFIG_CLIENT,
+        required=False,
+    )
+    parameters.add_argument(
+        "-w",
+        type=int,
+        dest="wait",
+        help="Wait X seconds before startup.",
+        action="store",
+        metavar="wait",
+        default=0,
+        required=False,
+    )
+    parameters.add_argument(
+        "-f", action="store_false", help="Don't fork to the background.", dest="fork"
+    )
+    arguments = parameters.parse_args()
+    pid = 0
+    result = True
+    try:
+        if arguments.fork:
+            pid = fork()
+        if pid == 0:
+            if arguments.wait > 0:
+                sleep(arguments.wait)
+            client = Client(
+                arguments.config,
+                arguments.socket,
+                LOG_LEVELS[arguments.log_level],
+                arguments.log_file,
+            )
+            if not client.start():
+                print("Client Threaded encountered an Exception, quitting!")
+                result = False
+    except KeyboardInterrupt:
+        pass
+    except Exception as err:
+        print_error(str(err), err, True)
+    del pid
+    if not result:
+        sys.exit(1)
+    del result
+    sys.exit(0)

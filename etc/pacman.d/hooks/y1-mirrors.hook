@@ -1,0 +1,31 @@
+#!/usr/bin/false
+# Update the Mirrorlist Pacman Hook
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+[Trigger]
+Type        = Package
+Target      = pacman-mirrorlist
+Operation   = Upgrade
+
+[Action]
+When        = PostTransaction
+Exec        = /usr/bin/bash -c "reflector --protocol https --latest 50 --number 20 --sort rate --country 'United States' --save /etc/pacman.d/mirrorlist; if [[ -f /etc/pacman.d/mirrorlist.pacnew ]]; then rm /etc/pacman.d/mirrorlist.pacnew; fi"
+Depends     = reflector
+Description = Updating pacman-mirrorlist with reflector and removing pacnew..

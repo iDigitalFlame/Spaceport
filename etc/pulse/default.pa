@@ -1,0 +1,65 @@
+#!/usr/bin/pulseaudio -nF
+# PulseAudio Configuration
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+.fail
+
+# Restore audio levels
+load-module module-card-restore
+load-module module-stream-restore
+load-module module-device-restore
+load-module module-default-device-restore
+
+# Switch on connect or discover
+load-module module-switch-on-connect
+load-module module-switch-on-port-available
+
+# Load audio settings from applications
+load-module module-augment-properties
+
+# Bluetooth stuff
+load-module module-bluez5-discover
+load-module module-bluetooth-policy auto_switch=2
+
+# Device discovery
+load-module module-udev-detect
+
+# Polybar and control sockets
+load-module module-native-protocol-unix
+load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 listen=127.0.0.1
+
+# User/systemd settings
+load-module module-gsettings
+load-module module-console-kit
+load-module module-systemd-login
+load-module module-rescue-streams
+load-module module-intended-roles
+load-module module-suspend-on-idle
+load-module module-position-event-sounds
+
+# Lower (cork) audio on multiple streams
+load-module module-role-cork
+
+# Filters and noise/echo cancellation
+load-module module-filter-heuristics
+load-module module-filter-apply
+
+# Lastly, ensure theres some output device (sink)
+load-module module-always-sink

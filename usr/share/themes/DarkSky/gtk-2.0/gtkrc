@@ -1,0 +1,1263 @@
+# DarkSkyTheme
+#   Dark black/gray and purple color scheme.
+#   Edits by iDigitalFlame
+#
+# Original Credits:
+#   Simon Steinbeiß <simon.steinbeiss@univie.ac.at>
+#   Joern Konopka <cldx3000@googlemail.com>
+#   Georgi Karavasilev <motorslav@gmail.com>
+#   David Barr <dpbarr@gmail.com>
+#   Christian Medel (Elbullazul) <cmedelahumada@gmail.com>
+#
+
+gtk-icon-sizes                                              = "panel-applications-menu=24,24:panel-menu=24,24:panel=16,16:gtk-button=16,16"
+gtk-color-scheme                                            = "bg_color:#191919"
+gtk-color-scheme                                            = "fg_color:#FFFFFF"
+gtk-color-scheme                                            = "panel_bg:#000000"
+gtk-color-scheme                                            = "fm_color:#FFFFFF"
+gtk-color-scheme                                            = "link_color:#7D0BAB"
+gtk-color-scheme                                            = "base_color:#191919"
+gtk-color-scheme                                            = "text_color:#FFFFFF"
+gtk-color-scheme                                            = "shadow_color:#000000"
+gtk-color-scheme                                            = "bg_color_dark:#FFFFFF"
+gtk-color-scheme                                            = "text_color_dark:#FFFFFF"
+gtk-color-scheme                                            = "tooltip_bg_color:#202020"
+gtk-color-scheme                                            = "tooltip_fg_color:#FFFFFF"
+gtk-color-scheme                                            = "selected_bg_color:#7D0BAB"
+gtk-color-scheme                                            = "selected_fg_color:#FFFFFF"
+gtk-button-images                                           = 1
+gtk-toolbar-style                                           = 0
+gtk-auto-mnemonics                                          = 1
+
+style "default" {
+    xthickness                                              = 1
+    ythickness                                              = 1
+
+    fg[NORMAL]                                              = @fg_color
+    fg[ACTIVE]                                              = @fg_color
+    fg[PRELIGHT]                                            = @fg_color
+    fg[SELECTED]                                            = @selected_fg_color
+    fg[INSENSITIVE]                                         = mix (0.4, @fg_color, @bg_color)
+
+    bg[NORMAL]                                              = @bg_color
+    bg[ACTIVE]                                              = shade (1.04, @bg_color)
+    bg[PRELIGHT]                                            = shade (1.02, @bg_color)
+    bg[SELECTED]                                            = @selected_bg_color
+    bg[INSENSITIVE]                                         = @bg_color
+
+    text[NORMAL]                                            = @text_color
+    text[ACTIVE]                                            = @selected_fg_color
+    text[PRELIGHT]                                          = @text_color
+    text[SELECTED]                                          = @selected_fg_color
+    text[INSENSITIVE]                                       = darker (@fg_color)
+
+    base[NORMAL]                                            = @base_color
+    base[ACTIVE]                                            = shade (0.92, @selected_bg_color)
+    base[PRELIGHT]                                          = shade (0.95, @bg_color)
+    base[SELECTED]                                          = shade (0.93, @selected_bg_color)
+    base[INSENSITIVE]                                       = @bg_color
+
+    GtkMenu             ::vertical-padding                  = 0
+    GtkMenu             ::horizontal-padding                = 0
+    GtkHTML             ::link-colored                      = @link_color
+    GtkImage            ::x-ayatana-indicator-dynamic       = 1
+    GtkEntry            ::state-hint                        = 0
+    GtkEntry            ::progress-border                   = { 3, 3, 3, 3 }
+    GtkEntry            ::honors-transparent-bg-hint        = 1
+    GtkPaned            ::handle-size                       = 3
+    GtkRange            ::slider-width                      = 9
+    GtkRange            ::stepper-size                      = 13
+    GtkRange            ::trough-border                     = 2
+    GtkRange            ::stepper_spacing                   = 0
+    GtkScale            ::slider-width                      = 19
+    GtkScale            ::slider-length                     = 11
+    GtkScale            ::trough-side-details               = 1
+    GtkIMHtml           ::hyperlink-color                   = @link_color
+    GtkWidget           ::link-color                        = @link_color
+    GtkWidget           ::focus-padding                     = 0
+    GtkWidget           ::focus-line-width                  = 1
+    GtkWidget           ::visited-link-color                = @text_color
+    GnomeHRef           ::link_color                        = @link_color
+    GtkButton           ::default-border                    = { 0, 0, 0, 0 }
+    GtkButton           ::child-displacement-x              = 1
+    GtkButton           ::child-displacement-y              = 1
+    GtkWindow           ::resize-grip-width                 = 13
+    GtkWindow           ::resize-grip-height                = 13
+    GtkToolbar          ::internal-padding                  = 0
+    GtkMenuBar          ::window-dragging                   = 1
+    GtkMenuBar          ::internal-padding                  = 0
+    GtkTreeView         ::expander-size                     = 10
+    GtkTreeView         ::vertical-separator                = 0
+    GtkNotebook         ::tab-overlap                       = 1
+    GtkExpander         ::expander-size                     = 12
+    GtkScrollbar        ::slider-width                      = 12
+    GtkScrollbar        ::trough-border                     = 0
+    GtkScrollbar        ::trough-border                     = 0
+    GtkScrollbar        ::min-slider-length                 = 80
+    GtkScrollbar        ::has-forward-stepper               = 1
+    GtkScrollbar        ::has-backward-stepper              = 1
+    GtkCheckButton      ::indicator-size                    = 15
+    GtkProgressBar      ::min-vertical-bar-Width            = 14
+    GtkProgressBar      ::min-horizontal-bar-height         = 14
+    GtkScrolledWindow   ::scrollbar-spacing                 = 0
+    GtkScrolledWindow   ::scrollbars-within-bevel           = 1
+
+    engine "murrine" {
+        rgba                                                = TRUE
+        contrast                                            = 1.4
+        cellstyle                                           = 0
+        animation                                           = FALSE
+        roundness                                           = 0
+        glowstyle                                           = 5
+        menustyle                                           = 0
+        textstyle                                           = 0
+        arrowstyle                                          = 0
+        focusstyle                                          = 3
+        glazestyle                                          = 1
+        glow_shade                                          = 1.0
+        focus_color                                         = mix(0.1, @bg_color, shade(0.7, @selected_bg_color))
+        sliderstyle                                         = 0
+        reliefstyle                                         = 3
+        handlestyle                                         = 1
+        toolbarstyle                                        = 0
+        stepperstyle                                        = 1
+        menubarstyle                                        = 0
+        trough_shades                                       = { 1.0, 1.0 }
+        border_shades                                       = { 1.0, 1.0 }
+        shadow_shades                                       = { 1.0, 1.0 }
+        comboboxstyle                                       = 1
+        expanderstyle                                       = 0
+        listviewstyle                                       = 0
+        menuitemstyle                                       = 0
+        scrollbarstyle                                      = 0
+        separatorstyle                                      = 0
+        prelight_shade                                      = 0.9
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+        highlight_shade                                     = 1.0
+        lightborderstyle                                    = 0
+        menubaritemstyle                                    = 0
+        progressbarstyle                                    = 0
+        lightborder_shade                                   = 1.1
+        colorize_scrollbar                                  = FALSE
+        listviewheaderstyle                                 = 1
+        default_button_color                                = @selected_bg_color
+    }
+}
+
+style "menu" {
+    ythickness                                              = 3
+    xthickness                                              = 0
+
+    bg[NORMAL]                                              = @bg_color
+    bg[ACTIVE]                                              = shade(1.18, @bg_color)
+    bg[PRELIGHT]                                            = @selected_bg_color
+    bg[SELECTED]                                            = @selected_bg_color
+    bg[INSENSITIVE]                                         = @bg_color
+
+    fg[NORMAL]                                              = @fg_color
+    fg[ACTIVE]                                              = @fg_color
+    fg[PRELIGHT]                                            = @selected_fg_color
+    fg[SELECTED]                                            = @base_color
+    fg[INSENSITIVE]                                         = mix(0.4, @fg_color, @bg_color)
+
+    text[NORMAL]                                            = @text_color
+    text[ACTIVE]                                            = @fg_color
+    text[PRELIGHT]                                          = @base_color
+    text[SELECTED]                                          = @base_color
+    text[INSENSITIVE]                                       = mix(0.4, @fg_color, @bg_color)
+
+    base[NORMAL]                                            = @bg_color
+
+    GtkMenuBar          :: shadow-type                      = GTK_SHADOW_NONE
+
+    engine "murrine" {
+        contrast                                            = 0.001
+        roundness                                           = 0
+        gradient_shades                                     = {1.0,1.0,1.0,1.0}
+        lightborder_shade                                   = 1.0
+    }
+}
+style "dark" {
+    bg[NORMAL]                                              = @bg_color_dark
+    bg[ACTIVE]                                              = shade(0.7, @bg_color_dark)
+    bg[PRELIGHT]                                            = shade(0.7, @bg_color_dark)
+    bg[SELECTED]                                            = shade(0.6, @bg_color_dark)
+
+    fg[NORMAL]                                              = @text_color_dark
+    fg[ACTIVE]                                              = @text_color_dark
+    fg[PRELIGHT]                                            = @text_color_dark
+    fg[SELECTED]                                            = @text_color_dark
+
+    text[NORMAL]                                            = @text_color_dark
+    text[ACTIVE]                                            = @text_color_dark
+    text[PRELIGHT]                                          = @text_color_dark
+    text[SELECTED]                                          = @text_color_dark
+
+    GtkMenuBar          :: shadow-type                      = GTK_SHADOW_NONE
+
+    engine "murrine" {
+        roundness                                           = 0
+    }
+}
+style "wide" {
+    xthickness                                              = 2
+    ythickness                                              = 2
+}
+style "scale" {
+    bg[ACTIVE]                                              = @base_color
+    bg[NORMAL]                                              = @base_color
+    bg[PRELIGHT]                                            = @base_color
+    bg[SELECTED]                                            = @selected_bg_color
+    bg[INSENSITIVE]                                         = shade(0.98, @bg_color)
+
+    GtkWidget           ::focus-padding                     = 0
+    GtkWidget           ::focus-line-width                  = 0
+
+    engine "pixmap" {
+        image {
+            file                                            = "assets/trough-horizontal.png"
+            detail                                          = "trough-upper"
+            border                                          = { 8, 8, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            orientation                                     = HORIZONTAL
+        }
+        image {
+            file                                            = "assets/trough-horizontal.png"
+            detail                                          = "trough-lower"
+            border                                          = { 8, 8, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            orientation                                     = HORIZONTAL
+        }
+        image {
+            file                                            = "assets/trough-vertical.png"
+            detail                                          = "trough-upper"
+            border                                          = { 0, 0, 8, 8 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            orientation                                     = VERTICAL
+        }
+        image {
+            file                                            = "assets/trough-vertical.png"
+            detail                                          = "trough-lower"
+            border                                          = { 0, 0, 8, 8 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            orientation                                     = VERTICAL
+        }
+        image {
+            file                                            = "assets/null.png"
+            state                                           = NORMAL
+            border                                          = { 0, 0, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = SLIDER
+            orientation                                     = HORIZONTAL
+            overlay_file                                    = "assets/slider-horiz.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/null.png"
+            state                                           = PRELIGHT
+            border                                          = { 0, 0, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = SLIDER
+            orientation                                     = HORIZONTAL
+            overlay_file                                    = "assets/slider-horiz-hover.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/null.png"
+            state                                           = INSENSITIVE
+            border                                          = { 0, 0, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = SLIDER
+            orientation                                     = HORIZONTAL
+            overlay_file                                    = "assets/slider-horiz-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/null.png"
+            state                                           = NORMAL
+            border                                          = { 0, 0, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = SLIDER
+            orientation                                     = VERTICAL
+            overlay_file                                    = "assets/slider-vert.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/null.png"
+            state                                           = PRELIGHT
+            border                                          = { 0, 0, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = SLIDER
+            orientation                                     = VERTICAL
+            overlay_file                                    = "assets/slider-vert-hover.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/null.png"
+            state                                           = INSENSITIVE
+            border                                          = { 0, 0, 0, 0 }
+            stretch                                         = TRUE
+            function                                        = SLIDER
+            orientation                                     = VERTICAL
+            overlay_file                                    = "assets/slider-vert-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/null.png"
+            border                                          = { 3, 3, 3, 3 }
+            stretch                                         = TRUE
+            function                                        = BOX
+        }
+    }
+}
+style "wider" {
+    xthickness                                              = 3
+    ythickness                                              = 3
+}
+style "radio" {
+    bg[NORMAL]                                              = shade(1.06, @bg_color)
+    bg[ACTIVE]                                              = shade(0.85, @bg_color)
+    bg[PRELIGHT]                                            = shade(1.06, @bg_color)
+    bg[SELECTED]                                            = @base_color
+    bg[INSENSITIVE]                                         = shade(0.95, @bg_color)
+
+    fg[ACTIVE]                                              = @fg_color
+    fg[INSENSITIVE]                                         = mix(0.4, @fg_color, @bg_color)
+
+    text[PRELIGHT]                                          = shade(0.8, @selected_bg_color)
+
+    engine "pixmap" {
+        image {
+            state                                           = NORMAL
+            shadow                                          = OUT
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-unchecked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = PRELIGHT
+            shadow                                          = OUT
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-unchecked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = ACTIVE
+            shadow                                          = OUT
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-unchecked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = SELECTED
+            shadow                                          = OUT
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-unchecked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = INSENSITIVE
+            shadow                                          = OUT
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-unchecked-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = NORMAL
+            shadow                                          = IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-checked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = PRELIGHT
+            shadow                                          = IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-checked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = ACTIVE
+            shadow                                          = IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-checked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = SELECTED
+            shadow                                          = IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-checked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = INSENSITIVE
+            shadow                                          = IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-checked-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = NORMAL
+            shadow                                          = ETCHED_IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-mixed.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = PRELIGHT
+            shadow                                          = ETCHED_IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-mixed-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = ACTIVE
+            shadow                                          = ETCHED_IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-mixed-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = SELECTED
+            shadow                                          = ETCHED_IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-mixed.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = INSENSITIVE
+            shadow                                          = ETCHED_IN
+            function                                        = OPTION
+            overlay_file                                    = "assets/radio-mixed-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/button-default.png"
+            detail                                          = "buttondefault"
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            state                                           = PRELIGHT
+            file                                            = "assets/button-hover.png"
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/button-pressed.png"
+            state                                           = ACTIVE
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+        }
+        image {
+            file                                            = "assets/button-insensitive.png"
+            state                                           = INSENSITIVE
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+        }
+        image {
+            file                                            = "assets/button-default.png"
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+        }
+    }
+}
+style "check" {
+    bg[NORMAL]                                              = shade(1.06, @bg_color)
+    bg[ACTIVE]                                              = shade(0.85, @bg_color)
+    bg[PRELIGHT]                                            = shade(1.06, @bg_color)
+    bg[SELECTED]                                            = @base_color
+    bg[INSENSITIVE]                                         = shade(0.95, @bg_color)
+
+    fg[ACTIVE]                                              = @fg_color
+    fg[INSENSITIVE]                                         = mix(0.4, @fg_color, @bg_color)
+
+    text[PRELIGHT]                                          = shade(0.8, @selected_bg_color)
+
+    engine "pixmap" {
+        image {
+            state                                           = NORMAL
+            shadow                                          = OUT
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-unchecked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = PRELIGHT
+            shadow                                          = OUT
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-unchecked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = ACTIVE
+            shadow                                          = OUT
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-unchecked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = SELECTED
+            shadow                                          = OUT
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-unchecked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = INSENSITIVE
+            shadow                                          = OUT
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-unchecked-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = NORMAL
+            shadow                                          = IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-checked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = PRELIGHT
+            shadow                                          = IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-checked.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = ACTIVE
+            shadow                                          = IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-checked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = SELECTED
+            shadow                                          = IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-checked-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = INSENSITIVE
+            shadow                                          = IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-checked-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = NORMAL
+            shadow                                          = ETCHED_IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-mixed.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = PRELIGHT
+            shadow                                          = ETCHED_IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-mixed-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = ACTIVE
+            shadow                                          = ETCHED_IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-mixed-over.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = SELECTED
+            shadow                                          = ETCHED_IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-mixed.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            state                                           = INSENSITIVE
+            shadow                                          = ETCHED_IN
+            function                                        = CHECK
+            overlay_file                                    = "assets/checkbox-mixed-insensitive.png"
+            overlay_stretch                                 = FALSE
+        }
+        image {
+            file                                            = "assets/button-default.png"
+            detail                                          = "buttondefault"
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/button-hover.png"
+            state                                           = PRELIGHT
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/button-pressed.png"
+            state                                           = ACTIVE
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+        }
+        image {
+            file                                            = "assets/button-insensitive.png"
+            state                                           = INSENSITIVE
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+        }
+        image {
+            file                                            = "assets/button-default.png"
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+        }
+    }
+}
+style "infobar" {
+    engine "murrine" {}
+}
+style "panelbar" {
+    bg[SELECTED]                                            = @selected_bg_color
+
+    fg[NORMAL]                                              = shade(1.5, @selected_bg_color)
+    fg[ACTIVE]                                              = shade(1.5, @selected_bg_color)
+    fg[PRELIGHT]                                            = shade(1.5, @selected_bg_color)
+    fg[SELECTED]                                            = @selected_fg_color
+
+    engine "murrine" {}
+}
+style "iconview" {
+    engine "murrine" {
+        focusstyle                                          = 1
+    }
+}
+style "treeview" {
+    bg[NORMAL]                                              = @bg_color
+
+    engine "murrine" {
+        contrast                                            = 1.4
+        roundness                                           = 0
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+    }
+}
+style "calendar" {
+    bg[NORMAL]                                              = shade(0.6, @bg_color_dark)
+    bg[PRELIGHT]                                            = shade(0.8, @selected_bg_color)
+
+    fg[NORMAL]                                              = "#000000"
+    fg[PRELIGHT]                                            = "#000000"
+}
+style "statusbar" {
+    xthickness                                              = 2
+}
+style "scrollbar" {
+    bg[NORMAL]                                              = mix(0.32, @fg_color, @bg_color)
+    bg[ACTIVE]                                              = shade(0.5, @bg_color)
+    bg[PRELIGHT]                                            = mix(0.27, @fg_color, @bg_color)
+
+    GtkScrollbar        ::arrow-scaling                     = 0.5
+
+    engine "murrine" {
+        contrast                                            = 0.0
+        roundness                                           = 0
+        border_shades                                       = { 1.0, 1.0 }
+        trough_shades                                       = { 0.96, 0.96 }
+        trough_border_shades                                = { 1.0, 1.0 }
+    }
+}
+style "xfsm-label" {
+    font_name                                               = "14"
+
+    engine "murrine" {
+        textstyle                                           = 1
+        text_shade                                          = 0.85
+    }
+}
+style "hscrollbar" {}
+style "vscrollbar" {}
+style "progressbar" {
+    xthickness                                              = 0
+    ythickness                                              = 0
+
+    bg[NORMAL]                                              = shade( 1.3, @bg_color)
+    bg[ACTIVE]                                              = shade( 1.3, @bg_color)
+    bg[SELECTED]                                            = "#7D0BAB"
+    bg[PRELIGHT]                                            = @selected_bg_color
+
+    fg[PRELIGHT]                                            = @selected_fg_color
+
+    engine "murrine" {
+        border_shades                                       = { 1.0, 1.0 }
+        trough_border_shades                                = { 1.0, 1.0 }
+    }
+}
+style "frame-title" {
+    fg[NORMAL]                                              = lighter(@fg_color)
+}
+style "xfce-header" {
+    base[NORMAL]                                            = shade(1.18, @bg_color)
+
+    engine "murrine" {
+        textstyle                                           = 1
+        text_shade                                          = 0.85
+    }
+}
+style "xfwm-tabwin" {
+    bg[NORMAL]                                              = shade(0.35, @bg_color_dark)
+    bg[ACTIVE]                                              = shade(0.65, @selected_bg_color)
+    bg[PRELIGHT]                                            = shade(0.85, @selected_bg_color)
+    bg[SELECTED]                                            = shade(0.45, @selected_bg_color)
+
+    fg[NORMAL]                                              = shade(0.8, @base_color)
+    fg[ACTIVE]                                              = @base_color
+    fg[PRELIGHT]                                            = @base_color
+
+    Xfwm4TabwinWidget   ::alpha                             = 0.8
+    Xfwm4TabwinWidget   ::icon-size                         = 64
+    Xfwm4TabwinWidget   ::border-width                      = 1
+    Xfwm4TabwinWidget   ::border-alpha                      = 0.9
+    Xfwm4TabwinWidget   ::preview-size                      = 512
+    Xfwm4TabwinWidget   ::border-radius                     = 10
+    Xfwm4TabwinWidget   ::listview-icon-size                = 16
+
+    engine "murrine" {
+        contrast                                            = 1.4
+        roundness                                           = 0
+        textstyle                                           = 1
+        text_shade                                          = 0.25
+        reliefstyle                                         = 0
+        border_shades                                       = { 1.0, 1.0 }
+        shadow_shades                                       = { 1.0, 1.0 }
+        highlight_shade                                     = 1.00
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+        lightborder_shade                                   = 1.0
+    }
+}
+style "resize-grip" {
+    engine "pixmap" {
+        image {
+            detail                                          = "statusbar"
+            function                                        = RESIZE_GRIP
+            recolorable                                     = FALSE
+            overlay_file                                    = "assets/resize_grip.png"
+            overlay_border                                  = { 0, 0, 0, 0 }
+            overlay_stretch                                 = FALSE
+        }
+    }
+}
+style "notebook-bg" {
+    bg[NORMAL]                                              = @base_color
+    bg[ACTIVE]                                              = shade(0.87, @base_color)
+}
+style "xfsm-logout" {
+    bg[NORMAL]                                              = @bg_color
+    bg[SELECTED]                                            = shade(1.18, @bg_color)
+
+    fg[NORMAL]                                              = @fg_color
+
+    GtkDialog           ::action-area-spacing               = 0
+    GtkDialog           ::content-area-border               = 12
+    GtkDialog           ::content-area-spacing              = 6
+
+    engine "murrine" {}
+}
+style "theme-panel" {
+    xthickness                                              = 2
+    ythickness                                              = 0
+
+    bg[NORMAL]                                              = @panel_bg
+    bg[ACTIVE]                                              = @selected_bg_color
+    bg[PRELIGHT]                                            = shade(1.2, @panel_bg)
+    bg[SELECTED]                                            = @selected_bg_color
+
+    fg[NORMAL]                                              = @text_color_dark
+    fg[ACTIVE]                                              = @text_color_dark
+    fg[PRELIGHT]                                            = @text_color_dark
+    fg[SELECTED]                                            = @text_color_dark
+
+    text[NORMAL]                                            = @text_color_dark
+    text[ACTIVE]                                            = @text_color_dark
+    text[PRELIGHT]                                          = @text_color_dark
+    text[SELECTED]                                          = @text_color_dark
+
+    engine "murrine" {
+        contrast                                            = 0.0
+        roundness                                           = 0
+        textstyle                                           = 0
+        glazestyle                                          = 0
+        glow_shade                                          = 1.0
+        reliefstyle                                         = 0
+        highlight_shade                                     = 1.0
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+    }
+}
+style "panel-entry" {
+    fg[NORMAL]                                              = @text_color
+    fg[ACTIVE]                                              = @text_color
+    fg[PRELIGHT]                                            = @text_color
+    fg[SELECTED]                                            = @text_color
+    fg[INSENSITIVE]                                         = @text_color
+
+    text[NORMAL]                                            = @text_color
+    text[ACTIVE]                                            = @text_color
+    text[PRELIGHT]                                          = @text_color
+    text[SELECTED]                                          = @text_color
+    text[INSENSITIVE]                                       = @text_color
+
+}
+style "panelbuttons" {
+    xthickness                                              = 4
+    ythickness                                              = 0
+
+    engine "pixmap" {
+        image {
+            file                                            = "assets/panel-button-inactive.png"
+            state                                           = NORMAL
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/panel-button-hover.png"
+            state                                           = PRELIGHT
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/panel-button-hover.png"
+            state                                           = PRELIGHT
+            shadow                                          = OUT
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/panel-button-hover.png"
+            state                                           = PRELIGHT
+            shadow                                          = IN
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/panel-button-active.png"
+            state                                           = ACTIVE
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+        image {
+            file                                            = "assets/panel-button-inactive.png"
+            state                                           = INSENSITIVE
+            border                                          = { 4, 4, 4, 4 }
+            stretch                                         = TRUE
+            function                                        = BOX
+            recolorable                                     = TRUE
+        }
+    }
+    engine "murrine" {
+        textstyle                                           = 0
+    }
+}
+style "comboboxentry" {
+    xthickness                                              = 4
+
+    fg[NORMAL]                                              = @text_color
+    fg[PRELIGHT]                                            = @text_color
+
+
+    text[NORMAL]                                            = @text_color
+    text[PRELIGHT]                                          = @text_color
+
+    engine "murrine" {
+        contrast                                            = 1.4
+        reliefstyle                                         = 0
+        border_shades                                       = { 1.0,1.0 }
+    }
+}
+style "spin" = "combo" {
+    engine "murrine" {
+        border_shades                                       = { 1.0, 1.0 }
+    }
+}
+style "entry" = "wider" {
+    bg[NORMAL]                                              = @base_color
+    bg[SELECTED]                                            = @selected_bg_color
+
+    fg[SELECTED]                                            = @text_color
+
+    base[INSENSITIVE]                                       = shade(1.06, @bg_color)
+
+    engine "murrine" {
+        contrast                                            = 0.35
+        focus_color                                         = @selected_bg_color
+        reliefstyle                                         = 0
+        border_shades                                       = { 1.0, 1.0 }
+        gradient_shades                                     = { 1.1, 1.0, 1.0, 0.97 }
+    }
+}
+style "button" = "wider" {
+    bg[NORMAL]                                              = shade(1.08, @bg_color)
+    bg[ACTIVE]                                              = shade(0.95, @selected_bg_color)
+    bg[PRELIGHT]                                            = shade(1.10, @selected_bg_color)
+    bg[INSENSITIVE]                                         = shade(0.85, @bg_color)
+
+    engine "murrine" {
+        contrast                                            = 1.4
+        roundness                                           = 0
+        reliefstyle                                         = 0
+        border_shades                                       = { 1.0, 1.0 }
+        shadow_shades                                       = { 1.0, 1.0 }
+        highlight_shade                                     = 1.0
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+        lightborder_shade                                   = 1.0
+    }
+}
+style "menubar" = "menu" {
+    xthickness                                              = 3
+    ythickness                                              = 2
+
+    bg[NORMAL]                                              = @bg_color
+
+    engine "murrine" {
+        roundness                                           = 0
+    }
+}
+style "menubar-menuitem" {
+    ythickness                                              = 4
+    xthickness                                              = 2
+
+    bg[PRELIGHT]                                            = @selected_bg_color
+    bg[SELECTED]                                            = @selected_bg_color
+
+    fg[NORMAL]                                              = @base_color
+    fg[PRELIGHT]                                            = @base_color
+    fg[SELECTED]                                            = @base_color
+
+    text[NORMAL]                                            = @base_color
+    text[PRELIGHT]                                          = @base_color
+    text[SELECTED]                                          = @base_color
+
+    engine "murrine" {
+        lightborder_shade                                   = 1.5
+    }
+}
+style "text" = "default" {
+    engine "murrine" {
+        textstyle                                           = 0
+    }
+}
+style "theme-panel-text" {
+    fg[NORMAL]                                              = shade(1.5,@selected_bg_color)
+    fg[ACTIVE]                                              = shade(1.5,@selected_bg_color)
+    fg[PRELIGHT]                                            = @selected_fg_color
+
+    text[NORMAL]                                            = shade(1.5,@selected_bg_color)
+    text[ACTIVE]                                            = shade(1.5,@selected_bg_color)
+    text[PRELIGHT]                                          = @selected_fg_color
+
+    engine "murrine" {
+        textstyle                                           = 0
+        text_shade                                          = 0.2
+    }
+}
+style "vscale" = "scale" {}
+style "hscale" = "scale" {}
+style "toolbar-separator" {
+    xthickness                                              = 0
+    ythickness                                              = 1
+
+    GtkWidget           ::wide-separators                   = 1
+    GtkWidget           ::separator-width                   = 7
+    GtkWidget           ::separator-height                  = 1
+    GtkVSeparator       ::vertical-padding                  = 0
+
+    engine "murrine" {
+        contrast                                            = 1.4
+        separatorstyle                                      = 0
+    }
+}
+style "paned" = "default" {
+    engine "murrine" {
+        contrast                                            = 1.4
+    }
+}
+style "nautilus_location" {
+    bg[NORMAL]                                              = mix(0.60, shade(1.05, @bg_color), @selected_bg_color)
+}
+style "overlay-scrollbar" {
+    bg[ACTIVE]                                              = shade(0.6, @bg_color)
+    bg[SELECTED]                                            = shade(1.0, @selected_bg_color)
+    bg[INSENSITIVE]                                         = shade(0.85, @bg_color)
+}
+style "xfwm-tabwin-button" {
+    font_name                                               = "bold"
+}
+style "tooltips" = "wider" {
+    xthickness                                              = 7
+    ythickness                                              = 4
+
+    bg[NORMAL]                                              = @tooltip_bg_color
+    bg[SELECTED]                                            = "#FFFFFF"
+
+    fg[NORMAL]                                              = @tooltip_fg_color
+
+    engine "murrine" {
+        rgba                                                = TRUE
+        roundness                                           = 0
+    }
+}
+style "xfdesktop-icon-view" {
+    fg[NORMAL]                                              = @text_color_dark
+    fg[ACTIVE]                                              = @text_color_dark
+
+    XfdesktopIconView   ::label-alpha                       = 0
+    XfdesktopIconView   ::shadow-color                      = @shadow_color
+    XfdesktopIconView   ::cell-spacing                      = 2
+    XfdesktopIconView   ::cell-padding                      = 6
+    XfdesktopIconView   ::shadow-x-offset                   = 0
+    XfdesktopIconView   ::shadow-y-offset                   = 1
+    XfdesktopIconView   ::shadow-blur-radius                = 2
+    XfdesktopIconView   ::selected-label-alpha              = 100
+    XfdesktopIconView   ::selected-shadow-color             = @shadow_color
+    XfdesktopIconView   ::selected-shadow-x-offset          = 0
+    XfdesktopIconView   ::selected-shadow-y-offset          = 1
+    XfdesktopIconView   ::cell-text-width-proportion        = 1.9
+}
+style "separator-menu-item" {
+    xthickness                                              = 1
+    ythickness                                              = 1
+
+    GtkWidget           ::wide-separators                   = 1
+    GtkWidget           ::separator-width                   = 1
+    GtkWidget           ::separator-height                  = 7
+
+    GtkSeparatorMenuItem::horizontal-padding                = 2
+}
+style "toolbar" = "default" {
+    engine "murrine" {
+        contrast                                            = 1.4
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+        lightborder_shade                                   = 1.0
+    }
+}
+style "xfsm-button" = "button" {
+    engine "murrine" {
+        textstyle                                           = 0
+    }
+}
+style "combo" = "comboboxentry" {
+    bg[ACTIVE]                                              = shade(0.85, @bg_color)
+}
+style "menu_text" = "menu_item" {
+    engine "murrine" {
+        textstyle                                           = 0
+    }
+}
+style "theme-panel-progressbar" {
+    bg[ACTIVE]                                              = @selected_bg_color
+}
+style "notebook" = "notebook-bg" {
+    xthickness                                              = 3
+    ythickness                                              = 3
+
+    engine "murrine" {
+        contrast                                            = 1.4
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+    }
+}
+style "indicator" = "theme-panel" {
+    xthickness                                              = 0
+    ythickness                                              = 0
+}
+style "treeview-header" = "button" {
+    xthickness                                              = 2
+    ythickness                                              = 1
+
+    bg[NORMAL]                                              = shade(1.14, @bg_color)
+    bg[ACTIVE]                                              = shade(0.85, @bg_color)
+    bg[PRELIGHT]                                            = shade(0.98, @bg_color)
+
+    engine "murrine" {
+        roundness                                           = 0
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
+    }
+}
+style "text-is-fg-color-workaround" {
+    text[NORMAL]                                            = @fg_color
+    text[ACTIVE]                                            = @fg_color
+    text[PRELIGHT]                                          = @fg_color
+    text[SELECTED]                                          = @selected_fg_color
+    text[INSENSITIVE]                                       = darker(@fg_color)
+}
+style "fg-is-text-color-workaround" {
+    fg[NORMAL]                                              = @text_color
+    fg[ACTIVE]                                              = @selected_fg_color
+    fg[PRELIGHT]                                            = @text_color
+    fg[SELECTED]                                            = @selected_fg_color
+    fg[INSENSITIVE]                                         = mix(0.4, @text_color, @bg_color)
+}
+style "notebook-button" = "notebook-bg" {
+    xthickness                                              = 3
+    ythickness                                              = 3
+}
+style "workspace-switcher" = "theme-panel" {
+    bg[SELECTED]                                            = @selected_bg_color
+}
+style "menuitem-text-is-fg-color-workaround" {
+    text[NORMAL]                                            = @fg_color
+    text[ACTIVE]                                            = @fg_color
+    text[PRELIGHT]                                          = @selected_fg_color
+    text[SELECTED]                                          = @selected_fg_color
+    text[INSENSITIVE]                                       = darker(@fg_color)
+}
+style "theme-main-menu-text" = "theme-panel-text" {
+    fg[PRELIGHT]                                            = @selected_fg_color
+    text[PRELIGHT]                                          = @selected_fg_color
+}
+
+class "GtkScale"                                            style "scale"
+class "GtkEntry"                                            style "entry"
+class "GtkFrame"                                            style "wide"
+class "GtkWidget"                                           style "default"
+class "GtkRadio*"                                           style "radio"
+class "GtkCheck*"                                           style "check"
+class "GtkVScale"                                           style "vscale"
+class "GtkHScale"                                           style "hscale"
+class "PanelApp*"                                           style "theme-panel"
+class "GtkWindow*"                                          style "resize-grip"
+class "GtkToolbar"                                          style "toolbar"
+class "GtkCalendar"                                         style "wide"
+class "*Xfce*Panel*"                                        style "theme-panel"
+class "GtkSeparator"                                        style "wide"
+class "GtkStatusbar"                                        style "resize-grip"
+class "GtkHandleBox*"                                       style "toolbar"
+class "GtkScrollbar"                                        style "scrollbar"
+class "GtkSpinButton"                                       style "spin"
+class "GtkVScrollbar"                                       style "scrollbar"
+class "GtkHScrollbar"                                       style "scrollbar"
+class "PanelToplevel*"                                      style "theme-panel"
+class "*Panel*MenuBar*"                                     style "panelbar"
+
+widget_class "*notif*"                                      style "theme-panel"
+widget_class "*Notif*"                                      style "theme-panel"
+widget_class "*Tray*"                                       style "theme-panel"
+widget_class "*tray*"                                       style "theme-panel"
+widget_class "*<OsThumb>"                                   style "overlay-scrollbar"
+widget_class "*GtkHPaned"                                   style "paned"
+widget_class "*GtkVPaned"                                   style "paned"
+widget_class "*Tasklist*"                                   style :highest "panelbuttons"
+widget_class "*<GtkMenu>*"                                  style "menu"
+widget_class "*<GtkButton>"                                 style "button"
+widget_class "*<GtkCombo>*"                                 style "combo"
+widget_class "*<GtkEntry>*"                                 style "wider"
+widget_class "*GtkCalendar*"                                style "calendar"
+widget_class "*ExoIconView*"                                style "iconview"
+widget_class "*XfceHeading*"                                style "xfce-header"
+widget_class "*<GtkNotebook>"                               style "notebook"
+widget_class "*<GtkMenuBar>*"                               style "menubar"
+widget_class "*<GtkProgress>"                               style "progressbar"
+widget_class "*Notif*Beagle*"                               style "theme-panel"
+widget_class "*<OsScrollbar>"                               style "overlay-scrollbar"
+widget_class "*computertemp*"                               style "theme-panel"
+widget_class "*PanelToplevel*"                              style "theme-panel"
+widget_class "*Notif*Brasero*"                              style "theme-panel"
+widget_class "*Panel*MenuBar*"                              style "panelbar"
+widget_class "*Applet*Tomboy*"                              style "theme-panel"
+widget_class "*Panel*MenuBar*"                              style "theme-main-menu-text"
+widget_class "*<GtkViewport>*"                              style "wider"
+widget_class "*<GtkStatusbar>*"                             style "statusbar"
+widget_class "*.<GtkTreeView>*"                             style "treeview"
+widget_class "*GnmSimpleCanvas*"                            style "treeview-header"
+widget_class "*<GtkProgressBar>"                            style "progressbar"
+widget_class "*Applet*Netstatus*"                           style "theme-panel"
+widget_class "*<GtkRadioButton>*"                           style "radio"
+widget_class "*<GtkCheckButton>*"                           style "check"
+widget_class "*XfsmLogoutDialog*"                           style "xfsm-logout"
+widget_class "*<XfceArrowButton>"                           style "panelbuttons"
+widget_class "*Xfce*Panel*Button*"                          style "panelbuttons"
+widget_class "*XfdesktopIconView*"                          style "xfdesktop-icon-view"
+widget_class "*<GtkComboBoxEntry>*"                         style "comboboxentry"
+widget_class "*Panel*MenuBar*Item*"                         style :highest "panelbar"
+widget_class "*Panel*<GtkMenuBar>*"                         style "theme-main-menu-text"
+widget_class "*PanelToplevel*Button"                        style "panelbuttons"
+widget_class "*<XfceActionsPlugin>*"                        style "panelbuttons"
+widget_class "*Panel*GtkToggleButton"                       style "panelbuttons"
+widget_class "*.<GtkList>.<GtkButton>"                      style "treeview-header"
+widget_class "*.<GtkFrame>.<GtkLabel>"                      style "frame-title"
+widget_class "*<GtkSeparatorMenuItem>*"                     style "separator-menu-item"
+widget_class "*.<GtkCTree>.<GtkButton>"                     style "treeview-header"
+widget_class "*.<GtkCList>.<GtkButton>"                     style "treeview-header"
+widget_class "*<GtkNotebook>*<GtkLabel>"                    style "notebook-bg"
+widget_class "*XfcePanelPlugin.GtkButton"                   style "panelbuttons"
+widget_class "*<GtkNotebook>*<GtkLayout>"                   style "notebook-bg"
+widget_class "*<GtkNotebook>*<GtkButton>"                   style "notebook-button"
+widget_class "*<GtkMenuItem>.*.<GtkScale>"                  style "scale"
+widget_class "*<GtkNotebook>*<GtkToolbar>"                  style "notebook-bg"
+widget_class "*.<GtkTreeView>.<GtkButton>"                  style "treeview-header"
+widget_class "*<GtkNotebook>*<GtkViewport>"                 style "notebook-bg"
+widget_class "*<GtkNotebook>*<GtkEventBox>"                 style "notebook-bg"
+widget_class "*<GtkMenuBar>.<GtkMenuItem>*"                 style "menubar-menuitem"
+widget_class "*XfsmLogoutDialog*GtkButton*"                 style "xfsm-button"
+widget_class "*Xfce*Panel*.GtkToggleButton"                 style "panelbuttons"
+widget_class "*<GtkNotebook>*<GtkDrawingArea>"              style "notebook-bg"
+widget_class "*Xfce*NetkTasklist*GtkToggleButton"           style "panelbuttons"
+widget_class "*<GtkNotebook>*<GtkScrolledWindow>"           style "notebook-bg"
+widget_class "*Xfce*NetkTasklist*GtkToggleButton"           style "panelbuttons"
+widget_class "*<GtkNotebook>*<GtkButton>*<GtkLabel>"        style "notebook-button"
+widget_class "*XfsmLogoutDialog*GtkVBox.GtkVBox.GtkLabel"   style "xfsm-label"
+
+widget "*TopMenu*"                                          style "theme-panel"
+widget "*tasklist*"                                         style "panelbuttons"
+widget "*WnckPager*"                                        style "workspace-switcher"
+widget "gtk-tooltip*"                                       style "tooltips"
+widget "*Xfce*Panel*"                                       style "theme-panel"
+widget "*PanelApplet*"                                      style "theme-panel-text"
+widget "xfwm4-tabwin*"                                      style "xfwm-tabwin"
+widget "*dict*Applet*"                                      style "panelbuttons"
+widget "*PanelWidget*"                                      style "theme-panel"
+widget "*PanelApplet*"                                      style "theme-panel"
+widget "*XfceTasklist*"                                     style "panelbuttons"
+widget "*CPUFreq*Applet*"                                   style "theme-panel"
+widget "*indicator-applet*"                                 style "indicator"
+widget "*indicator-button*"                                 style "indicator"
+widget "*bookmark*GtkEntry"                                 style "panel-entry"
+widget "*fast-user-switch*"                                 style "theme-panel"
+widget "*.clock-applet-button.*"                            style "theme-panel-text"
+widget "xfwm4-tabwin*GtkButton*"                            style "xfwm-tabwin-button"
+widget "*Xfce*Panel*GtkProgressBar"                         style "theme-panel-progressbar"
+widget "*.gtk-combobox-popup-menu.*"                        style "menuitem-text-is-fg-color-workaround"
+widget "*.nautilus-extra-view-widget"                       style :highest "nautilus_location"
+
+widget_class "*<GtkLabel>"                                  style "text"
+widget_class "*<GtkCList>"                                  style "fg-is-text-color-workaround"
+widget_class "*<GtkListItem>*"                              style "fg-is-text-color-workaround"
+widget_class "*<EelEditableLabel>"                          style "fg-is-text-color-workaround"
+widget_class "*<GtkMenu>*<GtkLabel>"                        style "menu_text"
+widget_class "*<GtkNotebook>*<GtkLabel>"                    style "text"
+widget_class "*.<GtkComboBox>.<GtkCellView>"                style "text-is-fg-color-workaround"
+widget_class "*<GtkComboBox>*<GtkCellLayout>"               style "text"
+widget_class "*<GtkNotebook>*<GtkCellLayout>"               style "text"

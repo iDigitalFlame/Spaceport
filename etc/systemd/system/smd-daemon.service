@@ -1,0 +1,49 @@
+#!/usr/bin/false
+# SMD Startup Service Unit
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+[Unit]
+Description             = System Management Daemon
+
+[Service]
+Type                    = simple
+ExecStart               = /usr/lib/smd/libexec/smd-daemon
+KillSignal              = SIGINT
+PrivateTmp              = true
+KeyringMode             = private
+ProtectHome             = read-only
+ProtectClock            = false
+PrivateUsers            = false
+ProtectSystem           = full
+ReadWritePaths          = /opt/spaceport/var/cache/smd /var/cache/smd /opt/hydra /home/smd
+PrivateDevices          = false
+NoNewPrivileges         = true
+LockPersonality         = true
+RestrictRealtime        = true
+RestrictSUIDSGID        = true
+ProtectKernelLogs       = true
+RestrictNamespaces      = true
+ProtectControlGroups    = true
+ProtectKernelModules    = true
+ProtectKernelTunables   = false
+RestrictAddressFamilies = AF_INET AF_INET6 AF_NETLINK AF_UNIX
+
+[Install]
+WantedBy                = multi-user.target

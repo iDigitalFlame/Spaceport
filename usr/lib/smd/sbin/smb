@@ -1,0 +1,61 @@
+#!/usr/bin/bash
+# SMB Connect Sudo Wrapper
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+if [ $UID -ne 0 ]; then
+    printf "Only root can do this!\n"
+    exit 1
+fi
+if [ $# -ne 2 ]; then
+    printf "Invalid arguments!\n"
+    exit 1
+fi
+
+input=$(cat -)
+if [[ -z $input ]]; then
+    printf "Invalid input!\n"
+    exit 1
+fi
+
+user=$(echo $input | awk -F'\b' '{print $1}')
+domain=$(echo $input | awk -F'\b' '{print $2}')
+password=$(echo $input | awk -F'\b' '{print $3}')
+username=$(echo $input | awk -F'\b' '{print $4}')
+if [[ -z $user ]] || [[ -z $password ]] || [[ -z $username ]]; then
+    printf "Invalid input!\n"
+    exit 1
+fi
+if [ ! -d "$2" ]; then
+    printf "Mount path \"$2\" does not exist or is not a directory!\n"
+    exit 1
+fi
+
+export PASSWD=$password
+mount -t cifs "//$1" "$2" -o "vers=3.11,seal,resilienthandles,nosharesock,sec=ntlmsspi,user=${user},domain=${domain},workgroup=$(echo $domain | awk -F'.' '{print toupper($1)}'),uid=${username},gid=${username},file_mode=0750,dir_mode=0750"
+result=$?
+
+export PASSWD=""
+unset PASSWD
+user=""
+domain=""
+password=""
+username=""
+
+exit $result

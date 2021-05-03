@@ -1,0 +1,32 @@
+#!/usr/bin/bash
+# IPTables Pacman Wrapper
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+args=$@
+is_install=$(echo "$args" | grep -q '\-S'; echo $?)
+if [ $is_install -eq 0 ]; then
+    /usr/bin/mount -o remount,rw /
+fi
+
+/usr/bin/sg firewall-web -c "/usr/bin/pacman $args"; ret=$?
+if [ $ret -ne 0 ] && [ $is_install -eq 0 ] && [ -z $SYSBATCH ]; then
+    /usr/bin/mount -ro remount,ro / 2> /dev/null || /usr/bin/mount -Rro remount,ro /
+fi
+exit $ret

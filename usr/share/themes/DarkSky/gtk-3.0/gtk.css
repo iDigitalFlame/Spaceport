@@ -1,0 +1,89 @@
+/*
+ DarkSkyTheme
+    Dark black/gray and purple color scheme.
+    Edits by iDigitalFlame
+
+ Original Credits:
+    Simon Steinbeiß <simon.steinbeiss@univie.ac.at>
+    Joern Konopka <cldx3000@googlemail.com>
+    Georgi Karavasilev <motorslav@gmail.com>
+    David Barr <dpbarr@gmail.com>
+    Christian Medel (Elbullazul) <cmedelahumada@gmail.com>
+*/
+
+@define-color bg_color #171717;
+@define-color fg_color #CECECE;
+@define-color base_color #000000;
+@define-color text_color #FFFFFF;
+@define-color dark_bg_color #1F1F1F;
+@define-color dark_fg_color #CECECE;
+@define-color tooltip_fg_color #CECECE;
+@define-color tooltip_bg_color #1F1F1F;
+@define-color selected_bg_color #7D0BAB;
+@define-color selected_fg_color #CECECE;
+
+@define-color theme_bg_color @bg_color;
+@define-color theme_fg_color @fg_color;
+@define-color theme_base_color @base_color;
+@define-color theme_text_color @text_color;
+@define-color theme_selected_bg_color @selected_bg_color;
+@define-color theme_selected_fg_color @selected_fg_color;
+@define-color theme_tooltip_bg_color @tooltip_bg_color;
+@define-color theme_tooltip_fg_color @tooltip_fg_color;
+
+@define-color light_shadow #FFFFFF;
+@define-color dark_shadow #000000;
+
+@define-color link_color #224BA0;
+@define-color error_color #CC0000;
+@define-color success_color #53D013;
+@define-color warning_color #F57600;
+@define-color info_fg_color rgb(40, 40, 40);
+@define-color info_bg_color rgb(97, 107, 117);
+@define-color error_bg_color rgb(255, 25, 25);
+@define-color error_fg_color rgb(255, 255, 255);
+@define-color warning_fg_color rgb(77, 77, 77);
+@define-color warning_bg_color rgb(222, 109, 38);
+@define-color question_bg_color rgb(255, 156, 25);
+@define-color question_fg_color rgb(255, 255, 255);
+
+@define-color osd_fg @dark_fg_color;
+@define-color osd_base @dark_bg_color;
+@define-color osd_bg alpha(@osd_base, 0.8);
+
+@define-color menu_bg_color @bg_color;
+@define-color menu_fg_color @dark_fg_color;
+@define-color panel_bg_color @dark_bg_color;
+@define-color panel_fg_color @dark_fg_color;
+@define-color menubar_bg_color @dark_bg_color;
+@define-color menubar_fg_color @dark_fg_color;
+@define-color toolbar_bg_color @dark_bg_color;
+@define-color toolbar_fg_color @dark_fg_color;
+@define-color titlebar_bg_color @dark_bg_color;
+@define-color titlebar_fg_color @dark_fg_color;
+
+@define-color wm_bg @titlebar_bg_color;
+@define-color wm_icons_focused_prelight @selected_bg_color;
+@define-color wm_icons_unfocused_prelight @selected_bg_color;
+@define-color wm_icons_focused_pressed shade(@selected_bg_color, 0.8);
+@define-color wm_icons_unfocused_pressed shade(@selected_bg_color, 0.8);
+@define-color wm_title_focused mix(@titlebar_fg_color, @titlebar_bg_color, 0.1);
+@define-color wm_icons_focused mix(@titlebar_fg_color, @titlebar_bg_color, 0.1);
+@define-color wm_icons_unfocused mix(@titlebar_fg_color, @titlebar_bg_color, 0.4);
+@define-color wm_title_unfocused mix(@titlebar_fg_color, @titlebar_bg_color, 0.4);
+@define-color wm_border_focused mix(shade(@titlebar_bg_color, 0.7), @titlebar_fg_color, 0.21);
+@define-color wm_border_unfocused mix(shade(@titlebar_bg_color, 0.7), @titlebar_fg_color, 0.12);
+
+@define-color progressbar_color #7D0BAB;
+
+@define-color terminal_text_color @text_color;
+
+@define-color scrollnorm_bg_color shade(@theme_bg_color, 1.25);
+@define-color scrollhover_bg_color shade(@theme_bg_color, 1.4);
+@define-color scrollpress_bg_color shade(@theme_bg_color, 1.65);
+@define-color scrollthrough_bg_color shade(@theme_bg_color, 0.75);
+
+@import url("gtk-widgets.css");
+@import url("gtk-assets.css");
+@import url("gtk-granite.css");
+@import url("gtk-xfce.css");

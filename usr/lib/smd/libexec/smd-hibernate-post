@@ -1,0 +1,26 @@
+#!/usr/bin/bash
+# smd-hibernate-post
+#  Script used by systemd after the system resumes from hibernate and starts the post-hibernate process.
+#  Should only be called by systemd. Exit code is always 0.
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+/usr/bin/xset -display :1 dpms force on 2> /dev/null
+/usr/lib/smd/libexec/smd-message -u hibernate -p '{"type": 1}'
+exit 0

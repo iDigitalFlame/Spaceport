@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+pip-log.txt
+pip-delete-this-directory.txt
+*.log
+.python-version
+__pypackages__/
+.prof
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+etc/udev/rules.d/80-network.rules

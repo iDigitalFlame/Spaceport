@@ -1,0 +1,36 @@
+#!/usr/bin/bash
+# smd-locker
+#  Script used by xautolock to attempt to lock the system screen.
+#
+# Usage:
+#  smd-locker [non-lock]
+#
+#  Discouraged for general usage. The only paramater may be specified to indicate that this is not a lock screen
+#  Trigger, such as the uses for the lid closing action.
+#  If a user is required to lock the system manually, the appropriate command would be to use "powerctl lock [-f]".
+#  Exit code is always 0.
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+if [ $# -eq 1 ]; then
+    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 1}'
+else
+    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 0}'
+fi
+exit 0

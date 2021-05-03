@@ -1,0 +1,27 @@
+{
+    "browser": {
+        "show_home_button": false
+    },
+    "sync_promo": {
+        "show_on_first_run_allowed": false
+    },
+    "bookmark_bar": {
+        "show_on_all_tabs": false
+    },
+    "distribution": {
+        "import_history": false,
+        "verbose_logging": false,
+        "import_home_page": false,
+        "import_bookmarks": false,
+        "make_chrome_default": false,
+        "import_search_engine": false,
+        "make_chrome_default_for_user": false,
+        "do_not_register_for_update_launch": true
+    },
+    "EnableMediaRouter": false,
+    "DefaultWebUsbGuardSetting": 2,
+    "WPADQuickCheckEnabled": false,
+    "BackgroundModeEnabled": false,
+    "DefaultWebBluetoothGuardSetting": 2,
+    "NativeMessagingUserLevelHosts": false
+}

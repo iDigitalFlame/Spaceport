@@ -1,0 +1,134 @@
+#!/usr/bin/python3
+# smd-message
+#  Allows processes and users to communicate to the System Management Daemon through commands.
+#
+# Usage:
+#  smd-message [-s socket_file] [-t (int)wait_seconds] [-t (string)wait_header] [-p (string)json_payload] header
+#
+#  Attempts to connect to the System Management Daemon and send the message specified.
+#  If the parameter "-t" is used, "-w" is implied and will be "0" (forever) by default, which waits until a response
+#  from the daemon matching the header is received.
+#  This command will also output the header and JSON payload (if included) when a message is received.
+#
+# Exit Codes:
+#  0 - Completion/Received message response (if waiting)
+#  1 - Error in parameters or syntax
+#  2 - The wait timeout expired (if waiting)
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+import sys
+
+sys.path.insert(0, "/usr/lib/smd")
+
+from lib.util import print_error
+from argparse import ArgumentParser
+from lib.structs.message import send_message
+from lib.constants import SOCKET, HOOK_TRANSLATIONS
+
+
+if __name__ == "__main__":
+    parameters = ArgumentParser(description="System Management Daemon Messager")
+    parameters.add_argument(
+        "header",
+        type=str,
+        help="Message header to send.",
+        action="store",
+        metavar="header",
+    )
+    parameters.add_argument(
+        "-p",
+        type=str,
+        dest="payload",
+        help="Send a message to the daemon with this JSON payload.",
+        action="store",
+        metavar="payload",
+        required=False,
+    )
+    parameters.add_argument(
+        "-w",
+        type=str,
+        dest="wait",
+        help="Send a message to the daemon and wait for this response header.",
+        action="store",
+        default=None,
+        required=False,
+    )
+    parameters.add_argument(
+        "-t",
+        type=int,
+        dest="timeout",
+        help="Specify wait time (in seconds) to wait (implies -w).",
+        action="store",
+        default=0,
+        required=False,
+    )
+    parameters.add_argument(
+        "-s",
+        type=str,
+        dest="socket",
+        help="Specify socket to connect to.",
+        action="store",
+        default=SOCKET,
+        required=False,
+    )
+    parameters.add_argument(
+        "-u",
+        action="store_true",
+        default=False,
+        required=False,
+        dest="translate",
+        help="Translate hook header before sending.",
+    )
+    arguments = parameters.parse_args()
+    if arguments.timeout > 0 and arguments.wait is None:
+        print_error('You must specify to wait with "-w"!', None, True)
+    if arguments.translate:
+        if arguments.header.lower() in HOOK_TRANSLATIONS:
+            arguments.header = HOOK_TRANSLATIONS[arguments.header.lower()]
+        else:
+            print_error(
+                f'Header name "{arguments.header}" does not resolve to a valid header!', None, True
+            )
+    try:
+        arguments.header = int(arguments.header)
+    except ValueError as err:
+        print_error("Header must be an integer!", err, True)
+    try:
+        wait = arguments.wait
+        if isinstance(wait, str) and "," in wait:
+            wait = [w.strip() for w in wait.split(",")]
+        results = send_message(
+            arguments.socket,
+            arguments.header,
+            wait,
+            arguments.timeout,
+            arguments.payload,
+        )
+    except Exception as err:
+        print_error(str(err), err, True)
+    if arguments.wait is not None:
+        if results is not None:
+            if len(results) > 0:
+                print(results)
+            else:
+                print(results.get_header())
+            sys.exit(0)
+        sys.exit(2)
+    sys.exit(0)

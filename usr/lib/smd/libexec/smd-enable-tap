@@ -1,0 +1,41 @@
+#!/usr/bin/bash
+# smd-enable-tap
+#  Uses grep and for loops to enable Tap to Click on all eligible input devices.
+#
+# Usage:
+#  smd-enable-tap
+#
+#  Does not accept any parameters. Will enable Tap to Click on all supported devices.
+#  Exit code is always 0.
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+for devid in $(xinput list --id-only); do
+    devtap=$(xinput list-props $devid | grep "Tapping Enabled (")
+    if [ ! -z "$devtap" ]; then
+        devtid=$(echo $devtap | awk '{print $4}' | sed -e 's/(//g' | sed -e 's/)//g' | sed -e 's/://g')
+        xinput set-prop "$devid" "$devtid" 1
+    fi
+    devtap=$(xinput list-props $devid | grep "Tapping Drag Enabled (")
+    if [ ! -z "$devtap" ]; then
+        devtid=$(echo $devtap | awk '{print $5}' | sed -e 's/(//g' | sed -e 's/)//g' | sed -e 's/://g')
+        xinput set-prop "$devid" "$devtid" 0
+    fi
+done
+exit 0

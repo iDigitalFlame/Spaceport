@@ -1,0 +1,36 @@
+# Sudo Configuration
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/umount, /usr/bin/sync, /usr/lib/smd/sbin/smb, /usr/bin/netstat
+Cmnd_Alias  SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/reboot, /usr/bin/poweroff
+
+Defaults    env_keep += "LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET"
+Defaults    env_keep += "HOME"
+Defaults    env_keep += "XDG_SESSION_COOKIE"
+Defaults    tty_tickets
+Defaults    timestamp_timeout = 1
+Defaults    editor = /usr/bin/rnano
+Defaults    secure_path = "/usr/lib/smd/sbin:/usr/bin"
+Defaults    !pwfeedback
+Defaults    insults
+
+dij ALL=(root) ALL
+dij ALL=(root) NOPASSWD: SYSTEM
+dij ALL=(root) NOPASSWD: UTILITIES

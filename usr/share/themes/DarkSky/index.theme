@@ -1,0 +1,23 @@
+# DarkSkyTheme
+#   Dark black/gray and purple color scheme.
+#   Edits by iDigitalFlame
+#
+# Original Credits:
+#   Simon Steinbeiß <simon.steinbeiss@univie.ac.at>
+#   Joern Konopka <cldx3000@googlemail.com>
+#   Georgi Karavasilev <motorslav@gmail.com>
+#   David Barr <dpbarr@gmail.com>
+#   Christian Medel (Elbullazul) <cmedelahumada@gmail.com>
+#
+
+[Desktop Entry]
+Type            = X-GNOME-Metatheme
+Name            = DarkSky
+Comment         = Dark black/gray and purple color scheme
+Encoding        = UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme        = DarkSky
+IconTheme       = DarkSky
+CursorTheme     = DarkSky
+ButtonLayout    = menu:

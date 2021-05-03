@@ -1,0 +1,51 @@
+#!/usr/bin/bash
+# Preforms basic system information display checks.
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+pause() {
+    printf "Press ENTER to continue.."
+    read -s
+    printf "\n"
+}
+
+if [ $UID -ne 0 ]; then
+    printf "Only root can do this!\n"
+    exit 1
+fi
+
+uname -a
+pause
+systemctl --failed
+pause
+ifconfig
+pause
+netstat -panut
+pause
+ps xfua
+pause
+df -h
+pause
+mount
+pause
+pacman -Syy 1> /dev/null
+printf "Orphaned Packages Found:\n"
+pacman -Qtdq
+printf "Done!\n"
+exit 0
