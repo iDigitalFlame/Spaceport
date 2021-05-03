@@ -139,6 +139,7 @@ pacman-contrib
 pam-u2f
 patch
 pciutils
+pcsc-tools
 perl
 picom
 pkgconf
