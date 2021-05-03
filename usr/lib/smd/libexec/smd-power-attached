@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# smd-power-attached
+#  Script used by udev to inform the System Management Daemon that the power adapter was attached.
+#  Should only be called by systemd. Exit code is always 0.
+
+/usr/lib/smd/libexec/smd-message com.spaceport.power -p '{ "type": "power", "status": "attached" }'
+exit 0

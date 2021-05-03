@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# smd-startup
+#  Simple startup script to run one off commands
+#  All commands listed here must have a reason comment.
+
+# MatebookXPro wireless driver powersave fix
+# The kernel can't seem to rename it, but udev sees it renamed so the udev rule fails.
+/usr/bin/iw dev wlp3s0 set power_save on
+
+exit 0

@@ -1,0 +1,19 @@
+# System Management Daemon - Spaceport
+# iDigitalFlame 2018
+#
+# Sudoers Configuration.
+
+Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/smb-mount, /usr/bin/umount, /usr/bin/sync
+Cmnd_Alias  SYSTEM = /usr/bin/reboot, /usr/bin/systemctl hibernate, /usr/bin/poweroff
+
+Defaults    env_keep += "LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET"
+Defaults    env_keep += "HOME"
+Defaults    env_keep += "XDG_SESSION_COOKIE"
+Defaults    tty_tickets
+Defaults    timestamp_timeout = 1
+Defaults    editor = /usr/bin/rnano
+Defaults    secure_path = "/usr/lib/smd/sbin:/usr/bin"
+
+iDigitalFlame ALL=(ALL) ALL
+iDigitalFlame ALL=(ALL) NOPASSWD: SYSTEM
+iDigitalFlame ALL=(ALL) NOPASSWD: UTILITIES

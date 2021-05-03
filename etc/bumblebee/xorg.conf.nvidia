@@ -1,0 +1,22 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# NVIDIA Xorg Sideload Configuration.
+
+Section "ServerLayout"
+    Identifier  "Layout0"
+    Option      "AutoAddDevices"    "false"
+    Option      "AutoAddGPU"        "false"
+EndSection
+
+Section "Device"
+    Identifier  "DiscreteNvidia"
+    Driver      "nvidia"
+    VendorName  "NVIDIA Corporation"
+    BusID       "PCI:01:00:0"
+    Option      "ProbeAllGpus"      "false"
+    Option      "NoLogo"            "true"
+    Option      "UseEDID"           "false"
+    Option      "UseDisplayDevice"  "none"
+EndSection

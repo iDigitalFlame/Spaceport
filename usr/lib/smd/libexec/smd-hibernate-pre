@@ -1,0 +1,14 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# smd-hibernate-pre
+#  Script used by systemd before the system hibernates and starts the pre-hibernate process.
+#  Should only be called by systemd. Exit code is always 0.
+
+/usr/lib/smd/libexec/smd-reset-display noalert 2> /dev/null
+/usr/lib/smd/libexec/smd-message com.spaceport.sleep -p '{ "state": "pre"}'
+/usr/bin/cpupower frequency-set -u 4.0GHz
+/usr/bin/cpupower frequency-set -d 400MHz
+/usr/bin/cpupower frequency-set -g performance
+exit 0

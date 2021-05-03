@@ -1,0 +1,7 @@
+tmpfs                                       /dev/shm        tmpfs       rw,nodev,noexec,nosuid,noatime                                                                                                  0 0
+hugetlbfs                                   /dev/hugepages  hugetlbfs   rw,noexec,nosuid,noatime,mode=1770,gid=78                                                                                       0 0
+UUID=C384-0ABC                              /boot           vfat        rw,nodev,noexec,nosuid,noatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro    0 2
+UUID=4c9aed4d-c98f-4291-bba0-f4715469759c   none            swap        defaults,pri=-2                                                                                                                 0 0
+UUID=e491ca9e-a13a-41b0-8836-82a4820289f8   /               btrfs       rw,noatime,compress=lzo,ssd,space_cache,subvolid=5,subvol=/                                                                     0 0
+UUID=abdccbaf-d2bf-41cd-b325-03f2db72e61c   /home           btrfs       rw,nodev,nosuid,noatime,compress=lzo,ssd,space_cache,subvolid=5,subvol=/                                                        0 0
+UUID=b7fc0fbe-9c0a-4eae-9785-4dfa89acd8ae   /opt/hydra      ext4        rw,nodev,noexec,nosuid,noatime                                                                                                  0 0

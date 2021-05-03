@@ -1,0 +1,29 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# smd-convert-picture
+#  Converts a picture given in the arguments to a cache file to be used for the lockscreen.
+#  Resizes and applies the gradient for the lockscreen.
+#
+# Usage:
+#  smd-convert-picture <resolution> <source> <destination>
+#
+# Exit Codes:
+#  0 - Conversion completed.
+#  1 - Permissions or arguments errors.
+
+if [ $# -ne 3 ]; then
+    printf "$0 <resolution> <source> <destination>\n"
+    exit 1
+fi
+
+hx=$(($(echo "$1" | awk -F'x' '{print $1}')/2))
+hy=$(($(echo "$1" | awk -F'x' '{print $2}')/2))
+if [ -e "/var/lib/AccountsService/icons/$USER" ]; then
+    cd /
+    convert -quality 100 -resize "$1!" -gravity center -fill white -draw "ellipse $((hx)),$((hy)) 125,125 0,360" -draw "image Over 0,0,200,200 var/lib/AccountsService/icons/$USER" "$2" "$3"
+else
+    convert -quality 100 -resize "$1!" -gravity center -fill white -draw "ellipse $((hx)),$((hy)) 125,125 0,360" "$2" "$3"
+fi
+exit 0

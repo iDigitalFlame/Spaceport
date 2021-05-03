@@ -1,0 +1,5 @@
+{
+    "NAME_BASE": "spaceport",
+    "LOG_LEVEL": "INFO",
+    "LOG_PAYLOAD": true
+}

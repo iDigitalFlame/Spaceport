@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Pacman wrapper for iptables.
+
+_args="$@"
+/usr/bin/sg firewall-web -c "/usr/bin/pacman $_args"

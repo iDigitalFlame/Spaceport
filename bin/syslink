@@ -1,0 +1,39 @@
+#!/usr/bin/bash
+# Wrapper and permissions fix-er for "relink".
+# iDigitalFlame
+
+source "/etc/sysconfig.conf" 2> /dev/null
+if [ $? -ne 0 ]; then
+    printf 'Could not locate or source "/etc/sysconfig.conf"!\n'
+    exit 1
+fi
+if [ -z "$SYSCONFIG" ]; then
+    printf 'Could not find System Configuration directory!\n'
+    exit 1
+fi
+if ! [ -d "$SYSCONFIG" ]; then
+    printf "System Configuration directory \"$SYSCONFIG\" does not exist!\n"
+    exit 1
+fi
+SYSCONFIG=${SYSCONFIG%/}
+
+if [ $UID -ne 0 ]; then
+    printf "Only root can do this!\n"
+    exit 1
+fi
+
+relink "$SYSCONFIG" /
+
+pacman -Qeq 1> "${SYSCONFIG}/packages.md"
+cp /etc/fstab "${SYSCONFIG}/etc/fstab.nlk"
+
+if [ -d "/etc/syscheck.d" ]; then
+    for s in $(ls /etc/syscheck.d/*.sh); do
+        source "$s"
+    done
+fi
+
+printf "Broken Links Found:\n"
+find / -xtype l -xdev 2> /dev/null | grep -v "/proc" | grep -v "/tmp" | grep -v "/run"
+printf "Done!\n"
+exit 0

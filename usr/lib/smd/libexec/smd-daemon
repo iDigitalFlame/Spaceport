@@ -1,0 +1,100 @@
+#!/usr/bin/python3
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# smd-daemon
+#  Starts the primary processes and threads for the System Management Daemon
+#
+# Usage:
+#  smd-daemon [-s socket_file] [-l log_file] [-n (int)log_level]
+#
+#  Starts the system management daemon. Recommended to be only used by systemd as root.
+#  The "-s" parameter will specify the socket file that is used by the daemon. Recommenced to be used only if more than
+#  one instance is running to prevent deadlock issues. The "-l" and "-n" parameters specify options on how the daemon
+#  will log. The "-l" parameter is a file path, while the "-n" parameter is a log level specified as an integer.
+#
+# Exit Codes:
+#  0 - Completion without exceptions or errors.
+#  1 - Permissions error or exception occurred while running the daemon.
+
+import sys
+
+sys.path.insert(0, "/usr/lib/smd")
+
+from os import getuid
+from lib.server import Server
+from traceback import format_exc
+from argparse import ArgumentParser
+from lib.constants import LOG_FILE_SERVER, LOG_LEVEL, LOG_LEVELS, SOCKET, CONFIG_SERVER
+
+
+if __name__ == "__main__":
+    parameters = ArgumentParser(description="System Management Daemon Server")
+    parameters.add_argument(
+        "-s",
+        required=False,
+        type=str,
+        action="store",
+        metavar="socket",
+        default=SOCKET,
+        dest="socket",
+        help="The server socket to host on.",
+    )
+    parameters.add_argument(
+        "-l",
+        required=False,
+        type=str,
+        action="store",
+        metavar="log_file",
+        dest="log_file",
+        help="The log file to output to.",
+        default=LOG_FILE_SERVER,
+    )
+    parameters.add_argument(
+        "-n",
+        required=False,
+        type=str,
+        action="store",
+        metavar="log_level",
+        dest="log_level",
+        help="The log level for logging.",
+        default=LOG_LEVEL.lower(),
+        choices=LOG_LEVELS.keys(),
+    )
+    parameters.add_argument(
+        "-c",
+        required=False,
+        type=str,
+        action="store",
+        metavar="config",
+        default=CONFIG_SERVER,
+        dest="config",
+        help="The path to the system config file.",
+    )
+    arguments = parameters.parse_args()
+    if getuid() != 0:
+        print("Only root may run the daemon!", file=sys.stderr)
+        sys.exit(1)
+    try:
+        server = Server(
+            arguments.config,
+            arguments.socket,
+            LOG_LEVELS[arguments.log_level],
+            arguments.log_file,
+        )
+    except Exception:
+        print(format_exc(limit=2), file=sys.stderr)
+        sys.exit(1)
+    try:
+        server.start()
+        server.wait()
+    except KeyboardInterrupt:
+        server.stop()
+        del server
+    except Exception:
+        if server is not None:
+            server.stop()
+            del server
+        print(format_exc(limit=2), file=sys.stderr)
+        sys.exit(1)
+    sys.exit(0)

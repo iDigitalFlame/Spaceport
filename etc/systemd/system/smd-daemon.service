@@ -1,0 +1,16 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Systemd Unit file for the Daemon process.
+
+[Unit]
+Description = System Management Daemon
+
+[Service]
+Type        = simple
+ExecStart   = /usr/lib/smd/libexec/smd-daemon
+KillSignal  = SIGINT
+
+[Install]
+WantedBy    = multi-user.target

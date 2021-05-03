@@ -1,0 +1,9 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Keyboard Bindings Configuration.
+
+evdev:atkbd:dmi:*
+    KEYBOARD_KEY_38=leftmeta
+    KEYBOARD_KEY_DB=leftalt

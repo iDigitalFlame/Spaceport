@@ -1,0 +1,7 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Udev Rules file for PCI Devices.
+
+ACTION=="add", SUBSYSTEM=="pci", ATTR{power/control}="auto"

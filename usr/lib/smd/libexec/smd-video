@@ -1,0 +1,16 @@
+#!/usr/bin/bash
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# smd-video
+#  Script used by udev to inform the System Management Daemon that a video adpater was attached/detached.
+#  Should only be called by udev. Exit code is always 0.
+
+if [ $# -ge 1 ]; then
+    /usr/lib/smd/libexec/smd-message com.spaceport.monitor -p "{\"args\": \"$1\"}"
+else
+    /usr/lib/smd/libexec/smd-message com.spaceport.monitor
+fi
+
+/usr/bin/xrandr --dpi 125x125
+exit 0

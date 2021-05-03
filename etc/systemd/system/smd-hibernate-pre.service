@@ -1,0 +1,16 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Systemd Unit file for the System Management Daemon Hibernate Pre Trigger.
+
+[Unit]
+Description = System Management Daemon Pre-Hibernate Trigger
+Before      = sleep.target
+
+[Service]
+Type        = forking
+ExecStart   = /usr/lib/smd/libexec/smd-hibernate-pre
+
+[Install]
+WantedBy    = sleep.target

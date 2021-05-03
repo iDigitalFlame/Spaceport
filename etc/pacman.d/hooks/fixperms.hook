@@ -1,0 +1,17 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Update file permissions after updates Pacman Hook.
+
+[Trigger]
+Type        = Package
+Target      = *
+Operation   = Install
+Operation   = Upgrade
+Operation   = Remove
+
+[Action]
+Description = Fixing permissions for system files..
+When        = PostTransaction
+Exec        = /usr/bin/syslink

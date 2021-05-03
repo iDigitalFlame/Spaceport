@@ -1,0 +1,15 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Systemd Unit file for any offshoot startup processes.
+
+[Unit]
+Description = System Management Daemon Startup Service
+
+[Service]
+Type        = simple
+ExecStart   = /usr/lib/smd/libexec/smd-startup
+
+[Install]
+WantedBy    = multi-user.target

@@ -1,0 +1,16 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Firefox Privacy Pacman Hook.
+
+[Trigger]
+Type        = Package
+Target      = firefox
+Operation   = Install
+Operation   = Upgrade
+
+[Action]
+Description = Applying Firefox hardening..
+When        = PostTransaction
+Exec        = /usr/bin/bash -c "rm -f /usr/lib/firefox/browser/features/*.xpi"

@@ -1,0 +1,9 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Udev Rules file for Power Supply Devices.
+
+SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/lib/smd/libexec/smd-power-detached"
+SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/usr/lib/smd/libexec/smd-power-attached"
+SUBSYSTEM=="power_supply", ATTR{status}=="Discharging", ATTR{capacity}=="[0-5]", RUN+="/usr/bin/systemctl hibernate"

@@ -1,0 +1,15 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Boot Update Pacman Hook.
+
+[Trigger]
+Type        = Package
+Target      = systemd
+Operation   = Upgrade
+
+[Action]
+Description = Updating systemd-boot..
+When        = PostTransaction
+Exec        = /usr/bin/bootctl update

@@ -1,0 +1,7 @@
+#!/usr/bin/false
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# Udev Rules file for Video Devices.
+
+KERNEL=="card0", SUBSYSTEM=="drm", RUN+="/usr/lib/smd/libexec/smd-video"

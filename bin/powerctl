@@ -1,0 +1,196 @@
+#!/usr/bin/python3
+# System Management Daemon - Spaceport
+# iDigitalFlame
+#
+# powerctl
+#  Alows users to interact with the System Management Daemon to change Power and System settings.
+#
+# Usage:
+# powerctl [-S socket] <module> [-h] [module_options]
+#
+# This utility loads up the System Management Daemon modules and allows specific actions on each module.
+# Each module may have seperate parameters that can be queried by using the "-h" flag when calling a module.
+# The only default parameter supported by powerctl is the "-S" flag, which accepts a file path to be used as the
+# UNIX socket for the System Management Daemon.
+#
+# Exit Codes:
+#  0 - Completion without exceptions or errors.
+#  1 - Permissions issue, incorrect arguments used or error in command specified.
+
+import sys
+
+sys.path.insert(0, "/usr/lib/smd")
+
+from os import listdir
+from os.path import basename
+from traceback import format_exc
+from lib.util import print_error
+from argparse import ArgumentParser
+from importlib import import_module
+from lib.loader import try_get_attr
+from lib.constants import (
+    SOCKET,
+    DIRECTORY_POWERCTL,
+    NAME_POWERCTL,
+    VERSION,
+    NAME_BASE,
+    NAME_CLIENT,
+    NAME_SERVER,
+    EMPTY,
+)
+
+
+def _powerctl():
+    parameters = ArgumentParser(description="System Power Manager")
+    modules = _load_modules(parameters, DIRECTORY_POWERCTL)
+    try:
+        base = basename(__file__).lower()
+    except OSError:
+        base = None
+    parser = parameters
+    if base != NAME_POWERCTL:
+        if "ctl" in base:
+            base = base.replace("ctl", EMPTY)
+        if base in modules:
+            parser = modules[base]
+    del base
+    parser.add_argument(
+        "-S",
+        type=str,
+        action="store",
+        default=SOCKET,
+        dest="socket",
+        metavar="socket",
+        required=False,
+        help="Specify server socket to use for communication.",
+    )
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        default=False,
+        dest="version",
+        required=False,
+        help="Show version information.",
+    )
+    arguments = parser.parse_args()
+    if arguments.version:
+        print(
+            "System Management Daemon (%s)\n- iDigitalFlame ((c) 2018 - 2019)\n\nSystem: %s (%s, %s)"
+            % (VERSION, NAME_BASE, NAME_SERVER, NAME_CLIENT)
+        )
+        sys.exit(0)
+    functions = None
+    if (
+        "subs" in arguments
+        and isinstance(arguments.subs, dict)
+        and len(arguments.subs) > 0
+    ):
+        functions = list()
+        for name, func in arguments.subs.items():
+            try:
+                if (
+                    bool(getattr(arguments, name))
+                    and callable(func)
+                    and func not in functions
+                ):
+                    functions.append(func)
+            except AttributeError:
+                pass
+    if isinstance(functions, list) and len(functions) > 0:
+        for func in functions:
+            try:
+                func(arguments)
+            except Exception as err:
+                print("Error occurred in processing request!", file=sys.stderr)
+                print(format_exc(), file=sys.stderr)
+                sys.exit(1)
+    elif "func" in arguments and callable(arguments.func):
+        try:
+            arguments.func(arguments)
+        except Exception as err:
+            print("Error occurred in processing request!", file=sys.stderr)
+            print(format_exc(), file=sys.stderr)
+            sys.exit(1)
+    else:
+        parameters.print_help()
+        sys.exit(1)
+    del parser
+    del modules
+    del functions
+    del arguments
+    del parameters
+    sys.exit(0)
+
+
+def _load_modules(parser, directory):
+    try:
+        modules = listdir(directory)
+    except OSError as err:
+        print_error(
+            'Attempting to load modules from directory "%s" raised an exception!'
+            % directory,
+            err,
+            True,
+        )
+    names = dict()
+    parsers = parser.add_subparsers(title="System Power Management Modules")
+    for module in modules:
+        if ".py" not in module:
+            continue
+        name = module.replace(".py", EMPTY).lower()
+        try:
+            instance = import_module("lib.powerctl.%s" % name)
+        except Exception as err:
+            print_error(
+                'Attempting to load module "%s" raised an exception!' % name, err, False
+            )
+        else:
+            description = try_get_attr(instance, "DESCRIPTION", True)
+            if not isinstance(description, str):
+                description = "%s Power Module" % name.capitalize()
+            args = try_get_attr(instance, "ARGS", True)
+            func = try_get_attr(instance, "DEFAULT", False)
+            if not callable(func):
+                print(
+                    'Could not load module "%s", the "default" function does not exist!'
+                    % name,
+                    file=sys.stderr,
+                )
+            else:
+                subs = dict()
+                subs_praser = parsers.add_parser(name, description=description)
+                if isinstance(args, list):
+                    for arg in args:
+                        subs_praser.add_argument(arg[0], **arg[1])
+                        if len(arg) == 3:
+                            arg_func = arg[2]
+                            if isinstance(arg_func, str):
+                                arg_func = try_get_attr(instance, arg_func, False)
+                            if callable(arg_func):
+                                if "dest" in arg[1]:
+                                    subs[arg[1]["dest"]] = arg_func
+                                elif "metavar" in arg[1]:
+                                    subs[arg[1]["metavar"]] = arg_func
+                                else:
+                                    subs[arg[0].replace("-", EMPTY)] = arg_func
+                            del arg_func
+                    del args
+                subs_praser.set_defaults(func=func, subs=subs)
+                names[name] = subs_praser
+                del subs
+                del func
+                del subs_praser
+            del instance
+            del description
+        finally:
+            del name
+    lister = parsers.add_parser("modules", description="Loaded Modules List")
+    lister.set_defaults(func=lambda null: print("\n".join(names.keys())))
+    del lister
+    del modules
+    del parsers
+    return names
+
+
+if __name__ == "__main__":
+    _powerctl()
