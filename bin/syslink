@@ -41,8 +41,9 @@ fi
 
 relink "$SYSCONFIG" /
 
-pacman -Qeq 1> "${SYSCONFIG}/packages.md"
 cp /etc/fstab "${SYSCONFIG}/etc/fstab.nlk"
+pacman -Qeqn 1> "${SYSCONFIG}/packages.md"
+pacman -Qeqm 1> "${SYSCONFIG}/packages-aur.md"
 systemctl list-unit-files | grep 'enabled' | grep -v 'enabled-runtime' | awk '{print $1}' 1> "${SYSCONFIG}/units.md"
 systemctl list-units | grep '@.' | grep -vE 'dead|exited'| awk '{print $1}' | grep -vE 'getty|user|blockdev' | grep '@.' 1> "${SYSCONFIG}/indirect.md"
 

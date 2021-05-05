@@ -1061,80 +1061,8 @@ class HydraServer(object):
         self.running = False
         self.dns_server = None
         self.web_server = None
-        self.file_server = None
         self.token_server = None
         self.scheduler = scheduler(timefunc=time, delayfunc=sleep)
-
-    def stop(self, server):
-        server.debug("HYDRA: Attempting to stop services and free resources..")
-        try:
-            stop(self.dns_server)
-            del self.dns_server
-        except AttributeError:
-            pass
-        try:
-            stop(self.web_server)
-            del self.web_server
-        except AttributeError:
-            pass
-        try:
-            stop(self.file_server)
-            del self.file_server
-        except AttributeError:
-            pass
-        try:
-            stop(self.token_server)
-            del self.token_server
-        except AttributeError:
-            pass
-        for vm in list(self.vms.values()):
-            try:
-                vm._stop(self, server, force=True)
-                vm.write()
-            except HydraError as err:
-                server.warning(
-                    f"HYDRA: VM({self.vmid}) Attempting to stop VM raised an exception!",
-                    err=err,
-                )
-        self.vms.clear()
-        self.usbs.clear()
-        if self.running:
-            try:
-                run(
-                    ["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "down"],
-                    ignore_errors=False,
-                )
-            except OSError as err:
-                server.warning(
-                    "HYDRA: Attempting to remove internal bridge raised an exception!",
-                    err=err,
-                )
-            try:
-                run(
-                    ["/usr/bin/ip", "link", "del", "name", HYDRA_BRIDGE],
-                    ignore_errors=False,
-                )
-            except OSError as err:
-                server.warning(
-                    "HYDRA: Attempting to remove internal bridge raised an exception!",
-                    err=err,
-                )
-            try:
-                rmtree(DIRECTORY_HYDRA)
-            except OSError as err:
-                server.warning(
-                    "HYDRA: Attempting to working directory raised an exception!",
-                    err=err,
-                )
-            try:
-                write(HYDRA_RESERVE, "0\n", ignore_errors=False)
-            except OSError as err:
-                server.warning(
-                    "HYDRA: Attempting to clear reserved memory raised an exception!",
-                    err=err,
-                )
-        self.running = False
-        server.debug("HYDRA: Shutdown complete.")
 
     def start(self, server):
         if self.running:
@@ -1199,7 +1127,7 @@ class HydraServer(object):
                 "HYDRA: Attempting to setup interfaces and directories raised an exception!",
                 err=err,
             )
-            self.stop(server)
+            self.stop(server, True)
             raise HydraError(err)
         dns = HYDRA_DNS_CONFIG.format(
             ip=str(network[1]),
@@ -1224,7 +1152,7 @@ class HydraServer(object):
                 "HYDRA: Attempting to create DNS config file raised an exception!",
                 err=err,
             )
-            self.stop(server)
+            self.stop(server, True)
             raise HydraError(err)
         finally:
             del dns
@@ -1244,7 +1172,7 @@ class HydraServer(object):
                 "HYDRA: Attempting to create File server config file raised an exception!",
                 err=err,
             )
-            self.stop(server)
+            self.stop(server, True)
             raise HydraError(err)
         finally:
             del smb
@@ -1265,7 +1193,7 @@ class HydraServer(object):
                     "HYDRA: Attempting to start the DNS server raised an exception!",
                     err=err,
                 )
-                self.stop(server)
+                self.stop(server, True)
                 raise HydraError(err)
         else:
             server.warning(
@@ -1291,7 +1219,7 @@ class HydraServer(object):
                     "HYDRA: Attempting to start the Tokens server raised an exception!",
                     err=err,
                 )
-                self.stop(server)
+                self.stop(server, True)
                 raise HydraError(err)
         else:
             server.warning(
@@ -1309,7 +1237,7 @@ class HydraServer(object):
                     "HYDRA: Attempting to start the Web server raised an exception!",
                     err=err,
                 )
-                self.stop(server)
+                self.stop(server, True)
                 raise HydraError(err)
         else:
             server.warning(
@@ -1317,22 +1245,16 @@ class HydraServer(object):
             )
         if exists(HYDRA_EXEC_SMB):
             try:
-                self.file_server = Popen(
-                    [
-                        HYDRA_EXEC_SMB,
-                        "--foreground",
-                        "--no-process-group",
-                        f"--configfile={HYDRA_SMB_FILE}",
-                    ],
-                    stderr=DEVNULL,
-                    stdout=DEVNULL,
+                run(
+                    ["/usr/bin/systemctl", "start", "smd-hydra-smb.service"],
+                    ignore_errors=False,
                 )
-            except (OSError, SubprocessError) as err:
+            except OSError as err:
                 server.error(
                     "HYDRA: Attempting to start the File server raised an exception!",
                     err=err,
                 )
-                self.stop(server)
+                self.stop(server, True)
                 raise HydraError(err)
         else:
             server.warning(
@@ -1541,6 +1463,77 @@ class HydraServer(object):
         for id in active:
             self._disconnect_usb(server, vm, id)
         del active
+
+    def stop(self, server, force=False):
+        server.debug("HYDRA: Attempting to stop services and free resources..")
+        try:
+            stop(self.dns_server)
+            del self.dns_server
+        except AttributeError:
+            pass
+        try:
+            stop(self.web_server)
+            del self.web_server
+        except AttributeError:
+            pass
+        try:
+            stop(self.token_server)
+            del self.token_server
+        except AttributeError:
+            pass
+        run(["/usr/bin/systemctl", "stop", "smd-hydra-smb.service"], ignore_errors=True)
+        for vm in list(self.vms.values()):
+            try:
+                vm._stop(self, server, force=True)
+                vm.write()
+            except HydraError as err:
+                server.warning(
+                    f"HYDRA: VM({self.vmid}) Attempting to stop VM raised an exception!",
+                    err=err,
+                )
+        self.vms.clear()
+        self.usbs.clear()
+        if self.running or force:
+            try:
+                run(
+                    ["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "down"],
+                    ignore_errors=False,
+                )
+            except OSError as err:
+                if not force:
+                    server.warning(
+                        "HYDRA: Attempting to remove internal bridge raised an exception!",
+                        err=err,
+                    )
+            try:
+                run(
+                    ["/usr/bin/ip", "link", "del", "name", HYDRA_BRIDGE],
+                    ignore_errors=False,
+                )
+            except OSError as err:
+                if not force:
+                    server.warning(
+                        "HYDRA: Attempting to remove internal bridge raised an exception!",
+                        err=err,
+                    )
+        if self.running:
+            try:
+                write(HYDRA_RESERVE, "0\n", ignore_errors=False)
+            except OSError as err:
+                server.warning(
+                    "HYDRA: Attempting to clear reserved memory raised an exception!",
+                    err=err,
+                )
+        if isdir(DIRECTORY_HYDRA):
+            try:
+                rmtree(DIRECTORY_HYDRA)
+            except OSError as err:
+                server.warning(
+                    "HYDRA: Attempting to working directory raised an exception!",
+                    err=err,
+                )
+        self.running = False
+        server.debug("HYDRA: Shutdown complete.")
 
     def hibernate(self, server, message):
         if message.type != MESSAGE_TYPE_PRE:

@@ -19,7 +19,6 @@ chaotic-keyring
 chaotic-mirrorlist
 cifs-utils
 cmake
-cnijfilter-mg5300series
 coreutils
 cowsay
 cryptsetup
@@ -40,21 +39,12 @@ file
 filesystem
 findutils
 firefox
-firefox-auto-tab-discard
 firefox-decentraleyes
-firefox-extension-canvasblocker
-firefox-extension-foxyproxy
-firefox-extension-gnome-keyring-git
-firefox-extension-google-search-link-fix
 firefox-extension-https-everywhere
-firefox-extension-multi-account-containers
 firefox-extension-privacybadger
-firefox-extension-smart-referer
-firefox-extension-user-agent-switcher
 firefox-noscript
 firefox-temporary-containers
 firefox-ublock-origin
-flatery-icon-theme-git
 font-bh-ttf
 freerdp
 galculator
@@ -68,7 +58,6 @@ ghostscript
 git
 glibc
 gnome-keyring
-gnome-keyring-query
 go
 grep
 gtk-engines
@@ -87,7 +76,6 @@ iputils
 iw
 jq
 keepassxc
-korla-icon-theme
 leafpad
 less
 libgnome-keyring
@@ -125,7 +113,6 @@ nginx
 nm-connection-editor
 nmap
 noto-fonts-emoji
-novnc-git
 ntfs-3g
 onboard
 openbsd-netcat
@@ -139,14 +126,12 @@ pacman-contrib
 pam-u2f
 patch
 pciutils
-pcsc-tools
 perl
 picom
 pkgconf
 pngcrush
 polkit-gnome
 polybar
-powershell-bin
 procps-ng
 psmisc
 pulseaudio
@@ -170,7 +155,6 @@ shadow
 slack-desktop
 squid
 sudo
-surf
 sysfsutils
 systemd-sysvcompat
 tar
@@ -179,9 +163,7 @@ telegram-desktop
 texinfo
 thunar
 tigervnc
-touchegg
 ttf-roboto
-ttf-weather-icons
 tumbler
 ungoogled-chromium
 unrar
@@ -192,7 +174,6 @@ util-linux
 vi
 vimix-cursors
 vlc
-vscodium-bin
 vulkan-intel
 wget
 which

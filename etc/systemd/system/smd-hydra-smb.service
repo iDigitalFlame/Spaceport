@@ -1,0 +1,50 @@
+#!/usr/bin/false
+# SMD Hydra Samba Service Unit
+#  Split from smd-daemon.service to allow write privileges for Hydra while
+#  limiting the primary daemon access. Only to be started on-demand by Hydra.
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2021 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+[Unit]
+After                   = home.mount network.target smd-daemon.service
+Requires                = home.mount network.target smd-daemon.service
+Description             = Hydra SMB Daemon
+
+[Service]
+Type                    = notify
+PIDFile                 = /run/hydra/smbd.pid
+ExecStart               = /usr/bin/smbd -S --foreground --no-process-group --configfile=/var/run/smd/hydra/smb.conf
+ExecReload              = /usr/bin/kill -HUP $MAINPID
+PrivateTmp              = true
+KeyringMode             = private
+ProtectClock            = false
+PrivateUsers            = false
+ProtectSystem           = full
+ReadWritePaths          = /home
+PrivateDevices          = false
+NoNewPrivileges         = true
+LockPersonality         = true
+RestrictRealtime        = true
+RestrictSUIDSGID        = true
+ProtectKernelLogs       = true
+RestrictNamespaces      = true
+ProtectControlGroups    = true
+ProtectKernelModules    = true
+ProtectKernelTunables   = false
+RestrictAddressFamilies = AF_INET AF_NETLINK AF_UNIX
