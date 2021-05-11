@@ -45,7 +45,6 @@ firefox-extension-privacybadger
 firefox-noscript
 firefox-temporary-containers
 firefox-ublock-origin
-font-bh-ttf
 freerdp
 galculator
 gawk

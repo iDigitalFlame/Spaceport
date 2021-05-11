@@ -8,9 +8,10 @@ firefox-extension-multi-account-containers
 firefox-extension-smart-referer
 firefox-extension-user-agent-switcher
 flatery-icon-theme-git
+font-bh-ttf
 gnome-keyring-query
 korla-icon-theme
-novnc-git
+novnc
 powershell-bin
 surf
 touchegg
