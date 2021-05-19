@@ -195,7 +195,6 @@ xorg-xprop
 xorg-xrandr
 xorg-xset
 xorg-xsetroot
-xorg-xwayland
 yay
 zsh
 zsh-completions
