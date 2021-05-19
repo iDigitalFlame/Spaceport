@@ -85,6 +85,7 @@ lightcord-bin
 linux
 linux-firmware
 linux-lts
+linux-zen
 logrotate
 lsof
 lvm2
@@ -162,6 +163,7 @@ telegram-desktop
 texinfo
 thunar
 tigervnc
+touchegg
 ttf-roboto
 tumbler
 ungoogled-chromium
@@ -193,6 +195,7 @@ xorg-xprop
 xorg-xrandr
 xorg-xset
 xorg-xsetroot
+xorg-xwayland
 yay
 zsh
 zsh-completions

@@ -15,6 +15,5 @@ korla-icon-theme
 novnc
 powershell-bin
 surf
-touchegg
 ttf-weather-icons
 vscodium-bin
