@@ -26,6 +26,12 @@ fi
 
 BASE_DIR="/opt/spaceport"
 
+# Udev Device Names Link
+if ! [ -h "/etc/udev/rules.d/80-net-setup-link.rules" ]; then
+    rm -f "/etc/udev/rules.d/80-net-setup-link.rules"  2> /dev/null
+    ln -s "/dev/null" "/etc/udev/rules.d/80-net-setup-link.rules"  2> /dev/null
+fi
+
 # CUPS Startup Link
 ln -s "/usr/lib/systemd/system/cups.service" "/etc/systemd/system/multi-user.target.wants/cups.service" 2> /dev/null
 

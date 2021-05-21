@@ -34,6 +34,6 @@ chmod 0600 "/var/cache/cups/printers.conf"
 chmod 0700 "/var/lib/NetworkManager/system-connections"
 chmod 0600 /var/lib/NetworkManager/system-connections/*
 
-chown root:cups "/var/cache/ld.so.cache"
+chown root:root "/var/cache/ld.so.cache"
 chown root:cups "/var/cache/cups/printers.conf"
 chown root:root -R "/var/lib/NetworkManager/system-connections"

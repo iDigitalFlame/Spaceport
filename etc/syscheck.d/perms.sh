@@ -43,7 +43,7 @@ find "$BASE_DIR/" -type f -exec chmod 444 {} \; 2> /dev/null
 chmod 0550 -R "/etc/smd"
 chmod 0555 -R "$BASE_DIR/bin"
 chmod 0555 -R "$BASE_DIR/etc/ssh"
-chmod 0550 -R "$BASE_DIR/etc/udev"
+chmod 0555 -R "$BASE_DIR/etc/udev"
 chmod 0550 -R "$BASE_DIR/etc/squid"
 chmod 0550 -R "$BASE_DIR/etc/iptables"
 chmod 0550 -R "$BASE_DIR/etc/security"
@@ -60,14 +60,14 @@ chmod 0550 -R "$BASE_DIR/etc/NetworkManager"
 
 # Remove Execute Permissions
 find "$BASE_DIR/etc/smd/" -type f -exec chmod 0660 {} \; 2> /dev/null
-find "$BASE_DIR/etc/udev/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "$BASE_DIR/etc/udev/" -type f -exec chmod 0444 {} \; 2> /dev/null
 find "$BASE_DIR/etc/iptables/" -type f -exec chmod 0440 {} \; 2> /dev/null
 find "$BASE_DIR/etc/sysctl.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
 find "$BASE_DIR/etc/sysctl.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
 find "$BASE_DIR/etc/security/" -type f -exec chmod 0440 {} \; 2> /dev/null
 find "$BASE_DIR/etc/tmpfiles.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
 find "$BASE_DIR/etc/modprobe.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/pacman.d/hooks" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "$BASE_DIR/etc/pacman.d/hooks/" -type f -exec chmod 0440 {} \; 2> /dev/null
 find "$BASE_DIR/etc/modules-load.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
 
 # Remove Everyone Read

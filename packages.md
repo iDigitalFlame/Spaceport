@@ -166,6 +166,7 @@ tigervnc
 touchegg
 ttf-roboto
 tumbler
+uboot-tools
 ungoogled-chromium
 unrar
 unzip
