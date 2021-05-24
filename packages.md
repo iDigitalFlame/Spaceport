@@ -52,7 +52,6 @@ gcc
 gcc-libs
 gdb
 gettext
-ghex
 ghostscript
 git
 glibc
@@ -82,14 +81,12 @@ libheif
 libva-intel-driver
 liferea
 lightcord-bin
-linux
 linux-firmware
 linux-lts
 linux-zen
 logrotate
 lsof
 lvm2
-lxappearance
 maim
 make
 man-db
@@ -127,7 +124,7 @@ pam-u2f
 patch
 pciutils
 perl
-picom
+picom-ibhagwan-git
 pkgconf
 pngcrush
 polkit-gnome
@@ -181,14 +178,12 @@ wget
 which
 xautolock
 xclip
-xdotool
 xf86-input-libinput
 xfce4-terminal
 xfsprogs
 xorg-server
 xorg-server-xvfb
 xorg-xdpyinfo
-xorg-xev
 xorg-xinit
 xorg-xinput
 xorg-xkill

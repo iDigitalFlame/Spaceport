@@ -31,54 +31,57 @@ chmod u-s -R "$BASE_DIR"
 chmod g-s -R "$BASE_DIR"
 chown root:root -R "$BASE_DIR"
 chmod 0555 -R "$BASE_DIR"
-chmod 0555 -R "$BASE_DIR/etc"
-chmod 0555 -R "$BASE_DIR/usr"
-chmod 0555 -R "$BASE_DIR/etc/chromium"
+chmod 0555 -R "${BASE_DIR}/etc"
+chmod 0555 -R "${BASE_DIR}/usr"
+chmod 0555 -R "${BASE_DIR}/etc/chromium"
 chmod 0555 -R "/etc/chromium"
 
 # General No Execute Permission for files
-find "$BASE_DIR/" -type f -exec chmod 444 {} \; 2> /dev/null
+find "${BASE_DIR}/" -type f -exec chmod 444 {} \; 2> /dev/null
+
+# Remove non-root permissions on copied files
+find "/" -xdev -group firewall-web -exec sh -c 'chgrp -h root {}' \;
 
 # General Execute
 chmod 0550 -R "/etc/smd"
-chmod 0555 -R "$BASE_DIR/bin"
-chmod 0555 -R "$BASE_DIR/etc/ssh"
-chmod 0555 -R "$BASE_DIR/etc/udev"
-chmod 0550 -R "$BASE_DIR/etc/squid"
-chmod 0550 -R "$BASE_DIR/etc/iptables"
-chmod 0550 -R "$BASE_DIR/etc/security"
-chmod 0550 -R "$BASE_DIR/etc/sysctl.d"
-chmod 0555 -R "$BASE_DIR/var/cache/smd"
-chmod 0555 -R "$BASE_DIR/etc/profile.d"
-chmod 0550 -R "$BASE_DIR/etc/sudoers.d"
-chmod 0555 -R "$BASE_DIR/etc/syscheck.d"
-chmod 0550 -R "$BASE_DIR/etc/tmpfiles.d"
-chmod 0550 -R "$BASE_DIR/etc/modprobe.d"
-chmod 0550 -R "$BASE_DIR/etc/pacman.d/hooks"
-chmod 0550 -R "$BASE_DIR/etc/modules-load.d"
-chmod 0550 -R "$BASE_DIR/etc/NetworkManager"
+chmod 0555 -R "${BASE_DIR}/bin"
+chmod 0555 -R "${BASE_DIR}/etc/ssh"
+chmod 0555 -R "${BASE_DIR}/etc/udev"
+chmod 0550 -R "${BASE_DIR}/etc/squid"
+chmod 0550 -R "${BASE_DIR}/etc/iptables"
+chmod 0550 -R "${BASE_DIR}/etc/security"
+chmod 0550 -R "${BASE_DIR}/etc/sysctl.d"
+chmod 0555 -R "${BASE_DIR}/var/cache/smd"
+chmod 0555 -R "${BASE_DIR}/etc/profile.d"
+chmod 0550 -R "${BASE_DIR}/etc/sudoers.d"
+chmod 0555 -R "${BASE_DIR}/etc/syscheck.d"
+chmod 0550 -R "${BASE_DIR}/etc/tmpfiles.d"
+chmod 0550 -R "${BASE_DIR}/etc/modprobe.d"
+chmod 0550 -R "${BASE_DIR}/etc/pacman.d/hooks"
+chmod 0550 -R "${BASE_DIR}/etc/modules-load.d"
+chmod 0550 -R "${BASE_DIR}/etc/NetworkManager"
 
 # Remove Execute Permissions
-find "$BASE_DIR/etc/smd/" -type f -exec chmod 0660 {} \; 2> /dev/null
-find "$BASE_DIR/etc/udev/" -type f -exec chmod 0444 {} \; 2> /dev/null
-find "$BASE_DIR/etc/iptables/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/sysctl.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/sysctl.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/security/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/tmpfiles.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/modprobe.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/pacman.d/hooks/" -type f -exec chmod 0440 {} \; 2> /dev/null
-find "$BASE_DIR/etc/modules-load.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/smd/" -type f -exec chmod 0660 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/udev/" -type f -exec chmod 0444 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/iptables/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/sysctl.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/sysctl.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/security/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/tmpfiles.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/modprobe.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/pacman.d/hooks/" -type f -exec chmod 0440 {} \; 2> /dev/null
+find "${BASE_DIR}/etc/modules-load.d/" -type f -exec chmod 0440 {} \; 2> /dev/null
 
 # Remove Everyone Read
 chmod 0440 /etc/ssh/* 2> /dev/null
 chmod 0444 /etc/ssh/*.pub 2> /dev/null
-chmod 0440 "$BASE_DIR/etc/locale.gen"
-chmod 0440 "$BASE_DIR/etc/vconsole.conf"
-chmod 0444 "$BASE_DIR/etc/ssh/ssh_config"
-chmod 0440 "$BASE_DIR/etc/ssh/sshd_config"
-chmod 0440 "$BASE_DIR/etc/mkinitcpio.conf"
-chmod 0440 "$BASE_DIR/etc/NetworkManager/NetworkManager.conf"
+chmod 0440 "${BASE_DIR}/etc/locale.gen"
+chmod 0440 "${BASE_DIR}/etc/vconsole.conf"
+chmod 0444 "${BASE_DIR}/etc/ssh/ssh_config"
+chmod 0440 "${BASE_DIR}/etc/ssh/sshd_config"
+chmod 0440 "${BASE_DIR}/etc/mkinitcpio.conf"
+chmod 0440 "${BASE_DIR}/etc/NetworkManager/NetworkManager.conf"
 
 # Setup Ownership
 chown root:cups -R "/etc/cups"
@@ -95,26 +98,26 @@ find "/usr/share/themes/DarkSky" -type f -exec chmod 0644 {} \; 2> /dev/null
 
 # SMD Permissions
 chmod 0640 /var/cache/smd/*.json
-chmod 0555 -R "$BASE_DIR/usr/lib/smd"
-chmod 0555 -R "$BASE_DIR/usr/lib/smd/bin"
-chmod 0550 -R "$BASE_DIR/usr/lib/smd/sbin"
-chmod 0644 "$BASE_DIR/var/cache/smd/constants.json"
-chmod 0555 "$BASE_DIR/usr/lib/smd/libexec/smd-video"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-daemon"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-key-eject"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-power-low"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-suspend-pre"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-suspend-post"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-hibernate-pre"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-hibernate-post"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-power-attached"
-chmod 0550 "$BASE_DIR/usr/lib/smd/libexec/smd-power-detached"
-find "$BASE_DIR/usr/lib/smd/lib/" -type f -exec chmod 0444 {} \;
+chmod 0555 -R "${BASE_DIR}/usr/lib/smd"
+chmod 0555 -R "${BASE_DIR}/usr/lib/smd/bin"
+chmod 0550 -R "${BASE_DIR}/usr/lib/smd/sbin"
+chmod 0644 "${BASE_DIR}/var/cache/smd/constants.json"
+chmod 0555 "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-key-eject"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-low"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-pre"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-post"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-pre"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-post"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-attached"
+chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-detached"
+find "${BASE_DIR}/usr/lib/smd/lib/" -type f -exec chmod 0444 {} \;
 
 # Hydra Permissions
 chown kvm:root "/usr/lib/smd/static/nginx.conf"
-chown kvm:root "$BASE_DIR/usr/lib/smd/static/nginx.conf"
-chmod 0440 "$BASE_DIR/usr/lib/smd/static/nginx.conf"
+chown kvm:root "${BASE_DIR}/usr/lib/smd/static/nginx.conf"
+chmod 0440 "${BASE_DIR}/usr/lib/smd/static/nginx.conf"
 chmod 0440 "/usr/lib/smd/static/nginx.conf"
 
 # Secureboot Key Permissons

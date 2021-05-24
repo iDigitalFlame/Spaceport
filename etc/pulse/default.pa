@@ -49,7 +49,6 @@ load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 listen=127.0.0.1
 load-module module-gsettings
 load-module module-console-kit
 load-module module-systemd-login
-load-module module-rescue-streams
 load-module module-intended-roles
 load-module module-suspend-on-idle
 load-module module-position-event-sounds

@@ -38,7 +38,7 @@ list() {
     ft=${2%/}
     for file in $(find "$fc" -type f -print); do
         fp=$(printf "$file" | awk "{gsub(\"${fc}\", \"\"); print \$1}")
-        if ! [ -z $(echo $fp | grep -vE '\.(nlk|nolink)$|^\/\.git(\/|ignore$|config$)|^\/(LICENSE|license)$|^\/[a-zA-Z0-9_.]+\.(md|vscode|MD|code-workspace)$') ]; then
+        if ! [ -z $(echo $fp | grep -vE '\.(nlk|nolink)$|^\/\.git(\/|ignore$|config$)|^\/(LICENSE|license|\.vscode)$|^\/[a-zA-Z0-9_.-]+\.(md|vscode|MD|code-workspace)$') ]; then
             check "$ft$fp" "$fc$fp"
         fi
     done
