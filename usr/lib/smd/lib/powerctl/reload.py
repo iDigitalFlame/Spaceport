@@ -33,7 +33,7 @@ def default(arguments):
             send_message(arguments.socket, HOOK_LOG, payload={"level": arguments.level})
         if arguments.no_reload:
             return
-        send_message(arguments.socket, HOOK_RELOAD)
+        send_message(arguments.socket, HOOK_RELOAD, payload={"all": arguments.all})
     except OSError as err:
         return print_error(
             "Attempting to send a reload message raised an exception!", err

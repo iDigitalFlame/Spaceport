@@ -23,9 +23,11 @@
 
 from os import environ
 from lib.util import stop
+from signal import SIGCONT, SIGSTOP
 from subprocess import Popen, DEVNULL, SubprocessError
 from lib.constants import (
     EMPTY,
+    HOOK_LOCK,
     HOOK_DAEMON,
     HOOK_ROTATE,
     HOOK_RELOAD,
@@ -39,6 +41,7 @@ from lib.constants import (
 )
 
 HOOKS = {
+    HOOK_LOCK: "Polybar.freeze",
     HOOK_DAEMON: "Polybar.thread",
     HOOK_ROTATE: "Polybar.update",
     HOOK_RELOAD: "Polybar.reload",
@@ -97,6 +100,28 @@ class Polybar(object):
         elif message.position == ROTATE_INVERTED:
             return self.bars.get(ROTATE_INVERTED)
         return self.default
+
+    def freeze(self, server, message):
+        if self.process is None or self.process.poll() is not None:
+            return
+        if message.trigger is not None:
+            try:
+                self.process.send_signal(SIGSTOP)
+            except OSError as err:
+                server.error(
+                    "Attempting to freeze Polybar raised an exception!", err=err
+                )
+            else:
+                server.debug("Freezing Polybar due to lockscreen.")
+            return
+        try:
+            self.process.send_signal(SIGCONT)
+        except OSError as err:
+            server.error(
+                "Attempting to un-freeze Polybar raised an exception!", err=err
+            )
+        else:
+            server.debug("Unfreezing Polybar due to lockscreen removal.")
 
     def update(self, server, message):
         if message.header() == HOOK_ROTATE:

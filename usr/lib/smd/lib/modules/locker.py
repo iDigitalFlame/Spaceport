@@ -354,7 +354,7 @@ class LockerClient(object):
         return server.info("Lockscreen timeout was hit, triggering timeout!")
 
     def _set_unlock(self, server):
-        if self._is_locked():
+        if self.lock_process is not None or self._is_locked():
             stop(self.lock_process)
             server.debug("Unlocked the Lock Screen and cancled any timeouts!")
             server.send(
@@ -382,12 +382,16 @@ class LockerClient(object):
             return
         if self.ability_suspend is not None and self.ability_suspend > 0:
             if LOCKER_TYPE_SUSPEND in self.lockers:
+                if self.event is None:
+                    return
                 self._cancel_event()
                 return server.debug(
                     "Suspend locker was detected, canceling suspend timeout.."
                 )
         elif self.ability_hibernate is not None and self.ability_hibernate > 0:
             if LOCKER_TYPE_HIBERNATE in self.lockers:
+                if self.event is None:
+                    return
                 self._cancel_event()
                 return server.debug(
                     "Hibernate locker was detected, canceling hibernate timeout.."
@@ -607,6 +611,10 @@ class LockerServer(object):
         del message
 
     def lock(self, server, message):
+        if message.trigger is None and message.type == MESSAGE_TYPE_POST:
+            if message.multicast():
+                return
+            return message.set_multicast()
         if message.type is not None:
             return
         if message.trigger == LOCKER_TRIGGER_LID:
@@ -732,6 +740,8 @@ class LockerServer(object):
         server.info(f'Hibernate wake alarm set for "{self.ability_hibernate}" seconds.')
 
     def startup(self, server, message):
+        if message.header() == HOOK_RELOAD and not message.all:
+            return
         self._screen_detect(server, True)
         if message.header() != HOOK_RELOAD:
             return
@@ -860,7 +870,6 @@ class LockerServer(object):
     def _set_locker(self, server, locker, expires, force=False):
         if locker in self.lockers and not force:
             return
-        self._remove_locker(server, locker)
         seconds = None
         if expires is not None:
             try:
@@ -870,7 +879,14 @@ class LockerServer(object):
                     f'Client attempted to add a Locker "{locker}" with an invalid expire time of "{expires}"!'
                 )
             if seconds <= 0:
-                return
+                return self._remove_locker(server, locker)
+        if (
+            locker in self.lockers
+            and seconds is None
+            and self.lockers[locker].expires is None
+        ):
+            return
+        self._remove_locker(server, locker)
         if seconds is None:
             server.debug(f'Added a Locker "{locker}" with no expire timeout!')
         else:

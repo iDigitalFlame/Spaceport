@@ -305,6 +305,8 @@ class RotateServer(object):
             self._set_lock(server, boolean(message.lock))
 
     def reload(self, server, message):
+        if message.header() == HOOK_RELOAD and not message.all:
+            return
         self.tries = 0
         if self.x is not None:
             try:

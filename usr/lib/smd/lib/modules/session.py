@@ -21,9 +21,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from os import environ
 from sched import scheduler
 from time import time, sleep
+from os import environ, kill
+from signal import SIGCONT, SIGSTOP
 from lib.modules.background import background
 from lib.util import stop, boolean, eval_env, run
 from subprocess import Popen, DEVNULL, SubprocessError
@@ -40,8 +41,11 @@ from lib.constants import (
     MESSAGE_TYPE_PRE,
     MESSAGE_TYPE_POST,
     DIRECTORY_LIBEXEC,
+    SESSION_WINDOW_LIST,
     DEFAULT_SESSION_TAP,
     BACKGROUND_EXEC_AUTO,
+    DEFAULT_SESSION_IGNORE,
+    DEFAULT_SESSION_FREEZE,
     DEFAULT_SESSION_MONITOR,
     DEFAULT_SESSION_COMPOSER,
     DEFAULT_SESSION_STARTUPS,
@@ -49,7 +53,7 @@ from lib.constants import (
 )
 
 HOOKS = {
-    HOOK_LOCK: "Session.profile",
+    HOOK_LOCK: "Session.freeze",
     HOOK_DAEMON: "Session.thread",
     HOOK_POWER: "Session.profile",
     HOOK_RELOAD: "Session.reload",
@@ -73,11 +77,14 @@ def _get_profile(server, name):
 
 class Session(object):
     def __init__(self):
+        self.composer = None
         self.switch_time = 0
         self.running = list()
         self.profiles = dict()
         self.switch_event = None
         self.auto_monitor = False
+        self.freeze_ignore = None
+        self.freeze_windows = False
         self.scheduler = scheduler(timefunc=time, delayfunc=sleep)
 
     def setup(self, server):
@@ -116,8 +123,8 @@ class Session(object):
             for x in range(0, len(composer)):
                 composer[x] = eval_env(composer[x])
             try:
-                self.running.append(
-                    Popen(composer, stderr=DEVNULL, stdout=DEVNULL, env=environ)
+                self.composer = Popen(
+                    composer, stderr=DEVNULL, stdout=DEVNULL, env=environ
                 )
             except (OSError, SubprocessError) as err:
                 server.error(
@@ -151,6 +158,21 @@ class Session(object):
                         err=err,
                     )
         del startups
+        self.freeze_ignore = server.get_config(
+            "session.freeze.ignore", DEFAULT_SESSION_IGNORE, True
+        )
+        if self.freeze_ignore is not None:
+            if not isinstance(self.freeze_ignore, list):
+                server.error(
+                    'Improper value for "session.freeze.ignore"!',
+                )
+                self.freeze_ignore = None
+            else:
+                for x in range(0, len(self.freeze_ignore)):
+                    self.freeze_ignore[x] = eval_env(self.freeze_ignore[x]).lower()
+        self.freeze_windows = boolean(
+            server.get_config("session.freeze.enabled", DEFAULT_SESSION_FREEZE, True)
+        )
         self.profiles["video"] = _get_profile(server, "video")
         self.profiles["rotate"] = _get_profile(server, "rotate")
         self.profiles["power_ac"] = _get_profile(server, "power_ac")
@@ -169,6 +191,9 @@ class Session(object):
             self.switch_event = self.scheduler.enter(
                 self.switch_time, 1, background, argument=(server,)
             )
+        if self.composer is not None and self.composer.poll() is not None:
+            stop(self.composer)
+            self.composer = None
         if len(self.running) == 0:
             return
         for proc in list(self.running):
@@ -184,6 +209,8 @@ class Session(object):
             except ValueError:
                 pass
             self.switch_event = None
+        if self.composer is not None:
+            stop(self.composer)
         for proc in self.running:
             stop(proc)
         self.running.clear()
@@ -192,6 +219,14 @@ class Session(object):
             return
         server.debug("Reloading configuration..")
         self.setup(server)
+
+    def freeze(self, server, message):
+        self._freeze_windows(server, message.trigger is not None)
+        self._freeze_composer(server, message.trigger is not None)
+        if message.trigger is not None:
+            return self._trigger_profile(server, "lock_pre")
+        if message.type == MESSAGE_TYPE_POST:
+            return self._trigger_profile(server, "lock_post")
 
     def profile(self, server, message):
         if message.header() == HOOK_POWER:
@@ -210,11 +245,6 @@ class Session(object):
             return self._trigger_profile(server, "video")
         elif message.header() == HOOK_ROTATE:
             return self._trigger_profile(server, "rotate")
-        elif message.header() == HOOK_LOCK:
-            if message.type is None:
-                return self._trigger_profile(server, "lock_pre")
-            if message.type == MESSAGE_TYPE_POST:
-                return self._trigger_profile(server, "lock_post")
         elif message.header() == HOOK_SUSPEND:
             if message.type == MESSAGE_TYPE_PRE:
                 return self._trigger_profile(server, "suspend_pre")
@@ -226,6 +256,74 @@ class Session(object):
             if message.type == MESSAGE_TYPE_POST:
                 return self._trigger_profile(server, "hibernate_post")
 
+    def _freeze_windows(self, server, pre):
+        if not self.freeze_windows:
+            return server.debug("Not freezing windows, as it's disabled in config.")
+        try:
+            windows = run(SESSION_WINDOW_LIST, wait=True, ignore_errors=False)
+        except OSError as err:
+            return server.error(
+                "Attempting to generate a list of windows raised an exception!",
+                err=err,
+            )
+        v = windows.split("\n")
+        del windows
+        if len(v) == 0:
+            return server.debug("No windows detected, not freezing.")
+        for w in v:
+            e = w.split()
+            if len(e) < 4:
+                continue
+            try:
+                p = int(e[2])
+            except ValueError:
+                continue
+            if not self._can_freeze_window(e[3], p):
+                server.debug(f'Not freezing ignored window PID "{p}" class "{e[3]}"".')
+                del p
+                continue
+            if pre:
+                try:
+                    kill(p, SIGSTOP)
+                except OSError as err:
+                    server.error(
+                        f'Attempting to un-freeze PID "{p}" raised an exception!',
+                        err=err,
+                    )
+                continue
+            try:
+                kill(p, SIGCONT)
+            except OSError as err:
+                server.error(
+                    f'Attempting to un-freeze PID "{p}" raised an exception!',
+                    err=err,
+                )
+        del v
+
+    def _freeze_composer(self, server, pre):
+        if self.composer is None or self.composer.poll() is not None:
+            return
+        if pre:
+            try:
+                self.composer.send_signal(SIGSTOP)
+            except OSError as err:
+                server.error(
+                    "Attempting to freeze the composer raised an exception!",
+                    err=err,
+                )
+            else:
+                server.debug("Freezing the composer due to lockscreen.")
+            return
+        try:
+            self.composer.send_signal(SIGCONT)
+        except OSError as err:
+            server.error(
+                "Attempting to un-freeze the composer raised an exception!",
+                err=err,
+            )
+        else:
+            server.debug("Unfreezing the composer due to lockscreen removal.")
+
     def _trigger_profile(self, server, name):
         profile = self.profiles.get(name)
         if profile is None or len(profile) == 0:
@@ -236,6 +334,16 @@ class Session(object):
         elif isinstance(profile, list):
             for command in profile:
                 self._exec_profile_command(server, command)
+
+    def _can_freeze_window(self, win_class, win_pid):
+        if win_pid == 0:
+            return False
+        if not isinstance(self.freeze_ignore, list):
+            return True
+        for e in self.freeze_ignore:
+            if e in win_class.lower():
+                return False
+        return True
 
     def _exec_profile_command(self, server, command):
         try:

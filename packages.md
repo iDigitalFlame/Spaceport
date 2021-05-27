@@ -176,6 +176,7 @@ vlc
 vulkan-intel
 wget
 which
+wmctrl
 xautolock
 xclip
 xf86-input-libinput

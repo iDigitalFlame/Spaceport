@@ -56,7 +56,7 @@ def __init__(config_file):
 
 
 EMPTY = str()
-VERSION = "SMD-5.5Tank"
+VERSION = "SMD-5.6Tank"
 BOOLEANS = ["0", "1", "true", "false", "on", "off", "t", "f", "yes", "no"]
 
 NAME_POWERCTL = "powerctl"
@@ -175,9 +175,14 @@ DEFAULT_BACKGROUND_PATH = "${HOME}/Pictures/Backgrounds"
 DEFAULT_BACKGROUND_LOCKSCREEN = "${HOME}/.cache/smd/lockscreen.png"
 # Session Defaults
 DEFAULT_SESSION_TAP = False
+DEFAULT_SESSION_IGNORE = None
+DEFAULT_SESSION_FREEZE = True
 DEFAULT_SESSION_MONITOR = False
 DEFAULT_SESSION_STARTUPS = ["/usr/bin/nm-applet"]
 DEFAULT_SESSION_COMPOSER = ["/usr/bin/picom", "-c"]
+
+# Session Module Constants
+SESSION_WINDOW_LIST = ["/usr/bin/wmctrl", "-lupx"]
 
 # Hydra Module Constants
 HYDRA_STOP = 0x11

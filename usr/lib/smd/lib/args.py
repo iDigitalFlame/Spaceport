@@ -957,6 +957,15 @@ ARGS = {
             },
         ),
         (
+            "-a",
+            {
+                "dest": "all",
+                "help": "Reload all services (Not just userland)",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "-z",
             {
                 "dest": "no_reload",

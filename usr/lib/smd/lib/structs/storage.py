@@ -136,7 +136,8 @@ class Storage(dict):
         for x in range(1, len(subs) - 1):
             new = obj.get(subs[x])
             if new is None:
-                new[subs[x]] = dict()
+                obj[subs[x]] = dict()
+                new = obj[subs[x]]
             obj = new
             del new
         name = subs[len(subs) - 1]
