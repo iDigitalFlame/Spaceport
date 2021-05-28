@@ -24,10 +24,10 @@
 from re import compile
 from io import StringIO
 from hashlib import md5
-from signal import SIGKILL
 from sys import stderr, exit
 from threading import Thread
 from traceback import format_exc
+from signal import SIGKILL, SIGINT
 from os.path import isfile, dirname, exists
 from json import loads, dumps, JSONDecodeError
 from os import environ, remove, makedirs, stat, chmod, kill
@@ -112,8 +112,12 @@ def stop(process_object):
     if not isinstance(process_object, Popen):
         return
     if process_object.poll() is not None:
-        process_object.wait()
-        return
+        return process_object.wait()
+    else:
+        try:
+            process_object.send_signal(SIGINT)
+        except (OSError, SubprocessError):
+            pass
     try:
         process_object.terminate()
     except (OSError, SubprocessError):
