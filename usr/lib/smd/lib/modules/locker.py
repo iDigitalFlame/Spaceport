@@ -360,6 +360,7 @@ class LockerClient(object):
             server.send(
                 None, Message(header=HOOK_LOCK, payload={"type": MESSAGE_TYPE_POST})
             )
+            run(LOCKER_EXEC_SCREEN_ON, ignore_errors=True)
         self.lock_process = None
         self._cancel_event()
         self._try_set_screen()

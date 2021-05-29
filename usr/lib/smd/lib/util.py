@@ -130,7 +130,12 @@ def stop(process_object):
         kill(process_object.pid, SIGKILL)
     except OSError:
         pass
+    try:
+        process_object.communicate(timeout=5)
+    except (OSError, SubprocessError):
+        pass
     process_object.wait(timeout=5)
+    del process_object
 
 
 def remove_file(file_path):

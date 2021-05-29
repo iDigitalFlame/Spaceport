@@ -21,6 +21,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/usr/bin/xset -display :1 dpms force on 2> /dev/null
+/usr/bin/xset -display :0 dpms force on 2> /dev/null
 /usr/lib/smd/libexec/smd-message -u hibernate -p '{"type": 1}'
 exit 0

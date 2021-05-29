@@ -337,7 +337,7 @@ def connect(args, vm=None):
             run(
                 [
                     "/usr/bin/surf",
-                    "-BDfgIkmnpStc",
+                    "-BDfgIKmnSTxc",
                     "/dev/null",
                     f'http://hydra:8600/?path=websockify?token=VM{out["vmid"]}&scaling=local&autoconnect=true',
                 ],

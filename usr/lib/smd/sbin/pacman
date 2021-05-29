@@ -20,7 +20,7 @@
 #
 
 args=$@
-is_install=$(echo "$args" | grep -q '\-S'; echo $?)
+is_install=$(echo "$args" | grep -qE '\-S\s|\-U\s'; echo $?)
 if [ $is_install -eq 0 ]; then
     /usr/bin/mount -o remount,rw /
 fi
