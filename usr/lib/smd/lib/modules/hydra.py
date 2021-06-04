@@ -444,7 +444,7 @@ class HydraVM(Storage):
                 continue
             bus = "ide"
             bus_num = ide
-            if self.get("type") == "q35":
+            if "q35" in self.get("type"):
                 bus_num += 1
             else:
                 bus_num = ide / 2
@@ -621,7 +621,7 @@ class HydraVM(Storage):
         if self.get("bios", None) and isfile(self.get("bios", None)):
             build += ["-bios", self.get("bios", None)]
         if self.get("bus", None) is None:
-            if self.get("type") == "q35":
+            if "q35" in self.get("type"):
                 self.bus = "pcie"
             else:
                 self.bus = "pci"
@@ -660,7 +660,7 @@ class HydraVM(Storage):
             "-device",
             f"pci-bridge,id=pci-bridge2,chassis_nr=2,bus={self.bus}.0,addr=0x10",
         ]
-        if self.get("type") == "q35":
+        if "q35" in self.get("type"):
             build += ["-device", "intel-iommu"]
         del cpu_num
         if self.get("display", "virtio") is not None:
