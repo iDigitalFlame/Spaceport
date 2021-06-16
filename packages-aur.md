@@ -13,6 +13,7 @@ gnome-keyring-query
 icdiff
 korla-icon-theme
 novnc
+osslsigncode
 powershell-bin
 surf
 ttf-weather-icons
