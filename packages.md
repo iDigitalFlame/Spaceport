@@ -31,7 +31,6 @@ dosfstools
 dunst
 e2fsprogs
 efitools
-evtest
 exfat-utils
 falkon
 feh
@@ -133,7 +132,7 @@ procps-ng
 psmisc
 pulseaudio
 pulseaudio-alsa
-pulseaudio-bluetooth
+pulseaudio-modules-bt
 python
 python-django
 python-pip

@@ -10,7 +10,6 @@ firefox-extension-user-agent-switcher
 flatery-icon-theme-git
 font-bh-ttf
 gnome-keyring-query
-icdiff
 korla-icon-theme
 novnc
 osslsigncode
