@@ -151,6 +151,7 @@ shadow
 slack-desktop
 squid
 sudo
+swig
 sysfsutils
 systemd-sysvcompat
 tar
