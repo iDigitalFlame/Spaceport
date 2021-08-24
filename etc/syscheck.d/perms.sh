@@ -149,6 +149,7 @@ chmod 0400 /usr/share/applications/bssh.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/bvnc.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/xdvi.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/htop.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/kitty.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/qv4l2.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/fluid.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/slack.desktop 2> /dev/null
@@ -161,11 +162,13 @@ chmod 0400 /usr/share/applications/onboard.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/compton.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/qvidcap.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/firefox.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/VSCodium.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/checkers.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/gtk-lshw.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/hdspconf.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/chromium.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/geisview.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/librewolf.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/ristretto.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/echomixer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/hdspmixer.desktop 2> /dev/null

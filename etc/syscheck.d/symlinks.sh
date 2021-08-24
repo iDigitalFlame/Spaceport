@@ -37,9 +37,16 @@ ln -s "/usr/lib/systemd/system/cups.service" "/etc/systemd/system/multi-user.tar
 
 # Firefox file Link
 rm -f "/usr/lib/firefox/firefox.cfg" 2> /dev/null
+rm -f "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
 ln -s "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg" "/usr/lib/firefox/firefox.cfg" 2> /dev/null
+ln -s "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg" "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
+ln -s "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg" "/usr/lib/librewolf/defaults/pref/librewolf.cfg" 2> /dev/null
 chown root:root "/usr/lib/firefox/firefox.cfg" 2> /dev/null
+chown root:root "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
+chown root:root "/usr/lib/librewolf/defaults/pref/librewolf.cfg" 2> /dev/null
 chmod 444 "/usr/lib/firefox/firefox.cfg" 2> /dev/null
+chmod 444 "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
+chmod 444 "/usr/lib/librewolf/defaults/pref/librewolf.cfg" 2> /dev/null
 
 # Less Syskeys
 ln -s "/etc/sysless" "/etc/syslesskey" 2> /dev/null

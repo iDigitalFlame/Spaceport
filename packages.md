@@ -38,7 +38,9 @@ file
 filesystem
 findutils
 firefox
+firefox-clearurls
 firefox-decentraleyes
+firefox-extension-bitwarden
 firefox-extension-https-everywhere
 firefox-extension-privacybadger
 firefox-noscript
@@ -73,10 +75,12 @@ iputils
 iw
 jq
 keepassxc
+kitty
 leafpad
 less
 libgnome-keyring
 libheif
+librewolf
 libva-intel-driver
 liferea
 lightcord-bin
@@ -180,7 +184,6 @@ wmctrl
 xautolock
 xclip
 xf86-input-libinput
-xfce4-terminal
 xfsprogs
 xorg-server
 xorg-server-xvfb

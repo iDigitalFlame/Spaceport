@@ -22,10 +22,11 @@
 [Trigger]
 Type        = Package
 Target      = firefox
+Target      = librewolf
 Operation   = Install
 Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/bash -c "rm -f /usr/lib/firefox/browser/features/*.xpi"
-Description = Applying Firefox hardening..
+Exec        = /usr/bin/bash -c "rm -f /usr/lib/firefox/browser/features/*.xpi; rm -f /usr/lib/librewolf/browser/features/*.xpi"
+Description = Applying Firefox/Librewolf hardening..
