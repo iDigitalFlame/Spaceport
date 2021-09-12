@@ -152,6 +152,7 @@ sbsigntools
 screen
 sed
 shadow
+skippy-xd-git
 slack-desktop
 squid
 sudo
@@ -177,6 +178,7 @@ util-linux
 vi
 vimix-cursors
 vlc
+vscodium-bin
 vulkan-intel
 wget
 which

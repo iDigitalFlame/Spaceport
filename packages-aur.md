@@ -16,4 +16,3 @@ osslsigncode
 powershell-bin
 surf
 ttf-weather-icons
-vscodium-bin
