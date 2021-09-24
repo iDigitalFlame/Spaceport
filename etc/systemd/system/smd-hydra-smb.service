@@ -29,7 +29,7 @@ Description             = Hydra SMB Daemon
 [Service]
 Type                    = notify
 PIDFile                 = /run/hydra/smbd.pid
-ExecStart               = /usr/bin/smbd -S --foreground --no-process-group --configfile=/var/run/smd/hydra/smb.conf
+ExecStart               = /usr/bin/smbd --foreground --no-process-group --configfile=/var/run/smd/hydra/smb.conf
 ExecReload              = /usr/bin/kill -HUP $MAINPID
 PrivateTmp              = true
 KeyringMode             = private

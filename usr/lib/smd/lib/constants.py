@@ -223,6 +223,8 @@ server string = VM-{name}
 server role = standalone server
 hosts allow = {network} 127.0.0.1/32
 log file = /dev/null
+log level = 0
+logging =
 max log size = 0
 bind interfaces only = yes
 realm = VM.{name}.COM
@@ -231,6 +233,7 @@ interfaces = {ip}/32
 wins support = no
 wins proxy = no
 dns proxy = no
+eventlog list =
 usershare allow guests = no
 usershare max shares = 0
 [User]
@@ -241,6 +244,7 @@ writable = yes
 read only = no
 printable = no
 public = no
+follow symlinks = yes
 [UserRo]
 comment = Home Directories Read Only
 path = /home
@@ -249,6 +253,7 @@ writable = no
 read only = yes
 printable = no
 public = no
+follow symlinks = no
 """
 HYDRA_DNS_CONFIG = """port=53
 no-hosts
