@@ -157,6 +157,7 @@ chmod 0400 /usr/share/applications/picom.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/sudoku.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/blocks.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/lstopo.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/codium.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/arduino.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/compton.desktop 2> /dev/null
@@ -186,6 +187,7 @@ chmod 0400 /usr/share/applications/envy24control.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/teensy-loader.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.kde.falkon.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/avahi-discover.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/evernote-client.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/telegramdesktop.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/libfm-pref-apps.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.gnome.Geary.desktop 2> /dev/null

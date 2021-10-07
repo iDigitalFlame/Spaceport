@@ -1,4 +1,5 @@
 cnijfilter-mg5300series
+evernote-for-linux-bin
 firefox-auto-tab-discard
 firefox-extension-canvasblocker
 firefox-extension-foxyproxy
