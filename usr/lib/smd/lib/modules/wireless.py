@@ -22,11 +22,13 @@
 #
 
 from lib.util import run, boolean
+from lib.structs.message import Message
 from lib.constants import (
     RADIO_EXEC,
     HOOK_RADIO,
     HOOK_STARTUP,
     HOOK_HIBERNATE,
+    HOOK_NOTIFICATION,
     MESSAGE_TYPE_POST,
     MESSAGE_TYPE_ACTION,
     MESSAGE_TYPE_CONFIG,
@@ -40,8 +42,12 @@ HOOKS_SERVER = {
 
 
 def startup(server):
-    _radio_set(server, "wireless", server.get_config("wireless.boot", True, False))
-    _radio_set(server, "bluetooth", server.get_config("bluetooth.boot", True, False))
+    _radio_set(
+        server, "wireless", server.get_config("wireless.boot", True, False), False
+    )
+    _radio_set(
+        server, "bluetooth", server.get_config("bluetooth.boot", True, False), False
+    )
 
 
 def config(server, message):
@@ -52,29 +58,45 @@ def config(server, message):
             f"{message.radio}.boot", boolean(message.get("boot", True)), True
         )
     elif message.type == MESSAGE_TYPE_ACTION:
-        _radio_set(server, message.radio, boolean(message.get("enabled", True)))
+        _radio_set(server, message.radio, boolean(message.get("enabled", True)), True)
 
 
 def hibernate(server, message):
     if message.state != MESSAGE_TYPE_POST:
         return
-    _radio_set(server, "wireless", server.get_config("wireless.enabled", True, False))
     _radio_set(
-        server, "bluetooth", server.get_config("bluetooth.enabled", False, False)
+        server, "wireless", server.get_config("wireless.enabled", True, False), False
+    )
+    _radio_set(
+        server, "bluetooth", server.get_config("bluetooth.enabled", False, False), False
     )
 
 
-def _radio_set(server, radio, enable):
+def _radio_set(server, radio, enable, notify):
     commands = RADIO_EXEC.get(f'{radio.lower()}_{"enable" if enable else "disable"}')
-    if isinstance(commands, list):
-        server.debug(f'{"Enabling" if enable else "Disabling"} "{radio}"..')
-        for command in commands:
-            try:
-                run(command, ignore_errors=False)
-            except OSError as err:
-                server.error(
-                    f'Attempting to run the command "{command}" raised an exception!',
-                    err=err,
-                )
-        server.set_config(f"{radio}.enabled", enable, True)
+    if not isinstance(commands, list):
+        return
+    server.debug(f'{"Enabling" if enable else "Disabling"} "{radio}"..')
+    for command in commands:
+        try:
+            run(command, ignore_errors=False)
+        except OSError as err:
+            server.error(
+                f'Attempting to run the command "{command}" raised an exception!',
+                err=err,
+            )
     del commands
+    server.set_config(f"{radio}.enabled", enable, True)
+    if not notify:
+        return
+    server.send(
+        None,
+        Message(
+            header=HOOK_NOTIFICATION,
+            payload={
+                "title": "Radio Status Change",
+                "body": f"{radio.title()} was {'Enabled' if enable else 'Disabled'}",
+                "icon": "configuration-section",
+            },
+        ),
+    )
