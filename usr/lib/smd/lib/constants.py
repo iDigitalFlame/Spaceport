@@ -56,7 +56,7 @@ def __init__(config_file):
 
 
 EMPTY = str()
-VERSION = "SMD-5.6Tank"
+VERSION = "SMD-5.7Tank"
 BOOLEANS = ["0", "1", "true", "false", "on", "off", "t", "f", "yes", "no"]
 
 NAME_POWERCTL = "powerctl"

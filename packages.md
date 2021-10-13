@@ -58,6 +58,7 @@ git
 glibc
 gnome-keyring
 go
+grc
 grep
 gtk-engines
 gzip

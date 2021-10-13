@@ -76,6 +76,14 @@ def _radio_set(server, radio, enable, notify):
     commands = RADIO_EXEC.get(f'{radio.lower()}_{"enable" if enable else "disable"}')
     if not isinstance(commands, list):
         return
+    before = server.get_config(f"{radio}.enabled", not enable)
+    if before == enable:
+        del before
+        return server.debug(
+            f'Not re-{"enabling" if enable else "disabling"} already '
+            f'{"enabled" if enable else "disabed"} radio {radio}.'
+        )
+    del before
     server.debug(f'{"Enabling" if enable else "Disabling"} "{radio}"..')
     for command in commands:
         try:
