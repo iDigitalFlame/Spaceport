@@ -88,6 +88,10 @@ chown root:cups -R "/etc/cups"
 chown root:proxy -R "/etc/squid"
 chown root:root "/usr/share/applications/mimeinfo.cache"
 
+# Group Helper Permissions
+chown root:root "${BASE_DIR}/bin/gh"
+chmod 4755 "${BASE_DIR}/bin/gh"
+
 # Theme Permissions
 chown root:root -R "/usr/share/icons/DarkSky" 2> /dev/null
 chown root:root -R "/usr/share/themes/DarkSky" 2> /dev/null
