@@ -165,7 +165,6 @@ chmod 0400 /usr/share/applications/codium.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/discord.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/arduino.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/compton.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/qvidcap.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/firefox.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/VSCodium.desktop 2> /dev/null
@@ -181,8 +180,6 @@ chmod 0400 /usr/share/applications/hdspmixer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/cmake-gui.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/vncviewer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/nextcloud.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/bitwarden.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/Lightcord.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/galculator.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/lxshortcut.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/hwmixvolume.desktop 2> /dev/null
@@ -195,7 +192,6 @@ chmod 0400 /usr/share/applications/avahi-discover.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/evernote-client.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/telegramdesktop.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/libfm-pref-apps.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/org.gnome.Geary.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/thunar-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/libinput-gestures.desktop 2> /dev/null
