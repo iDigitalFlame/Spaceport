@@ -26,6 +26,7 @@ cups
 device-mapper
 dhcpcd
 diffutils
+discord
 dnsmasq
 dosfstools
 dunst
@@ -84,7 +85,6 @@ libheif
 librewolf
 libva-intel-driver
 liferea
-lightcord-bin
 linux-firmware
 linux-lts
 linux-zen

@@ -162,6 +162,7 @@ chmod 0400 /usr/share/applications/sudoku.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/blocks.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/lstopo.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/codium.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/discord.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/arduino.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/compton.desktop 2> /dev/null

@@ -82,8 +82,6 @@ def _format_size(size):
     if size < 1024.0:
         return f"{float(size):3.1f}B"
     size /= 1024.0
-    if size < 1024.0:
-        return f"{float(size):3.1f}B"
     for name in BACKUP_SIZES:
         if abs(size) < 1024.0:
             return f"{float(size):3.1f}{name}iB"
