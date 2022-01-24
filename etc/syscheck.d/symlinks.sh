@@ -35,6 +35,11 @@ fi
 # CUPS Startup Link
 ln -s "/usr/lib/systemd/system/cups.service" "/etc/systemd/system/multi-user.target.wants/cups.service" 2> /dev/null
 
+# BTRFS FSCK Empty Shell Script
+printf "#!/bin/sh\nexit 0\n" > "/usr/local/bin/fsck.btrfs"
+chown root:root "/usr/local/bin/fsck.btrfs"
+chmod 550 "/usr/local/bin/fsck.btrfs"
+
 # Firefox file Link
 rm -f "/usr/lib/firefox/firefox.cfg" 2> /dev/null
 rm -f "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null

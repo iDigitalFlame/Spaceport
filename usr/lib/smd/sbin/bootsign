@@ -1,5 +1,5 @@
-#!/usr/bin/false
-# Secure Boot Singing Pacman Hook
+#!/usr/bin/bash
+# Initram Root FS and Kernel Signing Utility
 #
 # System Management Daemon
 #
@@ -19,15 +19,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Trigger]
-Type        = Package
-Target      = linux
-Target      = linux-*
-Target      = systemd
-Operation   = Install
-Operation   = Upgrade
+if [ $# -eq 0 ]; then
+    find /boot -type f \( -name 'vmlinuz-*' -o -iname '*.efi' \) -exec $0 {} \;
+    exit 0
+fi
 
-[Action]
-When        = PostTransaction
-Exec        = /usr/lib/smd/sbin/bootsign
-Description = Signing kernels..
+if ! [ -f $1 ]; then
+    echo "File $1 does not exist!"
+    exit 1
+fi
+
+if ! sbverify --list $1 2>/dev/null | grep -q "signature certificates"; then
+    sbsign --key /opt/secureboot/db.key --cert /opt/secureboot/db.crt --output $1 $1 | grep -v 'gaps between PE/COFF sections'
+fi

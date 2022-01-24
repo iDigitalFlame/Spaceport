@@ -144,6 +144,7 @@ python-pip
 python-pyusb
 qemu-headless
 qemu-user-static
+radare2
 reflector
 ristretto
 rofi

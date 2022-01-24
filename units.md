@@ -12,7 +12,9 @@ smd-hibernate-post.service
 smd-hibernate-pre.service
 smd-suspend-post.service
 smd-suspend-pre.service
+systemd-boot-update.service
 systemd-homed.service
+systemd-network-generator.service
 systemd-networkd.service
 systemd-pstore.service
 systemd-resolved.service
