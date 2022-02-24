@@ -29,6 +29,7 @@ from fcntl import fcntl, F_GETFL, F_SETFL
 from lib.util import read, run, write, boolean
 from lib.constants import (
     EMPTY,
+    NEWLINE,
     HOOK_ROTATE,
     ROTATE_LEFT,
     HOOK_DAEMON,
@@ -72,30 +73,28 @@ class RotateClient(object):
 
     def setup(self, server):
         try:
-            devices = run(ROTATE_EXEC_DEVICES, wait=True, ignore_errors=False)
+            d = run(ROTATE_EXEC_DEVICES, wait=True)
         except OSError as err:
-            return server.error(
-                'Reading devices list from "xinput" raised an exception!', err=err
-            )
-        if not isinstance(devices, str):
-            del devices
+            return server.error('Error reading devices list from "xinput"!', err=err)
+        if not isinstance(d, str):
+            del d
             return
-        for device in devices.split("\n"):
-            name = device.lower()
-            if "pen" in name:
+        for e in d.split(NEWLINE):
+            n = e.lower()
+            if "pen" in n:
                 continue
-            for touch in ROTATE_DEVICE_NAMES:
-                if touch not in name:
+            for t in ROTATE_DEVICE_NAMES:
+                if t not in n:
                     continue
-                if device in self.inputs:
-                    self.inputs.remove(device)
-                    self.inputs.append(f"pointer:{device}")
+                if e in self.inputs:
+                    self.inputs.remove(e)
+                    self.inputs.append(f"pointer:{e}")
                     break
-                self.inputs.append(device)
-                server.debug(f'Added touch device "{device}" for rotate input.')
+                self.inputs.append(e)
+                server.debug(f'Added touch device "{e}" for rotate input.')
                 break
-            del name
-        del devices
+            del n
+        del d
 
     def reload(self, server):
         self.inputs.clear()
@@ -104,36 +103,33 @@ class RotateClient(object):
     def rotate(self, server, message):
         if message.position is None:
             return
-        state = ROTATE_STATE_NAMES.get(message.position)
-        if state is None:
+        s = ROTATE_STATE_NAMES.get(message.position)
+        if s is None:
             return
-        server.debug(f'Rotating screen to "{state}"..')
+        server.debug(f'Rotating screen to "{s}"..')
         try:
-            run(["/usr/bin/xrandr", "-o", state], ignore_errors=False)
+            run(["/usr/bin/xrandr", "-o", s], errors=False)
         except OSError as err:
-            return server.error(
-                "Attempting to rotate the screen raised an exception!", err=err
-            )
-        matrix = ROTATE_CORD_STATES.get(message.position)
-        if matrix is None:
+            return server.error("Error rotating the screen!", err=err)
+        del s
+        m = ROTATE_CORD_STATES.get(message.position)
+        if m is None:
             return
-        devices = [
+        d = [
             "/usr/bin/xinput",
             "set-prop",
             EMPTY,
             "Coordinate Transformation Matrix",
-        ] + matrix
+        ] + m
+        del m
         server.debug("Setting input devices matrix..")
-        for device in self.inputs:
-            devices[2] = device
+        for e in self.inputs:
+            d[2] = e
             try:
-                run(devices, ignore_errors=False)
+                run(d)
             except OSError as err:
-                server.error(
-                    f'Attempting to rotate the input device "{device}" raised an exception!',
-                    err=err,
-                )
-        del devices
+                server.error(f'Error rotating the input device "{e}"!', err=err)
+        del d
         server.forward(Message(header=HOOK_BACKGROUND))
 
 
@@ -161,26 +157,21 @@ class RotateServer(object):
             x = float(self.x.read()) * self.scale
             y = float(self.y.read()) * self.scale
         except (OSError, ValueError) as err:
-            return server.error(
-                "Attempting to read rotation states raised an exception!", err=err
-            )
+            return server.error("Error reading Rotation states!", err=err)
         try:
             self.x.seek(0)
             self.y.seek(0)
         except OSError as err:
-            return server.error(
-                "Attempting to reset rotation state handles raised an exception!",
-                err=err,
-            )
-        rotate = self._get_state(x, y)
+            return server.error("Error resetting the Rotation state handles!", err=err)
+        r = self._get_state(x, y)
         del x
         del y
-        if rotate is None or rotate == self.current:
+        if r is None or r == self.current:
             return
-        server.debug(f'Changing rotation state to "{rotate}"!')
-        server.send(None, Message(HOOK_ROTATE, {"position": rotate}))
-        self.current = rotate
-        del rotate
+        server.debug(f'Changing rotation state to "{r}"!')
+        server.send(None, Message(HOOK_ROTATE, {"position": r}))
+        self.current = r
+        del r
 
     def _get_state(self, x, y):
         if x >= ROTATE_THRESHOLD and self.current != ROTATE_LEFT:
@@ -194,30 +185,29 @@ class RotateServer(object):
         return None
 
     def monitor(self, _, message):
-        active = message.get("active", 1)
-        if self.display_count == active:
+        a = message.get("active", 1)
+        if self.display_count == a:
             return
-        self.display_count = active
-        del active
+        self.display_count = a
+        del a
 
     def setup_server(self, server):
         self.lock = server.get_config("rotate", False, True)
         server.debug("Detecting gyro sensor devices..")
-        write(
-            ROTATE_PATH_STATUS, str(self.lock).lower(), ignore_errors=True, perms=0o644
-        )
-        for device in glob(ROTATE_PATH_GYROS):
+        write(ROTATE_PATH_STATUS, str(self.lock).lower(), perms=0o644, errors=False)
+        for d in glob(ROTATE_PATH_GYROS):
             try:
-                name = read(f"{device}/name", ignore_errors=False)
+                n = read(f"{d}/name")
             except OSError as err:
-                server.error(f'Error reading gyro sensor "{device}"!', err=err)
+                server.error(f'Error reading gyro sensor "{d}"!', err=err)
                 continue
-            if isinstance(name, str) and "accel" in name:
-                self.sensor = device
+            if isinstance(n, str) and "accel" in n:
+                self.sensor = d
                 break
+            del n
         if self.sensor is None:
             self.tries = self.tries - 1
-            write(ROTATE_PATH_STATUS, "invalid", ignore_errors=True, perms=0o644)
+            write(ROTATE_PATH_STATUS, "invalid", perms=0o644, errors=False)
             if self.tries <= 0:
                 return server.error(
                     "Could not find any compatible gyro sensors after 5 attempts, bailing out!"
@@ -227,24 +217,17 @@ class RotateServer(object):
             )
         server.debug(f'Found gyro sensor at "{self.sensor}", attempting to read..')
         try:
-            self.scale = float(
-                read(f"{self.sensor}/in_accel_scale", ignore_errors=False)
-            )
+            self.scale = float(read(f"{self.sensor}/in_accel_scale"))
         except (ValueError, OSError) as err:
             self.sensor = None
-            return server.error(
-                "Attempting to read gyro scale raised an exception!", err=err
-            )
+            return server.error("Error reading gyro scale value!", err=err)
         try:
             self.x = open(f"{self.sensor}/in_accel_x_raw", "r")
             self.y = open(f"{self.sensor}/in_accel_y_raw", "r")
         except OSError as err:
             self.sensor = None
-            write(ROTATE_PATH_STATUS, "invalid", ignore_errors=True, perms=0o644)
-            return server.error(
-                "Attempting to read handles into Gyro devices raised an exception!",
-                err=err,
-            )
+            write(ROTATE_PATH_STATUS, "invalid", perms=0o644, errors=False)
+            return server.error("Error reading Gyro devices!", err=err)
         server.debug("Gyro sensor setup complete!")
         if exists(ROTATE_PATH_BUTTON):
             server.debug(
@@ -252,13 +235,12 @@ class RotateServer(object):
             )
             try:
                 self.button = open(ROTATE_PATH_BUTTON, "rb")
-                flags = fcntl(self.button.fileno(), F_GETFL)
-                fcntl(self.button.fileno(), F_SETFL, flags | O_NONBLOCK)
-                del flags
+                f = fcntl(self.button.fileno(), F_GETFL)
+                fcntl(self.button.fileno(), F_SETFL, f | O_NONBLOCK)
+                del f
             except OSError as err:
                 server.error(
-                    f'An exception occurred when attempting to read the button file "{ROTATE_PATH_BUTTON}"!',
-                    err=err,
+                    f'Error reading the button file "{ROTATE_PATH_BUTTON}"!', err=err
                 )
             else:
                 server.debug(f'Added rotate button "{ROTATE_PATH_BUTTON}" handle!')
@@ -267,21 +249,19 @@ class RotateServer(object):
         if self.button is None:
             return
         try:
-            data = self.button.read(144)
+            d = self.button.read(144)
         except OSError as err:
             return server.error("Could not read the button event file!", err=err)
-        if isinstance(data, bytes) and len(data) > 20 and data[20] == 200:
+        if isinstance(d, bytes) and len(d) > 20 and d[20] == 200:
             server.debug("Button press detected, switching lock!")
             self._set_lock(server, not self.lock)
-        del data
+        del d
 
     def _set_lock(self, server, lock):
         self.lock = lock
         server.debug(f'Set screen rotation lock status to "{self.lock}".')
         server.set_config("rotate", lock, True)
-        write(
-            ROTATE_PATH_STATUS, str(self.lock).lower(), ignore_errors=True, perms=0o644
-        )
+        write(ROTATE_PATH_STATUS, str(self.lock).lower(), perms=0o644, errors=False)
         server.send(
             None,
             Message(
@@ -312,24 +292,19 @@ class RotateServer(object):
             try:
                 self.x.close()
             except OSError as err:
-                server.error(
-                    "An error occurred attempting to close the gyro X handle!", err=err
-                )
+                server.error("Error closing the gyro X handle!", err=err)
         if self.y is not None:
             try:
                 self.y.close()
             except OSError as err:
-                server.error(
-                    "An error occurred attempting to close the gyro Y handle!", err=err
-                )
+                server.error("Error closing the gyro Y handle!", err=err)
         self.sensor = None
         if self.button is not None:
             try:
                 self.x.close()
             except OSError as err:
                 server.error(
-                    f'An error occurred attempting to close the handle to "{ROTATE_PATH_BUTTON}"!',
-                    err=err,
+                    f'Error closing the handle to "{ROTATE_PATH_BUTTON}"!', err=err
                 )
         if message.header() == HOOK_RELOAD:
             self.tries = 5

@@ -274,7 +274,7 @@ ARGS = {
             "-f",
             {
                 "dest": "force",
-                "help": "Force lock screen regardless of locker settings",
+                "help": "Force Lockscreen regardless of locker settings",
                 "action": "store_true",
                 "required": False,
             },
@@ -577,6 +577,16 @@ ARGS = {
             "connect",
         ),
         (
+            "-cs",
+            {
+                "dest": "connect_spice",
+                "help": "Connect to the selected VM (using SPICE)",
+                "action": "store_true",
+                "required": False,
+            },
+            "connect",
+        ),
+        (
             "-w",
             {
                 "dest": "wake",
@@ -646,6 +656,46 @@ ARGS = {
             },
             "all",
         ),
+        (
+            "-es",
+            {
+                "dest": "schema",
+                "help": "Output VM config file schema format.",
+                "action": "store_true",
+                "required": False,
+            },
+            "example",
+        ),
+        (
+            "-e",
+            {
+                "dest": "example",
+                "help": "Output VM config file example.",
+                "action": "store_true",
+                "required": False,
+            },
+            "example",
+        ),
+        (
+            "-p",
+            {
+                "dest": "ga_ping",
+                "help": "Check the status of the QEMU Guest Agent.",
+                "action": "store_true",
+                "required": False,
+            },
+            "ping",
+        ),
+        (
+            "-I",
+            {
+                "dest": "ga_ip",
+                "help": "Retrive the VM IP addresses using the QEMU Guest Agent.",
+                "action": "store_true",
+                "required": False,
+            },
+            "ip",
+        ),
     ],
     "locker": [
         (
@@ -665,7 +715,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lockscreen",
-                "help": "Set the lock screen locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "Set the Lockscreen locker time (Seconds, True - Until Reboot, False - Disable).",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -737,7 +787,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lockscreen_force",
-                "help": "Force the lock screen locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "Force the Lockscreen locker time (Seconds, True - Until Reboot, False - Disable).",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -1020,7 +1070,7 @@ DESCRIPTIONS = {
     "cpu": "Processor Management Module",
     "blue": "Bluetooth Management Module",
     "wifi": "Wireless Management Module",
-    "lock": "Lock Screen Management Module",
+    "lock": "Lockscreen Management Module",
     "hydra": "Hydra Hypervisor Management Module",
     "locker": "Locker Management Module",
     "backup": "Backup Management Module",

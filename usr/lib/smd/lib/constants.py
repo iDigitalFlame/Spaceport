@@ -30,33 +30,35 @@ from importlib import import_module
 from lib.util import read_json, write_json
 
 
-def __init__(config_file):
-    instance = import_module(__name__)
-    if not isfile(config_file):
-        vars = dict()
-        for name, value in instance.__dict__.items():
-            if name is None or len(name) == 0 or name[0] == "_" or not name.isupper():
+def __init__(path):
+    x = import_module(__name__)
+    if not isfile(path):
+        v = dict()
+        for n, d in x.__dict__.items():
+            if n is None or len(n) == 0 or n[0] == "_" or not n.isupper():
                 continue
-            vars[name.lower()] = value
-        write_json(
-            config_file, vars, indent=4, sort=True, ignore_errors=True, perms=644
-        )
-        del vars
-        del instance
+            v[n.lower()] = d
+        write_json(path, v, indent=4, sort=True, perms=0o644, errors=False)
+        del v
+        del x
         return
-    vars = read_json(config_file, ignore_errors=True)
-    if isinstance(vars, dict):
-        for name, value in vars.items():
-            try:
-                setattr(instance, name.upper(), value)
-            except AttributeError:
-                pass
-    del vars
-    del instance
+    v = read_json(path, errors=False)
+    if not isinstance(v, dict) or len(v) == 0:
+        del v
+        del x
+        return
+    for n, d in v.items():
+        try:
+            setattr(x, n.upper(), d)
+        except AttributeError:
+            pass
+    del v
+    del x
 
 
 EMPTY = str()
-VERSION = "SMD-5.7Tank"
+NEWLINE = "\n"
+VERSION = "SMD-6Tank"
 BOOLEANS = ["0", "1", "true", "false", "on", "off", "t", "f", "yes", "no"]
 
 NAME_POWERCTL = "powerctl"
@@ -87,6 +89,8 @@ CONFIG_CLIENT = "${HOME}/.config/smd.json"
 CONFIG_CPU = f"{DIRECTORY_CONFIG}/cpu.json"
 CONFIG_BACKUP = f"{DIRECTORY_CONFIG}/backup.json"
 CONFIG_SERVER = f"{DIRECTORY_CONFIG}/config.json"
+# Constants load path.
+# MUST BE SET HERE IN ORDER TO UPDATE VALUES!!
 CONFIG_CONSTANTS = "/opt/spaceport/var/cache/smd/constants.json"
 
 # Log Constants
@@ -190,6 +194,8 @@ HYDRA_WAKE = 0x12
 HYDRA_UID = "kvm"
 HYDRA_START = 0x13
 HYDRA_SLEEP = 0x14
+HYDRA_GA_IP = 0x22
+HYDRA_GA_PING = 0x23
 HYDRA_USB_ADD = 0x15
 HYDRA_BRIDGE = "vmi0"
 HYDRA_USB_QUERY = 0x16
@@ -451,7 +457,7 @@ LOCKER_TYPE_HIBERNATE = "hibernate"
 LOCKER_TYPE_NAMES = {
     LOCKER_TYPE_KEY: "Yubikey",
     LOCKER_TYPE_LID: "Lid Close",
-    LOCKER_TYPE_LOCK: "Lock Screen",
+    LOCKER_TYPE_LOCK: "Lockscreen",
     LOCKER_TYPE_BLANK: "Screen Blank",
     LOCKER_TYPE_SUSPEND: "Suspend",
     LOCKER_TYPE_HIBERNATE: "Hibernate",

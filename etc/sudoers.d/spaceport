@@ -22,14 +22,32 @@ Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/umount, /usr/bin/sync, /usr/lib/
 Cmnd_Alias  SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/reboot, /usr/bin/poweroff
 
 Defaults    env_keep += "LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET"
-Defaults    env_keep += "HOME"
 Defaults    env_keep += "XDG_SESSION_COOKIE"
+Defaults    env_keep += "HOME"
+Defaults    env_keep = "LESSSECURE=1"
 Defaults    tty_tickets
-Defaults    timestamp_timeout = 1
-Defaults    editor = /usr/bin/rnano
-Defaults    secure_path = "/usr/lib/smd/sbin:/usr/bin"
-Defaults    !pwfeedback
+Defaults    log_allowed
+Defaults    log_denied
+Defaults    sudoedit_checkdir
 Defaults    insults
+Defaults    !setenv
+Defaults    !log_host
+Defaults    !fqdn
+Defaults    !env_editor
+Defaults    !fast_glob
+Defaults    !requiretty
+Defaults    !root_sudo
+Defaults    !rootpw
+Defaults    !sudoedit_follow
+Defaults    !visiblepw
+Defaults    !pwfeedback
+Defaults    lecture = "never"
+Defaults    listpw = "always"
+Defaults    passwd_tries = 3
+Defaults    verifypw = "always"
+Defaults    timestamp_timeout = 1
+Defaults    editor = "/usr/bin/rnano"
+Defaults    secure_path = "/usr/lib/smd/sbin:/usr/bin"
 
 dij ALL=(root) ALL
 dij ALL=(root) NOPASSWD: SYSTEM

@@ -1,4 +1,6 @@
+c-lolcat
 cnijfilter-mg5300series
+dvm
 evernote-for-linux-bin
 firefox-auto-tab-discard
 firefox-extension-canvasblocker
@@ -15,5 +17,6 @@ korla-icon-theme
 novnc
 osslsigncode
 powershell-bin
+python-websockify
 surf
 ttf-weather-icons

@@ -21,16 +21,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from re import compile
-from io import StringIO
 from hashlib import md5
 from sys import stderr, exit
 from threading import Thread
 from traceback import format_exc
 from signal import SIGKILL, SIGINT
-from os.path import isfile, dirname, exists
 from json import loads, dumps, JSONDecodeError
-from os import environ, remove, makedirs, stat, chmod, kill
+from os import remove, makedirs, stat, chmod, kill
+from os.path import isfile, dirname, exists, relpath, realpath, islink
 from subprocess import (
     PIPE,
     Popen,
@@ -40,45 +38,18 @@ from subprocess import (
     SubprocessError,
 )
 
-_ENV_REGEX = compile("\\$[\\w\\d_-]+|\\$\\{[\\w\\d_-]+\\}")
 
-
-def eval_env(val):
-    if not isinstance(val, str):
-        return val
-    if len(val) == 0:
-        return val
-    m = _ENV_REGEX.search(val)
-    if m is None:
-        return val
-    b = StringIO()
-    p = 0
-    while m is not None:
-        x = m.start()
-        if x > p:
-            b.write(val[p:x])
-        e = m.end()
-        if val[x] == "$":
-            x += 1
-        p = e
-        if val[x] == "{" and val[e - 1] == "}":
-            e -= 1
-            x += 1
-        v = val[x:e]
-        if v not in environ:
-            b.write(val[m.start() : m.end()])
-        else:
-            b.write(environ[v])
-        m = _ENV_REGEX.search(val, pos=m.end())
-        del v
-        del e
-        del x
-    if p < len(val):
-        b.write(val[p:])
-    r = b.getvalue()
-    del b
-    del p
-    return r
+def boolean(value):
+    if isinstance(value, str):
+        if len(value) == 0:
+            return False
+        v = value.lower().strip()
+        return v == "1" or v == "on" or v == "yes" or v == "true" or v[0] == "t"
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) or isinstance(value, float):
+        return value > 0
+    return False
 
 
 def get_pid_uid(pid):
@@ -89,81 +60,144 @@ def get_pid_uid(pid):
     return None
 
 
-def boolean(bool_value):
-    if isinstance(bool_value, str):
-        if len(bool_value) == 0:
-            return False
-        value = bool_value.lower().strip()
-        return (
-            value == "1"
-            or value == "on"
-            or value == "yes"
-            or value == "true"
-            or value[0] == "t"
-        )
-    if isinstance(bool_value, bool):
-        return bool_value
-    if isinstance(bool_value, int) or isinstance(bool_value, float):
-        return bool_value > 0
-    return False
-
-
-def stop(process_object):
-    if not isinstance(process_object, Popen):
-        return
-    if process_object.poll() is not None:
-        return process_object.wait()
-    else:
-        try:
-            process_object.send_signal(SIGINT)
-        except (OSError, SubprocessError):
-            pass
-    try:
-        process_object.terminate()
-    except (OSError, SubprocessError):
-        pass
-    try:
-        process_object.kill()
-    except (OSError, SubprocessError):
-        pass
-    try:
-        kill(process_object.pid, SIGKILL)
-    except OSError:
-        pass
-    try:
-        process_object.communicate(timeout=5)
-    except (OSError, SubprocessError):
-        pass
-    process_object.wait(timeout=5)
-    del process_object
-
-
-def remove_file(file_path):
-    if not isinstance(file_path, str) or not isfile(file_path):
+def remove_file(path):
+    if not isinstance(path, str) or not isfile(path):
         return
     try:
-        remove(file_path)
+        remove(path)
     except OSError:
         pass
 
 
-def read_json(file_path, ignore_errors=True):
-    data = read(file_path, ignore_errors, False)
-    if not isinstance(data, str):
-        if ignore_errors:
-            return None
-        raise OSError(f'Reading file "{file_path}" did not return string data!')
-    if len(data) == 0:
+def stop(proc, no_close=False):
+    if not isinstance(proc, Popen):
+        return
+    if proc.poll() is not None:
+        return proc.wait()
+    try:
+        proc.send_signal(SIGINT)
+    except (OSError, SubprocessError):
+        pass
+    try:
+        proc.terminate()
+    except (OSError, SubprocessError):
+        pass
+    try:
+        proc.wait(timeout=1)
+    except (OSError, SubprocessError):
+        pass
+    if proc.poll() is not None:
+        return proc.returncode
+    try:
+        proc.kill()
+    except (OSError, SubprocessError):
+        pass
+    try:
+        kill(proc.pid, SIGKILL)
+    except OSError:
+        pass
+    if no_close:
+        return
+    try:
+        proc.communicate(timeout=2)
+    except (OSError, SubprocessError):
+        pass
+    try:
+        proc.wait(timeout=5)
+    except (OSError, SubprocessError):
+        pass
+    del proc
+
+
+def read_json(path, errors=True):
+    d = read(path, False, errors)
+    if not isinstance(d, str):
+        if errors:
+            raise OSError(f'Reading file "{path}" did not return string data')
+        return None
+    if len(d) == 0:
         return None
     try:
-        json_data = loads(data)
+        j = loads(d)
     except (JSONDecodeError, OverflowError) as err:
-        if ignore_errors:
-            return None
-        raise OSError(err)
+        if errors:
+            raise OSError(err)
+        return None
     finally:
-        del data
-    return json_data
+        del d
+    return j
+
+
+def clean_path(path, root, links=False):
+    if not isinstance(path, str) or len(path) == 0:
+        raise ValueError('"path" must be a non-empty String')
+    if not isinstance(root, str) or len(root) == 0:
+        raise ValueError('"root" must be a non-empty String')
+    if len(root) >= len(path):
+        raise ValueError(f"Invalid root path in base {root}")
+    r = root
+    if r[-1] == "/":
+        r = r[:-1]
+    v = relpath(path, start=r)
+    c = path[len(r) + 1 :]
+    del r
+    if len(v) != len(c) or c != v:
+        raise ValueError(f'Invalid path "{path}" in base "{root}"')
+    if root[-1] == "/" or v[-1] == "/":
+        p = f"{root}{v}"
+    else:
+        p = f"{root}/{v}"
+    del v
+    del c
+    if realpath(path) != p:
+        raise ValueError(f'Invalid path "{path}" in base "{root}"')
+    if not links and islink(p):
+        raise ValueError(f'Path "{path}" {p} in base "{root}" cannot be a link')
+    return p
+
+
+def read(path, binary=False, errors=True):
+    if not isinstance(path, str):
+        if errors:
+            raise OSError('"path" must be a String!')
+        return None
+    if not isfile(path):
+        if errors:
+            raise OSError(f'Path "{path}" is not a file')
+        return None
+    try:
+        with open(path, "rb" if binary else "r") as f:
+            return f.read()
+    except OSError as err:
+        if errors:
+            raise err
+    return None
+
+
+def hash_file(path, block=4096, errors=True):
+    if not isinstance(path, str):
+        if errors:
+            raise OSError('"path" must be a String!')
+        return None
+    if not isfile(path):
+        if errors:
+            raise OSError(f'path "{path}" is not a file')
+        return None
+    g = md5()
+    try:
+        with open(path, "rb") as f:
+            while True:
+                b = f.read(block)
+                if not b:
+                    break
+                g.update(b)
+    except OSError as err:
+        if errors:
+            raise err
+        return None
+    h = g.hexdigest()
+    del g
+    return h
 
 
 def print_error(message, error=None, quit=True):
@@ -172,62 +206,10 @@ def print_error(message, error=None, quit=True):
         print(format_exc(limit=3), file=stderr)
     if quit:
         exit(1)
+    return False
 
 
-def read(file_path, ignore_errors=True, binary=False):
-    if not isinstance(file_path, str):
-        if ignore_errors:
-            return None
-        raise OSError('Parameter "file_path" must be a Python string!')
-    if not isfile(file_path):
-        if ignore_errors:
-            return None
-        raise OSError(f'Parameter path "{file_path}" is not a file!')
-    try:
-        handle = open(file_path, "rb" if binary else "r")
-    except OSError as err:
-        if ignore_errors:
-            return None
-        raise err
-    try:
-        data = handle.read()
-    except OSError as err:
-        if ignore_errors:
-            return None
-        raise err
-    finally:
-        handle.close()
-        del handle
-    return data
-
-
-def hash_file(file_path, block=4096, ignore_errors=True):
-    if not isinstance(file_path, str):
-        if ignore_errors:
-            return None
-        raise OSError('Parameter "file_path" must be a Python string!')
-    if not isfile(file_path):
-        if ignore_errors:
-            return None
-        raise OSError(f'Parameter path "{file_path}" is not a file!')
-    generator = md5()
-    try:
-        with open(file_path, "rb") as handle:
-            while True:
-                buffer = handle.read(block)
-                if not buffer:
-                    break
-                generator.update(buffer)
-    except OSError as err:
-        if ignore_errors:
-            return None
-        raise err
-    h = generator.hexdigest()
-    del generator
-    return h
-
-
-def run(command, shell=False, wait=None, ignore_errors=True):
+def run(command, shell=False, wait=None, errors=True):
     cmd = command
     if shell:
         if isinstance(command, list):
@@ -242,8 +224,7 @@ def run(command, shell=False, wait=None, ignore_errors=True):
     time = None
     if isinstance(wait, bool):
         if not wait:
-            _ProcessThread(cmd, shell).start()
-            return None
+            return _ProcessThread(cmd, shell).start()
     elif isinstance(wait, int) or isinstance(wait, float):
         time = float(wait)
     try:
@@ -259,7 +240,7 @@ def run(command, shell=False, wait=None, ignore_errors=True):
             universal_newlines=True,
         )
     except (OSError, SubprocessError, UnicodeDecodeError) as err:
-        if ignore_errors:
+        if not errors:
             return None
         if isinstance(err, OSError):
             raise err
@@ -270,11 +251,11 @@ def run(command, shell=False, wait=None, ignore_errors=True):
         ret = out.returncode
         del out
         del time
-        if ignore_errors:
+        if not errors:
             return ret == 0
         if ret == 0:
             return True
-        raise OSError(f'Process "{command}" exit code was non-zero ({ret})!')
+        raise OSError(f'Process "{command}" exit code was non-zero ({ret})')
     output = out.stdout
     del out
     del time
@@ -285,76 +266,68 @@ def run(command, shell=False, wait=None, ignore_errors=True):
     return output
 
 
-def write_json(file_path, obj, indent=0, sort=False, ignore_errors=True, perms=None):
+def write_json(path, obj, indent=0, sort=False, perms=None, errors=True):
     if obj is None:
-        if not ignore_errors:
-            raise OSError('Paramater "obj" cannot be None!')
+        if errors:
+            raise OSError('"obj" cannot be None')
         return False
     try:
-        data = dumps(obj, indent=indent, sort_keys=sort)
+        d = dumps(obj, indent=indent, sort_keys=sort)
     except (TypeError, JSONDecodeError, OverflowError) as err:
-        if not ignore_errors:
+        if errors:
             raise OSError(err)
         return False
     try:
-        return write(file_path, data, ignore_errors, False, False, perms)
+        return write(path, d, False, False, perms, errors)
     except OSError as err:
-        if not ignore_errors:
+        if errors:
             raise err
-        return False
     finally:
-        del data
+        del d
+    return False
 
 
-def write(file_path, data, ignore_errors=True, binary=False, append=False, perms=None):
-    if not isinstance(file_path, str):
-        if not ignore_errors:
-            raise OSError('Parameter "file_path" must be a Python string!')
+def write(path, data, binary=False, append=False, perms=None, errors=True):
+    if not isinstance(path, str):
+        if errors:
+            raise OSError('"path" must be a String')
         return False
-    file_dir = dirname(file_path)
-    if not exists(file_dir):
+    d = dirname(path)
+    if not exists(d):
         try:
-            makedirs(file_dir, exist_ok=True)
+            makedirs(d, exist_ok=True)
         except OSError as err:
-            if not ignore_errors:
+            if errors:
                 raise err
-            return False
-    del file_dir
-    try:
-        handle = open(
-            file_path,
-            ("ab" if binary else "a") if append else ("wb" if binary else "w"),
-        )
-    except OSError as err:
-        if not ignore_errors:
-            raise err
         return False
+    del d
+    m = ("ab" if binary else "a") if append else ("wb" if binary else "w")
     try:
-        if data is None:
-            handle.write(bytes() if binary else str())
-        elif isinstance(data, str):
-            if binary:
-                handle.write(data.encode("UTF-8"))
+        with open(path, m) as f:
+            if data is None:
+                f.write(bytes() if binary else str())
+            elif isinstance(data, str):
+                if binary:
+                    f.write(data.encode("UTF-8"))
+                else:
+                    f.write(data)
             else:
-                handle.write(data)
-        else:
-            data_string = str(data)
-            if binary:
-                handle.write(data_string.encode("UTF-8"))
-            else:
-                handle.write(data_string)
-            del data_string
-        handle.flush()
+                s = str(data)
+                if binary:
+                    f.write(s.encode("UTF-8"))
+                else:
+                    f.write(s)
+                del s
+            f.flush()
         if isinstance(perms, int):
-            chmod(file_path, perms, follow_symlinks=True)
-        return True
+            chmod(path, perms, follow_symlinks=True)
     except (OSError, UnicodeEncodeError) as err:
-        if not ignore_errors:
+        if errors:
             raise err
         return False
     finally:
-        handle.close()
-        del handle
+        del m
+    return True
 
 
 class _ProcessThread(Thread):

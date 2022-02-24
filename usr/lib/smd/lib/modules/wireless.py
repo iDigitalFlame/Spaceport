@@ -73,27 +73,24 @@ def hibernate(server, message):
 
 
 def _radio_set(server, radio, enable, notify):
-    commands = RADIO_EXEC.get(f'{radio.lower()}_{"enable" if enable else "disable"}')
-    if not isinstance(commands, list):
+    c = RADIO_EXEC.get(f'{radio.lower()}_{"enable" if enable else "disable"}')
+    if not isinstance(c, list):
         return
-    before = server.get_config(f"{radio}.enabled", not enable)
-    if before == enable:
-        del before
+    s = server.get_config(f"{radio}.enabled", not enable)
+    if s == enable:
+        del s
         return server.debug(
             f'Not re-{"enabling" if enable else "disabling"} already '
             f'{"enabled" if enable else "disabed"} radio {radio}.'
         )
-    del before
+    del s
     server.debug(f'{"Enabling" if enable else "Disabling"} "{radio}"..')
-    for command in commands:
+    for x in c:
         try:
-            run(command, ignore_errors=False)
+            run(x)
         except OSError as err:
-            server.error(
-                f'Attempting to run the command "{command}" raised an exception!',
-                err=err,
-            )
-    del commands
+            server.error(f'Error running the command "{x}"!', err=err)
+    del c
     server.set_config(f"{radio}.enabled", enable, True)
     if not notify:
         return

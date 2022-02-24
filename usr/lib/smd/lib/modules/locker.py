@@ -26,10 +26,12 @@ from os import environ
 from sched import scheduler
 from time import time, sleep
 from lib.structs.message import Message
+from os.path import expanduser, expandvars
+from lib.util import stop, run, write, read, boolean
 from subprocess import Popen, DEVNULL, SubprocessError
-from lib.util import stop, run, write, read, eval_env, boolean
 from lib.constants import (
     EMPTY,
+    NEWLINE,
     HOOK_OK,
     HOOK_LOCK,
     HOOK_LOCKER,
@@ -105,54 +107,48 @@ HOOKS_SERVER = {
 def _pause_notify(hide):
     run(
         ["/usr/bin/killall", "-SIGUSR1" if hide else "-SIGUSR2", "dunst"],
-        ignore_errors=True,
+        errors=False,
     )
 
 
 def _get_screens(server):
-    active = 0
-    connected = 0
-    for screen in glob(SCREEN_PATH_ACTIVE):
+    a = 0
+    c = 0
+    for v in glob(SCREEN_PATH_ACTIVE):
         try:
-            s = read(screen, ignore_errors=False)
+            s = read(v)
         except OSError as err:
-            server.error(
-                f'Attempting to read the screen path "{screen}" resulted in an Exception!',
-                err=err,
-            )
+            server.error(f'Error reading screen path "{v}"!', err=err)
             continue
         if len(s) > 0 and s.lower()[0] == "e":
-            active += 1
+            a += 1
         del s
-    for screen in glob(SCREEN_PATH_CONNECTED):
+    for v in glob(SCREEN_PATH_CONNECTED):
         try:
-            s = read(screen, ignore_errors=False)
+            s = read(v)
         except OSError as err:
-            server.error(
-                f'Attempting to read the screen path "{screen}" resulted in an Exception!',
-                err=err,
-            )
+            server.error(f'Error reading the screen path "{v}"!', err=err)
             continue
         if len(s) > 0 and s.lower()[0] == "c":
-            connected += 1
+            c += 1
         del s
-    server.debug(f"Detected {active} active and {connected} connected screens..")
-    return active, connected
+    server.debug(f"Detected {a} active and {c} connected screens..")
+    return a, c
 
 
 def time_to_str(now, value):
     if value is None:
         return "Until Reboot"
-    left = round(value - now)
-    if left <= 0:
+    n = round(value - now)
+    if n <= 0:
         return "Until Reboot"
-    if left <= 60:
-        return f"{left}s"
-    if left > 60:
-        mins = left // 60
-        seconds = left - (mins * 60)
-        del left
-        return f"{mins}m {seconds}s"
+    if n <= 60:
+        return f"{n}s"
+    if n > 60:
+        m = n // 60
+        s = n - (m * 60)
+        del n
+        return f"{m}m {s}s"
     return None
 
 
@@ -197,14 +193,14 @@ class LockerClient(object):
         return self.lock_process is not None and self.lock_process.poll() is None
 
     def setup(self, server):
-        server.debug("Loading locker defaults from config..")
+        server.debug("Loading Locker defaults from config..")
         try:
             self.ability_blank = int(
                 server.get_config("locker.screen_blank", DEFAULT_LOCKER_BLANK, True)
             )
         except (TypeError, ValueError) as err:
             server.error(
-                'Improper value for "locker.screen_blank"! Resetting to default!',
+                'Improper value for "locker.screen_blank", resetting to default!',
                 err=err,
             )
             self.ability_blank = server.set_config(
@@ -222,7 +218,7 @@ class LockerClient(object):
             )
         except (TypeError, ValueError) as err:
             server.error(
-                'Improper value for "locker.lockscreen"! Resetting to default!', err=err
+                'Improper value for "locker.lockscreen", resetting to default!', err=err
             )
             self.ability_lock = server.set_config(
                 "locker.lockscreen", DEFAULT_LOCKER_LOCK, True
@@ -233,18 +229,18 @@ class LockerClient(object):
             )
         except (TypeError, ValueError) as err:
             server.error(
-                'Improper value for "locker.suspend"! Resetting to default!', err=err
+                'Improper value for "locker.suspend", resetting to default!', err=err
             )
             self.ability_suspend = server.set_config(
                 "locker.suspend", DEFAULT_LOCKER_SUSPEND, True
             )
         try:
             self.ability_hibernate = int(
-                server.get_config("locker.hibernate", DEFAULT_LOCKER_HIBERNATE, True)
+                server.get_config("locker.hibernate", DEFAULT_LOCKER_HIBERNATE, True),
             )
         except (TypeError, ValueError) as err:
             server.error(
-                'Improper value for "locker.hibernate"! Resetting to default!', err=err
+                'Improper value for "locker.hibernate", resetting to default!', err=err
             )
             self.ability_hibernate = server.set_config(
                 "locker.hibernate", DEFAULT_LOCKER_HIBERNATE, True
@@ -255,7 +251,7 @@ class LockerClient(object):
             )
         except (TypeError, ValueError) as err:
             server.error(
-                'Improper value for "locker.command"! Resetting to default!', err=err
+                'Improper value for "locker.command", resetting to default!', err=err
             )
             self.lock_command = server.set_config(
                 "locker.command", DEFAULT_LOCKER_LOCKER, True
@@ -267,13 +263,13 @@ class LockerClient(object):
                 self.lock_command = self.lock_command.split(" ")
             else:
                 server.error(
-                    'Improper value for "locker.command"! Resetting to default!'
+                    'Improper value for "locker.command", resetting to default!'
                 )
                 self.lock_command = server.set_config(
                     "locker.command", DEFAULT_LOCKER_LOCKER, True
                 )
         for x in range(0, len(self.lock_command)):
-            self.lock_command[x] = eval_env(self.lock_command[x])
+            self.lock_command[x] = expandvars(expanduser(self.lock_command[x]))
         self._try_set_screen()
         stop(self.lock_locker)
         _pause_notify(False)
@@ -294,8 +290,7 @@ class LockerClient(object):
                     stderr=DEVNULL,
                 )
             except (OSError, SubprocessError) as err:
-                server.error('Starting "xautolock" raised an Exception!', err=err)
-                self.locker = None
+                server.error('Error starting "xautolock"!', err=err)
 
     def _cancel_event(self):
         if self.event is None:
@@ -307,43 +302,36 @@ class LockerClient(object):
         self.event = None
 
     def thread(self, server):
-        if not self._is_locked() and self.lock_process is not None:
-            server.debug("Lock Screen was removed, resetting lock status.")
-            self._set_unlock(server)
-        elif self._is_locked():
+        if self._is_locked():
             self._try_wake_event(server)
+        elif self.lock_process is not None and self.lock_process.poll() is not None:
+            server.debug("Lockscreen was removed, resetting lock status..")
+            self._set_unlock(server)
         if not self.scheduler.empty():
             self.scheduler.run(blocking=False)
-        if (
-            self.ability_lock is not None
-            and self.ability_lock > 0
-            and self.lock_locker is not None
-            and self.lock_locker.poll() is not None
-        ):
+        if self.lock_locker is not None and self.lock_locker.poll() is not None:
             server.warning("Locker watcher process has unexpectedly closed!")
             stop(self.lock_locker)
             self.lock_locker = None
+            self._set_unlock(server)
 
     def _try_set_screen(self):
-        timeout = self.ability_blank
-        if timeout is None or timeout < 0:
-            timeout = 0
+        n = self.ability_blank
+        if n is None or n < 0:
+            n = 0
         if LOCKER_TYPE_BLANK in self.lockers:
-            timeout = 0
+            n = 0
         if self._is_locked():
-            timeout = LOCKER_BLANK_TIME
-        run(["/usr/bin/xset", "s", str(timeout)], ignore_errors=True)
-        run(
-            ["/usr/bin/xset", "dpms", str(timeout), str(timeout), str(timeout)],
-            ignore_errors=True,
-        )
-        del timeout
+            n = LOCKER_BLANK_TIME
+        run(["/usr/bin/xset", "s", str(n)], errors=False)
+        run(["/usr/bin/xset", "dpms", str(n), str(n), str(n)], errors=False)
+        del n
 
     def shutdown(self, server):
         self.lockers.clear()
+        self._set_unlock(server)
         stop(self.lock_locker)
         self.lock_locker = None
-        self._set_unlock(server)
 
     def _try_wake(self, server):
         self._cancel_event()
@@ -354,13 +342,13 @@ class LockerClient(object):
         return server.info("Lockscreen timeout was hit, triggering timeout!")
 
     def _set_unlock(self, server):
-        if self.lock_process is not None or self._is_locked():
+        if self.lock_process is not None:
             stop(self.lock_process)
-            server.debug("Unlocked the Lock Screen and cancled any timeouts!")
+            server.debug("Unlocked the Lockscreen and canceled any timeouts!")
             server.send(
                 None, Message(header=HOOK_LOCK, payload={"type": MESSAGE_TYPE_POST})
             )
-            run(LOCKER_EXEC_SCREEN_ON, ignore_errors=True)
+            run(LOCKER_EXEC_SCREEN_ON, errors=False)
         self.lock_process = None
         self._cancel_event()
         self._try_set_screen()
@@ -370,15 +358,14 @@ class LockerClient(object):
         if message.type is not None:
             return
         if message.trigger == LOCKER_TRIGGER_KEY and not self.lock_on_key:
-            return server.debug('Ignoring key removal lock as "key_lock" was false.')
+            return server.debug('Ignoring key removal lock as "key_lock" was false!')
         self._set_lock(
             server, message.get("force", False) or message.trigger == LOCKER_TRIGGER_KEY
         )
 
     def _try_wake_event(self, server):
         if self.is_sleeping:
-            self._cancel_event()
-            return
+            return self._cancel_event()
         if self.ability_lock is None or self.ability_lock <= 0:
             return
         if self.ability_suspend is not None and self.ability_suspend > 0:
@@ -387,7 +374,7 @@ class LockerClient(object):
                     return
                 self._cancel_event()
                 return server.debug(
-                    "Suspend locker was detected, canceling suspend timeout.."
+                    "Suspend Locker was detected, canceling suspend timeout.."
                 )
         elif self.ability_hibernate is not None and self.ability_hibernate > 0:
             if LOCKER_TYPE_HIBERNATE in self.lockers:
@@ -395,20 +382,17 @@ class LockerClient(object):
                     return
                 self._cancel_event()
                 return server.debug(
-                    "Hibernate locker was detected, canceling hibernate timeout.."
+                    "Hibernate Locker was detected, canceling hibernate timeout.."
                 )
         if self.event is not None:
             return
-        timeout = self.ability_suspend
-        if timeout is None or timeout <= 0:
-            timeout = self.ability_hibernate
-        server.debug(f'Setting lockscreen timeout event for "{timeout}" seconds.')
+        t = self.ability_suspend
+        if t is None or t <= 0:
+            t = self.ability_hibernate
+        server.debug(f'Setting Lockscreen timeout event for "{t}" seconds.')
         self._cancel_event()
-        self.event = self.scheduler.enter(
-            timeout, 1, self._try_wake, argument=(server,)
-        )
-        server.debug(f'Set lock screen timeout for "{timeout}" seconds..')
-        del timeout
+        self.event = self.scheduler.enter(t, 1, self._try_wake, argument=(server,))
+        del t
 
     def update(self, server, message):
         if message.type != MESSAGE_TYPE_STATUS or message.lockers is None:
@@ -418,22 +402,22 @@ class LockerClient(object):
         else:
             self.lockers = message.lockers
         self._try_set_screen()
-        return server.debug("Received updated list of lockers from server!")
+        return server.debug("Received updated list of Lockers from the server!")
 
     def suspend(self, server, message):
         if message.type == MESSAGE_TYPE_PRE:
-            server.info("Received a suspend request from the server!")
+            server.info("Received a Suspend request from the server!")
             self.is_sleeping = True
             self._set_lock(server, True)
-            run([LOCKER_EXEC_RESET, "no-alert"], ignore_errors=True)
+            run([LOCKER_EXEC_RESET, "no-alert"], errors=False)
             return HOOK_OK
         self.is_sleeping = False
-        run(LOCKER_EXEC_SCREEN_ON, ignore_errors=True)
+        run(LOCKER_EXEC_SCREEN_ON, errors=False)
 
     def startup(self, server, message):
         if message.header() == HOOK_RELOAD:
             self.setup(server)
-        server.debug("Sending abilities and query for current lockers.")
+        server.debug("Sending abilities and query for current Lockers.")
         server.send(
             None,
             Message(
@@ -451,22 +435,22 @@ class LockerClient(object):
 
     def hibernate(self, server, message):
         if message.type == MESSAGE_TYPE_PRE:
-            server.info("Received a hibernate request from the server!")
+            server.info("Received a Hibernate request from the server!")
             self.is_sleeping = True
             self._set_lock(server, True)
-            run([LOCKER_EXEC_RESET, "no-alert"], ignore_errors=True)
+            run([LOCKER_EXEC_RESET, "no-alert"], errors=False)
             return HOOK_OK
         self.is_sleeping = False
-        run(LOCKER_EXEC_SCREEN_ON, ignore_errors=True)
+        run(LOCKER_EXEC_SCREEN_ON, errors=False)
 
     def _set_lock(self, server, force=False):
         if (self.ability_lock is None or self.ability_lock <= 0) and not force:
-            return server.debug(
-                "Client lacks the ability to lock, not setting non-force lockscreen!"
+            return server.info(
+                "Client lacks the ability to Lock, not setting non-force Lockscreen!"
             )
         if LOCKER_TYPE_LOCK in self.lockers and not force:
             return server.debug(
-                "Lockscreen Locker is present, not setting non-force lockscreen!"
+                "Lockscreen Locker is present, not setting non-force Lockscreen!"
             )
         if self._is_locked():
             return
@@ -478,16 +462,14 @@ class LockerClient(object):
                 stdout=DEVNULL,
                 stderr=DEVNULL,
             )
-            server.info(f'Started Lock Screen, PID "{self.lock_process.pid}".')
+            server.info(f'Started Lockscreen, PID "{self.lock_process.pid}".')
         except (OSError, SubprocessError) as err:
             self._set_unlock(server)
-            return server.error(
-                "Starting the Lock Screen raised an exception!", err=err
-            )
+            return server.error("Error starting the Lockscreen!", err=err)
         _pause_notify(True)
         self._try_set_screen()
         self._try_wake_event(server)
-        run(LOCKER_EXEC_SCREEN_OFF, ignore_errors=True)
+        run(LOCKER_EXEC_SCREEN_OFF, errors=False)
         server.send(None, Message(header=HOOK_LOCK, payload={"type": MESSAGE_TYPE_PRE}))
 
 
@@ -519,7 +501,7 @@ class LockerServer(object):
 
     def screen(self, server):
         if self.event_check is not None:
-            return server.debug("Not ready to check display status again...")
+            return server.debug("Not ready to check display status again..")
         self.event_check = self.scheduler.enter(
             LOCKER_CHECK_TIME, 1, self._screen_clear_check
         )
@@ -531,25 +513,23 @@ class LockerServer(object):
         if LOCKER_TYPE_LID in self.lockers or not self.ability_lid:
             return
         try:
-            lid = self.lid_switch.read()
+            v = self.lid_switch.read()
         except OSError as err:
             return server.error(
-                f'Attempting to read the lid switch "{LOCKER_PATH_LID}" raised an Exception!',
-                err=err,
+                f'Error reading the lid switch "{LOCKER_PATH_LID}"!', err=err
             )
         try:
             self.lid_switch.seek(0)
         except OSError as err:
             return server.error(
-                f'Attempting to seek the lid switch "{LOCKER_PATH_LID}" raised an Exception!',
-                err=err,
+                f'Error seeking the lid switch "{LOCKER_PATH_LID}"!', err=err
             )
-        if not isinstance(lid, bytes):
-            return server.error("Lid switch read did not return a proper bytearray!")
-        if len(lid) >= 13 and lid[12] == 111:
-            del lid
+        if not isinstance(v, bytes):
+            return server.error("Lid switch read did not return a bytearray!")
+        if len(v) >= 13 and v[12] == 111:
+            del v
             return
-        del lid
+        del v
         if self.event_backoff is not None:
             return server.debug(
                 "Detected a lid closure, but screen backoff is in effect!"
@@ -565,7 +545,7 @@ class LockerServer(object):
         self.event_check = None
 
     def setup_server(self, server):
-        write(LOCKER_PATH_STATUS, EMPTY, ignore_errors=True, perms=0o644)
+        write(LOCKER_PATH_STATUS, EMPTY, perms=0o644, errors=False)
         if self.lid_switch is not None:
             try:
                 self.lid_switch.close()
@@ -575,10 +555,7 @@ class LockerServer(object):
         try:
             self.lid_switch = open(LOCKER_PATH_LID, "rb")
         except OSError as err:
-            server.error(
-                "Attempting to get a handle to the lid switch raised an Exception!",
-                err=err,
-            )
+            server.error("Error retriving a handle to the lid switch!", err=err)
 
     def _send_notify(self, server):
         server.debug("Updating Clients on Locker status..")
@@ -594,26 +571,26 @@ class LockerServer(object):
         )
         write(
             LOCKER_PATH_STATUS,
-            str("\n".join(self.lockers.keys())),
-            ignore_errors=True,
+            NEWLINE.join(self.lockers.keys()),
             perms=0o644,
+            errors=False,
         )
         message = "No lockers are enabled."
         if len(self.lockers) > 0:
-            now = time()
-            message = "\n".join(
+            v = time()
+            message = NEWLINE.join(
                 [
-                    f"{LOCKER_TYPE_NAMES.get(n, n.title())} ({time_to_str(now, l.expires)})"
+                    f"{LOCKER_TYPE_NAMES.get(n, n.title())} ({time_to_str(v, l.expires)})"
                     for n, l in self.lockers.items()
                 ]
             )
-            del now
+            del v
         server.notify("Lockers Updated", message, "caffeine")
         del message
 
     def lock(self, server, message):
         if message.trigger is None and message.type == MESSAGE_TYPE_POST:
-            if message.multicast():
+            if message.is_multicast():
                 return
             return message.set_multicast()
         if message.type is not None:
@@ -637,7 +614,7 @@ class LockerServer(object):
         ):
             return server.warning("Received an invalid locker trigger!")
         if (self.ability_lock is None or self.ability_lock <= 0) and not message.force:
-            return server.debug(
+            return server.info(
                 "Ignoring non-force lock request due to client lacking lock ability."
             )
         if message.trigger == LOCKER_TRIGGER_KEY:
@@ -673,7 +650,7 @@ class LockerServer(object):
                 f"{self.ability_suspend}, {self.ability_hibernate})"
             )
         if message.type == MESSAGE_TYPE_ACTION:
-            if message.name is not None:
+            if isinstance(message.name, str):
                 return self._set_locker(
                     server,
                     message.name,
@@ -681,17 +658,17 @@ class LockerServer(object):
                     message.get("force", False),
                 )
             if isinstance(message.list, list):
-                for locker in message.list:
-                    if "name" not in locker:
+                for e in message.list:
+                    if "name" not in e:
                         continue
                     self._set_locker(
                         server,
-                        locker["name"],
-                        locker.get("time", None),
-                        locker.get("force", False),
+                        e["name"],
+                        e.get("time", None),
+                        e.get("force", False),
                     )
                 return
-            return server.debug("Invalid management query by client!")
+            return server.debug("Invalid management action by client!")
         if message.type == MESSAGE_TYPE_STATUS:
             if message.locker is not None and message.locker in self.lockers:
                 return {
@@ -701,42 +678,32 @@ class LockerServer(object):
                 }
             return {
                 "type": MESSAGE_TYPE_STATUS,
-                "lockers": {
-                    name: value.expires for name, value in self.lockers.items()
-                },
+                "lockers": {n: v.expires for n, v in self.lockers.items()},
             }
 
     def _set_wake_alarm(self, server):
         if self.ability_hibernate is None or self.ability_hibernate <= 0:
-            return server.debug(
-                "Client lacks the ability to hibernate, not setting wake alarm.."
+            return server.info(
+                "Client lacks the ability to Hibernate, not setting wake alarm.."
             )
         if LOCKER_TYPE_HIBERNATE in self.lockers:
-            blocker = self.lockers[LOCKER_TYPE_HIBERNATE]
-            if blocker.expires is None or blocker.expires > (
-                time() + self.ability_hibernate
-            ):
+            b = self.lockers[LOCKER_TYPE_HIBERNATE]
+            if b.expires is None or b.expires > (time() + self.ability_hibernate):
                 return server.debug(
-                    "Locker blocks the ability to hibernate, not setting RTC wake alarm!"
+                    "Locker blocks the ability to Hibernate, not setting RTC wake alarm!"
                 )
-            del blocker
+            del b
             server.debug(
                 "Hibernate locker will expire while we are sleeping, removing it.."
             )
             self._remove_locker(server, LOCKER_TYPE_HIBERNATE)
         server.debug(
-            f'Setting the RTC alarm to wake the system to hibernate in "{self.ability_hibernate}" seconds.'
+            f'Setting the RTC alarm to wake the system to Hibernate in "{self.ability_hibernate}" seconds.'
         )
         try:
-            write(
-                LOCKER_PATH_WAKEALARM,
-                str(round(time() + self.ability_hibernate)),
-                ignore_errors=False,
-            )
+            write(LOCKER_PATH_WAKEALARM, str(round(time() + self.ability_hibernate)))
         except OSError as err:
-            return server.error(
-                "Attempting to set the RTC alarm raised an Exception!", err=err
-            )
+            return server.error("Error setting the RTC alarm!", err=err)
         self.is_wakealarm = True
         server.info(f'Hibernate wake alarm set for "{self.ability_hibernate}" seconds.')
 
@@ -778,22 +745,17 @@ class LockerServer(object):
             return False
         server.debug("Checking the RTC wake alarm..")
         try:
-            alarm = read(LOCKER_PATH_WAKEALARM, ignore_errors=False)
+            a = read(LOCKER_PATH_WAKEALARM)
         except OSError as err:
-            server.error(
-                "Attempting to read the RTC wake alarm file raised an Exception!",
-                err=err,
-            )
+            server.error("Error reading the RTC wake alarm!", err=err)
             return False
-        if len(alarm) > 0:
+        if len(a) > 0:
             try:
-                write(LOCKER_PATH_WAKEALARM, EMPTY, ignore_errors=False)
+                write(LOCKER_PATH_WAKEALARM, EMPTY)
             except OSError as err:
-                server.error(
-                    "Attempting to reset the RTC wake alarm file raised an Exception!",
-                    err=err,
-                )
+                server.error("Error resetting the RTC wake alarm!", err=err)
             return False
+        del a
         return True
 
     def hibernate(self, server, message):
@@ -816,11 +778,11 @@ class LockerServer(object):
         return message.set_multicast()
 
     def _remove_locker(self, server, locker):
-        lock = self.lockers.get(locker)
-        if lock is not None:
-            lock.cancel()
+        v = self.lockers.get(locker)
+        if v is not None:
+            v.cancel()
             server.debug(f'Removed Locker "{locker}"!')
-        del lock
+        del v
 
     def _try_suspend(self, server, lid=False):
         if self.event_backoff is not None:
@@ -828,71 +790,57 @@ class LockerServer(object):
         if self.ability_suspend is None or self.ability_suspend <= 0:
             if self.ability_hibernate is None or self.ability_hibernate <= 0:
                 return server.debug(
-                    "Client lacks the ability to suspend and hibernate, bailing out.."
+                    "Client lacks the ability to Suspend and Hibernate, bailing out.."
                 )
             if LOCKER_TYPE_HIBERNATE in self.lockers:
-                return server.debug("Locker is inhibiting hibernate, bailing out..")
-            server.debug(
-                "Client lacks the ability to suspend, attempting to hibernate!"
-            )
+                return server.debug("Locker is inhibiting Hibernate, bailing out..")
+            server.info("Client lacks the ability to Suspend, attempting to Hibernate!")
             return run(LOCKER_EXEC_HIBERNATE)
         if LOCKER_TYPE_SUSPEND in self.lockers and not lid:
-            return server.debug("Locker is inhibiting suspend, bailing out..")
+            return server.debug("Locker is inhibiting Suspend, bailing out..")
         return run(LOCKER_EXEC_SUSPEND)
 
     def _screen_detect(self, server, initial=False):
-        active, connected = _get_screens(server)
-        if (
-            not initial
-            and self.display_active == active
-            and self.display_connected == connected
-        ):
+        a, c = _get_screens(server)
+        if not initial and self.display_active == a and self.display_connected == c:
             return
-        self.display_active = active
-        self.display_connected = connected
-        del active
-        del connected
+        self.display_active = a
+        self.display_connected = c
         self.event_backoff = self.scheduler.enter(
             LOCKER_BACKOFF_TIME, 1, self._screen_clear_backoff
         )
-        message = Message(
-            header=HOOK_DISPLAY,
-            payload={
-                "active": self.display_active,
-                "connected": self.display_connected,
-            },
-        )
+        m = Message(header=HOOK_DISPLAY, payload={"active": a, "connected": c})
+        del a
+        del c
         if initial:
-            server.forward(message)
+            server.forward(m)
         else:
-            server.send(None, message)
-        del message
+            server.send(None, m)
+        del m
 
     def _set_locker(self, server, locker, expires, force=False):
         if locker in self.lockers and not force:
             return
-        seconds = None
+        s = None
         if expires is not None:
             try:
-                seconds = int(expires)
+                s = int(expires)
             except ValueError:
                 return server.warning(
                     f'Client attempted to add a Locker "{locker}" with an invalid expire time of "{expires}"!'
                 )
-            if seconds <= 0:
+            if s <= 0:
                 return self._remove_locker(server, locker)
         if (
             locker in self.lockers
-            and seconds is None
+            and s is None
             and self.lockers[locker].expires is None
         ):
             return
         self._remove_locker(server, locker)
-        if seconds is None:
+        if s is None:
             server.debug(f'Added a Locker "{locker}" with no expire timeout!')
         else:
-            server.debug(
-                f'Added a Locker "{locker}" with a timeout of "{seconds}" seconds!'
-            )
-        self.lockers[locker] = _LockerLock(locker, seconds, self)
+            server.debug(f'Added a Locker "{locker}" with a timeout of "{s}" seconds!')
+        self.lockers[locker] = _LockerLock(locker, s, self)
         self.needs_update = True

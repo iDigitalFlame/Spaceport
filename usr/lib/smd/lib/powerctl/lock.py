@@ -23,8 +23,8 @@
 #
 
 from lib.util import print_error
+from lib.powerctl.locker import get_locker
 from lib.structs.message import send_message
-from lib.powerctl.locker import _parse_locker
 from lib.constants import (
     HOOK_LOCK,
     HOOK_LOCKER,
@@ -36,25 +36,21 @@ from lib.constants import (
 
 
 def default(arguments):
-    lockers = list()
+    e = list()
     if arguments.timeout:
         arguments.suspend = arguments.timeout
-    _parse_locker(
-        lockers, LOCKER_TYPE_SUSPEND, arguments.suspend, arguments.suspend_force
-    )
-    _parse_locker(
-        lockers, LOCKER_TYPE_HIBERNATE, arguments.hibernate, arguments.hibernate_force
-    )
-    if len(lockers) > 0:
+    get_locker(e, LOCKER_TYPE_SUSPEND, arguments.suspend, arguments.suspend_force)
+    get_locker(e, LOCKER_TYPE_HIBERNATE, arguments.hibernate, arguments.hibernate_force)
+    if len(e) > 0:
         try:
             send_message(
                 arguments.socket,
                 HOOK_LOCKER,
-                payload={"type": MESSAGE_TYPE_ACTION, "list": lockers},
+                payload={"type": MESSAGE_TYPE_ACTION, "list": e},
             )
         except OSError as err:
-            print_error("Attempting to update the Lockers raised an exception!", err)
-    del lockers
+            return print_error("Error updating Lockers!", err)
+    del e
     try:
         send_message(
             arguments.socket,
@@ -62,4 +58,4 @@ def default(arguments):
             payload={"force": arguments.force, "trigger": LOCKER_TRIGGER_LOCK},
         )
     except OSError as err:
-        print_error("Attempting to trigger the Lock Screen raised an exception!", err)
+        print_error("Error triggering the Lockscreen!", err)

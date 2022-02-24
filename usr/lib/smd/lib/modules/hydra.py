@@ -23,6 +23,7 @@
 #
 
 from uuid import uuid4
+from pwd import getpwnam
 from shutil import rmtree
 from random import randint
 from sched import scheduler
@@ -30,17 +31,29 @@ from time import time, sleep
 from threading import Thread
 from ipaddress import IPv4Network
 from signal import SIGCONT, SIGSTOP
-from lib.structs.message import Message
 from lib.structs.storage import Storage
 from json import dumps, loads, JSONDecodeError
+from socket import socket, AF_UNIX, SOCK_STREAM
+from lib.structs.message import Message, as_error
 from os import mkdir, listdir, environ, getcwd, chmod, stat
 from subprocess import Popen, DEVNULL, PIPE, SubprocessError
-from os.path import isdir, isfile, exists, basename, isabs, dirname
-from socket import socket, AF_UNIX, SOCK_STREAM, error as socket_error
-from lib.util import read, write, stop, run, remove_file, read_json, eval_env
+from lib.util import read, write, stop, run, remove_file, read_json
+from stat import S_IXUSR, S_ISVTX, S_ISUID, S_IXGRP, S_IXOTH, S_IWGRP, S_IWOTH
+from os.path import (
+    isdir,
+    isfile,
+    exists,
+    basename,
+    isabs,
+    dirname,
+    expanduser,
+    expandvars,
+    islink,
+)
 from lib.constants import (
     NAME,
     EMPTY,
+    NEWLINE,
     HYDRA_UID,
     HOOK_HYDRA,
     HYDRA_WAKE,
@@ -48,12 +61,14 @@ from lib.constants import (
     HYDRA_SLEEP,
     HYDRA_START,
     HOOK_DAEMON,
+    HYDRA_GA_IP,
     HYDRA_BRIDGE,
     HYDRA_STATUS,
     HOOK_SUSPEND,
     HYDRA_TOKENS,
     HYDRA_RESERVE,
     HYDRA_USB_DIR,
+    HYDRA_GA_PING,
     HYDRA_EXEC_VM,
     HYDRA_USB_ADD,
     HOOK_SHUTDOWN,
@@ -97,213 +112,207 @@ HOOKS_SERVER = {
 
 def get_usb():
     try:
-        usb_devices = listdir(HYDRA_USB_DIR)
+        u = listdir(HYDRA_USB_DIR)
     except OSError:
         return dict()
-    devices = dict()
-    for device in usb_devices:
-        vendor_path = f"{HYDRA_USB_DIR}/{device}/idVendor"
-        product_path = f"{HYDRA_USB_DIR}/{device}/idProduct"
-        if not isfile(vendor_path) or not isfile(product_path):
+    e = dict()
+    for d in u:
+        v = f"{HYDRA_USB_DIR}/{d}/idVendor"
+        p = f"{HYDRA_USB_DIR}/{d}/idProduct"
+        if not isfile(v) or not isfile(p):
             continue
         try:
-            vendor = read(vendor_path, ignore_errors=False).replace("\n", EMPTY)
-            product = read(product_path, ignore_errors=False).replace("\n", EMPTY)
+            cv = read(v).replace(NEWLINE, EMPTY)
+            cp = read(p).replace(NEWLINE, EMPTY)
         except OSError:
             continue
         finally:
-            del vendor_path
-            del product_path
-        name = "USB Device"
-        name_vendor = f"{HYDRA_USB_DIR}/{device}/manufacturer"
-        name_product = f"{HYDRA_USB_DIR}/{device}/{product}"
+            del v
+            del p
+        n = "USB Device"
+        nv = f"{HYDRA_USB_DIR}/{d}/manufacturer"
+        np = f"{HYDRA_USB_DIR}/{d}/{cp}"
         try:
-            if isfile(name_vendor) and isfile(name_product):
-                name = "%s %s" % (
-                    read(name_product, ignore_errors=False).replace("\n", EMPTY),
-                    read(name_vendor, ignore_errors=False).replace("\n", EMPTY),
+            if isfile(nv) and isfile(np):
+                n = (
+                    f"{read(np).replace(NEWLINE, EMPTY)} "
+                    f"{read(nv).replace(NEWLINE, EMPTY)}"
                 )
-            elif isfile(name_vendor):
-                name = read(name_vendor, ignore_errors=False).replace("\n", EMPTY)
-            elif isfile(name_product):
-                name = read(name_product, ignore_errors=False).replace("\n", EMPTY)
+            elif isfile(nv):
+                n = read(nv).replace(NEWLINE, EMPTY)
+            elif isfile(np):
+                n = read(np).replace(NEWLINE, EMPTY)
         except OSError:
             continue
         finally:
-            del name_vendor
-            del name_product
-        devices[f"{vendor}:{product}"] = {
-            "name": f"{name} ({vendor}:{product}",
-            "vendor": vendor,
-            "product": product,
-            "path": f"{HYDRA_USB_DIR}/{device}",
+            del nv
+            del np
+        e[f"{cv}:{cp}"] = {
+            "name": f"{n} ({cv}:{cp}",
+            "vendor": cv,
+            "product": cp,
+            "path": f"{HYDRA_USB_DIR}/{d}",
         }
-        del name
-        del vendor
-        del product
-    del usb_devices
-    return devices
+        del n
+        del cv
+        del cp
+    del u
+    return e
 
 
 def _response(output):
     if not isinstance(output, bytes) or len(output) == 0:
         return None
     try:
-        out = output.decode("UTF-8")
+        o = output.decode("UTF-8")
     except UnicodeDecodeError:
         return None
-    if len(out) == 0:
+    if len(o) == 0:
         return None
-    response = list()
-    for line in out.split("\r\n"):
-        if len(response) == 0:
+    r = list()
+    for e in o.split("\r\n"):
+        if len(r) == 0:
             continue
         try:
-            result = loads(line)
-        except JSONDecodeError:
-            raise OSError(f'Received an invalid server response "{line}"!')
-        if not isinstance(result, dict):
+            d = loads(e)
+        except JSONDecodeError as err:
+            raise OSError(f"Invalid server response: {err}")
+        if not isinstance(d, dict):
             return None
-        if "error" in result:
-            raise OSError(result["error"])
-        response.append(result)
-        del result
-    del out
-    return response
+        if "error" in d:
+            raise OSError(d["error"])
+        r.append(d)
+        del d
+    del o
+    return r
 
 
 def get_vm(path, config=None):
     if not isinstance(path, str) or len(path) == 0:
         return None
-    aliases = dict()
     if isinstance(config, str) and isfile(config):
-        data = read_json(config)
-        if isinstance(data, dict) and "hydra" in data:
-            if "aliases" in data["hydra"]:
-                alias = path.lower()
-                aliases = data["hydra"]["aliases"]
-                if isinstance(aliases, dict) and alias in aliases:
-                    user_path = eval_env(aliases[alias])
-                    if exists(user_path):
-                        path = user_path
-                    del user_path
-                del alias
-                del aliases
+        d = read_json(config)
+        if isinstance(d, dict) and "hydra" in d:
+            if "aliases" in d["hydra"]:
+                n = path.lower()
+                a = d["hydra"]["aliases"]
+                if isinstance(a, dict) and n in a:
+                    u = expandvars(expanduser(a[n]))
+                    if exists(u):
+                        path = u
+                    del u
+                del n
+                del a
             if isinstance(path, str) and path == ".":
                 path = getcwd()
-            if path is None or not isabs(path) and "directory" in data["hydra"]:
-                user_dir = eval_env(data["hydra"]["directory"])
-                if isinstance(user_dir, str) and len(user_dir) > 0:
-                    user_path = f"{user_dir}/{path}"
-                    if exists(user_path):
-                        path = user_path
-                    del user_path
-                del user_dir
-        del data
+            if path is None or not isabs(path) and "directory" in d["hydra"]:
+                u = expandvars(expanduser(d["hydra"]["directory"]))
+                if isinstance(u, str) and len(u) > 0:
+                    p = f"{u}/{path}"
+                    if exists(p):
+                        path = p
+                    del p
+                del u
+        del d
     if isinstance(path, str) and path == ".":
         path = getcwd()
     if isinstance(path, str) and isfile(path):
         return path
     if "HOME" in environ:
         if not isabs(path):
-            path = eval_env(path)
+            path = expandvars(expanduser(path))
         if not isabs(path):
-            cwd_path = f"{getcwd()}/{path}"
-            if exists(cwd_path):
-                path = cwd_path
-            del cwd_path
+            c = f"{getcwd()}/{path}"
+            if exists(c):
+                path = c
+            del c
     if not exists(path):
         return None
     if isdir(path):
-        base_dir = basename(path)
-        names = [
-            base_dir,
-            f"{base_dir}.conf",
-            f"{base_dir}.json",
-            f"{base_dir}.vmx",
-        ] + HYDRA_VM_CONFIGS
-        for name in names:
-            name_path = f"{path}/{name}"
-            if isfile(name_path):
-                return name_path
-            del name_path
-        del names
-        del base_dir
+        b = basename(path)
+        for n in [b, f"{b}.conf", f"{b}.json", f"{b}.vmx"] + HYDRA_VM_CONFIGS:
+            p = f"{path}/{n}"
+            if isfile(p):
+                return p
+            del p
+        del b
     if isfile(path):
         return path
     return None
 
 
 def user_alias(server, message):
-    print(message)
     if message.type == HYDRA_USER_DIRECTORY:
-        directory = message.get("directory", EMPTY)
-        server.debug(f'Updating Hydra VM user directory to "{directory}".')
-        server.set_config("hydra.directory", directory, True)
-        del directory
+        d = message.directory
+        if not isinstance(d, str):
+            d = EMPTY
+        server.debug(f'Updating Hydra VM User Directory to "{d}".')
+        server.set_config("hydra.directory", d, True)
+        del d
         return
-    name = message.get("name", None)
-    aliases = server.get_config("hydra.aliases", dict(), True)
-    if name is None or message.get("path", None) is None:
+    n = message.name
+    a = server.get_config("hydra.aliases", dict(), True)
+    if not isinstance(n, str) or len(n) == 0 or message.vmid is None:
         return
     if message.type == HYDRA_USER_ADD_ALIAS:
-        aliases[name.lower()] = message["path"]
-        server.debug(f'Added user alias "{name}" to Hydra VM "{message["vmid"]}".')
+        if not isinstance(message.path, str) or len(message.path) == 0:
+            return
+        a[n.lower()] = message.path
+        server.debug(f'Added user alias "{n}" to Hydra VM "{message.vmid}".')
     elif message.type == HYDRA_USER_DELETE_ALIAS:
-        del aliases[name]
-        server.debug(f'Removed user alias "{name}" from Hydra VM "{aliases[name]}".')
-    server.set_config("hydra.aliases", aliases, True)
-    del name
-    del aliases
+        del a[n]
+        server.debug(f'Removed user alias "{n}" from Hydra VM "{a[n]}".')
+    else:
+        return
+    server.set_config("hydra.aliases", a, True)
+    del n
+    del a
 
 
-def _reserve(server, vmid, memory, remove=False):
+def _reserve(server, vmid, memory, remove):
     if not isinstance(memory, int):
         try:
             memory = int(memory)
         except ValueError as err:
-            raise HydraError(
-                f"VM ({vmid}) Unable to convert {memory} to a number! ({err})"
-            )
-    blocks = int(memory / HYDRA_RESERVE_SIZE)
-    if blocks * HYDRA_RESERVE_SIZE < memory:
-        blocks += 1
+            raise HydraError(f"Unable to parse memory size: {err}")
+    if memory <= 0:
+        return
+    b = int(memory / HYDRA_RESERVE_SIZE)
+    if b * HYDRA_RESERVE_SIZE < memory:
+        b += 1
     try:
-        pages = int(read(HYDRA_RESERVE, ignore_errors=False).replace("\n", EMPTY))
+        p = int(read(HYDRA_RESERVE).replace(NEWLINE, EMPTY), 10)
     except (OSError, ValueError) as err:
-        raise HydraError(
-            f"VM ({vmid}) Attempting to get reserve memory failed! ({err})"
-        )
+        raise HydraError(f"Error reserving memory: {err}")
     if not remove:
-        server.debug(
-            f"HYDRA: VM({vmid}) Current page size {pages}, adding {blocks} blocks.."
-        )
-        pages += blocks
+        server.debug(f"HYDRA: VM({vmid}) Current page size {p}, adding {b} blocks..")
+        p += b
     else:
-        server.debug(
-            f"HYDRA: VM({vmid}) Current page size {pages}, removing {blocks} blocks.."
-        )
-        pages -= blocks
-    if pages < 0:
-        pages == 0
+        server.debug(f"HYDRA: VM({vmid}) Current page size {p}, removing {b} blocks..")
+        p -= b
+    if p < 0:
+        p == 0
     try:
-        write(HYDRA_RESERVE, f"{pages}\n", ignore_errors=False)
+        write(HYDRA_RESERVE, f"{p}\n")
     except OSError as err:
-        raise HydraError(f"VM({vmid}) Failed reserve memory! ({err})")
-    del pages
+        raise HydraError(f"Error reserving memory: {err}")
+    del p
     if not remove:
-        server.debug(f"HYDRA: VM({vmid}) Reserved {blocks} blocks of memory.")
+        server.debug(f"HYDRA: VM({vmid}) Reserved {b} blocks of memory.")
     else:
-        server.debug(f"HYDRA: VM({vmid}) Removed {blocks} resevered blocks of memory.")
-    del blocks
-    del memory
+        server.debug(f"HYDRA: VM({vmid}) Removed {b} resevered blocks of memory.")
+        remove_file(f"/dev/hugepages/{vmid}.ram")
+    del b
 
 
 class HydraVM(Storage):
-    def __init__(self, vmid=None, file_path=None):
-        Storage.__init__(self, file_path=file_path)
+    def __init__(self, vmid=None, path=None):
+        if not isinstance(path, str) or not isfile(path) or path.startswith("/dev"):
+            raise HydraError(f'Invalid path "{path}"')
+        Storage.__init__(self, path=path)
         self._exit = 0
         self._ready = 0
+        self._ga = False
         self._usb = None
         self._event = None
         self._output = None
@@ -312,31 +321,11 @@ class HydraVM(Storage):
         self._interfaces = None
         if vmid is not None:
             self.vmid = vmid
-        elif self.get("vmid", None) is None:
-            raise HydraError("HydraVM does not have a VMID!")
+        elif self.get("vmid") is None:
+            raise HydraError("VMID is missing")
+        if not isinstance(self.vmid, int) or self.vmid <= 0:
+            raise HydraError("VMID is invalid")
         self._path = f"{DIRECTORY_HYDRA}/{str(self.vmid)}"
-
-    def _pid(self):
-        return self._process.pid if self._running() else None
-
-    def _status(self):
-        if self._event is not None:
-            status = "stopping"
-        elif self._running():
-            if self._ready == 1:
-                status = "waiting"
-            elif self._sleeping:
-                status = "sleeping"
-            else:
-                status = "running"
-        else:
-            status = "stopped"
-        return {
-            "pid": self._pid(),
-            "vmid": self.vmid,
-            "path": self.get_file(),
-            "status": status,
-        }
 
     def _running(self):
         return self._process is not None and self._process.poll() is None
@@ -344,410 +333,416 @@ class HydraVM(Storage):
     def _stopped(self):
         return self._ready == 3 and self._process is None
 
-    def _drives(self, server):
-        if not isinstance(self.drives, dict):
-            server.debug(f"HYDRA: VM({self.vmid}) No drives found, returning empty!")
-            self.drives = dict()
-            return list()
-        ide = 0
-        drives = dict()
-        indexes = list()
-        for name, drive in self.drives.items():
-            if not isinstance(drive, dict):
+    def _ip(self, server):
+        d = self._ga_command(server, "guest-network-get-interfaces")
+        if not isinstance(d, list) or len(d) == 0:
+            return self._status()
+        i = list()
+        for e in d:
+            if "name" not in e or len(e["name"]) == 0:
                 continue
-            if "file" not in drive:
-                server.warning(
-                    f'HYDRA: VM({self.vmid}) Drive "{name}" does not contain a "file" value, skipping!'
-                )
+            if "ip-addresses" not in e or len(e["ip-addresses"]) == 0:
                 continue
-            file = drive["file"]
-            if not isabs(file):
-                file = f"{dirname(self.get_file())}/{file}"
-                if not isfile(file):
-                    raise HydraError(f'Drive "{name}" file "{file}" does not exist!')
-            elif not isfile(file):
-                raise HydraError(f'Drive "{name}" file "{file}" does not exist!')
-            drive["file"] = file
-            del file
-            if "index" in drive:
-                if drive["index"] in indexes or not isinstance(drive["index"], int):
-                    server.warning(
-                        f'HYDRA: VM({self.vmid}) Drive "{name}", removing invalid drive index "{drive["index"]}"!'
-                    )
-                    del drive["index"]
-                else:
-                    indexes.append(drive["index"])
-            if "index" not in drive:
-                if len(indexes) == 0:
-                    drive["index"] = 1
-                else:
-                    drive["index"] = max(indexes) + 1
-                indexes.append(drive["index"])
-            if "type" not in drive:
-                drive["type"] = "ide"
-                ide += 1
-            else:
-                if (
-                    drive["type"] == "ide"
-                    or drive["type"] == "cd"
-                    or drive["type"] == "iso"
-                ):
-                    ide += 1
-            if ide > 4:
-                raise HydraError("There can only be a maximum of 4 IDE devices!")
-            if "format" not in drive:
-                drive["format"] = "raw"
-            drives[name] = drive
-        del indexes
-        ide = 0
-        sata = 0
-        build = list()
-        for name, drive in drives.items():
-            build_str = (
-                f'id={name},file={drive["file"]},format={drive["format"]},index={drive["index"]},'
-                f"if=none,detect-zeroes=unmap"
-            )
-            if not drive.get("direct", True):
-                build_str += ",aio=threads"
-            elif drive["format"] == "raw" and drive["type"] == "virtio":
-                build_str += ",aio=native,cache.direct=on"
-            else:
-                build_str += ",aio=threads,cache=writeback"
-            if "readonly" in drive and drive["readonly"]:
-                build_str += ",readonly=on"
-            if "discard" in drive and drive["discard"]:
-                if drive["type"] == "scsi":
-                    build_str += ",discard=on"
-                else:
-                    build_str += ",discard=unmap"
-            build += ["-drive", build_str]
-            del build_str
-            if drive["type"] == "scsi":
-                if ide == 0:
-                    build += [
-                        "-device",
-                        f"virtio-scsi-pci,id=scsi0,bus={self.bus}.0,addr=0x5,iothread=iothread0",
-                    ]
-                build += [
-                    "-device",
-                    f"scsi-hd,bus=scsi0.0,channel=0,scsi-id=0,lun={ide},drive={name},id=scsi-{ide},rotation_rate=1",
-                ]
-                ide += 1
-                self.drives[name] = drive
-                continue
-            if drive["type"] == "virtio":
-                build += [
-                    "-device",
-                    f'virtio-blk-pci,id={name}-dev,drive={name},bus={self.bus}.0,bootindex={drive["index"]}',
-                ]
-                self.drives[name] = drive
-                continue
-            bus = "ide"
-            bus_num = ide
-            if "q35" in self.get("type"):
-                bus_num += 1
-            else:
-                bus_num = ide / 2
-            if drive["type"] == "sata":
-                bus = "sata"
-                if sata == 0:
-                    sata = 1
-                    build += ["-device", "ich9-ahci,id=sata"]
-                bus_num = sata
-            build += [
-                "-device",
-                f'ide-{"cd" if drive["type"] == "cd" or drive["type"] == "iso" else "hd"},id={name}-dev,'
-                f'drive={name},bus={bus}.{bus_num},bootindex={drive["index"]}',
-            ]
-            del bus
-            del bus_num
-            if drive["type"] == "sata":
-                sata += 1
-            else:
-                ide += 1
-            self.drives[name] = drive
-        del ide
-        del sata
-        del drives
-        return build
+            for v in e["ip-addresses"]:
+                if not isinstance(v, dict):
+                    continue
+                if "ip-address-type" not in v or v["ip-address-type"] != "ipv4":
+                    continue
+                if "ip-address" not in v or len(v["ip-address"]) == 0:
+                    continue
+                if v["ip-address"].startswith("127."):
+                    continue
+                i.append(v["ip-address"])
+        del d
+        s = self._status()
+        s["ips"] = i
+        del i
+        return s
 
-    def _network(self, server):
-        if not isinstance(self.network, dict):
+    def _ping(self, server):
+        s = self._status()
+        try:
+            self._ga_command(server, "guest-ping")
+        except Exception as err:
+            server.warning(f"HYDRA: VM({self.vmid}) QEMU-GA ping failed!", err=err)
+            s["ping"] = False
+        else:
+            s["ping"] = True
+        return s
+
+    def _status(self, usb=False):
+        if self._event is not None:
+            s = "stopping"
+        elif self._running():
+            if self._ready == 1:
+                s = "waiting"
+            elif self._sleeping:
+                s = "sleeping"
+            else:
+                s = "running"
+        else:
+            s = "stopped"
+        if usb:
+            return {
+                "pid": self._process.pid if self._running() else None,
+                "usb": self._usb,
+                "vmid": self.vmid,
+                "path": self.get_file(),
+                "guest": self._ga,
+                "status": s,
+            }
+        return {
+            "pid": self._process.pid if self._running() else None,
+            "vmid": self.vmid,
+            "path": self.get_file(),
+            "guest": self._ga,
+            "status": s,
+        }
+
+    def _network(self, server, bus):
+        if not isinstance(self.get("network"), dict):
             server.debug(
-                f"HYDRA: VM({self.vmid}) No network interfaces, returning empty!"
+                f"HYDRA: VM({self.vmid}) No valid Network Interfaces found, skipping!"
             )
-            self.network = dict()
+            self.set("network", dict())
             return list()
-        address = 20
-        build = list()
+        a = 20
+        b = list()
         self._interfaces = list()
-        for name, net in self.network.items():
-            if not isinstance(net, dict):
+        for n, x in self.network.items():
+            if not isinstance(x, dict):
                 server.warning(
-                    f'HYDRA: VM({self.vmid}) Network Interface "{name}" was not a proper JSON dict!'
+                    f'HYDRA: VM({self.vmid}) Network Interface "{n}" was invalid and skipped!'
                 )
                 continue
-            if "type" not in net:
-                net["type"] = "intel"
-            if "bridge" in net:
-                bridge = net["bridge"]
+            if "type" not in x:
+                x["type"] = "intel"
+            if "bridge" in x:
+                s = x["bridge"]
             else:
-                bridge = HYDRA_BRIDGE
-            if "device" in net:
-                device = net["device"]
+                s = HYDRA_BRIDGE
+            if "device" in x:
+                d = x["device"]
             else:
-                device = f"{HYDRA_BRIDGE}s{self.vmid}n{len(self._interfaces)}"
-            self._interfaces.append(("device" not in net, device, bridge))
-            if "mac" not in net:
-                net[
+                d = f"{HYDRA_BRIDGE}s{self.vmid}n{len(self._interfaces)}"
+            self._interfaces.append(("device" not in x, d, s))
+            if "mac" not in x:
+                x[
                     "mac"
                 ] = f"2c:af:01:{randint(0, 255):02x}:{randint(0, 255):02x}:{randint(0, 255):02x}"
-            if net["type"] == "intel":
-                net_device = "e1000"
-            elif net["type"] == "virtio":
-                net_device = "virtio-net-pci"
-            elif net["type"] == "vmware":
-                net_device = "vmxnet3"
+            if x["type"] == "intel":
+                v = "e1000"
+            elif x["type"] == "virtio":
+                v = "virtio-net-pci"
+            elif x["type"] == "vmware":
+                v = "vmxnet3"
             else:
-                net_device = net["type"]
-            build += [
+                v = x["type"]
+            b += [
                 "-netdev",
-                f"type=tap,id={name},ifname={device},script=no,downscript=no,vhost=on",
+                f"type=tap,id={n},ifname={d},script=no,downscript=no,vhost=on",
                 "-device",
-                f'{net_device},mac={net["mac"]},netdev={name},bus={self.bus}.0,addr={hex(address)},id={name}-dev',
+                f'{v},mac={x["mac"]},netdev={n},bus={bus}.0,addr={hex(a)},id={n}-dev',
             ]
-            address += 1
-            del device
-            del bridge
-            del net_device
-            self.network[name] = net
-        del address
-        return build
+            a += 1
+            del d
+            del s
+            del v
+            self.network[n] = x
+        del a
+        return b
 
     def _sleep(self, server, sleep):
-        if not self._running():
-            raise HydraError("VM is not currently running!")
         if sleep and self._sleeping:
-            raise HydraError("VM is currently sleeping!")
+            raise HydraError("VM is currently sleeping")
         if not sleep and not self._sleeping:
-            raise HydraError("VM is not currently sleeping!")
-        if sleep and not self._sleeping:
+            raise HydraError("VM is not currently sleeping")
+        if sleep:
             try:
                 server.debug(f"HYDRA: VM({self.vmid}) Attempting to sleep VM..")
                 self._process.send_signal(SIGSTOP)
             except OSError as err:
-                raise HydraError(err)
-            server.debug(f"HYDRA: VM({self.vmid}) Was put to sleep!")
+                raise HydraError(f"Could not send sleep signal: {err}")
             self._sleeping = True
-        elif self._sleeping:
-            try:
-                server.debug(f"HYDRA: VM({self.vmid}) Attempting to wake VM..")
-                self._process.send_signal(SIGCONT)
-            except OSError as err:
-                raise HydraError(err)
-            server.debug(f"HYDRA: VM({self.vmid}) Was woken up!")
-            self._sleeping = False
+            return server.debug(f"HYDRA: VM({self.vmid}) Was put to sleep!")
+        try:
+            server.debug(f"HYDRA: VM({self.vmid}) Attempting to wake VM..")
+            self._process.send_signal(SIGCONT)
+        except OSError as err:
+            raise HydraError(f"Could not send wake signal: {err}")
+        self._sleeping = False
+        server.debug(f"HYDRA: VM({self.vmid}) Was woken up!")
 
     def _start(self, manager, server):
         if self._running():
             return self._process.pid
         self._ready = 0
-        binary = self.get("binary")
-        if binary is not None:
-            unsafe = server.get_config("hydra.unsafe", False, True)
-            if not unsafe:
+        m = self.get("memory.size", 1024)
+        if not isinstance(m, int) and m <= 0:
+            raise HydraError("Invalid memory size")
+        del m
+        x = self.get("vm.binary")
+        if x is not None:
+            u = server.get_config("hydra.unsafe", False, True)
+            if not u:
                 raise HydraError(
-                    f'VM({self.vmid}) Failed to start, cannot use binary "{binary}" when '
-                    f'server "hydra.unsafe" is False!'
+                    f'Cannot use binary "{x}" when "hydra.unsafe" is False'
                 )
-            del unsafe
-            allowed = server.get_config("hydra.allowed", list(), True)
-            if not isinstance(allowed, list) or binary not in allowed:
-                raise HydraError(
-                    f'VM({self.vmid}) Failed to start, binary "{binary}" is not in server "hydra.allowed"!'
-                )
-            del allowed
-        if binary is None or not exists(binary):
-            binary = HYDRA_EXEC_VM
+            del u
+            a = server.get_config("hydra.allowed", None)
+            if not isinstance(a, list) or x not in a:
+                raise HydraError(f'Binary "{x}" is not in "hydra.allowed"')
+            del a
+        if not isinstance(x, str) or len(x) == 0 or not exists(x):
+            x = HYDRA_EXEC_VM
         try:
-            s = stat(binary, follow_symlinks=False)
+            s = stat(x, follow_symlinks=islink(x))
         except OSError as err:
+            raise HydraError(f'Binary "{x}" could not be verified by stat: {err}')
+        if s.st_uid != 0 or s.st_gid != 0:
             raise HydraError(
-                f'VM({self.vmid}) Failed to start, binary "{binary}" could not be verified by stat! ({err})'
+                f'Binary "{x}" owner and/or group is not root (Binary must have root UID/GID!)'
             )
-        else:
-            if s.st_uid != 0 or s.st_gid != 0:
-                raise HydraError(
-                    f'VM({self.vmid}) Failed to start, binary "{binary}" owner and/or group is not root! '
-                    f"(Binary must have root owner and group to be ran!)"
-                )
-            del s
-        if self.get("bios-version", 1) == 0:
-            if self.get("bios-uefi", True):
-                bios = "type=0,uefi=on"
+        if s.st_mode & (S_IWGRP | S_IWOTH) > 0:
+            raise HydraError(
+                f'Binary "{x}" cannot be writable by Group or Other (chmod 755 it!)'
+            )
+        if s.st_mode & (S_IXUSR | S_IXGRP) == 0:
+            raise HydraError(
+                f'Binary "{x}" is not executable by User or Group (chmod 755 it!)'
+            )
+        del s
+        if self.get("bios.version", 1) == 0:
+            if self.get("bios.uefi", False):
+                v = "type=0,uefi=on"
             else:
-                bios = "type=0"
+                v = "type=0"
         else:
-            bios = f'type={self.get("bios-version", 1)}'
-        build = [
-            binary,
+            v = f'type={self.get("bios.version", 1)}'
+        c = [
+            x,
             "-runas",
             HYDRA_UID,
             "-smbios",
-            bios,
+            v,
             "-enable-kvm",
-            "-k",
-            "en-us",
+            "-no-hpet",
+            # "-k",
+            # "en-us",
+            "-nographic",
+            "-no-user-config",
+            "-nodefaults",
+            "-D",
+            f"/tmp/{self.vmid}.log",
             "-boot",
-            "order=c,menu=off,splash-time=0",
+            "order=cdn,menu=off,splash-time=0",
             "-rtc",
             "base=localtime,clock=host",
-            "-cpu",
         ]
-        del bios
-        del binary
-        cpu_options = self.get("cpu-options", list())
-        if isinstance(cpu_options, list) and len(cpu_options) > 0:
-            build.append(
-                f'{self.get("cpu-type", "host")},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,'
-                f'hv_spinlocks=0x1fff,hv_vapic,hv_time,{",".join(self.get("cpu-options"))}'
+        del v
+        del x
+        f = self.get("bios.file")
+        if isinstance(f, str) and isfile(f):
+            c += ["-bios", f]
+        del f
+        c.append("-cpu")
+        o = self.get("cpu.options", list())
+        if isinstance(o, list) and len(o) > 0:
+            c.append(
+                f'{self.get("cpu.type", "host")},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,'
+                f'hv_spinlocks=0x1fff,hv_vapic,hv_time,{",".join(o)}'
             )
         else:
-            build.append(
-                f'{self.get("cpu-type", "host")},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,'
-                f"hv_spinlocks=0x1fff,hv_vapic,hv_time"
+            c.append(
+                f'{self.get("cpu.type", "host")},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,'
+                "hv_spinlocks=0x1fff,hv_vapic,hv_time"
             )
-        del cpu_options
-        if self.get("bios", None) and isfile(self.get("bios", None)):
-            build += ["-bios", self.get("bios", None)]
-        if self.get("bus", None) is None:
-            if "q35" in self.get("type"):
-                self.bus = "pcie"
+
+            # enforce,hv_ipi,hv_relaxed,hv_reset,hv_runtime,hv_spinlocks=0x1fff,hv_stimer,hv_synic,
+            # hv_time,hv_vapic,hv_vpindex,+kvm_pv_eoi,+kvm_pv_unhalt
+        del o
+        y = self.get("dev.bus")
+        v = self.get("vm.type", "q35")
+        if not isinstance(y, str) or len(y) == 0:
+            if isinstance(v, str) and "q35" in v:
+                y = self.set("dev.bus", "pcie")
             else:
-                self.bus = "pci"
-        if isinstance(self.get("extra", None), list):
-            build += self.get("extra")
-        cpu_num = self.get("cpu", 1)
-        build += [
+                y = self.set("dev.bus", "pci")
+        e = self.get("vm.extra")
+        if isinstance(e, list) and len(e) > 0:
+            u = server.get_config("hydra.unsafe", False)
+            if not u:
+                raise HydraError('Cannot use "vm.extra" when "hydra.unsafe" is False')
+            del u
+            server.info(
+                f'HYDRA: VM({self.vmid}) Adding "vm.extra" to build = [{" ".join(e)}].'
+            )
+            c += e
+        del e
+        n = self.get("cpu.sockets", 1)
+        c += [
             "-machine",
-            f'type={self.get("type", "q35")},mem-merge=on,dump-guest-core=off,accel={self.get("accel", "kvm")}',
+            f"type={v},mem-merge=on,dump-guest-core=off,vmport=on,nvdimm=off,"
+            f'hmat=off,suppress-vmdesc=on,accel={self.get("vm.accel", "kvm")}',
             "-smp",
-            f"{cpu_num},sockets={cpu_num},cores=1,maxcpus={cpu_num}",
+            f"{n},sockets={n},cores=1,maxcpus={n}",
             "-uuid",
-            self.get("uuid", str(uuid4())),
+            self.get("vm.uuid", str(uuid4())),
             "-m",
-            f'size={self.get("memory", 1024)}',
+            f'size={self.get("memory.size", 1024)}',
             "-name",
-            f'"{self.get("name", f"hydra-vm-{self.vmid}")}"',
+            f'"{self.get("vm.name", f"hydra-vm-{self.vmid}")}",debug-threads=off',
             "-pidfile",
             f"{self._path}.pid",
             "-display",
-            f"vnc=unix:{self._path}.vnc",
+            f"vnc=unix:{self._path}.vnc,connections=512,lock-key-sync=on,"
+            "password=off,power-control=on,share=ignore",
             "-qmp",
-            f"unix:{self._path}.sock,server,nowait",
+            # f"unix:{self._path}.sock,server,nowait",
+            f"unix:{self._path}.sock,server=on,wait=off",
+            "-chardev",
+            f"socket,id=qga0,path={self._path}.qga,server=on,wait=off",
+            "-device",
+            f"virtio-serial,id=qga0,bus={y}.0,addr=0x9",
+            "-device",
+            "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
             "-object",
             "iothread,id=iothread0",
             "-device",
-            f"virtio-balloon-pci,id=ballon0,bus={self.bus}.0,addr=0x0c",
+            f"virtio-balloon-pci,id=ballon0,bus={y}.0,addr=0x0c",
             "-device",
-            f"virtio-keyboard-pci,id=keyboard0,bus={self.bus}.0,addr=0x11",
+            f"virtio-keyboard-pci,id=keyboard0,bus={y}.0,addr=0x11",
             "-device",
-            f"usb-ehci,multifunction=on,id=usb-bus1,bus={self.bus}.0,addr=0x0d",
+            f"qemu-xhci,multifunction=on,id=usb-bus1,bus={y}.0,addr=0x0d",
             "-device",
-            f"piix3-usb-uhci,multifunction=on,id=usb-bus0,bus={self.bus}.0,addr=0x0e",
+            f"piix3-usb-uhci,multifunction=on,id=usb-bus0,bus={y}.0,addr=0x0e",
             "-device",
-            f"pci-bridge,id=pci-bridge1,chassis_nr=1,bus={self.bus}.0,addr=0x0f",
+            f"pci-bridge,id=pci-bridge1,chassis_nr=1,bus={y}.0,addr=0x0f",
             "-device",
-            f"pci-bridge,id=pci-bridge2,chassis_nr=2,bus={self.bus}.0,addr=0x10",
+            f"pci-bridge,id=pci-bridge2,chassis_nr=2,bus={y}.0,addr=0x10",
         ]
-        if "q35" in self.get("type"):
-            build += ["-device", "intel-iommu"]
-        del cpu_num
-        if self.get("display", "virtio") is not None:
-            build.append("-vga")
-            if len(self.get("display")) == 0:
-                build.append("std")
-            else:
-                build.append(self.get("display"))
-        if self.get("sound", True):
-            build += [
+        del n
+        if self.get("vm.spice", True):
+            c += [
+                "-spice",
+                f"unix=on,addr={self._path}.spice,disable-ticketing=on",
+                "-chardev",
+                "spicevmc,id=spicechannel0,name=vdagent",
                 "-device",
-                f"intel-hda,id=sound1,bus={self.bus}.0,addr=0x0b",
+                "virtserialport,chardev=spicechannel0,name=com.redhat.spice.0",
+                "-device",
+                "nec-usb-xhci,id=usb",
+                "-chardev",
+                "spicevmc,name=usbredir,id=usbredirchardev1",
+                "-device",
+                "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
+                "-chardev",
+                "spicevmc,name=usbredir,id=usbredirchardev2",
+                "-device",
+                "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
+                "-chardev",
+                "spicevmc,name=usbredir,id=usbredirchardev3",
+                "-device",
+                "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
+            ]
+            # NOTE(dij): We're adding the above lines to add USB redirect support
+            #            via SPICE, but Hydra won't know about the added devices
+            #            it shouldn't be an issue, but documenting it incase
+            #            it does.
+        if isinstance(v, str) and "q35" in v and self.get("dev.iommu", True):
+            c += ["-device", "intel-iommu"]
+        g = self.get("dev.display", "virtio")
+        if isinstance(g, str) and len(g) > 0:
+            c += ["-vga", g]
+        else:
+            c += ["-vga", "std"]
+        del g
+        if self.get("dev.sound", True):
+            c += [
+                "-device",
+                f"intel-hda,id=sound1,bus={y}.0,addr=0x0b",
                 "-device",
                 "hda-duplex,id=sound2",
             ]
-        if self.get("input", "standard") == "tablet":
-            build += ["-device", "usb-tablet,id=tablet0,bus=usb-bus0.0,port=1"]
-        elif self.get("input", "standard") == "mouse":
-            build += [
+        i = self.get("dev.input")
+        if i == "tablet":
+            c += ["-device", "usb-tablet,id=tablet0,bus=usb-bus1.0,port=1"]
+        elif i == "mouse":
+            c += [
                 "-device",
-                f"virtio-mouse-pci,id=tablet0,bus={self.bus}.0,addr=0x0a",
+                f"virtio-mouse-pci,id=tablet0,bus={y}.0,addr=0x0a",
             ]
-        elif self.get("input", "standard") == "usb":
-            build += [
+        elif i == "usb":
+            c += [
                 "-device",
                 "usb-mouse,id=tablet0,bus=usb-bus0.0,port=1",
                 "-device",
                 "usb-kbd,id=tablet1,bus=usb-bus0.0,port=2",
             ]
         else:
-            self.input = "standard"
-            build += [
+            if i != "virtio":
+                self.set("dev.input", "standard")
+            c += [
                 "-device",
-                f"virtio-tablet-pci,id=tablet0,bus={self.bus}.0,addr=0x0a",
+                f"virtio-tablet-pci,id=tablet0,bus={y}.0,addr=0x0a",
             ]
-        if self.get("tpm") is not None:
-            build += ["-tpmdev", f'passthrough,id=tpm0,path={self.get("tpm")}']
+        del i
+        t = self.get("dev.tpm")
+        if isinstance(t, str) and len(t) > 0:
+            c += ["-tpmdev", f"passthrough,id=tpm0,path={t}"]
+        del t
+        c += self._drives(server, y, v)
+        c += self._network(server, y)
+        del v
+        del y
+        server.debug(f"HYDRA: VM({self.vmid}) Built VM string, starting process..")
+        if self.get("memory.reserve", True):
+            c += ["-mem-path", f"/dev/hugepages/{self.vmid}.ram", "-mem-prealloc"]
+            _reserve(server, self.vmid, self.get("memory.size", 1024), False)
+        if self.get("vm.debug", False):
+            server.error(f'HYDRA: VM({self.vmid}) Dump: [{" ".join(c)}]')
+        if self.get_file() is not None:
+            self.write()
+            server.debug(f'HYDRA: VM({self.vmid}) Saved VM config "{self.get_file()}.')
         try:
-            build += self._drives(server)
-            build += self._network(server)
+            self._start_interfaces(server)
+        except OSError:
+            # NOTE(dij): Remove any stale interfaces and try one more
+            #            time :fingers-crossed:
+            #
+            #            NEW: _start_interfaces now removes interfaces itself
+            #                 if it fails during runtime, but still throws the
+            #                 OSError.
             try:
                 self._start_interfaces(server)
-            except HydraError:
-                try:
-                    # Remove any stale interfaces and try one more time
-                    # :fingers-crossed:
-                    self._stop_interfaces(server)
-                except HydraError:
-                    pass
-                self._start_interfaces(server)
-            if self.get_file() is not None:
-                server.debug(f"HYDRA: VM({self.vmid}) Saving VM config file.")
-                self.write()
-        except (OSError, ValueError, SubprocessError) as err:
-            raise HydraError(f"VM({self.vmid}) Failed to start! ({err})")
-        server.debug(f"HYDRA: VM({self.vmid}) Built VM string, starting VM..")
-        if self.get("reserve", True):
-            build += ["-mem-path", "/dev/hugepages"]
-            _reserve(server, self.vmid, self.get("memory", 1024), False)
-        if self.get("debug", False):
-            server.error(f'HYDRA: VM({self.vmid}) Dump: [{" ".join(build)}]')
+            except OSError as err:
+                raise HydraError(f"Error creating interfaces: {err}")
         try:
-            self._process = Popen(build, stdout=DEVNULL, stderr=PIPE)
-        except (OSError, ValueError, SubprocessError) as err:
+            self._process = Popen(c, stdout=PIPE, stderr=PIPE)
+        except (OSError, SubprocessError) as err:
             server.send(
                 None,
                 Message(
                     header=HOOK_NOTIFICATION,
                     payload={
                         "title": "Hydra VM Status",
-                        "body": f"VM({self.vmid}) failed to start!!",
+                        "body": f"VM({self.vmid}) failed to start!",
                         "icon": "virt-viewer",
                     },
                 ),
             )
-            self.vm._ready = 2
+            self._ready = 2
             self._stop(manager, server, True)
-            raise HydraError(f"VM({self.vmid}) Failed to start! ({err})")
+            raise HydraError(f"Failed to start: {err}")
         finally:
-            del build
+            del c
         server.send(
             None,
             Message(
                 header=HOOK_NOTIFICATION,
                 payload={
                     "title": "Hydra VM Status",
-                    "body": f"VM({self.vmid}) was started!",
+                    "body": f"VM({self.vmid}) started!",
                     "icon": "virt-viewer",
                 },
             ),
@@ -756,42 +751,39 @@ class HydraVM(Storage):
             server.warning(
                 f"HYDRA: VM({self.vmid}) is taking longer to startup, passing to thread!"
             )
-            thread = HydraWaitThread(self, server)
-            thread.start()
-            del thread
+            HydraWaitThread(self, server).start()
             return 0
         self._ready = 1
-        server.debug(
-            f"HYDRA: VM({self.vmid}) Started, Process ID: {self._process.pid}!"
-        )
+        server.debug(f"HYDRA: VM({self.vmid}) Started, PID: {self._process.pid}!")
         return self._process.pid
 
     def _thread(self, manager, server):
+        if self._ready == 1 and not self._running():
+            server.warning(
+                f"HYDRA: VM({self.vmid}) Process died before bootstrapping complete!"
+            )
+            return self._stop(manager, server, True, errors=False)
         if self._ready == 1:
             try:
-                chmod(f"{self._path}.vnc", 0o762)
+                chmod(f"{self._path}.vnc", 0o762, follow_symlinks=False)
+                chmod(f"{self._path}.spice", 0o762, follow_symlinks=False)
             except OSError:
-                pass
-            else:
-                self._ready = 2
-        if self._ready > 0 and not self._running():
-            self._stop(manager, server, True)
-        if not self._running() and self._ready == 2:
-            if self._process is not None:
-                self._exit = self._process.returncode
-            self._process = None
+                return
+            server.debug(
+                f"HYDRA: VM({self.vmid}) VNC socket became active, bootstrap complete!"
+            )
+            self._ready = 2
+        elif self._ready == 2 and not self._running():
+            server.debug(f"HYDRA: VM({self.vmid}) Natural shutdown, stopping instance.")
+            self._stop(manager, server, True, errors=False)
 
     def _remove_usb(self, server, usb):
         if not isinstance(self._usb, dict) or usb not in self._usb:
-            raise HydraError(
-                f'Could not find USB device ID "{usb}" connected to the VM!'
-            )
+            raise HydraError(f'Could not find USB ID "{usb}" connected to the VM')
         try:
-            self._command("device_del", {"id": f"usb-dev-{usb}"})
-        except HydraError as err:
-            raise HydraError(
-                f'Could not remove USB device "{self._usb[usb]}", server returned "{err}"!'
-            )
+            self._command(server, "device_del", {"id": f"usb-dev-{usb}"})
+        except (HydraError, OSError) as err:
+            raise HydraError(f'Remove USB failed "{self._usb[usb]}": {err}')
         server.debug(
             f'HYDRA: VM({self.vmid}) Removed USB device "{self._usb[usb]}" from the VM.'
         )
@@ -809,223 +801,422 @@ class HydraVM(Storage):
         del self._usb[usb]
 
     def _stop_interfaces(self, server):
-        if not isinstance(self._interfaces, list):
+        if not isinstance(self._interfaces, list) or len(self._interfaces) == 0:
             return None
-        server.debug(f"HYDRA: VM({self.vmid}) Attempting to remove interfaces..")
-        for interface in self._interfaces:
-            run(["/usr/bin/ip", "link", "set", interface[1], "nomaster"])
-            run(["/usr/bin/ip", "link", "set", "dev", interface[1], "down"])
-            if interface[0]:
-                run(
-                    [
-                        "/usr/bin/ip",
-                        "tuntap",
-                        "delete",
-                        "dev",
-                        interface[1],
-                        "mode",
-                        "tap",
-                    ]
-                )
-            server.debug(f'HYDRA: VM({self.vmid}) Removed interface "{interface[1]}".')
-        server.debug(f"HYDRA: VM({self.vmid}) Removed interfaces.")
+        server.debug(f"HYDRA: VM({self.vmid}) Removing interfaces..")
+        for i in self._interfaces:
+            run(["/usr/bin/ip", "link", "set", i[1], "nomaster"])
+            run(["/usr/bin/ip", "link", "set", "dev", i[1], "down"])
+            if i[0]:
+                run(["/usr/bin/ip", "tuntap", "delete", "dev", i[1], "mode", "tap"])
+            server.debug(f'HYDRA: VM({self.vmid}) Removed interface "{i[1]}".')
+        server.debug(
+            f"HYDRA: VM({self.vmid}) Removed {len(self._interfaces)} interfaces."
+        )
 
     def _start_interfaces(self, server):
-        if not isinstance(self._interfaces, list):
+        if not isinstance(self._interfaces, list) or len(self._interfaces) == 0:
             return None
-        server.debug(f"HYDRA: VM({self.vmid}) Attempting to create interfaces..")
-        for interface in self._interfaces:
-            run(["/usr/bin/ip", "link", "set", interface[1], "nomaster"])
-            run(["/usr/bin/ip", "link", "set", "dev", interface[1], "down"])
-            if interface[0]:
-                run(
-                    [
-                        "/usr/bin/ip",
-                        "tuntap",
-                        "delete",
-                        "dev",
-                        interface[1],
-                        "mode",
-                        "tap",
-                    ]
-                )
-            try:
-                if interface[0]:
+        server.debug(f"HYDRA: VM({self.vmid}) Creating interfaces..")
+        try:
+            for i in self._interfaces:
+                if i[0]:
                     run(
                         [
                             "/usr/bin/ip",
                             "tuntap",
                             "add",
                             "dev",
-                            interface[1],
+                            i[1],
                             "mode",
                             "tap",
                             "user",
                             HYDRA_UID,
-                        ],
-                        ignore_errors=False,
+                        ]
                     )
-                run(
-                    [
-                        "/usr/bin/ip",
-                        "link",
-                        "set",
-                        interface[1],
-                        "master",
-                        interface[2],
-                    ],
-                    ignore_errors=False,
-                )
-                run(
-                    [
-                        "/usr/bin/ip",
-                        "link",
-                        "set",
-                        "dev",
-                        interface[1],
-                        "up",
-                        "promisc",
-                        "on",
-                    ],
-                    ignore_errors=False,
-                )
-                server.debug(
-                    f'HYDRA: VM({self.vmid}) Added interface "{interface[1]}".'
-                )
-            except OSError as err:
+                run(["/usr/bin/ip", "link", "set", i[1], "master", i[2]])
+                run(["/usr/bin/ip", "link", "set", "dev", i[1], "up", "promisc", "on"])
+                server.debug(f'HYDRA: VM({self.vmid}) Added interface "{i[1]}".')
+        except OSError as err:
+            try:
                 self._stop_interfaces(server)
-                raise HydraError(err)
-        server.debug(f"HYDRA: VM({self.vmid}) Created interfaces.")
+            except OSError:
+                pass
+            raise err
+        server.debug(
+            f"HYDRA: VM({self.vmid}) Created {len(self._interfaces)} interfaces."
+        )
 
-    def _command(self, command, args=None):
+    def _drives(self, server, bus, type):
+        if not isinstance(self.get("drives"), dict):
+            server.debug(f"HYDRA: VM({self.vmid}) No valid drives found, skipping!")
+            self.set("drives", dict())
+            return list()
+        o = 0
+        d = dict()
+        v = list()
+        for n, x in self.drives.items():
+            if not isinstance(x, dict):
+                server.warning(
+                    f'HYDRA: VM({self.vmid}) Drive "{n}" was invalid and skipped!'
+                )
+                continue
+            if "file" not in x:
+                server.warning(
+                    f'HYDRA: VM({self.vmid}) Drive "{n}" does not contain a "file" value, skipping!'
+                )
+                continue
+            f = x["file"]
+            if not isabs(f):
+                f = f"{dirname(self.get_file())}/{f}"
+                if not isfile(f):
+                    raise HydraError(f'Drive "{n}" file "{f}" does not exist')
+                x["file"] = f
+            elif not isfile(f):
+                raise HydraError(f'Drive "{n}" file "{f}" does not exist')
+            if islink(f):
+                raise HydraError(f'Drive "{n}" file "{f}" cannot be a symlink')
+            try:
+                s = stat(f, follow_symlinks=False)
+            except OSError as err:
+                raise HydraError(f'Error reading drive "{n}" file "{f}": {err}')
+            u = 0
+            g = 0
+            try:
+                p = getpwnam(HYDRA_UID)
+                u = p.pw_uid - 1
+                g = p.pw_gid - 1
+                del p
+            except (OSError, ValueError) as err:
+                server.warning(
+                    f'HYDRA: Error getting password entry for "{HYDRA_UID}", falling back to "root"!',
+                    err=err,
+                )
+            if (
+                s.st_uid <= u
+                or s.st_gid <= g
+                or s.st_mode & (S_IXUSR | S_ISVTX | S_ISUID | S_IXGRP | S_IXOTH) > 0
+            ):
+                raise HydraError(f'Drive "{n}" file "{f}" has improper permissions')
+            del u
+            del g
+            del f
+            del s
+            if "index" in x:
+                i = x["index"]
+                if i in v or not isinstance(i, int) or i < 0:
+                    server.warning(
+                        f'HYDRA: VM({self.vmid}) Removing invalid drive "{n}" index "{i}"'
+                    )
+                    del x["index"]
+                else:
+                    v.append(i)
+                del i
+            if "index" not in x:
+                x["index"] = max(v) + 1
+                v.append(x["index"])
+            if "type" not in x:
+                x["type"] = "ide"
+                o += 1
+            else:
+                if x["type"] == "ide" or x["type"] == "cd" or x["type"] == "iso":
+                    o += 1
+            if o > 4:
+                raise HydraError("There can only be a maximum of 4 IDE devices")
+            if "format" not in x:
+                x["format"] = "raw"
+            d[n] = x
+        del v
+        o = 0
+        u = 0
+        b = list()
+        j = False
+        w = False
+        for n, x in d.items():
+            s = (
+                f'id={n},file={x["file"]},format={x["format"]},index={x["index"]},'
+                "if=none,detect-zeroes=unmap"
+            )
+            if not x.get("direct", True):
+                s += ",aio=threads"
+            elif x["format"] == "raw" and x["type"] == "virtio":
+                s += ",aio=native,cache.direct=on"
+            else:
+                s += ",aio=threads,cache=writeback"
+            if x.get("readonly", False):
+                s += ",readonly=on"
+            if x.get("discard", False):
+                if x["type"] == "scsi":
+                    s += ",discard=on"
+                else:
+                    s += ",discard=unmap"
+            b += ["-drive", s]
+            del s
+            if x["type"] == "scsi":
+                if not j:
+                    j = True
+                    b += [
+                        "-device",
+                        f"virtio-scsi-pci,id=scsi0,bus={bus}.0,addr=0x5,iothread=iothread0",
+                    ]
+                b += [
+                    "-device",
+                    f"scsi-hd,bus=scsi0.0,channel=0,scsi-id=0,lun={o},drive={n},id=scsi-{o},rotation_rate=1",
+                ]
+                o += 1
+                self.drives[n] = x
+                continue
+            if x["type"] == "virtio":
+                b += [
+                    "-device",
+                    f'virtio-blk-pci,id={n}-dev,drive={n},bus={bus}.0,bootindex={x["index"]}',
+                ]
+                self.drives[n] = x
+                continue
+            e = o
+            t = "ide"
+            if "q35" in type:
+                e += 1
+            else:
+                e = o / 2
+            if x["type"] == "sata":
+                t = "sata"
+                if not w:
+                    u = 1
+                    w = True
+                    b += ["-device", "ich9-ahci,id=sata"]
+                e = u
+            b += [
+                "-device",
+                f'ide-{"cd" if x["type"] == "cd" or x["type"] == "iso" else "hd"},id={n}-dev,'
+                f'drive={n},bus={t}.{e},bootindex={x["index"]}',
+            ]
+            del t
+            del e
+            if x["type"] == "sata":
+                u += 1
+            else:
+                o += 1
+            self.drives[n] = x
+        del o
+        del u
+        del d
+        del j
+        del w
+        return b
+
+    def _command(self, server, command, args=None):
         if not self._running():
-            raise HydraError("Cannot send a command to a stopped VM!")
+            # NOTE(dij): I don't see this path being called, but I'm
+            #            leaving this logic here to prevent any weird
+            #            shit happening.
+            return
         if not isinstance(command, dict) and not isinstance(command, str):
-            raise HydraError('Paramater "command" must be a Python dict or str!')
-        con = socket(AF_UNIX, SOCK_STREAM)
+            raise HydraError('"command" must be a Dict or String')
+        server.debug(f'HYDRA: VM({self.vmid}) Sending command "{command}"..')
+        s = socket(AF_UNIX, SOCK_STREAM)
+        # NOTE(dij): There seems to be a bug in QMP that causes the socket
+        #            to timeout sometimes when sleep/wake occurs. Note sure
+        #            what directly causes it.
+        #
+        #            Just something to note with the timeout option that /should/
+        #            have been here in the first place.
+        s.settimeout(1)
         try:
-            con.connect(f"{self._path}.sock")
-            con.sendall(HYDRA_COMMAND_START)
-            out = _response(con.recv(4096))
-            if out is None:
-                raise HydraError("Invalid server response!")
-            json = {"execute": command}
+            s.connect(f"{self._path}.sock")
+            s.sendall(HYDRA_COMMAND_START)
+            o = _response(s.recv(4096))
+            if o is None:
+                raise HydraError("Invalid server response")
+            d = {"execute": command}
             if isinstance(args, dict):
-                json["arguments"] = args
-            encoded = bytes(dumps(json), "UTF-8")
-            del json
-            con.sendall(encoded)
-            out = _response(con.recv(4096))
-            if out is None:
-                raise HydraError("Received an invalid server response!")
-            con.sendall(encoded)
-            con.sendall(encoded)
-            out = _response(con.recv(4096))
-            if out is None:
-                raise HydraError("Received an invalid server response!")
-            del out
-            del encoded
-        except (OSError, socket_error) as err:
-            raise HydraError(err)
+                d["arguments"] = args
+            e = bytes(dumps(d), "UTF-8")
+            del d
+            s.sendall(e)
+            o = _response(s.recv(4096))
+            if o is None:
+                raise HydraError("Invalid server response")
+            del o
+            # NOTE(dij): QMP seems to have a high lag and needs to have the
+            #            message sent multiple times for it to be received.
+            s.sendall(e)
+            s.sendall(e)
+            o = _response(s.recv(4096))
+            if o is None:
+                raise HydraError("Invalid server response")
+            del o
+            del e
         finally:
-            con.close()
-            del con
+            s.close()
+            del s
+        server.debug(f'HYDRA: VM({self.vmid}) Command "{command}" completed.')
         return True
 
+    def _ga_command(self, server, command, args=None):
+        if not isinstance(command, str) or len(command) == 0:
+            command = "guest-ping"
+        # NOTE(dij): Disabling the below code since we want
+        #            to try all commands regardless of status.
+        #
+        # if command != "guest-ping" and not self._ga:
+        #    server.debug(
+        #        f'HYDRA: VM({self.vmid}) Refusing to run QEMU-GA command "{command}" when GA is not running!'
+        #    )
+        #    return None
+        if not exists(f"{self._path}.qga"):
+            raise HydraError(f'QEMU-GA socket "{self._path}.qga" is missing')
+        server.debug(f'HYDRA: VM({self.vmid}) Sending QEMU-GA command "{command}"..')
+        s = socket(AF_UNIX, SOCK_STREAM)
+        s.settimeout(1)
+        try:
+            s.connect(f"{self._path}.qga")
+            d = {"execute": command}
+            if isinstance(args, dict):
+                d["arguments"] = args
+            e = bytes(dumps(d), "UTF-8")
+            del d
+            s.sendall(e)
+            # NOTE(dij): Is there a payload for this larger than 4096?
+            r = s.recv(4096)
+            if not isinstance(r, bytes):
+                raise HydraError("Invalid server response")
+            try:
+                v = loads(r.decode("UTF-8"))
+            except (JSONDecodeError, UnicodeDecodeError):
+                raise HydraError("Invalid server response")
+        finally:
+            s.close()
+            del s
+        if "error" in v:
+            return HydraError(f'QEMU-GA Error: {v["error"]}')
+        if not self._ga:
+            self._ga = True
+        server.debug(f'HYDRA: VM({self.vmid}) QEMU-GA Command "{command}" completed.')
+        return v.get("return")
+
     def _add_usb(self, server, vendor, product, slow):
-        device = f"{vendor}:{product}"
+        d = f"{vendor}:{product}"
         if not isinstance(self._usb, dict):
             self._usb = dict()
-        elif device in list(self._usb.values()):
+        elif len(self._usb) > 0 and d in list(self._usb.values()):
             raise HydraError(
-                f'The USB device "{device}" is already mounted to the VM as "usb-dev{self._usb[device]}"!'
+                f'USB device "{d}" is already mounted as "usb-dev-{self._usb[d]}"!'
             )
         if len(self._usb) == 0:
-            id = 1
+            i = 1
         else:
-            id = max(self._usb.keys()) + 1
-        try:
-            run(
-                ["/usr/bin/chown", "-R", HYDRA_UID, HYDRA_USB_DEVICES],
-                ignore_errors=False,
-            )
-        except OSError as err:
-            raise HydraError(err)
-        bus = "usb-bus1.0"
-        if slow:
-            bus = "usb-bus0.0"
+            i = max(self._usb.keys()) + 1
+        run(["/usr/bin/chown", "-R", HYDRA_UID, HYDRA_USB_DEVICES])
+        b = "usb-bus1.0"
+        if isinstance(slow, bool) and slow:
+            b = "usb-bus0.0"
         try:
             self._command(
+                server,
                 "device_add",
                 {
                     "id": f"usb-dev-{id}",
-                    "bus": bus,
+                    "bus": b,
                     "driver": "usb-host",
                     "vendorid": f"0x{vendor}",
                     "productid": f"0x{product}",
                 },
             )
         except HydraError as err:
-            raise HydraError(
-                f'Could not add USB device "{device}", server returned "{err}"!'
-            )
-        server.debug(f'HYDRA: VM({self.vmid}) Added USB device "{device}" to the VM.')
-        self._usb[id] = device
+            # NOTE(dij): Ignoring 'OSError' here as upper function
+            #            catches it.
+            raise HydraError(f'Could not add USB device "{d}": {err}')
+        finally:
+            del b
+        server.debug(f'HYDRA: VM({self.vmid}) Added USB device "{d}" to the VM.')
+        self._usb[i] = d
         server.send(
             None,
             Message(
                 header=HOOK_NOTIFICATION,
                 payload={
                     "title": "Hydra USB Device Connected",
-                    "body": f'USB Device "{device}" connected to VM({self.vmid}).',
+                    "body": f'USB Device "{d}" connected to VM({self.vmid}).',
                     "icon": "usb-creator",
                 },
             ),
         )
-        del device
-        return id
+        del d
+        return i
 
-    def _stop(self, manager, server, force=False, timeout=90):
-        if not force and self._running():
+    def _stop(self, manager, server, force, timeout=90, errors=True):
+        if self._ready == 3:
+            return
+        if force is not None and not isinstance(force, bool):
+            force = False
+        if (force is None or not force) and self._running():
             if self._event is not None:
-                raise HydraError("VM soft shutdown is already in progress!")
-            if not isinstance(timeout, int):
-                raise HydraError("Timeout must be an integer!")
+                raise HydraError("Soft shutdown is already in progress")
+            if not isinstance(timeout, int) or timeout < 0:
+                raise HydraError('"timeout" must be a valid integer')
             if self._sleeping:
                 self._sleep(server, False)
             server.debug(
                 f"HYDRA: VM({self.vmid}) Shutting down, timeout {timeout} seconds.."
             )
             try:
-                self._command("system_powerdown")
-            except HydraError as err:
-                server.error(
-                    f"HYDRA: VM({self.vmid}) Attempting to initiate VM shutdown raised an exception!",
-                    err=err,
-                )
-                raise err
+                if self._ga:
+                    self._command(server, "guest-shutdown")
+                else:
+                    self._command(server, "system_powerdown")
+            except (HydraError, OSError) as err:
+                raise HydraError(f"Error triggering shutdown: {err}")
             finally:
                 self._event = manager.scheduler.enter(
                     timeout, 1, self._stop, argument=(manager, server, True)
                 )
-            return None
-        if self._process is not None and not self._running():
-            self._exit = self._process.returncode
-        if not self._running() and (self.get("debug") or self._exit != 0):
+            return
+        if self._running():
+            stop(self._process, True)
+            self._exit = self._process.wait(0.25)
+        if isinstance(self._exit, int) and self._exit > 0:
+            server.warning(
+                f"HYDRA: VM({self.vmid}) Exit status was non-zero ({self._exit})"
+            )
+        if (
+            self._output is None
+            and self._process is not None
+            and (self.get("vm.debug") or self._exit != 0)
+        ):
             try:
+                o = self._process.stdout.read().decode("UTF-8").replace(NEWLINE, ";")
                 self._output = (
-                    self._process.stderr.read().decode("UTF-8").replace("\n", EMPTY)
+                    self._process.stderr.read().decode("UTF-8").replace(NEWLINE, ";")
                 )
-            except (IOError, UnicodeDecodeError, AttributeError):
+                if isinstance(o, str) and len(o) > 0:
+                    if self._output is None or len(self._output) == 0:
+                        self._output = o
+                    else:
+                        self._output = o + ";" + self._output
+                del o
+            except (ValueError, IOError, UnicodeDecodeError, AttributeError):
                 pass
-            else:
-                if len(self._output) > 0:
-                    server.error(
-                        f"HYDRA: VM({self.vmid}) Process output dump\nSTDERR[{self._output}]\n"
-                    )
-        server.debug(f"HYDRA: VM({self.vmid}) Stopping..")
+            if len(self._output) > 0:
+                server.error(
+                    f"HYDRA: VM({self.vmid}) Process output dump:\n{self._output}\n"
+                )
+        server.debug(f"HYDRA: VM({self.vmid}) Stopping and cleaning up.")
         stop(self._process)
-        self._stop_interfaces(server)
+        if self._process is not None:
+            try:
+                self._process.wait(0.5)
+            except SubprocessError:
+                pass
+        self._process = None
+        try:
+            self._stop_interfaces(server)
+        except OSError as err:
+            if errors:
+                raise HydraError(f"Could not stop interfaces: {err}")
+            server.warning(
+                f"HYDRA: VM({self.vmid}) Error removing interfaces!", err=err
+            )
         if isinstance(self._interfaces, list):
             self._interfaces.clear()
             self._interfaces = None
@@ -1035,23 +1226,26 @@ class HydraVM(Storage):
             except ValueError:
                 pass
             self._event = None
-        try:
-            del self._process
-        except AttributeError:
-            pass
-        self._process = None
         if isinstance(self._usb, dict):
-            for dev in self._usb.values():
-                if dev in manager.usbs:
-                    del manager.usbs[dev]
+            for d in self._usb.values():
+                if d in manager.usbs:
+                    del manager.usbs[d]
             self._usb.clear()
             self._usb = None
-        if self.get("reserve", True):
-            _reserve(server, self.vmid, self.get("memory", 1024), True)
-        remove_file(f"{self._path}.pid")
-        remove_file(f"{self._path}.vnc")
-        remove_file(f"{self._path}.sock")
-        self._ready = 3
+        try:
+            if self.get("memory.reserve", True):
+                _reserve(server, self.vmid, self.get("memory.size", 1024), True)
+        except HydraError as err:
+            if errors:
+                raise err
+            server.warning(
+                f"HYDRA: VM({self.vmid}) Error removing reserved memory!", err=err
+            )
+        finally:
+            remove_file(f"{self._path}.pid")
+            remove_file(f"{self._path}.vnc")
+            remove_file(f"{self._path}.sock")
+            self._ready = 3
 
 
 class HydraServer(object):
@@ -1068,28 +1262,21 @@ class HydraServer(object):
         if self.running:
             return
         if not exists(HYDRA_EXEC_VM):
-            raise HydraError("QEMU is not installed, Hydra requires QEMU!")
+            raise HydraError("QEMU is not installed, Hydra requires QEMU")
         server.debug("HYDRA: Attemping to start services..")
         try:
-            network = IPv4Network(HYDRA_BRIDGE_NETWORK)
+            n = IPv4Network(HYDRA_BRIDGE_NETWORK)
         except ValueError as err:
-            server.error("HYDRA: Incorrect network configuration settings!", err=err)
-            raise HydraError(err)
-        if network.num_addresses < 3:
-            server.error(
-                "HYDRA: Incorrect network configuration settings, host max too small!"
-            )
-            del network
+            raise HydraError(f"Invalid Network settings: {err}")
+        if n.num_addresses < 3:
+            del n
             raise HydraError(
-                "Incorrect network configuration settings, host max too small!"
+                "Invalid Network configuration settings, host max too small"
             )
-        run(["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "down"], ignore_errors=True)
-        run(["/usr/bin/ip", "link", "del", "name", HYDRA_BRIDGE], ignore_errors=True)
+        run(["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "down"], errors=False)
+        run(["/usr/bin/ip", "link", "del", "name", HYDRA_BRIDGE], errors=False)
         try:
-            run(
-                ["/usr/bin/ip", "link", "add", "name", HYDRA_BRIDGE, "type", "bridge"],
-                ignore_errors=False,
-            )
+            run(["/usr/bin/ip", "link", "add", "name", HYDRA_BRIDGE, "type", "bridge"])
             run(
                 [
                     "/usr/bin/ip",
@@ -1097,91 +1284,64 @@ class HydraServer(object):
                     "add",
                     "dev",
                     HYDRA_BRIDGE,
-                    f"{str(network[1])}/{network.prefixlen}",
-                ],
-                ignore_errors=False,
+                    f"{str(n[1])}/{n.prefixlen}",
+                ]
             )
-            run(["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "up"], ignore_errors=False)
-            run(
-                ["/usr/bin/sysctl", f"net.ipv4.conf.{HYDRA_BRIDGE}.forwarding=1"],
-                ignore_errors=False,
-            )
-            run(["/usr/bin/sysctl", "net.ipv4.ip_forward=1"], ignore_errors=False)
+            run(["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "up"])
+            run(["/usr/bin/sysctl", f"net.ipv4.conf.{HYDRA_BRIDGE}.forwarding=1"])
+            run(["/usr/bin/sysctl", "net.ipv4.ip_forward=1"])
             if not isdir(DIRECTORY_HYDRA):
                 mkdir(DIRECTORY_HYDRA)
             if not isdir(HYDRA_DHCP_DIR):
                 mkdir(HYDRA_DHCP_DIR)
             write(HYDRA_TOKENS, EMPTY)
-            run(
-                ["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", DIRECTORY_HYDRA],
-                ignore_errors=False,
-            )
-            run(["/usr/bin/chmod", "-R", "755", DIRECTORY_HYDRA], ignore_errors=False)
-            run(
-                ["/usr/bin/chown", "-R", f"{HYDRA_UID}:", HYDRA_DHCP_DIR],
-                ignore_errors=False,
-            )
-            run(["/usr/bin/chmod", "-R", "750", HYDRA_DHCP_DIR], ignore_errors=False)
+            run(["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", DIRECTORY_HYDRA])
+            run(["/usr/bin/chmod", "-R", "755", DIRECTORY_HYDRA])
+            run(["/usr/bin/chown", "-R", f"{HYDRA_UID}:", HYDRA_DHCP_DIR])
+            run(["/usr/bin/chmod", "-R", "750", HYDRA_DHCP_DIR])
         except OSError as err:
-            server.error(
-                "HYDRA: Attempting to setup interfaces and directories raised an exception!",
-                err=err,
-            )
             self.stop(server, True)
-            raise HydraError(err)
-        dns = HYDRA_DNS_CONFIG.format(
-            ip=str(network[1]),
+            HydraError(f"Error setting up interfaces and directories: {err}")
+        d = HYDRA_DNS_CONFIG.format(
+            ip=str(n[1]),
             name=HYDRA_BRIDGE_NAME,
             network=HYDRA_BRIDGE_NETWORK,
             interface=HYDRA_BRIDGE,
-            start=str(network[2]),
-            netmask=str(network.netmask),
-            end=str(network[network.num_addresses - 2]),
+            start=str(n[2]),
+            netmask=str(n.netmask),
+            end=str(n[n.num_addresses - 2]),
             dir=HYDRA_DHCP_DIR,
             user=HYDRA_UID,
         )
         try:
-            write(HYDRA_DNS_FILE, dns, ignore_errors=False)
-            run(
-                ["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", HYDRA_DNS_FILE],
-                ignore_errors=False,
-            )
-            run(["/usr/bin/chmod", "-R", "640", HYDRA_DNS_FILE], ignore_errors=False)
+            write(HYDRA_DNS_FILE, d)
+            run(["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", HYDRA_DNS_FILE])
+            run(["/usr/bin/chmod", "-R", "640", HYDRA_DNS_FILE])
         except OSError as err:
-            server.error(
-                "HYDRA: Attempting to create DNS config file raised an exception!",
-                err=err,
-            )
             self.stop(server, True)
-            raise HydraError(err)
+            raise HydraError(f"Error writing DNS config: {err}")
         finally:
-            del dns
-        smb = HYDRA_SMB_CONFIG.format(
-            ip=str(network[1]), name=NAME, network=HYDRA_BRIDGE_NETWORK
+            del d
+        s = HYDRA_SMB_CONFIG.format(
+            ip=str(n[1]), name=NAME, network=HYDRA_BRIDGE_NETWORK
         )
-        del network
+        del n
         try:
-            write(HYDRA_SMB_FILE, smb, ignore_errors=False)
-            run(
-                ["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", HYDRA_SMB_FILE],
-                ignore_errors=False,
-            )
-            run(["/usr/bin/chmod", "-R", "640", HYDRA_SMB_FILE], ignore_errors=False)
+            write(HYDRA_SMB_FILE, s)
+            run(["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", HYDRA_SMB_FILE])
+            run(["/usr/bin/chmod", "-R", "640", HYDRA_SMB_FILE])
         except OSError as err:
-            server.error(
-                "HYDRA: Attempting to create File server config file raised an exception!",
-                err=err,
-            )
             self.stop(server, True)
-            raise HydraError(err)
+            raise HydraError(f"Error writing Samba config: {err}")
         finally:
-            del smb
+            del s
         if exists(HYDRA_EXEC_DNS):
             try:
                 self.dns_server = Popen(
                     [
                         "/usr/bin/dnsmasq",
                         "--keep-in-foreground",
+                        "--log-facility=-",
                         f"--user={HYDRA_UID}",
                         f"--conf-file={HYDRA_DNS_FILE}",
                     ],
@@ -1189,15 +1349,11 @@ class HydraServer(object):
                     stdout=DEVNULL,
                 )
             except (OSError, SubprocessError) as err:
-                server.error(
-                    "HYDRA: Attempting to start the DNS server raised an exception!",
-                    err=err,
-                )
                 self.stop(server, True)
-                raise HydraError(err)
+                raise HydraError(f"Error starting DNS server: {err}")
         else:
             server.warning(
-                "HYDRA: Dnsmasq is not installed, Hydra VMs will function, but will lack network connectivity!"
+                "HYDRA: Dnsmasq is not installed, VMs will function, but will lack network connectivity!"
             )
         if exists(HYDRA_EXEC_TOKENS):
             try:
@@ -1215,15 +1371,11 @@ class HydraServer(object):
                     stdout=DEVNULL,
                 )
             except (OSError, SubprocessError) as err:
-                server.error(
-                    "HYDRA: Attempting to start the Tokens server raised an exception!",
-                    err=err,
-                )
                 self.stop(server, True)
-                raise HydraError(err)
+                raise HydraError(f"Error starting Tokens server: {err}")
         else:
             server.warning(
-                "HYDRA: Websockify is not installed, Hydra VMs will function, but will lack local console connectivity!"
+                "HYDRA: Websockify is not installed, VMs will function, but will lack local console connectivity!"
             )
         if exists(HYDRA_EXEC_NGINX):
             try:
@@ -1233,423 +1385,347 @@ class HydraServer(object):
                     stdout=DEVNULL,
                 )
             except (OSError, SubprocessError) as err:
-                server.error(
-                    "HYDRA: Attempting to start the Web server raised an exception!",
-                    err=err,
-                )
                 self.stop(server, True)
-                raise HydraError(err)
+                raise HydraError(f"Error starting NGINX: {err}")
         else:
             server.warning(
-                "HYDRA: Nginx is not installed, Hydra VMs will function, but will lack screen connectivity!"
+                "HYDRA: NGINX is not installed, VMs will function, but will lack screen connectivity!"
             )
         if exists(HYDRA_EXEC_SMB):
             try:
-                run(
-                    ["/usr/bin/systemctl", "start", "smd-hydra-smb.service"],
-                    ignore_errors=False,
-                )
+                # NOTE(dij): We're running this as a separate systemd service
+                #            to ensure user home directory protection for the
+                #            'smd-daemon' service but allow for users to use SMB
+                #            to write files to their home dir.
+                run(["/usr/bin/systemctl", "start", "smd-hydra-smb.service"])
             except OSError as err:
-                server.error(
-                    "HYDRA: Attempting to start the File server raised an exception!",
-                    err=err,
-                )
                 self.stop(server, True)
-                raise HydraError(err)
+                raise HydraError(f"Error starting Samba Systemd unit: {err}")
         else:
             server.warning(
-                "HYDRA: Samba is not installed, Hydra VMs will function, but will lack file sharing!"
+                "HYDRA: Samba is not installed, VMs will function, but will lack file sharing!"
             )
         self.running = True
-        server.debug("HYDRA: Startup complete.")
+        server.info("HYDRA: Startup complete.")
 
     def thread(self, server):
         if not self.running:
             if len(self.vms) == 0:
                 return
-            server.debug("HYDRA: Starting services due to presense of active VMS.")
+            server.debug("HYDRA: Starting due to presense of active VMs.")
             try:
                 self.start(server)
             except HydraError as err:
-                server.error(
-                    "HYDRA: Attempting to start Hydra services raised an exception!",
-                    err=err,
-                )
+                server.error("HYDRA: Error starting, clearing active VMs!", err=err)
+                self.vms.clear()
             return
         if len(self.vms) == 0:
-            server.debug("HYDRA: Stopping services due to inactivity.")
-            self.stop(server)
-            return
-        updated = False
+            server.debug("HYDRA: Shutting down due to inactivity.")
+            return self.stop(server, False)
+        u = False
         for vmid in list(self.vms.keys()):
             self.vms[vmid]._thread(self, server)
             if not self.vms[vmid]._stopped():
                 continue
-            updated = True
-            server.debug(f"HYDRA: VM({vmid}) is being removed due to inactivity.")
-            msg = f"VM({vmid}) has shutdown"
+            u = True
+            server.debug(f"HYDRA: VM({vmid}) Removing due to inactivity.")
+            m = f"VM({vmid}) has shutdown"
             if self.vms[vmid]._exit != 0:
-                msg += f" with a non-zero exit code ({self.vms[vmid]._exit})!"
+                m += f" with a non-zero exit code ({self.vms[vmid]._exit})!"
             else:
-                msg += "."
-            if self.vms[vmid]._output is not None and len(self.vms[vmid]._output) > 0:
-                msg += f"\n({self.vms[vmid]._output})"
+                m += "."
+            if (
+                isinstance(self.vms[vmid]._output, str)
+                and len(self.vms[vmid]._output) > 0
+            ):
+                m += f"\n({self.vms[vmid]._output})"
             server.send(
                 None,
                 Message(
                     header=HOOK_NOTIFICATION,
                     payload={
                         "title": "Hydra VM Status",
-                        "body": msg,
+                        "body": m,
                         "icon": "virt-viewer",
                     },
                 ),
             )
-            del msg
+            del m
             self._clean_usb(server, self.vms[vmid])
-            self.vms[vmid]._stop(self, server, force=True)
+            self.vms[vmid]._stop(self, server, True, errors=False)
             del self.vms[vmid]
-        if updated:
-            self._update_tokens(server)
-        del updated
+        if u and len(self.vms) > 0:
+            try:
+                self._update_tokens(server)
+            except HydraError as err:
+                server.error("HYDRA: Error writing Tokens file!", err=err)
+        del u
         self.scheduler.run(blocking=False)
 
+    def stop(self, server, force):
+        server.debug("HYDRA: Stopping services and freeing resources..")
+        try:
+            stop(self.dns_server)
+        except AttributeError:
+            pass
+        try:
+            stop(self.web_server)
+        except AttributeError:
+            pass
+        try:
+            stop(self.token_server)
+        except AttributeError:
+            pass
+        run(["/usr/bin/systemctl", "stop", "smd-hydra-smb.service"], errors=False)
+        for vm in list(self.vms.values()):
+            try:
+                vm._stop(self, server, True)
+                vm.write()
+            except (HydraError, OSError) as err:
+                server.warning(f"HYDRA: VM({vm.vmid}) Error stopping VM!", err=err)
+        self.vms.clear()
+        self.usbs.clear()
+        if self.running or force:
+            try:
+                run(["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "down"])
+            except OSError as err:
+                if not force:
+                    server.warning("HYDRA: Error disabling internal bridge!", err=err)
+            try:
+                run(["/usr/bin/ip", "link", "del", "name", HYDRA_BRIDGE])
+            except OSError as err:
+                if not force:
+                    server.warning("HYDRA: Error removing internal bridge!", err=err)
+        if self.running:
+            try:
+                write(HYDRA_RESERVE, "0\n", errors=False)
+            except OSError as err:
+                server.warning("HYDRA: Error clearing reserved memory!", err=err)
+        if isdir(DIRECTORY_HYDRA):
+            try:
+                rmtree(DIRECTORY_HYDRA)
+            except OSError as err:
+                server.warning("HYDRA: Error removing the working directory!", err=err)
+        self.running = False
+        server.debug("HYDRA: Shutdown complete.")
+
     def hook(self, server, message):
+        if "type" not in message or not isinstance(message.type, int):
+            return
         if message.type == HYDRA_STATUS and len(message) <= 2:
             return {"vms": [vm._status() for vm in self.vms.values()]}
-        if message.get("user", False) and message.type == HYDRA_USER_DIRECTORY:
+        if message.user and message.type == HYDRA_USER_DIRECTORY:
             return message.set_multicast(True)
-        if message.get("all", False):
+        if message.all:
             for vm in self.vms.values():
                 if not vm._running():
                     continue
                 try:
                     if message.type == HYDRA_STOP:
-                        vm._stop(self, server, force=message.get("force", False))
+                        vm._stop(self, server, message.force)
                     elif message.type == HYDRA_WAKE or message.type == HYDRA_SLEEP:
                         vm._sleep(server, message.type == HYDRA_SLEEP)
                 except HydraError as err:
-                    server.error(
-                        f"HYDRA: Attempting to stop/sleep/wake VM({vm.vmid}) raised an exception!",
-                        err=err,
-                    )
+                    if message.type == HYDRA_STOP:
+                        server.error(
+                            f"HYDRA: VM({vm.vmid}) Error stopping VM!", err=err
+                        )
+                    elif message.type == HYDRA_WAKE:
+                        server.error(f"HYDRA: VM({vm.vmid}) Error waking VM!", err=err)
+                        continue
+                    server.error(f"HYDRA: VM({vm.vmid}) Error sleeping VM!", err=err)
             return {"vms": [vm._status() for vm in self.vms.values()]}
         try:
-            vm = self._get(server, vmid=None, message=message)
+            vm, n = self._get(server, message=message)
         except HydraError as err:
-            server.error(
-                "HYDRA: Attempting to request a VM raised an exception!", err=err
-            )
-            return {
-                "error": f"Could not load Hydra VM with the given paramaters! ({err})"
-            }
-        if message.get("user", False):
+            server.error("HYDRA: Error loading VM!", err=err)
+            return as_error(f"Could not load the specified VM: {err}")
+        if message.user:
             message["vmid"] = vm.vmid
             message["path"] = vm.get_file()
+            del vm
             return message.set_multicast(True)
         if message.type == HYDRA_STATUS:
             return vm._status()
         if message.type == HYDRA_START:
+            if not n:
+                return vm._status()
             try:
                 self.vms[vm.vmid] = vm
+                if vm._ready > 0:
+                    return vm._status()
                 self.start(server)
                 vm._start(self, server)
                 self._update_tokens(server)
-            except HydraError as err:
-                server.error(
-                    f"HYDRA: Attempting to start VM({vm.vmid}) raised an exception!",
-                    err=err,
-                )
-                return {"error": f"Could not start Hydra VM {vm.vmid}! ({err})"}
+            except (TypeError, HydraError) as err:
+                if vm.vmid in self.vms and vm._process is None:
+                    del self.vms[vm.vmid]
+                server.error(f"HYDRA: VM({vm.vmid}) Error starting VM!", err=err)
+                return as_error(f"Could not start VM {vm.vmid}: {err}")
             return vm._status()
+        if not vm._running():
+            return as_error(f"VM {vm.vmid} is not running!")
         if message.type == HYDRA_SLEEP or message.type == HYDRA_WAKE:
             try:
                 vm._sleep(server, message.type == HYDRA_SLEEP)
             except HydraError as err:
-                server.error(
-                    f"HYDRA: Attempting to sleep/wake VM({vm.vmid}) raised an exception!",
-                    err=err,
-                )
-                return {"error": f"Could not sleep/wake Hydra VM {vm.vmid}! ({err})"}
+                if message.type == HYDRA_SLEEP:
+                    server.error(f"HYDRA: VM({vm.vmid}) Error sleeping VM!", err=err)
+                    return as_error(f"Could not sleep VM {vm.vmid}: {err}")
+                server.error(f"HYDRA: VM({vm.vmid}) Error waking VM!", err=err)
+                return as_error(f"Could not wake VM {vm.vmid}: {err}")
             return vm._status()
         if message.type == HYDRA_STOP:
             try:
-                vm._stop(
-                    self,
-                    server,
-                    message.get("force", False),
-                    message.get("timeout", 90),
-                )
+                vm._stop(self, server, message.force, message.get("timeout", 90))
             except HydraError as err:
-                server.error(
-                    f"HYDRA: Attempting to stop VM({vm.vmid}) raised an exception!",
-                    err=err,
-                )
-                return {"error": f"Could not stop Hydra VM {vm.vmid}! ({err})"}
+                server.error(f"HYDRA: VM({vm.vmid}) Error stopping VM!", err=err)
+                return as_error(f"Could not stop VM {vm.vmid}: {err}")
             return vm._status()
         if message.type == HYDRA_USB_QUERY:
-            if not vm._running():
-                return {
-                    "error": f"Could not get Hydra VM {vm.vmid} USB list! (VM is not currently running!)"
-                }
-            status = vm._status()
-            status["usb"] = vm._usb
-            return status
+            return vm._status(usb=True)
         if message.type == HYDRA_USB_CLEAN:
-            if not vm._running():
-                return {
-                    "error": f"Could not clear Hydra VM {vm.vmid} USB devices! (VM is not currently running!)"
-                }
             self._clean_usb(server, vm)
             return vm._status()
         if message.type == HYDRA_USB_ADD:
             try:
-                id = self._connect_usb(
-                    server,
-                    vm,
-                    message.get("vendor"),
-                    message.get("product"),
-                    message.get("slow", False),
+                self._connect_usb(
+                    server, vm, message.vendor, message.product, message.slow
                 )
-            except HydraError as err:
+            except (ValueError, HydraError) as err:
                 server.error(
-                    f'HYDRA: Attempting to add USB device "{message.get("vendor")}:{message.get("product")}" '
-                    f"to VM({vm.vmid}) raised an exception!",
+                    f'HYDRA: VM({vm.vmid}) Error adding USB device "{message.vendor}:{message.product}"!',
                     err=err,
                 )
-                return {
-                    "error": f"Could not add USB device to Hydra VM {vm.vmid}! ({err})"
-                }
-            status = vm._status()
-            status["usb"] = id
-            del id
-            return status
+                return as_error(f"Could not add USB to VM {vm.vmid}: {err}")
+            return vm._status(usb=True)
         if message.type == HYDRA_USB_DELETE:
             try:
-                self._disconnect_usb(server, vm, message.get("usb"))
-            except HydraError as err:
+                self._disconnect_usb(server, vm, message.usb)
+            except (ValueError, HydraError) as err:
                 server.error(
-                    f'HYDRA: Attempting to remove USB device ID "{message.get("usb")}" to '
-                    f"VM({vm.vmid}) raised an exception!",
+                    f'HYDRA: VM({vm.vmid}) Error removing USB ID "{message.usb}"!',
                     err=err,
                 )
-                return {
-                    "error": f"Could not remove USB device from Hydra VM {vm.vmid}! ({err})"
-                }
-            return vm._status()
-        return {"error": "Invalid command!"}
+                return as_error(f"Could not remove USB from VM {vm.vmid}: {err}")
+            return vm._status(usb=True)
+        if message.type == HYDRA_GA_IP:
+            try:
+                return vm._ip(server)
+            except HydraError as err:
+                server.error(
+                    f"HYDRA: VM({vm.vmid}) Error retriving the IP address for the VM!",
+                    err=err,
+                )
+                return as_error(f"Could not retrive the VM IP address: {err}")
+        if message.type == HYDRA_GA_PING:
+            return vm._ping(server)
+        return as_error("Unknown or invalid command!")
 
     def _update_tokens(self, server):
         server.debug(f'HYDRA: Updating VM tokens file "{HYDRA_TOKENS}".')
-        tokens = list()
+        t = list()
         for vmid, vm in self.vms.items():
-            tokens.append(f"VM{vmid}: unix_socket:{vm._path}.vnc")
+            t.append(f"VM{vmid}: unix_socket:{vm._path}.vnc")
         try:
-            write(HYDRA_TOKENS, "\n".join(tokens), ignore_errors=False)
-            chmod(HYDRA_TOKENS, 0o640)
+            write(HYDRA_TOKENS, NEWLINE.join(t), perms=0o640)
         except OSError as err:
-            server.debug(
-                f'HYDRA: Attempting to update the tokens file "{HYDRA_TOKENS}" raised an excpetion!',
-                err=err,
-            )
-            raise HydraError(f'Filed to write to tokens file "{HYDRA_TOKENS}"! ({err})')
+            raise HydraError(f'Error writing tokens "{HYDRA_TOKENS}": {err}')
         finally:
-            del tokens
+            del t
 
     def _clean_usb(self, server, vm):
         if not isinstance(vm._usb, dict) or len(vm._usb) == 0:
             return
-        active = list(vm._usb.keys())
-        for id in active:
-            self._disconnect_usb(server, vm, id)
-        del active
-
-    def stop(self, server, force=False):
-        server.debug("HYDRA: Attempting to stop services and free resources..")
-        try:
-            stop(self.dns_server)
-            del self.dns_server
-        except AttributeError:
-            pass
-        try:
-            stop(self.web_server)
-            del self.web_server
-        except AttributeError:
-            pass
-        try:
-            stop(self.token_server)
-            del self.token_server
-        except AttributeError:
-            pass
-        run(["/usr/bin/systemctl", "stop", "smd-hydra-smb.service"], ignore_errors=True)
-        for vm in list(self.vms.values()):
+        e = list(vm._usb.keys())
+        for i in e:
             try:
-                vm._stop(self, server, force=True)
-                vm.write()
-            except HydraError as err:
-                server.warning(
-                    f"HYDRA: VM({self.vmid}) Attempting to stop VM raised an exception!",
-                    err=err,
-                )
-        self.vms.clear()
-        self.usbs.clear()
-        if self.running or force:
-            try:
-                run(
-                    ["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "down"],
-                    ignore_errors=False,
-                )
-            except OSError as err:
-                if not force:
-                    server.warning(
-                        "HYDRA: Attempting to remove internal bridge raised an exception!",
-                        err=err,
-                    )
-            try:
-                run(
-                    ["/usr/bin/ip", "link", "del", "name", HYDRA_BRIDGE],
-                    ignore_errors=False,
-                )
-            except OSError as err:
-                if not force:
-                    server.warning(
-                        "HYDRA: Attempting to remove internal bridge raised an exception!",
-                        err=err,
-                    )
-        if self.running:
-            try:
-                write(HYDRA_RESERVE, "0\n", ignore_errors=False)
-            except OSError as err:
-                server.warning(
-                    "HYDRA: Attempting to clear reserved memory raised an exception!",
-                    err=err,
-                )
-        if isdir(DIRECTORY_HYDRA):
-            try:
-                rmtree(DIRECTORY_HYDRA)
-            except OSError as err:
-                server.warning(
-                    "HYDRA: Attempting to working directory raised an exception!",
-                    err=err,
-                )
-        self.running = False
-        server.debug("HYDRA: Shutdown complete.")
+                self._disconnect_usb(server, vm, i)
+            except (ValueError, HydraError) as err:
+                server.error(f'HYDRA: VM({vm.vmid}) Error removing USB "{i}"!', err=err)
+        del e
 
     def hibernate(self, server, message):
-        if message.type != MESSAGE_TYPE_PRE:
+        if message.type != MESSAGE_TYPE_PRE or len(self.vms) == 0:
             return
-        if len(self.vms) == 0:
-            return
-        server.info("HYDRA: Sleeping all VMs due to hibernation/suspend!")
+        server.info("HYDRA: Sleeping all VMs due to Hibernation/Suspend.")
         for vm in self.vms.values():
             try:
-                if not vm._sleeping:
-                    vm._sleep(server, True)
+                if vm._sleeping:
+                    continue
+                vm._sleep(server, True)
             except HydraError as err:
-                server.error(
-                    f"HYDRA: Attempting to sleep/wake VM({vm.vmid}) raised an exception!",
-                    err=err,
-                )
+                server.error(f"HYDRA: VM({vm.vmid}) Error sleeping VM!", err=err)
 
     def _disconnect_usb(self, server, vm, usb):
-        if not vm._running():
-            raise HydraError("VM is not currently running!")
         if not isinstance(usb, str) and not isinstance(usb, int):
-            server.error(
-                f"HYDRA: VM({vm.vmid}) Attempted to remove a USB from the VM with an invalid USB ID!"
-            )
-            raise HydraError("Invalid USB ID!")
-        device = f"{vm.vmid}:{usb}"
-        if device not in list(self.usbs.values()):
-            server.error(
-                f'HYDRA: VM({vm.vmid}) Attempted to remove USB ID "{usb}" that is not connected to the VM!'
-            )
+            raise ValueError("USB ID value is invalid")
+        if isinstance(usb, str):
+            # NOTE(dij): Verify that usb is a valid integer string.
+            #            The upper function will catch it.
+            int(usb, 10)
+        d = f"{vm.vmid}:{usb}"
+        if d not in list(self.usbs.values()):
             raise HydraError(
-                f'Could not find USB ID "usb-dev{usb}" connected to VM({vm.vmid})!'
+                f'Could not find USB "usb-dev-{usb}" connected to VM({vm.vmid})!'
             )
-        if not isinstance(usb, int):
-            try:
-                usb = int(usb)
-            except ValueError as err:
-                server.error(
-                    f'HYDRA: VM({vm.vmid}) Attempted to remove invalid USB did "{usb}"!',
-                    err,
-                )
-                raise HydraError(
-                    f'Could not remove invalid USB ID "{usb}" from the VM({vm.vmid})!'
-                )
         vm._remove_usb(server, usb)
-        for name, did in self.usbs.copy().items():
-            if did == device:
-                del self.usbs[name]
-                break
+        for n, i in self.usbs.copy().items():
+            if i != d:
+                continue
+            del self.usbs[n]
+            server.debug(
+                f'HYDRA: VM({vm.vmid}) Removed USB device "{n}" ({usb}) from the VM.'
+            )
+            break
+        del d
 
     def _get(self, server, vmid=None, message=None):
         if vmid is None and message is not None:
-            vmid = message.get("vmid", None)
+            vmid = message.get("vmid")
         if isinstance(vmid, str):
             try:
-                vmid = int(vmid)
+                vmid = int(vmid, 10)
             except ValueError:
                 vmid = None
         if isinstance(vmid, int) and vmid in self.vms:
-            return self.vms[vmid]
-        if message is not None and isinstance(message.get("path", None), str):
+            return self.vms[vmid], False
+        if message is not None and isinstance(message.get("path"), str):
             try:
-                vm = HydraVM(file_path=get_vm(message.get("path")))
-            except (HydraError, OSError, TypeError) as err:
-                server.error(
-                    f'HYDRA: Attempting to load a VM from "{message.get("path")}" raised an exception!',
-                    err=err,
-                )
-                raise HydraError(f"Could not load the requested HydraVM ({err})!")
+                vm = HydraVM(path=get_vm(message.path))
+            except (HydraError, OSError) as err:
+                raise HydraError(f'Cannot load VM from "{message.path}": {err}!')
             if vm.vmid in self.vms and self.vms[vm.vmid]._running():
                 server.debug(
-                    f'HYDRA: Loaded already running VMID({vm.vmid}) from "{vm.get_file()}", returning running instance!'
+                    f'HYDRA: VM({vm.vmid}) Currently running VM was loaded from "{vm.get_file()}", '
+                    "returning running instance instead!"
                 )
-                return self.vms[vm.vmid]
-            server.debug(f'HYDRA: Loaded new VMID({vm.vmid}) from "{vm.get_file()}"!')
-            return vm
-        raise HydraError("Cannot locate VM without a proper VMID or Path value!")
+                return self.vms[vm.vmid], True
+            server.debug(f'HYDRA: VM({vm.vmid}) Loaded from "{vm.get_file()}"!')
+            return vm, True
+        raise HydraError("Cannot locate VM without a proper VMID or Path value")
 
-    def _connect_usb(self, server, vm, vendor, product, slow=False):
-        if not vm._running():
-            raise HydraError("VM is not currently running!")
+    def _connect_usb(self, server, vm, vendor, product, slow):
         if not isinstance(vendor, str) and not isinstance(product, str):
-            server.error(
-                f"HYDRA: VM({vm.vmid}) Attempted to add a USB to the VM with invalid product or vendor IDs!"
-            )
-            raise HydraError("Invalid product ot vendor IDs!")
-        device = f"{vendor}:{product}"
-        if device in self.usbs:
-            server.error(
-                f'HYDRA: VM({vm.vmid}) Attempted to add USB device "{device}" that is currently mounted on another VM!'
-            )
-            raise HydraError(
-                f'USB device "{device}" is already connected to another VM!'
-            )
-        devices = get_usb()
-        if device not in devices:
-            del devices
-            server.error(
-                f'HYDRA: VM({vm.vmid}) Attempted to add USB device "{device}" that is not connected to the host!'
-            )
-            raise HydraError(
-                f'Could not find USB device "{device}" connected to the system!'
-            )
-        del devices
+            raise ValueError("Vendor/Product values are invalid")
+        if len(vendor) == 0 or len(product) == 0:
+            raise ValueError("Vendor/Product values are invalid")
+        d = f"{vendor}:{product}"
+        if d in self.usbs:
+            raise HydraError(f'USB device "{d}" is already connected to another VM')
+        e = get_usb()
+        if d not in e:
+            del e
+            raise HydraError(f'USB device "{d}" is not connected to the system')
+        del e
         try:
-            id = vm._add_usb(server, vendor, product, slow)
-        except HydraError as err:
-            server.error(
-                f'HYDRA: VM({vm.vmid}) Attempted to add USB device "{device}" raised and exception!',
-                err=err,
-            )
-            raise HydraError(
-                f'Could not connect USB device "{device}" to VM({vm.vmid})!'
-            )
-        self.usbs[device] = f"{vm.vmid}:{id}"
-        return id
+            i = vm._add_usb(server, vendor, product, slow)
+        except (HydraError, OSError) as err:
+            raise HydraError(f'Could not connect USB device "{d}": {err}')
+        self.usbs[d] = f"{vm.vmid}:{i}"
+        server.debug(f'HYDRA: VM({vm.vmid}) Added USB device "{d}" to VM as "{i}"!')
+        del d
+        return i
 
 
 class HydraError(OSError):
@@ -1664,25 +1740,19 @@ class HydraWaitThread(Thread):
 
     def run(self):
         try:
-            timeout = 15
-            while timeout > 0:
+            for _ in range(0, 15):
                 sleep(1)
                 if self.vm._running():
                     break
-                else:
-                    timeout -= 1
-            del timeout
             if not self.vm._running():
-                self.server.error(f"HYDRA VM({self.vm.vmid}) Failed to start!")
                 self.vm._ready = 2
-                return
+                return self.server.error(f"HYDRA: VM({self.vm.vmid}) Failed to start!")
             self.server.debug(
-                f"HYDRA: VM({self.vm.vmid}) Started, Process ID: {self.vm._process.pid}."
+                f"HYDRA: VM({self.vm.vmid}) Started, PID: {self.vm._process.pid}!"
             )
             self.vm._ready = 1
         except Exception as err:
             self.server.error(
-                f"HYDRA: VM({self.vm.vmid}) Exception occurred while waiting for a VM to power on!",
-                err=err,
+                f"HYDRA: VM({self.vm.vmid}) Error waiting for VM power on!", err=err
             )
             self.vm._ready = 2

@@ -5,7 +5,7 @@
 # Usage:
 #  smd-locker [non-lock]
 #
-#  Discouraged for general usage. The only paramater may be specified to indicate that this is not a lock screen
+#  Discouraged for general usage. The only paramater may be specified to indicate that this is not a Lockscreen
 #  Trigger, such as the uses for the lid closing action.
 #  If a user is required to lock the system manually, the appropriate command would be to use "powerctl lock [-f]".
 #  Exit code is always 0.

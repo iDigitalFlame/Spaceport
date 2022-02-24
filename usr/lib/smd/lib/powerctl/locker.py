@@ -41,76 +41,64 @@ from lib.constants import (
 
 
 def config(arguments):
-    lockers = list()
-    _parse_locker(lockers, LOCKER_TYPE_LID, arguments.lid, arguments.lid_force)
-    _parse_locker(lockers, LOCKER_TYPE_KEY, arguments.key, arguments.key_force)
-    _parse_locker(lockers, LOCKER_TYPE_BLANK, arguments.blank, arguments.blank_force)
-    _parse_locker(
-        lockers, LOCKER_TYPE_LOCK, arguments.lockscreen, arguments.lockscreen_force
-    )
-    _parse_locker(
-        lockers, LOCKER_TYPE_SUSPEND, arguments.suspend, arguments.suspend_force
-    )
-    _parse_locker(
-        lockers, LOCKER_TYPE_HIBERNATE, arguments.hibernate, arguments.hibernate_force
-    )
-    if len(lockers) == 0:
+    e = list()
+    get_locker(e, LOCKER_TYPE_LID, arguments.lid, arguments.lid_force)
+    get_locker(e, LOCKER_TYPE_KEY, arguments.key, arguments.key_force)
+    get_locker(e, LOCKER_TYPE_BLANK, arguments.blank, arguments.blank_force)
+    get_locker(e, LOCKER_TYPE_LOCK, arguments.lockscreen, arguments.lockscreen_force)
+    get_locker(e, LOCKER_TYPE_SUSPEND, arguments.suspend, arguments.suspend_force)
+    get_locker(e, LOCKER_TYPE_HIBERNATE, arguments.hibernate, arguments.hibernate_force)
+    if len(e) == 0:
         return
     try:
         send_message(
             arguments.socket,
             HOOK_LOCKER,
-            payload={"type": MESSAGE_TYPE_ACTION, "list": lockers},
+            payload={"type": MESSAGE_TYPE_ACTION, "list": e},
         )
     except OSError as err:
-        print_error("Attempting to update the Lockers raised an exception!", err)
-    del lockers
+        print_error("Error updating Lockers!", err)
+    del e
 
 
 def default(arguments):
     try:
-        query = send_message(
+        r = send_message(
             arguments.socket,
             HOOK_LOCKER,
             (HOOK_LOCKER, "lockers"),
-            payload={"type": MESSAGE_TYPE_STATUS},
+            5,
+            {"type": MESSAGE_TYPE_STATUS},
         )
     except OSError as err:
-        return print_error("Attempting to query Lockers raised an exception!", err)
-    if "error" in query:
-        print_error(
-            f'Attempting to query Lockers returned an exception: {query["error"]}!',
-            None,
-            True,
-        )
+        return print_error("Error retriving Lockers!", err)
+    if r.is_error():
+        print_error(f"Error retriving Lockers: {r.error}!")
+    if not isinstance(r.lockers, dict) or len(r.lockers) == 0:
+        return print("No Lockers are enabled.")
     print(f'{"Locker":15}{"Expires":8}\n{"="*32}')
-    if not isinstance(query["lockers"], dict) or len(query["lockers"]) == 0:
-        return
-    now = time()
-    for name, seconds in query["lockers"].items():
-        if name not in LOCKER_TYPE_NAMES:
-            print(f"{name:15}{time_to_str(now, seconds):<8}")
-            continue
-        print(f"{LOCKER_TYPE_NAMES[name]:15}{time_to_str(now, seconds):<8}")
-    del now
-    del query
+    t = time()
+    for n, s in r.lockers.items():
+        print(f"{LOCKER_TYPE_NAMES.get(n, n):15}{time_to_str(t, s):<8}")
+    del t
+    del r
 
 
 def _parse_time(value):
     try:
-        number = int(value)
-        return number if number >= 0 else None
+        v = int(value)
+        return v if v >= 0 else None
     except ValueError:
         pass
     return None if boolean(value) else 0
 
 
-def _parse_locker(list, locker, arg, force):
+def get_locker(list, locker, arg, force):
     if arg is None and force is None:
         return
     try:
-        expires = _parse_time(force if force is not None else arg)
+        e = _parse_time(force if force is not None else arg)
     except ValueError as err:
-        return print_error(f"{LOCKER_TYPE_NAMES[locker]}: {err}")
-    list.append({"name": locker, "time": expires, "force": force is not None})
-    del expires
+        return print_error(f"{LOCKER_TYPE_NAMES.get(locker, locker)}: {err}")
+    list.append({"name": locker, "time": e, "force": force is not None})
+    del e

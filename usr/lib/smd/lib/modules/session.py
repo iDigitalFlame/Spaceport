@@ -25,10 +25,12 @@ from sched import scheduler
 from time import time, sleep
 from os import environ, kill
 from signal import SIGCONT, SIGSTOP
+from lib.util import stop, boolean, run
+from os.path import expanduser, expandvars
 from lib.modules.background import background
-from lib.util import stop, boolean, eval_env, run
 from subprocess import Popen, DEVNULL, SubprocessError
 from lib.constants import (
+    NEWLINE,
     HOOK_LOCK,
     HOOK_POWER,
     HOOK_DAEMON,
@@ -66,13 +68,13 @@ HOOKS = {
 
 
 def _get_profile(server, name):
-    profile = server.get_config(f"profile.{name}", None, False)
-    if profile is None:
+    p = server.get_config(f"profile.{name}", None, False)
+    if p is None:
         server.set_config(f"profile.{name}", list(), True)
         return None
-    if len(profile) == 0:
+    if len(p) == 0:
         return None
-    return profile
+    return p
 
 
 class Session(object):
@@ -99,7 +101,7 @@ class Session(object):
             )
         except (TypeError, ValueError) as err:
             server.error(
-                'Improper value for "background.autochange"! Resetting to default!',
+                'Improper value for "background.autochange", resetting to default!',
                 err=err,
             )
             self.switch_time = int(
@@ -107,57 +109,49 @@ class Session(object):
                     "background.auto_change", DEFAULT_BACKGROUND_SWITCH, True
                 )
             )
-        composer = server.get_config("session.composer", DEFAULT_SESSION_COMPOSER, True)
-        if len(composer) > 0:
-            if isinstance(composer, list):
-                composer = composer.copy()
-            elif not isinstance(composer, str):
+        c = server.get_config("session.composer", DEFAULT_SESSION_COMPOSER, True)
+        if len(c) > 0:
+            if isinstance(c, list):
+                c = c.copy()
+            elif not isinstance(c, str):
                 server.error(
-                    'Improper value for "session.composer"! Resetting to default!'
+                    'Improper value for "session.composer", resetting to default!'
                 )
                 server.set_config("session.composer", DEFAULT_SESSION_COMPOSER, True)
-                composer = DEFAULT_SESSION_COMPOSER
-            if isinstance(composer, str):
-                composer = composer.split(" ")
-        if isinstance(composer, list):
-            for x in range(0, len(composer)):
-                composer[x] = eval_env(composer[x])
+                c = DEFAULT_SESSION_COMPOSER
+            if isinstance(c, str):
+                c = c.split(" ")
+        if isinstance(c, list):
+            for x in range(0, len(c)):
+                c[x] = expandvars(expanduser(c[x]))
             try:
-                self.composer = Popen(
-                    composer, stderr=DEVNULL, stdout=DEVNULL, env=environ
-                )
+                self.composer = Popen(c, stderr=DEVNULL, stdout=DEVNULL, env=environ)
             except (OSError, SubprocessError) as err:
-                server.error(
-                    f'Starting the composer "{" ".join(composer)}" raised an Exception!',
-                    err=err,
-                )
-        del composer
-        tap = server.get_config("session.enable_tap", DEFAULT_SESSION_TAP, True)
-        if tap is not None and boolean(tap):
+                server.error(f'Error starting the composer "{" ".join(c)}"!', err=err)
+        del c
+        t = server.get_config("session.enable_tap", DEFAULT_SESSION_TAP, True)
+        if t is not None and boolean(t):
             server.debug("Enabling Tap..")
             try:
-                run([f"{DIRECTORY_LIBEXEC}/smd-enable-tap"], ignore_errors=False)
+                run(f"{DIRECTORY_LIBEXEC}/smd-enable-tap")
             except OSError as err:
-                server.warning("Enabling Tap raised and Exception!", err=err)
-        del tap
-        startups = server.get_config("session.startups", DEFAULT_SESSION_STARTUPS)
-        if isinstance(startups, list) and len(startups) > 0:
-            for start in startups:
+                server.warning("Error enabling tap!", err=err)
+        del t
+        s = server.get_config("session.startups", DEFAULT_SESSION_STARTUPS)
+        if isinstance(s, list) and len(s) > 0:
+            for x in s:
                 try:
                     self.running.append(
                         Popen(
-                            eval_env(start).split(" "),
+                            expandvars(expanduser(x)).split(" "),
                             env=environ,
                             stdout=DEVNULL,
                             stderr=DEVNULL,
                         )
                     )
                 except (OSError, SubprocessError) as err:
-                    server.warning(
-                        f'Launching startup process "{start}" raised an Exception!',
-                        err=err,
-                    )
-        del startups
+                    server.warning(f'Error starting startup process "{x}"!', err=err)
+        del s
         self.freeze_ignore = server.get_config(
             "session.freeze.ignore", DEFAULT_SESSION_IGNORE, True
         )
@@ -169,7 +163,9 @@ class Session(object):
                 self.freeze_ignore = None
             else:
                 for x in range(0, len(self.freeze_ignore)):
-                    self.freeze_ignore[x] = eval_env(self.freeze_ignore[x]).lower()
+                    self.freeze_ignore[x] = expandvars(
+                        expanduser(self.freeze_ignore[x]).lower()
+                    )
         self.freeze_windows = boolean(
             server.get_config("session.freeze.enabled", DEFAULT_SESSION_FREEZE, True)
         )
@@ -196,11 +192,11 @@ class Session(object):
             self.composer = None
         if len(self.running) == 0:
             return
-        for proc in list(self.running):
-            if proc is not None and proc.poll() is not None:
-                stop(proc)
-                self.running.remove(proc)
-            del proc
+        for p in list(self.running):
+            if p is not None and p.poll() is not None:
+                self.running.remove(p)
+                stop(p)
+            del p
 
     def reload(self, server, message):
         if self.switch_event is not None:
@@ -211,8 +207,8 @@ class Session(object):
             self.switch_event = None
         if self.composer is not None:
             stop(self.composer)
-        for proc in self.running:
-            stop(proc)
+        for p in self.running:
+            stop(p)
         self.running.clear()
         self.profiles.clear()
         if message.header() == HOOK_SHUTDOWN:
@@ -258,16 +254,13 @@ class Session(object):
 
     def _freeze_windows(self, server, pre):
         if not self.freeze_windows:
-            return server.debug("Not freezing windows, as it's disabled in config.")
+            return server.debug("Not freezing windows as it's disabled in config.")
         try:
-            windows = run(SESSION_WINDOW_LIST, wait=True, ignore_errors=False)
+            e = run(SESSION_WINDOW_LIST, wait=True, errors=False)
         except OSError as err:
-            return server.error(
-                "Attempting to generate a list of windows raised an exception!",
-                err=err,
-            )
-        v = windows.split("\n")
-        del windows
+            return server.error("Error retriving the window list!", err=err)
+        v = e.split(NEWLINE)
+        del e
         if len(v) == 0:
             return server.debug("No windows detected, not freezing.")
         for w in v:
@@ -275,10 +268,13 @@ class Session(object):
             if len(e) < 4:
                 continue
             try:
-                p = int(e[2])
+                p = int(e[2], 10)
             except ValueError:
                 continue
             if not self._can_freeze_window(e[3], p):
+                if pre:
+                    del p
+                    continue
                 server.debug(f'Not freezing ignored window PID "{p}" class "{e[3]}"".')
                 del p
                 continue
@@ -286,57 +282,51 @@ class Session(object):
                 try:
                     kill(p, SIGSTOP)
                 except OSError as err:
-                    server.error(
-                        f'Attempting to un-freeze PID "{p}" raised an exception!',
-                        err=err,
-                    )
+                    server.error(f'Error freezing PID "{p}"!', err=err)
                 continue
             try:
                 kill(p, SIGCONT)
             except OSError as err:
-                server.error(
-                    f'Attempting to un-freeze PID "{p}" raised an exception!',
-                    err=err,
-                )
+                server.error(f'Error un-freezing PID "{p}"!', err=err)
+            del p
         del v
 
     def _freeze_composer(self, server, pre):
+        if self:
+            # NOTE(dij): Disabling this for now as it seems a race
+            #            condition occurs between the composer and
+            #            the lock screen which causes the screen to
+            #            freeze on unlock.
+            return server.debug("Not freezing the composer..")
         if self.composer is None or self.composer.poll() is not None:
             return
         if pre:
             try:
                 self.composer.send_signal(SIGSTOP)
             except OSError as err:
-                server.error(
-                    "Attempting to freeze the composer raised an exception!",
-                    err=err,
-                )
-            else:
-                server.debug("Freezing the composer due to lockscreen.")
-            return
+                return server.error("Error freezing the composer!", err=err)
+            return server.debug("Freezing the composer due to lockscreen.")
         try:
             self.composer.send_signal(SIGCONT)
         except OSError as err:
-            server.error(
-                "Attempting to un-freeze the composer raised an exception!",
-                err=err,
-            )
-        else:
-            server.debug("Unfreezing the composer due to lockscreen removal.")
+            return server.error("Error un-freezing the composer!", err=err)
+        return server.debug("Unfreezing the composer due to lockscreen removal.")
 
     def _trigger_profile(self, server, name):
-        profile = self.profiles.get(name)
-        if profile is None or len(profile) == 0:
+        p = self.profiles.get(name)
+        if p is None or len(p) == 0:
             return
         server.debug(f'Triggering profile commands for "{name}"!')
-        if isinstance(profile, str):
-            self._exec_profile_command(server, profile)
-        elif isinstance(profile, list):
-            for command in profile:
-                self._exec_profile_command(server, command)
+        if isinstance(p, str):
+            self._exec_profile_command(server, p)
+        elif isinstance(p, list):
+            for c in p:
+                self._exec_profile_command(server, c)
 
     def _can_freeze_window(self, win_class, win_pid):
         if win_pid == 0:
+            return False
+        if win_class.startswith("i3lock"):
             return False
         if not isinstance(self.freeze_ignore, list):
             return True
@@ -349,16 +339,13 @@ class Session(object):
         try:
             self.running.append(
                 Popen(
-                    eval_env(command).split(" "),
+                    expandvars(expanduser(command)).split(" "),
                     stdout=DEVNULL,
                     stderr=DEVNULL,
                     env=environ,
                 )
             )
         except (OSError, SubprocessError) as err:
-            server.error(
-                f'Starting the profile command "{command}" raised an Exception!',
-                err=err,
-            )
+            server.error(f'Error starting the profile command "{command}"!', err=err)
             return
         server.debug(f'Started the profile command "{command}"!')

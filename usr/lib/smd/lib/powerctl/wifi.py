@@ -28,6 +28,7 @@ from lib.structs.message import send_message
 from lib.util import read, boolean, print_error
 from lib.constants import (
     EMPTY,
+    NEWLINE,
     BOOLEANS,
     HOOK_RADIO,
     RADIO_PATH_WIFI,
@@ -37,17 +38,18 @@ from lib.constants import (
 
 
 def _is_enabled():
-    for device in listdir(RADIO_PATH_WIFI):
-        path = f"{RADIO_PATH_WIFI}/{device}/flags"
-        wireless = f"{RADIO_PATH_WIFI}/{device}/wireless"
-        if not exists(path) or not isdir(wireless):
-            del path
-            del wireless
+    for d in listdir(RADIO_PATH_WIFI):
+        p = f"{RADIO_PATH_WIFI}/{d}/flags"
+        w = f"{RADIO_PATH_WIFI}/{d}/wireless"
+        del d
+        if not exists(p) or not isdir(w):
+            del p
+            del w
             continue
-        flags = read(path, ignore_errors=False)
-        del path
-        del wireless
-        if isinstance(flags, str) and flags.replace("\n", EMPTY) == "0x1003":
+        f = read(p, errors=False)
+        del p
+        del w
+        if isinstance(f, str) and f.replace(NEWLINE, EMPTY) == "0x1003":
             return True
     return False
 
@@ -57,36 +59,33 @@ def config(arguments):
 
 
 def command(arguments):
-    if not set_command(arguments, "wireless"):
-        default(arguments)
+    if set_command(arguments, "wireless"):
+        return
+    default(arguments)
 
 
 def default(arguments):
     try:
         if _is_enabled():
-            print("Wireless is enabled.")
-            return
-        print("Wireless is disabled.")
+            return print("Wireless is enabled.")
     except OSError as err:
-        return print_error(
-            "Attempting to retrive wireless device status raised an exception!",
-            err,
-            True,
-        )
+        return print_error("Error retriving Wireless status!", err)
+    print("Wireless is disabled.")
 
 
 def set_command(arguments, radio):
-    command = arguments.command.lower()
-    if command in BOOLEANS:
-        _set(arguments.socket, radio, None, boolean(command))
+    c = arguments.command.lower()
+    if c in BOOLEANS:
+        _set(arguments.socket, radio, None, boolean(c))
         return True
     if arguments.args is not None and len(arguments.args) > 0:
-        if command == "set":
+        if c == "set":
             _set(arguments.socket, radio, None, boolean(arguments.args[0]))
-            return True
-        if command == "boot":
+        elif c == "boot":
             _set(arguments.socket, radio, arguments.args[0])
-            return True
+        else:
+            return False
+        return True
     return False
 
 
@@ -99,23 +98,21 @@ def set_config(arguments, radio, toggle=None):
 
 
 def _set(socket, radio, boot=None, enable=False, disable=False):
-    message = {"radio": radio}
+    m = {"radio": radio}
     if boot is not None:
-        message["type"] = MESSAGE_TYPE_CONFIG
-        message["boot"] = boolean(boot)
+        m["type"] = MESSAGE_TYPE_CONFIG
+        m["boot"] = boolean(boot)
         print(
-            f'Setting "{radio}" boot status to "{"Enabled" if message["boot"] else "Disabled"}"!'
+            f'Setting "{radio}" boot status to "{"Enabled" if m["boot"] else "Disabled"}"!'
         )
     else:
-        message["type"] = MESSAGE_TYPE_ACTION
-        message["enabled"] = enable and not disable
+        m["type"] = MESSAGE_TYPE_ACTION
+        m["enabled"] = enable and not disable
         print(
-            f'Setting "{radio}" status to "{"Enabled" if message["enabled"] else "Disabled"}"!'
+            f'Setting "{radio}" status to "{"Enabled" if m["enabled"] else "Disabled"}"!'
         )
     try:
-        send_message(socket, HOOK_RADIO, None, None, message)
+        send_message(socket, HOOK_RADIO, payload=m)
     except OSError as err:
-        print_error(
-            'Attempting to set "{radio}" status raised an Exception!', err, True
-        )
-    del message
+        return print_error(f'Error setting "{radio}" status!', err)
+    del m

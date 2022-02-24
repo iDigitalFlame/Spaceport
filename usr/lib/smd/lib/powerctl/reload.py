@@ -35,7 +35,5 @@ def default(arguments):
             return
         send_message(arguments.socket, HOOK_RELOAD, payload={"all": arguments.all})
     except OSError as err:
-        return print_error(
-            "Attempting to send a reload message raised an exception!", err
-        )
-    print("Sent a reload message to the system..")
+        return print_error("Error sending a Reload message!", err)
+    print("Sent a Reload message to the system.")

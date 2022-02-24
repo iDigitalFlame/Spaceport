@@ -22,222 +22,226 @@
 #
 
 from os import listdir
-from os.path import isdir
 from inspect import isclass
 from lib.constants import EMPTY
 from importlib import import_module
+from os.path import isdir, basename
 from lib.structs.hook import Hook, HookList
+
+
+def try_get_attr(obj, name, call):
+    if obj is None or not isinstance(name, str):
+        return None
+    if len(name) == 0:
+        return None
+    x = None
+    try:
+        x = getattr(obj, name)
+    except AttributeError:
+        try:
+            x = getattr(obj, name.lower())
+        except AttributeError:
+            try:
+                x = getattr(obj, name.upper())
+            except AttributeError:
+                try:
+                    x = getattr(obj, name.capitalize())
+                except AttributeError:
+                    pass
+    if x is not None and callable(x) and call:
+        try:
+            return x()
+        except TypeError:
+            pass
+    return x
 
 
 def load_modules(service, directory):
     if not isdir(directory):
-        raise OSError(f'Directory path "{directory}" is not a valid directory!')
-    loaded = dict()
-    modules = listdir(directory)
-    for module in modules:
-        if ".py" in module:
-            name = module.replace(".py", EMPTY).lower()
-            service.debug(f'Attempting to load module "{name}"...')
-            instance = None
-            try:
-                instance = import_module(f"lib.modules.{name}")
-            except ImportError as err:
-                service.error(f'Exception occurred loading module "{name}"!', err=err)
-                continue
-            finally:
-                del name
-            _load_module_hooks(
-                service,
-                service,
-                loaded,
-                instance,
-                "hooks_server" if service.is_server() else "hooks",
-            )
-            del instance
-    del modules
-    service.info(f'Loaded {len(loaded)} Hooks from "{directory}".')
-    return loaded
-
-
-def try_get_attr(obj, name, func=True):
-    if obj is not None and isinstance(name, str):
-        obj_attr = None
+        raise OSError(f'Path "{directory}" is not a valid directory')
+    e = dict()
+    x = listdir(directory)
+    for m in x:
+        if ".py" not in m:
+            continue
+        n = m.replace(".py", EMPTY).lower()
+        if "/" in n or "\\" in n:
+            n = basename(n)
+        service.debug(f'Attempting to load module "{n}"..')
         try:
-            obj_attr = getattr(obj, name)
-        except AttributeError:
-            try:
-                obj_attr = getattr(obj, name.lower())
-            except AttributeError:
-                try:
-                    obj_attr = getattr(obj, name.upper())
-                except AttributeError:
-                    try:
-                        obj_attr = getattr(obj, name.capitalize())
-                    except AttributeError:
-                        pass
-        if obj_attr is not None:
-            if callable(obj_attr) and not func:
-                return obj_attr
-            try:
-                return obj_attr()
-            except Exception:
-                pass
-        return obj_attr
-    return None
+            x = import_module(f"lib.modules.{n}")
+        except ImportError as err:
+            service.error(f'Error loading module "{n}"!', err=err)
+            continue
+        finally:
+            del n
+        _load_module_hooks(
+            service,
+            service,
+            e,
+            x,
+            "hooks_server" if service.is_server() else "hooks",
+        )
+        del m
+    del x
+    service.info(f'Loaded {len(e)} Hooks from "{directory}".')
+    return e
 
 
 def _get_class(class_module, class_name):
     try:
-        instance = getattr(class_module, class_name)
+        x = getattr(class_module, class_name)
     except AttributeError:
         return None
-    if instance is None:
+    if x is None:
         return None
-    if not isclass(instance):
+    if not isclass(x):
         return None
     try:
-        obj = instance()
+        obj = x()
     except Exception as err:
         raise err
     finally:
-        del instance
+        del x
     return obj
 
 
 def _get_function(obj, func_name, func_args=0):
     try:
-        instance = getattr(obj, func_name)
+        x = getattr(obj, func_name)
     except AttributeError:
         return None
-    if instance is None:
+    if x is None:
         return None
-    if not callable(instance):
+    if not callable(x):
+        del x
         return None
-    if instance.__code__.co_argcount != func_args:
-        del instance
+    if x.__code__.co_argcount != func_args:
+        del x
         return None
-    return instance
+    return x
 
 
 def _load_hook(log, hook, hook_class, hook_name):
-    func = None
+    f = None
     for x in range(5, -1, -1):
-        func = _get_function(hook_class, hook_name, x)
-        if func is not None:
+        f = _get_function(hook_class, hook_name, x)
+        if f is not None:
             break
-    if not callable(func):
+    if not callable(f):
         log.error(
-            f'Hook 0x{hook:02X}: Module "{hook_class.__name__}" object does not contain function "{hook_name}"!'
+            f'Hook 0x{hook:02X}: Module "{hook_class.__name__}" does not contain function "{hook_name}"!'
         )
         return None
     log.debug(
         f'Hook 0x{hook:02X}: Registered function "{hook_name}" in module "{hook_class.__name__}"!'
     )
-    return Hook(None, func, hook_class)
+    return Hook(None, f, hook_class)
 
 
 def _load_module_hooks(log, service, hooks, module, module_func):
     log.debug(f'Module "{module.__name__}" loaded, getting hook information..')
-    hook_list = try_get_attr(module, module_func, True)
-    if hook_list is None:
+    try:
+        e = try_get_attr(module, module_func, True)
+    except Exception as err:
+        return log.debug(
+            f'Error reading module "{module.__name__}" ({module_func})!', err=err
+        )
+    if e is None:
         return log.debug(
             f'Module "{module.__name__}" ({module_func}) did not return any hooks!'
         )
-    if not isinstance(hook_list, dict):
-        del hook_list
+    if not isinstance(e, dict):
+        del e
         return log.error(
-            f'Module "{module.__name__}" "{module_func}" function returned an incorrect object, '
-            f"it must be a Python dict!"
+            f'Module "{module.__name__}" "{module_func}" function returned an incorrect '
+            "object, it must be a Dict!"
         )
     log.debug(
-        f'Module "{module.__name__}" exposed the following ({len(hook_list)}) hooks: <{str(hook_list)}>'
+        f'Module "{module.__name__}" exposed the following ({len(e)}) hooks: <{str(e)}>'
     )
-    loaded = dict()
-    for hook, hook_class in hook_list.items():
-        if hook not in hooks:
-            hooks[hook] = HookList()
-        if isinstance(hook_class, list):
-            for hook_sub in hook_class:
-                if "." in hook_sub:
-                    hook_obj = _load_hook_obj(
-                        log, service, loaded, hook, module, hook_sub
-                    )
+    v = dict()
+    for h, c in e.items():
+        if h not in hooks:
+            hooks[h] = HookList()
+        if isinstance(c, list):
+            for s in c:
+                if "." in s:
+                    o = _load_hook_obj(log, service, v, h, module, s)
                 else:
-                    hook_obj = _load_hook(log, hook, module, hook_sub)
-                if isinstance(hook_obj, Hook):
-                    hooks[hook].append(hook_obj)
-                    del hook_obj
+                    o = _load_hook(log, h, module, s)
+                if isinstance(o, Hook):
+                    hooks[h].append(o)
+                del o
             continue
-        if "." in hook_class:
-            hook_obj = _load_hook_obj(log, service, loaded, hook, module, hook_class)
+        if "." in c:
+            o = _load_hook_obj(log, service, v, h, module, c)
         else:
-            hook_obj = _load_hook(log, hook, module, hook_class)
-        if isinstance(hook_obj, Hook):
-            hooks[hook].append(hook_obj)
-            del hook_obj
-    del loaded
+            o = _load_hook(log, h, module, c)
+        if isinstance(o, Hook):
+            hooks[h].append(o)
+        del o
+    del v
+    del e
     log.info(f'Module "{module.__name__}" loaded.')
 
 
 def _load_hook_obj(log, service, loaded, hook, hook_class, hook_name):
-    name = hook_name.split(".")
-    if len(name) != 2 and (len(name[0]) == 0 or len(name[1]) == 0):
-        log.Error(f'Hook 0x{hook:02X}: Name of class "{hook_name}" is invalid!')
-        del name
+    n = hook_name.split(".")
+    if len(n) != 2 and (len(n[0]) == 0 or len(n[1]) == 0):
+        log.error(f'Hook 0x{hook:02X}: Name of class "{hook_name}" is invalid!')
+        del n
         return None
-    if name[0] not in loaded:
+    if n[0] not in loaded:
         log.debug(
-            f'Hook 0x{hook:02X}: Class "{name[0]}" is not loaded, attempting to load and create!'
+            f'Hook 0x{hook:02X}: Class "{n[0]}" is not loaded, attempting to load and create!'
         )
         try:
-            obj = _get_class(hook_class, name[0])
+            o = _get_class(hook_class, n[0])
         except Exception as err:
             log.error(
-                f'Hook 0x{hook:02X}: Exception occurred when creating class "{name[0]}" object!',
-                err=err,
+                f'Hook 0x{hook:02X}: Error creating class "{n[0]}" object!', err=err
             )
-            del name
+            del n
             return None
-        if obj is None:
+        if o is None:
             log.error(
-                f'Hook 0x{hook:02X}: Class "{name[0]}" does not exist in "{hook_class.__name__}"!'
+                f'Hook 0x{hook:02X}: Class "{n[0]}" does not exist in "{hook_class.__name__}"!'
             )
-            del name
+            del n
             return None
-        setup = _get_function(
-            obj, "setup_server" if service.is_server() else "setup", 2
-        )
-        if callable(setup):
+        e = _get_function(o, "setup_server" if service.is_server() else "setup", 2)
+        if callable(e):
             log.debug(
-                f'Hook 0x{hook:02X}: Class "{name[0]}" created, attempting to call setup function!'
+                f'Hook 0x{hook:02X}: Class "{n[0]}" created, attempting to call setup function!'
             )
             try:
-                setup(service)
+                e(service)
             except Exception as err:
                 log.error(
-                    f'Hook 0x{hook:02X}: Class "{name[0]}" object setup function raised an exception!',
+                    f'Hook 0x{hook:02X}: Class "{n[0]}" setup function failed!',
                     err=err,
                 )
-                del name
+                del n
                 return None
             finally:
-                del setup
+                del e
         else:
-            log.debug(f'Hook 0x{hook:02X}: Class "{name[0]}" created!')
-        loaded[name[0]] = obj
-        del obj
-    func = None
-    obj = loaded[name[0]]
+            log.debug(f'Hook 0x{hook:02X}: Class "{n[0]}" created!')
+        loaded[n[0]] = o
+        del o
+    f = None
+    o = loaded[n[0]]
     for x in range(5, -1, -1):
-        func = _get_function(obj, name[1], x)
-        if callable(func):
+        f = _get_function(o, n[1], x)
+        if callable(f):
             break
-    if not callable(func):
+    if not callable(f):
         log.error(
-            f'Hook 0x{hook:02X}: Class "{name[0]}" object does not contain function "{name[1]}"!'
+            f'Hook 0x{hook:02X}: Class "{n[0]}" object does not contain function "{n[1]}"!'
         )
         return None
     log.debug(
         f'Hook 0x{hook:02X}: Registered object function "{hook_name}" in module "{hook_class.__name__}"!'
     )
-    return Hook(obj, func, hook_class)
+    return Hook(o, f, hook_class)

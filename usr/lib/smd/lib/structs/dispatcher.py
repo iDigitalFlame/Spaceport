@@ -56,18 +56,15 @@ class Dispatcher(Thread):
         self._hooks = load_modules(self._service, self._dir)
         if HOOK_STARTUP in self._hooks:
             self._service.debug("Running Startup Hooks..")
-            result = self._hooks[HOOK_STARTUP].run(
-                self._service, Message(header=HOOK_STARTUP)
-            )
-            if len(result) > 0:
-                self._service.send(None, result)
-            del result
+            r = self._hooks[HOOK_STARTUP].run(self._service, Message(HOOK_STARTUP))
+            if len(r) > 0:
+                self._service.send(None, r)
+            del r
         try:
-            self._service.write(ignore_errors=False)
+            self._service.write()
         except OSError as err:
             self._service.error(
-                f'Could not save configuration file "{self._service.get_file()}"!',
-                err=err,
+                f'Error saving configuration "{self._service.get_file()}"!', err=err
             )
         if HOOK_DAEMON in self._hooks:
             self._daemons = HookDaemon(self._service, self._hooks[HOOK_DAEMON])
@@ -77,68 +74,69 @@ class Dispatcher(Thread):
                 self._waiting.clear()
             self._waiting.wait()
             while len(self._messages) > 0:
-                message = self._messages.pop()
-                if not message.is_valid():
-                    self._service.warning("Received an invalid message!")
-                    del message
+                m = self._messages.pop()
+                if not m.is_valid():
+                    self._service.warning("Received an invalid Message!")
+                    del m
+                    continue
+                if m.message.header() == HOOK_LOG:
+                    self
+                    self._service.set_level(m.message.get("level", LOG_LEVEL))
+                    if self._service.is_server() and not m.message.is_multicast():
+                        self._service.info("Forwarding log message to clients..")
+                        self._service.send(None, m.message.set_multicast())
+                    del m
+                    continue
+                if m.message.header() == HOOK_RELOAD:
+                    self._service.debug(
+                        f'Reloading the configuration from "{self._service.get_file()}"..'
+                    )
+                    try:
+                        self._service.read()
+                    except OSError as err:
+                        self._service.error(
+                            f'Error reading configuration "{self._service.get_file()}"!',
+                            err=err,
+                        )
+                if m.message.header() not in self._hooks:
+                    if m.message.header() != HOOK_OK:
+                        self._service.warning(
+                            f"Received an un-hooked Message 0x{m.message.header():02X}!"
+                        )
+                    del m
                     continue
                 try:
-                    if message.message.header() == HOOK_LOG:
-                        self._service.set_level(message.message.get("level", LOG_LEVEL))
-                        continue
-                    if message.message.header() == HOOK_RELOAD:
-                        self._service.debug(
-                            f'Reloading from the configuration file "{self._service.get_file()}"..'
-                        )
-                        try:
-                            self._service.read(ignore_errors=False)
-                        except OSError as err:
-                            self._service.error(
-                                f'Could not read configuration file "{self._service.get_file()}"!',
-                                err=err,
-                            )
-                    if message.message.header() in self._hooks:
-                        self._service.debug(
-                            f"Running Hooks for 0x{message.message.header():02X}."
-                        )
-                        result = self._hooks[message.message.header()].run(
-                            self._service, message.message
-                        )
-                        if len(result) > 0:
-                            self._service.send(message.eid, result)
-                        del result
-                        continue
-                    if message.message.header() == HOOK_OK:
-                        continue
-                    self._service.warning(
-                        f"Received an unhooked Message 0x{message.message.header():02X}!"
+                    self._service.debug(
+                        f"Running Hooks for 0x{m.message.header():02X}."
                     )
+                    r = self._hooks[m.message.header()].run(self._service, m.message)
+                    if len(r) > 0:
+                        self._service.send(m.eid, r)
+                    del r
                 except Exception as err:
-                    self._service.error(
-                        "An exception was raised when attempting to process a message request!",
-                        err=err,
-                    )
+                    self._service.error("Error processing Message request!", err=err)
                 finally:
-                    del message
-        if self._running:
-            self.stop()
+                    del m
+        if not self._running:
+            return
+        self.stop()
 
     def stop(self):
-        self._service.debug("Stopping Dispatcher Thread..")
+        self._service.debug("Stopping Dispatcher thread..")
         if HOOK_SHUTDOWN in self._hooks:
-            self._service.debug("Running Shutdown Hooks..")
+            self._service.debug("Running shutdown hooks..")
             self._hooks[HOOK_SHUTDOWN].run(self._service, Message(header=HOOK_SHUTDOWN))
         try:
-            self._service.write(ignore_errors=False)
+            self._service.write()
         except OSError as err:
             self._service.error(
-                f'Could not save configuration file "{self._service.get_file()}"!',
-                err=err,
+                f'Could not save configuration "{self._service.get_file()}"!', err=err
             )
         self._running = False
         self._waiting.set()
-        if self._daemons is not None:
-            self._daemons.stop()
+        if self._daemons is None:
+            return
+        self._daemons.stop()
 
     def add(self, eid, message):
         if not self._running:

@@ -43,6 +43,38 @@ from lib.structs.message import send_message
 from lib.constants import SOCKET, HOOK_TRANSLATIONS
 
 
+def _main(args):
+    if args.timeout > 0 and args.wait is None:
+        return print_error('You must specify a wait timeout with "-w"!')
+    if args.translate:
+        if args.header.lower() in HOOK_TRANSLATIONS:
+            args.header = HOOK_TRANSLATIONS[args.header.lower()]
+        else:
+            return print_error(
+                f'Name "{args.header}" does not resolve to a valid header!'
+            )
+    try:
+        args.header = int(args.header)
+    except ValueError as err:
+        return print_error("Header must be an Integer!", err)
+    try:
+        w = args.wait
+        if isinstance(w, str) and "," in w:
+            w = [w.strip() for w in w.split(",")]
+        r = send_message(args.socket, args.header, w, args.timeout, args.payload)
+    except Exception as err:
+        return print_error(str(err), err)
+    if args.wait is None:
+        return True
+    if r is not None:
+        if len(r) > 0:
+            print(r)
+        else:
+            print(r.get_header())
+    del r
+    return False
+
+
 if __name__ == "__main__":
     parameters = ArgumentParser(description="System Management Daemon Messager")
     parameters.add_argument(
@@ -96,39 +128,6 @@ if __name__ == "__main__":
         dest="translate",
         help="Translate hook header before sending.",
     )
-    arguments = parameters.parse_args()
-    if arguments.timeout > 0 and arguments.wait is None:
-        print_error('You must specify to wait with "-w"!', None, True)
-    if arguments.translate:
-        if arguments.header.lower() in HOOK_TRANSLATIONS:
-            arguments.header = HOOK_TRANSLATIONS[arguments.header.lower()]
-        else:
-            print_error(
-                f'Header name "{arguments.header}" does not resolve to a valid header!', None, True
-            )
-    try:
-        arguments.header = int(arguments.header)
-    except ValueError as err:
-        print_error("Header must be an integer!", err, True)
-    try:
-        wait = arguments.wait
-        if isinstance(wait, str) and "," in wait:
-            wait = [w.strip() for w in wait.split(",")]
-        results = send_message(
-            arguments.socket,
-            arguments.header,
-            wait,
-            arguments.timeout,
-            arguments.payload,
-        )
-    except Exception as err:
-        print_error(str(err), err, True)
-    if arguments.wait is not None:
-        if results is not None:
-            if len(results) > 0:
-                print(results)
-            else:
-                print(results.get_header())
-            sys.exit(0)
+    if not _main(parameters.parse_args()):
         sys.exit(2)
     sys.exit(0)

@@ -44,6 +44,10 @@ from lib.constants import LOG_PATH_SERVER, LOG_LEVEL, LOG_LEVELS, SOCKET, CONFIG
 
 
 if __name__ == "__main__":
+    if getuid() != 0:
+        print("Only root may run the daemon!", file=sys.stderr)
+        sys.exit(1)
+
     parameters = ArgumentParser(description="System Management Daemon Server")
     parameters.add_argument(
         "-s",
@@ -86,26 +90,29 @@ if __name__ == "__main__":
         default=CONFIG_SERVER,
         required=False,
     )
-    arguments = parameters.parse_args()
-    if getuid() != 0:
-        print("Only root may run the daemon!", file=sys.stderr)
-        sys.exit(1)
+    parameters.add_argument(
+        "-r", action="store_true", help="Don't write config files.", dest="read_only"
+    )
+
+    args = parameters.parse_args()
     try:
-        server = Server(
-            arguments.config,
-            arguments.socket,
-            LOG_LEVELS[arguments.log_level],
-            arguments.log_file,
+        s = Server(
+            args.config,
+            args.socket,
+            LOG_LEVELS[args.log_level],
+            args.log_file,
+            args.read_only,
         )
+        s.start()
     except Exception as err:
-        print_error(str(err), err, True)
-    try:
-        server.start()
-        server.wait()
-    except KeyboardInterrupt:
-        server.stop()
-    except Exception as err:
-        server.stop()
-        print_error(str(err), err, True)
-    del server
+        print_error(str(err), err)
+    else:
+        try:
+            s.wait()
+        except KeyboardInterrupt:
+            s.stop()
+        except Exception as err:
+            print_error(str(err), err)
+        finally:
+            del s
     sys.exit(0)

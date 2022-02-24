@@ -25,9 +25,8 @@ import gi
 
 gi.require_version("Notify", "0.7")
 
-from lib.util import eval_env
-from os.path import isfile, isabs
 from gi.repository import GObject, Notify
+from os.path import isfile, isabs, expandvars, expanduser
 from lib.constants import (
     EMPTY,
     NAME_CLIENT,
@@ -50,12 +49,13 @@ class NotifyClient(object):
     def __init__(self):
         self.notifer = Notifer()
 
-    def reload(self, _):
+    def reload(self):
+        Notify.uninit(NAME_CLIENT)
         del self.notifer
         self.notifer = Notifer()
 
     def notify(self, server, message):
-        if message.title is None:
+        if not isinstance(message.title, str) or len(message.title) == 0:
             return
         self.notifer.notify(
             server, message.title, message.get("body", EMPTY), message.get("icon", None)
@@ -72,60 +72,55 @@ class Notifer(GObject.Object):
         if not server.get_config("notify.full_path", DEFAULT_NOTIFY_FULLPATH, False):
             return icon
         if "default" not in self.cache:
-            val = (
+            v = (
                 f"{server.get_config('notify.theme', DEFAULT_NOTIFY_THEME, True)}/"
                 f"{server.get_config('notify.default', DEFAULT_NOTIFY_ICON, True)}"
             )
-            self.cache["default"] = eval_env(val)
-            del val
+            self.cache["default"] = expandvars(expanduser(v))
+            del v
         if icon is None:
             return self.cache["default"]
         if icon in self.cache:
             return self.cache[icon]
         if icon in NOTIFY_ICONS:
-            path = NOTIFY_ICONS[icon]
+            p = NOTIFY_ICONS[icon]
         else:
-            path = icon
-        if isabs(path) and isfile(path):
-            self.cache[icon] = path
-            return path
-        dirs = list()
-        dirs_list = server.get_config("notify.dirs", list(), False)
-        if isinstance(dirs, list):
-            dirs += dirs_list
-        del dirs_list
-        dirs.append(server.get_config("notify.theme", DEFAULT_NOTIFY_THEME, False))
-        for d in dirs:
-            temp = eval_env(f"{d}/{path}")
-            if isfile(temp):
-                path = temp
+            p = icon
+        if isabs(p) and isfile(p):
+            self.cache[icon] = p
+            return p
+        e = server.get_config("notify.dirs", list(), False)
+        if not isinstance(e, list):
+            e = list()
+        e.append(server.get_config("notify.theme", DEFAULT_NOTIFY_THEME, False))
+        for d in e:
+            t = expandvars(expanduser(f"{d}/{p}"))
+            if isfile(t):
+                p = t
                 break
-            if "." not in temp:
-                found = False
+            if "." not in t:
+                f = False
                 for e in NOTIFY_ICONS_EXTENSIONS:
-                    ext = f"{temp}.{e}"
-                    if isfile(ext):
-                        path = ext
-                        found = True
+                    x = f"{t}.{e}"
+                    if isfile(x):
+                        p = x
+                        f = True
                         break
-                    del ext
-                if found:
+                    del x
+                if f:
                     break
-        del dirs
-        if not isfile(path):
-            path = self.cache["default"]
-        self.cache[icon] = path
-        return path
+                del f
+            del t
+        del e
+        if p is None or not isfile(p):
+            p = self.cache["default"]
+        self.cache[icon] = p
+        return p
 
     def notify(self, server, title, message, icon=None):
-        notification = Notify.Notification.new(
-            title, message, self._find_icon(server, icon)
-        )
+        n = Notify.Notification.new(title, message, self._find_icon(server, icon))
         try:
-            notification.show()
+            n.show()
         except Exception as err:
-            server.error(
-                f'Attempting to send notification "{title}" raised an exception!',
-                err=err,
-            )
-        del notification
+            server.error(f'Error sending notification "{title}"!', err=err)
+        del n

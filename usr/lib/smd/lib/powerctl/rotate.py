@@ -28,37 +28,34 @@ from lib.constants import HOOK_ROTATE, MESSAGE_TYPE_STATUS, MESSAGE_TYPE_CONFIG
 
 
 def config(arguments):
-    message = {"type": MESSAGE_TYPE_CONFIG}
+    m = {"type": MESSAGE_TYPE_CONFIG}
     if arguments.toggle:
-        message["toggle"] = True
+        m["toggle"] = True
     elif arguments.state:
-        message["lock"] = not boolean(arguments.state)
+        m["lock"] = not boolean(arguments.state)
     elif arguments.set:
-        message["lock"] = boolean(arguments.set)
+        m["lock"] = boolean(arguments.set)
     else:
-        message["lock"] = arguments.enable and not arguments.disable
+        m["lock"] = arguments.enable and not arguments.disable
     try:
-        send_message(arguments.socket, HOOK_ROTATE, None, None, message)
+        send_message(arguments.socket, HOOK_ROTATE, payload=m)
     except OSError as err:
-        print_error(
-            "An exception was raised when attempting to set the Rotation Lock!",
-            err,
-            True,
-        )
-    del message
+        return print_error("Error setting the Rotation Lock!", err)
+    del m
 
 
 def default(arguments):
     try:
-        query = send_message(
+        r = send_message(
             arguments.socket,
             HOOK_ROTATE,
             (HOOK_ROTATE, "lock"),
-            payload={"type": MESSAGE_TYPE_STATUS},
+            5,
+            {"type": MESSAGE_TYPE_STATUS},
         )
     except OSError as err:
-        return print_error(
-            "Attempting to retrive Rotation Lock state raised an exception!", err, True
-        )
-    print(f'Screen Rotation Lock is {"enabled" if query["lock"] else "disabled"}')
-    del query
+        return print_error("Error retriving the Rotation Lock state!", err)
+    if r.is_error():
+        return print_error(f"Error retriving the Rotation Lock state: {r.error}!")
+    print(f'Screen Rotation Lock is {"enabled" if r.lock else "disabled"}')
+    del r

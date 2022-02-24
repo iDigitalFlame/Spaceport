@@ -36,26 +36,22 @@ def brightness(server, message):
     if message.type != MESSAGE_TYPE_ACTION or message.level is None:
         return
     try:
-        level = int(message.level)
-        level_max = int(read(BRIGHTNESS_PATH_MAX, ignore_errors=False))
+        n = int(message.level)
+        m = int(read(BRIGHTNESS_PATH_MAX), 10)
     except (OSError, ValueError) as err:
         return server.error(
-            "Error changing brightness, received a non-integer value!", err=err
+            "Error changing Brightness, received a non-integer value!", err=err
         )
-    if level < 0:
+    if n < 0:
+        return server.error("Client attempted to change Brightness to less than zero!")
+    elif n > m:
         return server.error(
-            "Client attempted to change the brightness to less than zero!"
+            "Client attempted to change Brightness highter than the max level!"
         )
-    elif level > level_max:
-        return server.error(
-            "Client attempted to change the brightness highter than the max level!"
-        )
-    server.debug(f'Setting brightness level to "{level}".')
+    server.debug(f'Setting Brightness level to "{n}".')
     try:
-        write(BRIGHTNESS_PATH, str(level), ignore_errors=False)
+        write(BRIGHTNESS_PATH, str(n))
     except OSError as err:
-        server.error(
-            "An exception was raised when attempting to set brightness level!", err=err
-        )
-    del level
-    del level_max
+        server.error("Error setting the Brightness level!", err=err)
+    del n
+    del m

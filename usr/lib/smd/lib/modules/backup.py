@@ -1,7 +1,7 @@
 #!/usr/bin/false
-# Module: Brightness (System)
+# Module: Backup (System)
 #
-# Sets and changes the System Brightness.
+# Creates backup tarballs and offloads them to a secondary storage location.
 #
 # System Management Daemon
 #
@@ -21,8 +21,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from uuid import uuid4
 from shutil import rmtree
+from uuid import uuid4, UUID
 from base64 import b64encode
 from datetime import datetime
 from signal import SIGSTOP, SIGCONT
@@ -31,11 +31,12 @@ from lib.structs.message import Message
 from lib.structs.storage import Storage
 from socket import socket, AF_INET, SOCK_STREAM
 from os.path import isdir, exists, isfile, getsize
-from lib.util import read, read_json, write_json, run
 from os import chmod, urandom, remove, makedirs, statvfs
+from lib.util import read, read_json, write_json, run, stop
 from subprocess import DEVNULL, Popen, PIPE, STDOUT, SubprocessError, TimeoutExpired
 from lib.constants import (
     EMPTY,
+    NEWLINE,
     HOOK_POWER,
     HOOK_BACKUP,
     BACKUP_SIZES,
@@ -78,6 +79,76 @@ HOOKS_SERVER = {
 }
 
 
+def _get_config(path):
+    c = Storage(path=path)
+    p = c.get("plans")
+    if isinstance(p, list) and len(p) > 0:
+        for e in p:
+            if not isinstance(e, dict):
+                p.remove(e)
+                continue
+            u = e.get("uuid")
+            if not isinstance(u, str) or len(u) == 0:
+                e["uuid"] = str(uuid4())
+            del u
+            x = e.get("path")
+            if not isinstance(x, str) or len(x) == 0:
+                raise ValueError("Invalid or missing path value")
+            if not isdir(x):
+                raise ValueError(f'Backup path "{x}" does not exist')
+            del x
+    del p
+    c.write(path, perms=0o640)
+    if not c.__contains__("upload"):
+        return c
+    u = c.get("upload")
+    if not isinstance(u, dict):
+        c.__delitem__("upload")
+        c.write(path, perms=0o640)
+        return c
+    h = c.get("upload.host")
+    if not isinstance(h, str) and len(h) == 0:
+        return c
+    if "@" in h:
+        i = h.find("@")
+        u = h[:i]
+        o = c.get("upload.user")
+        if (not isinstance(o, str) or len(o) == 0) and len(u) > 0:
+            c.set("upload.user", u)
+        h = h[i + 1 :]
+        del i
+        del u
+        del o
+    if ":" in h:
+        i = h.find(":")
+        p = h[i + 1 :]
+        o = c.get("upload.port")
+        if (not isinstance(o, int) or o <= 0) and len(p) > 0:
+            try:
+                c.set("upload.port", int(p, 10))
+            except ValueError:
+                raise ValueError(f'Invalid port value "{p}"')
+        h = h[:i]
+        del i
+        del p
+        del o
+    c.set("upload.host", h)
+    del h
+    p = c.get("upload.port")
+    if isinstance(p, str):
+        try:
+            c.set("upload.port", int(p, 10))
+        except ValueError:
+            raise ValueError(f'Invalid port value "{p}"')
+    elif p is None:
+        c.set("upload.port", BACKUP_DEFAULT_PORT)
+    del p
+    if not c.__contains__("dir"):
+        c.set("dir", BACKUP_DEFAULT_DIR)
+    c.write(path, perms=0o640)
+    return c
+
+
 def _format_size(size):
     if size < 1024.0:
         return f"{float(size):3.1f}B"
@@ -89,83 +160,13 @@ def _format_size(size):
     return f"{float(size):.1f}YiB"
 
 
-def _get_config(file_path):
-    config = Storage(file_path=file_path)
-    plans = config.get("plans")
-    if isinstance(plans, list):
-        for plan in plans:
-            if not isinstance(plan, dict):
-                plans.remove(plan)
-                continue
-            uuid = plan.get("uuid")
-            if not isinstance(uuid, str) or len(uuid) == 0:
-                plan["uuid"] = str(uuid4())
-            del uuid
-            path = plan.get("path")
-            if not isinstance(path, str) or len(path) == 0:
-                raise ValueError("Invalid or missing path value!")
-            if not isdir(path):
-                raise ValueError(f'Backup path "{path}" does not exist!')
-            del path
-    del plans
-    config.write(file_path, ignore_errors=False, perms=0o640)
-    if not config.__contains__("upload"):
-        return config
-    upload = config.get("upload")
-    if not isinstance(upload, dict):
-        config.__delitem__("upload")
-        config.write(file_path, ignore_errors=False, perms=0o640)
-        return config
-    host = config.get("upload.host")
-    if not isinstance(host, str) and len(host) == 0:
-        return config
-    if "@" in host:
-        idx = host.find("@")
-        user = host[:idx]
-        user_orig = config.get("upload.user")
-        if (not isinstance(user_orig, str) or len(user_orig) == 0) and len(user) > 0:
-            config.set("upload.user", user)
-        host = host[idx + 1 :]
-        del idx
-        del user
-        del user_orig
-    if ":" in host:
-        idx = host.find(":")
-        port = host[idx + 1 :]
-        port_orig = config.get("upload.port")
-        if (not isinstance(port_orig, int) or port_orig <= 0) and len(port) > 0:
-            try:
-                config.set("upload.port", int(port))
-            except ValueError:
-                raise ValueError(f'Invalid port value "{port}"!')
-        host = host[:idx]
-        del idx
-        del port
-        del port_orig
-    config.set("upload.host", host)
-    del host
-    port = config.get("upload.port")
-    if isinstance(port, str):
-        try:
-            config.set("upload.port", int(port))
-        except ValueError:
-            raise ValueError(f'Invalid port value "{port}"!')
-    elif port is None:
-        config.set("upload.port", BACKUP_DEFAULT_PORT)
-    del port
-    if not config.__contains__("dir"):
-        config.set("dir", BACKUP_DEFAULT_DIR)
-    config.write(file_path, ignore_errors=False, perms=0o640)
-    return config
-
-
 def _runnable(weekday, schedule):
     if not isinstance(schedule, list) or len(schedule) == 0:
         return False
-    for day in schedule:
-        if not isinstance(day, str) or len(day) == 0:
+    for v in schedule:
+        if not isinstance(v, str) or len(v) == 0:
             continue
-        d = day.lower()
+        d = v.lower()
         if weekday == 0 and d[0] == "m":
             return True
         if weekday == 2 and d[0] == "w":
@@ -187,82 +188,80 @@ def _runnable(weekday, schedule):
 
 
 def _get_plans(config, path=None):
-    plans = config.get("plans")
-    runnable = list()
-    if not isinstance(plans, list) or len(plans) == 0:
-        return runnable
-    weekday = datetime.now().weekday()
-    for plan in plans:
-        if path == plan["path"]:
-            runnable.append(plan)
-            continue
-        if "schedule" not in plan:
-            continue
-        if "days" not in plan["schedule"]:
-            continue
-        if not _runnable(weekday, plan["schedule"]["days"]):
-            continue
-        runnable.append(plan)
-    del plans
-    return runnable
+    p = config.get("plans")
+    r = list()
+    if isinstance(p, list) and len(p) > 0:
+        w = datetime.now().weekday()
+        for e in p:
+            if path == e["path"]:
+                r.append(e)
+                continue
+            if "schedule" not in e:
+                continue
+            if "days" not in e["schedule"]:
+                continue
+            if not _runnable(w, e["schedule"]["days"]):
+                continue
+            r.append(e)
+    del p
+    return r
 
 
 def _output_to_error(output, code):
     if not isinstance(output, str) or len(output) == 0:
         return f"exit ({code})"
-    if "\n" not in output:
+    if NEWLINE not in output:
         return output
-    results = list()
-    for line in output.split("\n"):
+    r = list()
+    for line in output.split(NEWLINE):
         if line.startswith("Removing leading"):
             continue
-        results.append(line)
-    return f'exit ({code}): {"; ".join(results)}'
+        r.append(line)
+    return f'exit ({code}): {"; ".join(r)}'
 
 
 def _plan_state(server, plan, state):
-    count = 0
-    uuid = plan["uuid"]
-    if uuid not in state:
-        state[uuid] = {"count": 0}
+    c = 0
+    u = plan["uuid"]
+    if u not in state:
+        state[u] = {"count": 0}
     else:
-        count = state[uuid].get("count")
-        if not isinstance(count, int) or count < 0:
-            count = 0
-    full = True
+        c = state[u].get("count")
+        if not isinstance(c, int) or c < 0:
+            c = 0
+    f = True
     if "schedule" in plan:
-        full = not plan["schedule"].get("increment", False)
-        if not full:
-            runs = plan["schedule"].get("cycle")
-            if isinstance(runs, int) and count >= runs:
-                full = True
-                state[uuid] = {"count": 0}
-    state[uuid]["count"] += 1
-    state[uuid]["stop"] = False
-    state[uuid]["error"] = False
-    state[uuid]["last"] = datetime.now().isoformat()
+        f = not plan["schedule"].get("increment", False)
+        if not f:
+            r = plan["schedule"].get("cycle")
+            if isinstance(r, int) and c >= r:
+                f = True
+                state[u] = {"count": 0}
+            del r
+    state[u]["count"] += 1
+    state[u]["stop"] = False
+    state[u]["error"] = False
+    state[u]["last"] = datetime.now().isoformat()
     server.debug(
-        f'Running backup "{uuid}" as a {"full" if full else "incremental"} backup...'
+        f'Running backup "{u}" as a{" full" if f else "n incremental"} backup..'
     )
-    del uuid
-    del count
-    return not full
+    del u
+    del c
+    return not f
 
 
 def _check_space(server, path, extra=1.5):
-    space = statvfs(path)
-    size = round(float(getsize(path)) * extra)
-    left = (space.f_frsize * space.f_bavail) - size
-    del space
-    if left < 0:
-        raise OSError(
-            f"Insufficient space on device (need {_format_size(left)} free MB)!"
-        )
+    s = statvfs(path)
+    x = round(float(getsize(path)) * extra)
+    r = (s.f_frsize * s.f_bavail) - x
+    del s
+    if r < 0:
+        raise OSError(f"Insufficient space on device (need {_format_size(r)} free)")
     server.debug(
-        f"Free space check. Requested {_format_size(size)}, free {_format_size(left)}."
+        f"Free space check, requested {_format_size(x)}, free {_format_size(r)}.."
     )
-    del left
-    del size
+    del r
+    del x
 
 
 class BackupServer(object):
@@ -272,85 +271,91 @@ class BackupServer(object):
 
     def _status(self, server):
         try:
-            config = _get_config(CONFIG_BACKUP)
+            c = _get_config(CONFIG_BACKUP)
         except (OSError, ValueError) as err:
-            server.error(f"Could not load backup config: {err}!", err=err)
-            return {"error": f"Could not read the backup config! ({err})"}
-        plans = list()
-        running = None
-        state = read_json(BACKUP_STATE)
-        if not isinstance(state, dict):
-            state = dict()
+            server.error("Could not load Backup Config!", err=err)
+            return {"error": f"Could not read the Config: {err}"}
+        p = list()
+        r = None
+        s = read_json(BACKUP_STATE, errors=False)
+        if not isinstance(s, dict):
+            s = dict()
         if self.thread is not None and self.thread.running():
-            running = self.thread.plan["uuid"]
-        if "plans" in config and len(config["plans"]) > 0:
-            for plan in config["plans"]:
-                current = EMPTY
-                if plan["uuid"] == running:
+            r = self.thread.plan["uuid"]
+        if "plans" in c and len(c["plans"]) > 0:
+            for e in c["plans"]:
+                v = EMPTY
+                if e["uuid"] == r:
                     try:
-                        current = BACKUP_STATUS_NAMES[self.thread.status].title()
+                        v = BACKUP_STATUS_NAMES[self.thread.status].title()
                     except IndexError:
-                        current = "Error"
+                        v = "Error"
                     if self.thread._paused:
-                        current += " (paused)"
-                if plan["uuid"] not in state:
-                    plans.append(
+                        v += " (paused)"
+                if e["uuid"] not in s:
+                    p.append(
                         {
                             "last": EMPTY,
                             "stop": False,
                             "error": False,
-                            "status": current,
-                            "uuid": plan["uuid"],
-                            "path": plan["path"],
+                            "status": v,
+                            "uuid": e["uuid"],
+                            "path": e["path"],
                         }
                     )
                 else:
-                    info = state[plan["uuid"]]
-                    plans.append(
+                    i = s[e["uuid"]]
+                    p.append(
                         {
-                            "status": current,
-                            "last": info["last"],
-                            "uuid": plan["uuid"],
-                            "path": plan["path"],
-                            "stop": info.get("stop", False),
-                            "error": info.get("error", False),
+                            "status": v,
+                            "last": i["last"],
+                            "uuid": e["uuid"],
+                            "path": e["path"],
+                            "stop": i.get("stop", False),
+                            "error": i.get("error", False),
                         }
                     )
-                    del info
-                del current
-        del state
-        del running
-        return {"plans": plans}
+                    del i
+                del v
+        del c
+        del s
+        del r
+        return {"plans": p}
 
     def hook(self, server, message):
+        if self.thread is None or not self.thread.running():
+            return
         if message.header() == HOOK_SHUTDOWN:
-            if self.thread is None or not self.thread.running():
-                return
-            server.info(f'Stopping a running backup plan "{self.thread.plan["uuid"]}"!')
+            server.info(f'Stopping running Backup plan "{self.thread.plan["uuid"]}"!')
             try:
                 self.thread.stop()
             except OSError as err:
-                server.error(f"Could not stop the running backup: {err}!", err=err)
+                return server.error(
+                    f'Could not stop the Backup plan "{self.thread.plan["uuid"]}"!',
+                    err=err,
+                )
             return server.notify(
-                "Backup Status",
-                "Backup was stopped due to shutdown!",
-                "yed",
+                "Backup Status", "Backup was stopped due to shutdown!", "yed"
             )
-        if self.thread is None or not self.thread.running():
-            return
         if message.type == MESSAGE_TYPE_POST and self.thread._paused:
-            server.debug(f'Resuming a paused backup plan "{self.thread.plan["uuid"]}"!')
+            server.debug(f'Resuming a paused Backup plan "{self.thread.plan["uuid"]}"!')
             try:
                 self.thread.resume()
             except OSError as err:
-                server.error(f"Could not resume the running backup: {err}!", err=err)
+                return server.error(
+                    f'Could not resume the Backup plan "{self.thread.plan["uuid"]}"!',
+                    err=err,
+                )
             return server.notify("Backup Status", "Backup was resumed", "yed")
         if message.type == MESSAGE_TYPE_PRE and not self.thread._paused:
             server.debug(f'Pausing a running backup plan "{self.thread.plan["uuid"]}"!')
             try:
                 self.thread.pause()
             except OSError as err:
-                server.error(f"Could not pause the running backup: {err}!", err=err)
+                return server.error(
+                    f'Could not pause the Backup plan "{self.thread.plan["uuid"]}"!',
+                    err=err,
+                )
             return server.notify("Backup Status", "Backup was paused.", "yed")
 
     def control(self, server, message):
@@ -366,23 +371,17 @@ class BackupServer(object):
             self.thread = None
             if not message.get("error", False) and not message.get("stop", False):
                 return
-            state = read_json(BACKUP_STATE)
-            if isinstance(state, dict) and message.uuid in state:
-                state[message.uuid]["stop"] = message.get("stop", False)
-                state[message.uuid]["error"] = message.get("error", False)
-                if state[message.uuid]["count"] > 0:
-                    state[message.uuid]["count"] -= 1
+            s = read_json(BACKUP_STATE, errors=True)
+            if isinstance(s, dict) and message.uuid in s:
+                s[message.uuid]["stop"] = message.get("stop", False)
+                s[message.uuid]["error"] = message.get("error", False)
+                if s[message.uuid]["count"] > 0:
+                    s[message.uuid]["count"] -= 1
             try:
-                write_json(
-                    BACKUP_STATE,
-                    state,
-                    indent=4,
-                    sort=True,
-                    ignore_errors=False,
-                    perms=0o640,
-                )
+                write_json(BACKUP_STATE, s, perms=0o640)
             except OSError as err:
-                server.error(f"Could not save backup state: {err}!", err=err)
+                server.error(f"Could not save Backup state: {err}!", err=err)
+            del s
             return
         if self.thread is None or not self.thread.running():
             if message.type == MESSAGE_TYPE_ACTION:
@@ -390,147 +389,166 @@ class BackupServer(object):
                     server, message.get("path"), message.get("force", False)
                 )
             if message.type == BACKUP_STATUS_UPLOADING:
-                server.debug(
-                    "Attempting to clear backup statistics and database cache..."
-                )
+                server.debug("Clearing the Backup statistics and database cache..")
                 try:
                     remove(BACKUP_STATE)
                     rmtree(BACKUP_STATE_DIR)
                 except OSError as err:
-                    return {"error": f"Could not clear the backup cache! {err}"}
-                server.debug("Cleared the backup statistics and database cache!")
+                    server.error("Could not clear the Backup cache!", err=err)
+                    return {"error": f"Could not clear the backup cache: {err}!"}
                 return EMPTY
-            return "There is currently not a backup running!"
+            return "There is currently not a Backup running!"
         if message.type == MESSAGE_TYPE_ACTION:
-            return "There is currently a backup running!"
+            return "There is currently a Backup running!"
         if message.type == MESSAGE_TYPE_POST and self.thread._paused:
-            server.debug(f'Resuming a paused backup plan "{self.thread.plan["uuid"]}"!')
+            server.debug(f'Resuming a paused Backup plan "{self.thread.plan["uuid"]}"!')
             try:
                 self.thread.resume()
             except OSError as err:
-                return {"error": f"Could not resume the backup! {err}"}
+                server.error(
+                    f'Could not resume the Backup plan "{self.thread.plan["uuid"]}"!',
+                    err=err,
+                )
+                return {"error": f"Could not resume the Backup: {err}!"}
             server.notify("Backup Status", "Backup was resumed.", "yed")
         if message.type == MESSAGE_TYPE_PRE and not self.thread._paused:
-            server.debug(f'Pausing a running backup plan "{self.thread.plan["uuid"]}"!')
+            server.debug(f'Pausing running Backup plan "{self.thread.plan["uuid"]}"!')
             try:
                 self.thread.pause()
             except OSError as err:
-                return {"error": f"Could not pause the backup! ({err})"}
+                server.error(
+                    f'Could not pause the Backup plan "{self.thread.plan["uuid"]}"!',
+                    err=err,
+                )
+                return {"error": f"Could not pause the Backup! ({err})"}
             server.notify("Backup Status", "Backup was paused.", "yed")
         if message.type == MESSAGE_TYPE_CONFIG:
-            server.debug(
-                f'Stopping a running backup plan "{self.thread.plan["uuid"]}"!'
-            )
+            server.debug(f'Stopping running Backup plan "{self.thread.plan["uuid"]}"!')
             try:
                 self.thread.stop()
             except OSError as err:
-                return {"error": f"Could not stop the backup! ({err})"}
+                server.error(
+                    f'Could not stop the Backup plan "{self.thread.plan["uuid"]}"!',
+                    err=err,
+                )
+                return {"error": f"Could not stop the Backup: {err}!"}
             server.notify("Backup Status", "Backup was stopped!", "yed")
         return EMPTY
 
     def _pick(self, server, path=None, force=False):
-        on_ac = read(BACKUP_BATTERY_PATH, ignore_errors=True)
-        if not force and (on_ac is None or len(on_ac) == 0 or on_ac[0] == "0"):
-            server.info("Not triggering a backup as we are on battery power!")
-            return 'Cannot run a backup on AC power, please connect power or use the "-f" switch!'
+        a = read(BACKUP_BATTERY_PATH, errors=False)
+        if not force and (a is None or len(a) == 0 or a[0] == "0"):
+            server.info("Not triggering a Backup as we are on battery power!")
+            return 'Cannot run a Backup on AC power, please connect power or use the "-f" switch!'
+        del a
         try:
-            config = _get_config(CONFIG_BACKUP)
+            c = _get_config(CONFIG_BACKUP)
         except (OSError, ValueError) as err:
-            server.error(f"Could not load/save backup config: {err}!", err=err)
-            return f"Could not load backup config: {err}!"
-        for plan in _get_plans(config, path):
-            if plan["uuid"] in self.queue:
+            server.error("Could not load Backup config!", err=err)
+            return f"Could not load Backup config: {err}!"
+        for e in _get_plans(c, path):
+            if e["uuid"] in self.queue:
                 continue
-            self.queue[plan["uuid"]] = plan
+            if (
+                self.thread is not None
+                and self.thread.running()
+                and self.thread.plan["uuid"] == e["uuid"]
+            ):
+                continue
+            self.queue[e["uuid"]] = e
         if self.thread is not None and self.thread.running():
             server.debug(
-                f'Not triggering a backup as a backup "{self.thread.plan["uuid"]}" is running.'
+                f'Not triggering a Backup as "{self.thread.plan["uuid"]}" is currently running.'
             )
-            return "Cannot run a backup while a backup is running!"
+            return "Cannot run a Backup while one is running!"
         if len(self.queue) == 0:
-            server.debug("Not triggering a backup as there are not plans to do!")
-            return "No scheduled or specified backup plans to choose from!"
+            server.debug(
+                "Not triggering a Backup as there are no plans able to execute."
+            )
+            return "No scheduled or specified Backup plans to choose from!"
         server.debug(
             f"Backup config and plans loaded, {len(self.queue)} plans are ready to run!"
         )
-        plan = None
-        state = read_json(BACKUP_STATE)
-        if not isinstance(state, dict):
-            state = dict()
-        plan = self._pick_plan(server, path, force, state)
-        if not isinstance(plan, dict):
-            server.debug("Not triggering a backup as there are no plans to do!")
-            return "No backup plans scheduled or specified!"
-        server.debug(f'Selected plan "{plan["uuid"]}" to be run...')
-        increment = _plan_state(server, plan, state)
-        try:
-            write_json(
-                BACKUP_STATE,
-                state,
-                indent=4,
-                sort=True,
-                ignore_errors=False,
-                perms=0o640,
+        s = read_json(BACKUP_STATE, errors=False)
+        if not isinstance(s, dict):
+            s = dict()
+        e = self._pick_plan(server, path, force, s)
+        if not isinstance(e, dict):
+            server.debug(
+                "Not triggering a Backup as there are no plans able to execute."
             )
+            return "No Backup plans scheduled or specified!"
+        server.debug(f'Selected plan "{e["uuid"]}" to be run..')
+        x = _plan_state(server, e, s)
+        try:
+            write_json(BACKUP_STATE, s, perms=0o640)
         except OSError as err:
-            server.error(f"Could not save backup state: {err}!", err=err)
+            server.error("Could not save backup state!", err=err)
             return f"Could not save backup state: {err}!"
-        public_key = plan.get("public_key")
-        if not isinstance(public_key, str) or len(public_key) == 0:
-            public_key = config.get("public_key")
+        k = e.get("public_key")
+        if not isinstance(k, str) or len(k) == 0:
+            k = c.get("public_key")
         self.thread = BackupThread(
             server,
-            plan,
-            config.get("dir", BACKUP_DEFAULT_DIR),
-            public_key,
-            config.get("upload.host"),
-            config.get("upload.key"),
-            config.get("upload.user"),
-            config.get("upload.port"),
-            increment,
+            e,
+            c.get("dir", BACKUP_DEFAULT_DIR),
+            k,
+            c.get("upload.host"),
+            c.get("upload.key"),
+            c.get("upload.user"),
+            c.get("upload.port"),
+            x,
         )
         self.thread.start()
-        server.info(f'Started Backup thread for plan "{plan["uuid"]}"!')
-        del state
-        del config
-        del increment
-        del public_key
-        return f'Backup for "{plan["path"]}" was started!'
+        server.info(f'Started Backup thread for plan "{e["uuid"]}"!')
+        del s
+        del c
+        del x
+        del k
+        return f'Backup for "{e["path"]}" was started!'
 
     def _pick_plan(self, server, path, force, state):
-        now = datetime.now()
+        n = datetime.now()
         while len(self.queue) > 0:
-            uuid, plan = self.queue.popitem()
-            if not isinstance(plan, dict):
+            u, e = self.queue.popitem()
+            if not isinstance(e, dict):
+                continue
+            if "uuid" not in e:
+                server.warning("Skipping Backup plan with an non-existant UUID!")
+                continue
+            try:
+                UUID(e["uuid"])
+            except ValueError:
+                server.warning("Skipping Backup plan with an invalid UUID!")
                 continue
             if isinstance(path, str):
-                if path == plan["path"]:
-                    return plan
+                if path == e["path"]:
+                    return e
                 else:
                     continue
             if force:
-                return plan
-            if uuid in state:
-                last = state[uuid].get("last")
-                if not isinstance(last, str) or len(last) == 0:
-                    return plan
+                return e
+            if u in state:
+                t = state[u].get("last")
+                if not isinstance(t, str) or len(t) == 0:
+                    return e
                 try:
                     if (
-                        now - datetime.fromisoformat(last)
+                        n - datetime.fromisoformat(t)
                     ).total_seconds() > BACKUP_WAIT_TIME:
-                        return plan
-                    if state[uuid].get("error", False) or state[uuid].get(
-                        "stop", False
-                    ):
-                        return plan
+                        return e
+                    if state[u].get("error", False) or state[u].get("stop", False):
+                        return e
                 except ValueError:
                     pass
                 server.debug(
-                    f'Skipping backup "{uuid}" as it has not be 24hrs since last runtime!'
+                    f'Skipping Backup "{u}" as it has not be 24hrs since last runtime!'
                 )
+                del t
                 continue
-            return plan
-        del now
+            del u
+            return e
+        del n
         return None
 
 
@@ -562,8 +580,7 @@ class BackupThread(Thread):
                 rmtree(self.path)
             except OSError as err:
                 self.server.error(
-                    f'Could not remove backup directory "{self.path}": {err}!',
-                    err=err,
+                    f'Could not remove Backup directory "{self.path}"!', err=err
                 )
                 return self.server.forward(
                     Message(
@@ -583,11 +600,11 @@ class BackupThread(Thread):
             except OSError:
                 self.server.notify(
                     "Backup Status",
-                    f'Not starting a backup as the upload server "{self.host}" is not reachable!',
+                    f'Not starting a Backup as "{self.host}" is not reachable!',
                     "yed",
                 )
                 self.server.error(
-                    f'Could not connect to the upload server "{self.host}:{self.port}", backup will not continue!'
+                    f'Could not connect to the upload server "{self.host}:{self.port}", Backup will not continue!'
                 )
                 return self.server.forward(
                     Message(
@@ -606,8 +623,7 @@ class BackupThread(Thread):
             makedirs(self.path, mode=0o750, exist_ok=True)
         except OSError as err:
             self.server.error(
-                f'Could not make backup directory "{self.path}": {err}!',
-                err=err,
+                f'Could not make Backup directory "{self.path}"!', err=err
             )
             return self.server.forward(
                 Message(
@@ -620,18 +636,13 @@ class BackupThread(Thread):
                 )
             )
         self.server.notify(
-            "Backup Status",
-            f'Staring a backup of "{self.plan["path"]}"!',
-            "yed",
+            "Backup Status", f'Staring a Backup of "{self.plan["path"]}"!', "yed"
         )
         try:
             self._process()
         except Exception as err:
             self.status = BACKUP_STATUS_ERROR
-            self.server.error(
-                f"Unexpected error occurred during backup runtime: {err}!",
-                err=err,
-            )
+            self.server.error("Unexpected error during backup runtime!", err=err)
         if self.status == BACKUP_STATUS_ERROR:
             if self._cancel.is_set():
                 self.server.notify(
@@ -647,24 +658,18 @@ class BackupThread(Thread):
                 )
         else:
             self.server.notify(
-                "Backup Status",
-                f'Backup of "{self.plan["path"]}" completed!',
-                "yed",
+                "Backup Status", f'Backup of "{self.plan["path"]}" completed!', "yed"
             )
         try:
             self.stop()
         except Exception as err:
-            self.server.warning(
-                f"Unexpected error occurred when attempting to stop the backup: {err}!",
-                err=err,
-            )
+            self.server.warning("Error stopping Backup!", err=err)
         if isdir(self.path):
             try:
                 rmtree(self.path)
             except OSError as err:
                 self.server.error(
-                    f'Could not remove backup directory "{self.path}": {err}!',
-                    err=err,
+                    f'Error removing Backup directory "{self.path}"!', err=err
                 )
         return self.server.forward(
             Message(
@@ -685,7 +690,8 @@ class BackupThread(Thread):
         try:
             self._proc.kill()
         except (SubprocessError, OSError) as err:
-            self.server.error(f"Failed to stop backup process: {err}!", err=err)
+            self.server.error("Error stopping Backup process!", err=err)
+        stop(self._proc)
         self._paused = False
         return self._wait()
 
@@ -720,109 +726,90 @@ class BackupThread(Thread):
         try:
             self.status = BACKUP_STATUS_COMPRESSING
             self._step_compress()
-            self.server.debug("Compression backup step completed!")
+            self.server.debug("Compression step completed!")
         except OSError as err:
             self.status = BACKUP_STATUS_ERROR
             if self._cancel.is_set():
                 return
-            return self.server.error(
-                f"An error occurred during the Compression backup step: {err}!",
-                err=err,
-            )
+            return self.server.error("Error during the Compression step!", err=err)
         if self._cancel.is_set():
-            raise OSError("Backup was Stopped")
+            raise OSError("Backup was stopped")
         _check_space(self.server, f"{self.path}/data.tar.zx", 2.5)
         self._paused = False
         try:
             self.status = BACKUP_STATUS_HASHING
             self._step_hash()
-            self.server.debug("Hashing backup step completed!")
+            self.server.debug("Hashing step completed!")
         except OSError as err:
             self.status = BACKUP_STATUS_ERROR
             if self._cancel.is_set():
                 return
-            return self.server.error(
-                f"An error occurred during the Hashing backup step: {err}!",
-                err=err,
-            )
+            return self.server.error("Error during the Hashing step!", err=err)
         if self._cancel.is_set():
-            raise OSError("Backup was Stopped")
+            raise OSError("Backup was stopped")
         self._paused = False
         try:
             self.status = BACKUP_STATUS_ENCRYPTING
             self._step_encrypt()
-            self.server.debug("Encryption backup step completed!")
+            self.server.debug("Encryption step completed!")
         except OSError as err:
             self.status = BACKUP_STATUS_ERROR
             if self._cancel.is_set():
                 return
-            return self.server.error(
-                f"An error occurred during the Encryption backup step: {err}!",
-                err=err,
-            )
+            return self.server.error("Error during the Encryption step!", err=err)
         if self._cancel.is_set():
-            raise OSError("Backup was Stopped")
+            raise OSError("Backup was stopped")
         _check_space(self.server, f"{self.path}/data.ebf")
         self._paused = False
         try:
             self.status = BACKUP_STATUS_PACKING
             self._step_pack()
-            self.server.debug("Packing backup step completed!")
+            self.server.debug("Packing step completed!")
         except OSError as err:
             self.status = BACKUP_STATUS_ERROR
             if self._cancel.is_set():
                 return
-            return self.server.error(
-                f"An error occurred during the Packing backup step: {err}!",
-                err=err,
-            )
+            return self.server.error("Error during the Packing step!", err=err)
         if self._cancel.is_set():
-            raise OSError("Backup was Stopped")
+            raise OSError("Backup was stopped")
         self._paused = False
         try:
             self.status = BACKUP_STATUS_UPLOADING
             self._step_upload()
-            self.server.debug("Upload backup step completed!")
+            self.server.debug("Upload step completed!")
         except OSError as err:
             self.status = BACKUP_STATUS_ERROR
             if self._cancel.is_set():
                 return
-            return self.server.error(
-                f"An error occurred during the Uploading backup step: {err}!",
-                err=err,
-            )
-        if self._cancel.is_set():
-            raise OSError("Backup was Stopped")
+            return self.server.error("Error during the Uploading step!", err=err)
+        if not self._cancel.is_set():
+            return
+        raise OSError("Backup was stopped")
 
     def _step_hash(self):
         self._execute(["/bin/sha256sum", "--binary", f"{self.path}/data.tar.zx"])
         if self._wait() != 0:
             raise OSError(_output_to_error(self._output, self._proc.returncode))
-        hash_file = open(f"{self.path}/data.sum", "w")
-        hash_data = self._output.replace(f"*{self.path}/", EMPTY)
-        hash_file.write(hash_data)
-        hash_file.close()
-        del hash_file
-        idx = hash_data.find(" ")
-        hash_data = hash_data[:idx]
-        del idx
-        desc_data = self.plan.get("description")
-        if not isinstance(desc_data, str) or len(desc_data) == 0:
-            desc_data = f'Backup of "{self.plan["path"]}" on {datetime.now().strftime("%A %d, %B %m, %Y %R")}'
-        desc_file = open(f"{self.path}/info.txt", "w")
-        desc_file.write(
-            f'{desc_data}\n\nSOURCE: {self.plan["path"]}\nSHA256: {hash_data}\nSIZE:   '
-            f'{_format_size(getsize(f"{self.path}/data.tar.zx"))}\nDATE:   '
-            f'{datetime.now().strftime("%b %d %Y %H:%M:%S")}\nTYPE:   {"Incremental" if self.increment else "Full"}\n'
-        )
-        desc_file.close()
-        del desc_file
-        del desc_data
-        del hash_data
-        script_file = open(f"{self.path}/extract.sh", "w")
-        script_file.write(BACKUP_RESTORE_SCRIPT)
-        script_file.close()
-        del script_file
+        h = self._output.replace(f"*{self.path}/", EMPTY)
+        with open(f"{self.path}/data.sum", "w") as f:
+            f.write(h)
+        i = h.find(" ")
+        h = h[:i]
+        del i
+        d = self.plan.get("description")
+        if not isinstance(d, str) or len(d) == 0:
+            d = f'Backup of "{self.plan["path"]}" on {datetime.now().strftime("%A %d, %B %m, %Y %R")}'
+        with open(f"{self.path}/info.txt", "w") as f:
+            f.write(
+                f'{d}\n\nSOURCE: {self.plan["path"]}\nSHA256: {h}\nSIZE:   '
+                f'{_format_size(getsize(f"{self.path}/data.tar.zx"))}\nDATE:   '
+                f'{datetime.now().strftime("%b %d %Y %H:%M:%S")}\nTYPE:   '
+                f'{"Incremental" if self.increment else "Full"}\n'
+            )
+        del d
+        del h
+        with open(f"{self.path}/extract.sh", "w") as f:
+            f.write(BACKUP_RESTORE_SCRIPT)
 
     def _step_pack(self):
         self._execute(
@@ -860,20 +847,20 @@ class BackupThread(Thread):
             )
         if not exists(BACKUP_HOSTS):
             raise OSError(
-                f'Unable to upload backup, the known hosts file "{BACKUP_HOSTS}" is missing! Please use "'
-                f'ssh -o UserKnownHostsFile=file user@host" to generate the file and copy it."'
+                f'Unable to upload Backup, the known hosts file "{BACKUP_HOSTS}" is missing! Please use "'
+                'ssh -o UserKnownHostsFile=file user@host" to generate the file and copy it.'
             )
-        ssh_opts = f"/bin/ssh -o VisualHostKey=no -o UserKnownHostsFile={BACKUP_HOSTS} -p {self.port}"
+        o = f"/bin/ssh -o VisualHostKey=no -o UserKnownHostsFile={BACKUP_HOSTS} -p {self.port}"
         if isinstance(self.acl, str) and len(self.acl) > 0:
             try:
                 chmod(self.acl, 0o400, follow_symlinks=True)
             except OSError:
                 pass
-            ssh_opts += f" -i {self.acl}"
-        host = self.host
+            o += f" -i {self.acl}"
+        h = self.host
         if isinstance(self.user, str) and len(self.user) > 0:
-            host = f"{self.user}@{host}"
-        file = f"{self.dst}/{self._file}.tar"
+            h = f"{self.user}@{h}"
+        f = f"{self.dst}/{self._file}.tar"
         self._execute(
             [
                 "/bin/rsync",
@@ -886,36 +873,36 @@ class BackupThread(Thread):
                 "--human-readable",
                 "--one-file-system",
                 "-e",
-                ssh_opts,
-                file,
-                f"{host}:",
+                o,
+                f,
+                f"{h}:",
             ]
         )
-        del host
-        del ssh_opts
-        ret = self._wait()
-        size = getsize(file)
+        del h
+        del o
+        r = self._wait()
+        s = getsize(f)
         if not self.plan.get("keep", False):
-            remove(file)
-        del file
-        if ret != 0:
+            remove(f)
+        del f
+        if r != 0:
             raise OSError(_output_to_error(self._output, self._proc.returncode))
-        del ret
+        del r
         self.server.debug(
-            f'Uploaded backup of size {_format_size(size)} to "{self.host}"!'
+            f'Uploaded backup of size {_format_size(s)} to "{self.host}"!'
         )
-        del size
+        del s
 
     def _step_encrypt(self):
         if not isinstance(self.key, str) or len(self.key) == 0:
             return self.server.warning(
-                "Skipping encryption as there is valid public key present!"
+                "Skipping encryption as there is not a valid public key present!"
             )
         if not exists(self.key):
             return self.server.warning(
-                f'Skipping encryption as the supplied public key "{self.key}" does not exist!'
+                f'Skipping encryption as the public key "{self.key}" does not exist!'
             )
-        key = b64encode(urandom(BACKUP_KEY_SIZE)).decode("UTF-8")
+        k = b64encode(urandom(BACKUP_KEY_SIZE)).decode("UTF-8")
         try:
             if (
                 self._execute(
@@ -931,13 +918,13 @@ class BackupThread(Thread):
                         "-out",
                         f"{self.path}/data.pem",
                     ],
-                    stdin=key,
+                    stdin=k,
                 )
                 != 0
             ):
                 raise OSError(_output_to_error(self._output, self._proc.returncode))
         except OSError as err:
-            key = None
+            k = None
             raise err
         try:
             if (
@@ -955,7 +942,7 @@ class BackupThread(Thread):
                         "-out",
                         f"{self.path}/data.ebf",
                     ],
-                    stdin=f"{key}\n",
+                    stdin=f"{k}\n",
                 )
                 != 0
             ):
@@ -963,11 +950,11 @@ class BackupThread(Thread):
         except OSError as err:
             raise err
         finally:
-            del key
+            del k
         remove(f"{self.path}/data.tar.zx")
 
     def _step_compress(self):
-        command = [
+        c = [
             "/bin/tar",
             "-c",
             "--zstd",
@@ -982,26 +969,26 @@ class BackupThread(Thread):
             "--one-file-system",
             "--recursion",
             "--totals=USR1",
+            f"--exclude={self.dst}",
+            f"--exclude={self.path}",
         ]
-        command.append(f"--exclude={self.dst}")
-        command.append(f"--exclude={self.path}")
         for e in BACKUP_EXCLUDE_PATHS:
-            command.append(f"--exclude={e}")
-        exclude = self.plan.get("exclude")
-        if isinstance(exclude, list) and len(exclude) > 0:
-            for e in exclude:
-                command.append(f"--exclude={e}")
-        del exclude
-        db = f"{BACKUP_STATE_DIR}/{self.plan['uuid']}.db"
-        if not self.increment and isfile(db):
-            remove(db)
+            c.append(f"--exclude={e}")
+        x = self.plan.get("exclude")
+        if isinstance(x, list) and len(x) > 0:
+            for e in x:
+                c.append(f"--exclude={e}")
+        del x
+        d = f"{BACKUP_STATE_DIR}/{self.plan['uuid']}.db"
+        if not self.increment and isfile(d):
+            remove(d)
         makedirs(BACKUP_STATE_DIR, exist_ok=True)
         chmod(BACKUP_STATE_DIR, 0o750, follow_symlinks=False)
-        command.append(f"--listed-incremental={db}")
-        del db
-        command += ["-f", f"{self.path}/data.tar.zx", self.plan["path"]]
-        self._execute(command)
-        del command
+        c.append(f"--listed-incremental={d}")
+        del d
+        c += ["-f", f"{self.path}/data.tar.zx", self.plan["path"]]
+        self._execute(c)
+        del c
         if self._wait() <= 1:
             return
         raise OSError(_output_to_error(self._output, self._proc.returncode))
@@ -1019,27 +1006,27 @@ class BackupThread(Thread):
                 if self._paused:
                     continue
                 self._proc.kill()
-                raise OSError("Failed waiting for process: TimeoutExpired")
+                raise OSError("Error waiting for process: TimeoutExpired")
             except (SubprocessError, OSError) as err:
-                raise OSError(f"Failed waiting for process: {err}")
+                raise OSError(f"Error waiting for process: {err}")
         if self._cancel.is_set():
             return self._proc.returncode
         try:
             self._output = self._proc.stdout.read()
         except (SubprocessError, OSError) as err:
-            raise OSError(f"Failed reading process output: {err}")
+            raise OSError(f"Error reading process output: {err}")
         return self._proc.returncode
 
     def _execute(self, command, stdin=None, timeout=BACKUP_TIMEOUT):
-        self._output = None
-        inp = DEVNULL
+        i = DEVNULL
         if stdin is not None:
-            inp = PIPE
+            i = PIPE
+        self._output = None
         try:
             self._proc = Popen(
                 command,
+                stdin=i,
                 text=True,
-                stdin=inp,
                 stdout=PIPE,
                 stderr=STDOUT,
                 encoding="UTF-8",
@@ -1047,21 +1034,17 @@ class BackupThread(Thread):
             )
         except (SubprocessError, OSError) as err:
             raise OSError(f'Error starting command "{" ".join(command)}": {err}')
-        del inp
+        del i
         run(
             ["/usr/bin/renice", "-n", "15", "--pid", f"{self._proc.pid}"],
-            ignore_errors=True,
         )
         run(
             ["/usr/bin/ionice", "-c", "3", "-p", f"{self._proc.pid}"],
-            ignore_errors=True,
         )
         if stdin is None:
             return self._wait(timeout)
         try:
             self._proc.communicate(stdin, timeout=timeout)
         except (SubprocessError, OSError) as err:
-            raise OSError(
-                f'Error communicating with command "{" ".join(command)}": {err}'
-            )
+            raise OSError(f"Error sending STDIN data to command: {err}")
         return self._wait(timeout)

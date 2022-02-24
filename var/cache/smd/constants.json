@@ -1,5 +1,5 @@
 {
-    "NAME": "spaceport",
     "LOG_TICKS": false,
-    "LOG_LEVEL": "INFO"
+    "LOG_LEVEL": "INFO",
+    "NAME": "spaceport"
 }

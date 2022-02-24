@@ -38,73 +38,67 @@ from lib.constants import (
 
 
 def config(arguments):
-    payload = dict()
+    q = dict()
     if arguments.start or arguments.dir or arguments.path:
-        payload["force"] = arguments.force
-        payload["type"] = MESSAGE_TYPE_ACTION
+        q["force"] = arguments.force
+        q["type"] = MESSAGE_TYPE_ACTION
         if isinstance(arguments.dir, str) and len(arguments.dir) > 0:
-            payload["path"] = arguments.dir
+            q["path"] = arguments.dir
         if isinstance(arguments.path, str) and len(arguments.path) > 0:
-            payload["path"] = arguments.path
+            q["path"] = arguments.path
     elif arguments.pause:
-        payload["type"] = MESSAGE_TYPE_PRE
+        q["type"] = MESSAGE_TYPE_PRE
     elif arguments.resume:
-        payload["type"] = MESSAGE_TYPE_POST
+        q["type"] = MESSAGE_TYPE_POST
     elif arguments.stop:
-        payload["type"] = MESSAGE_TYPE_CONFIG
+        q["type"] = MESSAGE_TYPE_CONFIG
     elif arguments.clear:
-        payload["type"] = BACKUP_STATUS_UPLOADING
+        q["type"] = BACKUP_STATUS_UPLOADING
     else:
         return default(arguments)
     try:
-        out = send_message(arguments.socket, HOOK_BACKUP, HOOK_BACKUP, None, payload)
+        r = send_message(arguments.socket, HOOK_BACKUP, HOOK_BACKUP, 5, q)
     except OSError as err:
-        return print_error(
-            "Attempting to query Backup Plans raised an exception!", err, True
-        )
-    if "error" in out:
-        return print_error(out["error"])
-    if "result" not in out or len(out["result"]) == 0:
+        return print_error("Error retriving Backup Plans!", err)
+    del q
+    if r.is_error():
+        return print_error(f"Error retriving Backup Plans: {r.error}!")
+    if not isinstance(r.result, str) or len(r.result) == 0:
         return
-    print(out["result"])
-    del out
+    print(r.result)
+    del r
 
 
 def default(arguments):
     try:
-        query = send_message(
-            arguments.socket,
-            HOOK_BACKUP,
-            HOOK_BACKUP,
-            payload={"type": MESSAGE_TYPE_STATUS},
+        r = send_message(
+            arguments.socket, HOOK_BACKUP, HOOK_BACKUP, 5, {"type": MESSAGE_TYPE_STATUS}
         )
     except OSError as err:
-        return print_error(
-            "Attempting to query Backup Plans raised an exception!", err, True
-        )
-    if "error" in query:
-        return print_error(query["error"])
+        return print_error("Error retriving Backup Plans!", err)
+    if r.is_error():
+        return print_error(f"Error retriving Backup Plans: {r.error}!")
     print(f'{"UUID":9}{"Status":18}{"Last Backup":25} Path\n{"="*65}')
-    if "plans" not in query or not isinstance(query["plans"], list):
+    if not isinstance(r.plans, list) or len(r.plans) == 0:
         return
-    for plan in query["plans"]:
-        if len(plan["uuid"]) < 8:
+    for p in r.plans:
+        if len(p["uuid"]) < 8:
             continue
-        last = EMPTY
-        if isinstance(plan["last"], str) and len(plan["last"]) > 0:
+        t = EMPTY
+        if isinstance(p["last"], str) and len(p["last"]) > 0:
             try:
-                val = datetime.fromisoformat(plan["last"])
-                last = val.strftime("%m/%d/%y %H:%M:%S")
-                del val
+                f = datetime.fromisoformat(p["last"])
+                t = f.strftime("%m/%d/%y %H:%M:%S")
+                del f
             except ValueError:
                 pass
-        pre = EMPTY
-        if plan.get("error", False):
-            pre = "FAIL "
-        if plan.get("stop", False):
-            pre = "STOP "
-        last = f"{pre}{last}"
-        del pre
-        print(f'{plan["uuid"][:8]:9}{plan["status"]:<18}{last:<25} {plan["path"]}')
-        del last
-    del query
+        v = EMPTY
+        if p.get("error", False):
+            v = "FAIL "
+        elif p.get("stop", False):
+            v = "STOP "
+        t = f"{v}{t}"
+        del v
+        print(f'{p["uuid"][:8]:9}{p["status"]:<18}{t:<25} {p["path"]}')
+        del t
+    del r

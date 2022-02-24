@@ -25,10 +25,10 @@ if [ $# -eq 0 ]; then
 fi
 
 if ! [ -f $1 ]; then
-    echo "File $1 does not exist!"
+    echo "File \"$1\" does not exist!"
     exit 1
 fi
 
-if ! sbverify --list $1 2>/dev/null | grep -q "signature certificates"; then
-    sbsign --key /opt/secureboot/db.key --cert /opt/secureboot/db.crt --output $1 $1 | grep -v 'gaps between PE/COFF sections'
+if ! sbverify --list "$1" 2>/dev/null | grep -q "signature certificates"; then
+    sbsign --key "/opt/secureboot/db.key" --cert "/opt/secureboot/db.crt" --output "$1" "$1" | grep -v 'gaps between PE/COFF sections'
 fi

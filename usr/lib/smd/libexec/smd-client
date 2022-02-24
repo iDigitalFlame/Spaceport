@@ -45,6 +45,43 @@ from argparse import ArgumentParser
 from lib.constants import LOG_PATH_CLIENT, LOG_LEVEL, LOG_LEVELS, SOCKET, CONFIG_CLIENT
 
 
+def _main(args):
+    p = 0
+    try:
+        if args.fork:
+            p = fork()
+        if p == 0:
+            if args.wait > 0:
+                sleep(args.wait)
+        elif args.fork:
+            return True
+    except Exception as err:
+        return print_error(str(err), err)
+    try:
+        c = Client(
+            args.config,
+            args.socket,
+            LOG_LEVELS[args.log_level],
+            args.log_file,
+            args.read_only,
+        )
+    except Exception as err:
+        return print_error(str(err), err)
+    try:
+        if not c.start():
+            return print_error(
+                "Client Threaded encountered an error, quitting!", None, False
+            )
+    except KeyboardInterrupt:
+        pass
+    except Exception as err:
+        return print_error(str(err), err)
+    finally:
+        c.stop()
+        del c
+    return True
+
+
 if __name__ == "__main__":
     parameters = ArgumentParser(description="System Management Daemon Client")
     parameters.add_argument(
@@ -101,30 +138,9 @@ if __name__ == "__main__":
     parameters.add_argument(
         "-f", action="store_false", help="Don't fork to the background.", dest="fork"
     )
-    arguments = parameters.parse_args()
-    pid = 0
-    result = True
-    try:
-        if arguments.fork:
-            pid = fork()
-        if pid == 0:
-            if arguments.wait > 0:
-                sleep(arguments.wait)
-            client = Client(
-                arguments.config,
-                arguments.socket,
-                LOG_LEVELS[arguments.log_level],
-                arguments.log_file,
-            )
-            if not client.start():
-                print("Client Threaded encountered an Exception, quitting!")
-                result = False
-    except KeyboardInterrupt:
-        pass
-    except Exception as err:
-        print_error(str(err), err, True)
-    del pid
-    if not result:
+    parameters.add_argument(
+        "-r", action="store_true", help="Don't write config files.", dest="read_only"
+    )
+    if not _main(parameters.parse_args()):
         sys.exit(1)
-    del result
     sys.exit(0)

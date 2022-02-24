@@ -24,14 +24,24 @@
 
 from glob import glob
 from lib.util import print_error, read
-from lib.constants import RADIO_PATH_BLUE, EMPTY
 from lib.powerctl.wifi import set_command, set_config
+from lib.constants import RADIO_PATH_BLUE, EMPTY, NEWLINE
+
+
+def default(_):
+    try:
+        if _is_enabled():
+            return print("Bluetooth is enabled.")
+    except OSError as err:
+        return print_error("Error retriving Bluetooth status!", err)
+    print("Bluetooth is disabled.")
 
 
 def _is_enabled():
-    for device in glob(RADIO_PATH_BLUE):
-        flags = read(device, ignore_errors=False)
-        if isinstance(flags, str) and flags.replace("\n", EMPTY) == "1":
+    for d in glob(RADIO_PATH_BLUE):
+        f = read(d, errors=False)
+        del d
+        if isinstance(f, str) and f.replace(NEWLINE, EMPTY) == "1":
             return True
     return False
 
@@ -41,19 +51,6 @@ def config(arguments):
 
 
 def command(arguments):
-    if not set_command(arguments, "bluetooth"):
-        default(arguments)
-
-
-def default(arguments):
-    try:
-        if _is_enabled():
-            print("Bluetooth is enabled.")
-            return
-        print("Bluetooth is disabled.")
-    except OSError as err:
-        return print_error(
-            "Attempting to retrive Bluetooth device status raised an exception!",
-            err,
-            True,
-        )
+    if set_command(arguments, "bluetooth"):
+        return
+    default(arguments)

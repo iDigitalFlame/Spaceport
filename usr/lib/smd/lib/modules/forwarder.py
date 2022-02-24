@@ -45,9 +45,9 @@ def forward(_, message):
 
 
 def error(server, message):
-    if "error" not in message:
+    if not message.is_error():
         return
     server.error(
-        f'An error was detected on hook 0x{message.get("hook", HOOK_ERROR):02X}: '
-        f'{message["error"]}\n{message.get("trace", "...")}'
+        f'Error detected on hook 0x{message.get("hook", HOOK_ERROR):02X}: '
+        f'{message.error}\n{message.get("trace", "..")}'
     )

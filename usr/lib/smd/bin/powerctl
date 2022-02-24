@@ -47,6 +47,7 @@ from lib.constants import (
     NAME,
     EMPTY,
     SOCKET,
+    NEWLINE,
     VERSION,
     NAME_CLIENT,
     NAME_SERVER,
@@ -56,20 +57,20 @@ from lib.constants import (
 
 
 def _powerctl():
-    parameters = ArgumentParser(description="System Power Manager")
-    modules = _load_modules(parameters, DIRECTORY_POWERCTL)
+    v = ArgumentParser(description="System Power Manager")
+    m = _load_modules(v, DIRECTORY_POWERCTL)
     try:
-        base = basename(__file__).lower()
+        b = basename(__file__).lower()
     except OSError:
-        base = None
-    parser = parameters
-    if isinstance(base, str) and base != NAME_POWERCTL:
-        if "ctl" in base:
-            base = base.replace("ctl", EMPTY)
-        if base in modules:
-            parser = modules[base]
-    del base
-    parser.add_argument(
+        b = None
+    p = v
+    if isinstance(b, str) and b != NAME_POWERCTL:
+        if "ctl" in b:
+            b = b.replace("ctl", EMPTY)
+        if b in m:
+            p = m[b]
+    del b
+    p.add_argument(
         "-S",
         type=str,
         dest="socket",
@@ -79,7 +80,7 @@ def _powerctl():
         metavar="socket",
         required=False,
     )
-    parser.add_argument(
+    p.add_argument(
         "--version",
         dest="version",
         help="Show version information.",
@@ -87,119 +88,119 @@ def _powerctl():
         default=False,
         required=False,
     )
-    args = parser.parse_args()
-    if args.version:
+    a = p.parse_args()
+    if a.version:
         print(
             f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2022\n\n"
             f"System: {NAME} ({NAME_SERVER}, {NAME_CLIENT})"
         )
         sys.exit(0)
-    functions = None
-    if hasattr(args, "subs") and isinstance(args.subs, dict) and len(args.subs) > 0:
-        functions = list()
-        for name, func in args.subs.items():
-            if not callable(func):
+    f = None
+    if hasattr(a, "subs") and isinstance(a.subs, dict) and len(a.subs) > 0:
+        f = list()
+        for n, x in a.subs.items():
+            if not callable(x):
                 continue
-            if func in functions:
+            if x in f:
                 continue
             try:
-                if not bool(getattr(args, name)):
+                if not bool(getattr(a, n)):
                     continue
             except AttributeError:
                 continue
-            functions.append(func)
-    if isinstance(functions, list) and len(functions) > 0:
-        for func in functions:
+            f.append(x)
+    if isinstance(f, list) and len(f) > 0:
+        for x in f:
             try:
-                func(args)
+                q = x(a)
             except Exception as err:
-                print_error("Error occurred in processing request!", err, True)
-    elif "func" in args and callable(args.func):
+                return print_error("Error processing request!", err)
+            if isinstance(q, bool):
+                break
+            del q
+    elif "func" in a and callable(a.func):
         try:
-            args.func(args)
+            a.func(a)
         except Exception as err:
-            print_error("Error occurred in processing request!", err, True)
+            return print_error("Error processing request!", err)
     else:
-        parameters.print_help()
+        v.print_help()
         sys.exit(1)
-    del args
-    del parser
-    del modules
-    del functions
-    del parameters
+    del a
+    del p
+    del m
+    del f
+    del v
     sys.exit(0)
 
 
 def _load_modules(parser, directory):
     try:
-        modules = listdir(directory)
+        m = listdir(directory)
     except OSError as err:
-        return print_error(
-            f'Attempting to load modules from directory "{directory}" raised an exception!',
-            err,
-            True,
-        )
-    names = dict()
-    parsers = parser.add_subparsers(title="System Power Management Modules")
-    for module in modules:
-        if ".py" not in module:
+        return print_error(f'Error loading modules from "{directory}"!', err)
+    n = dict()
+    p = parser.add_subparsers(title="System Power Management Modules")
+    for x in m:
+        if ".py" not in x:
             continue
-        name = module.replace(".py", EMPTY).lower()
+        v = x.replace(".py", EMPTY).lower()
         try:
-            instance = import_module(f"lib.powerctl.{name}")
+            e = import_module(f"lib.powerctl.{v}")
         except Exception as err:
+            print_error(f'Error loading module "{v}"!', err, False)
+            continue
+        d = try_get_attr(e, "DESCRIPTION", True)
+        if not isinstance(d, str) and v in DESCRIPTIONS:
+            d = DESCRIPTIONS[v]
+        if not isinstance(d, str):
+            d = f"{v.capitalize()} Power Module"
+        a = try_get_attr(e, "ARGS", True)
+        if a is None and v in ARGS:
+            a = ARGS[v]
+        f = try_get_attr(e, "DEFAULT", False)
+        if not callable(f):
             print_error(
-                f'Attempting to load module "{name}" raised an exception!', err, False
+                f'Could not load module "{v}", the "default" function does not exist!',
+                None,
+                False,
             )
             continue
-        description = try_get_attr(instance, "DESCRIPTION", True)
-        if not isinstance(description, str) and name in DESCRIPTIONS:
-            description = DESCRIPTIONS[name]
-        if not isinstance(description, str):
-            description = f"{name.capitalize()} Power Module"
-        args = try_get_attr(instance, "ARGS", True)
-        if args is None and name in ARGS:
-            args = ARGS[name]
-        func = try_get_attr(instance, "DEFAULT", False)
-        if not callable(func):
-            print(
-                f'Could not load module "{name}", the "default" function does not exist!',
-                file=sys.stderr,
-            )
-            continue
-        subs = dict()
-        parser = parsers.add_parser(name, description=description)
-        if isinstance(args, list):
-            for arg in args:
-                parser.add_argument(arg[0], **arg[1])
-                if len(arg) != 3:
+        s = dict()
+        r = p.add_parser(v, description=d)
+        if isinstance(a, list):
+            for i in a:
+                if len(i) < 2:
                     continue
-                arg_func = arg[2]
-                if isinstance(arg_func, str):
-                    arg_func = try_get_attr(instance, arg_func, False)
-                if callable(arg_func):
-                    if "dest" in arg[1]:
-                        subs[arg[1]["dest"]] = arg_func
-                    elif "metavar" in arg[1]:
-                        subs[arg[1]["metavar"]] = arg_func
+                r.add_argument(i[0], **i[1])
+                if len(i) != 3:
+                    continue
+                g = i[2]
+                if isinstance(g, str):
+                    g = try_get_attr(e, g, False)
+                if callable(g):
+                    if "dest" in i[1]:
+                        s[i[1]["dest"]] = g
+                    elif "metavar" in i[1]:
+                        s[i[1]["metavar"]] = g
                     else:
-                        subs[arg[0].replace("-", EMPTY)] = arg_func
-                del arg_func
-        del args
-        parser.set_defaults(func=func, subs=subs)
-        names[name] = parser
-        del subs
-        del func
-        del name
-        del parser
-        del instance
-        del description
-    lister = parsers.add_parser("modules", description="Loaded Modules List")
-    lister.set_defaults(func=lambda null: print("\n".join(names.keys())))
-    del lister
-    del modules
-    del parsers
-    return names
+                        s[i[0].replace("-", EMPTY)] = g
+                del g
+        del a
+        r.set_defaults(func=f, subs=s)
+        n[v] = r
+        del s
+        del f
+        del v
+        del r
+        del e
+        del d
+    z = p.add_parser("modules", description="Loaded Modules List")
+    z.set_defaults(func=lambda _: print(NEWLINE.join(n.keys())))
+    del z
+    del m
+    del p
+    return n
 
 
 if __name__ == "__main__":

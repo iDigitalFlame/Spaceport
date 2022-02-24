@@ -14,7 +14,6 @@ bluez
 bluez-utils
 btrfs-progs
 bzip2
-c-lolcat
 chaotic-keyring
 chaotic-mirrorlist
 cifs-utils
@@ -26,7 +25,6 @@ cups
 device-mapper
 dhcpcd
 diffutils
-discord
 dnsmasq
 dosfstools
 dunst
@@ -116,6 +114,7 @@ nmap
 noto-fonts-emoji
 ntfs-3g
 onboard
+onefetch
 openbsd-netcat
 openssh
 openvpn
@@ -156,6 +155,7 @@ sed
 shadow
 skippy-xd-git
 slack-desktop
+spice-gtk
 squid
 sudo
 swig

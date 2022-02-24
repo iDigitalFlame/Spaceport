@@ -30,25 +30,42 @@ from lib.structs.dispatcher import Dispatcher
 
 
 class Service(Storage):
-    def __init__(self, name, modules, config, log_level, log_path):
-        Storage.__init__(self, file_path=config)
+    def __init__(self, name, modules, config, level, file, read_only=False):
+        Storage.__init__(self, path=config)
         self._loaded = False
         self._log = Logger(
             name,
-            log_level,
-            log_path.replace("{pid}", str(getpid())).replace("{name}", name),
+            level,
+            file.replace("{pid}", str(getpid())).replace("{name}", name),
         )
+        self._read_only = read_only
         self._log.info(f'Service "{name}" starting up init functions..')
         self._dispatcher = Dispatcher(self, modules)
         signal(SIGALRM, self._watchdog)
+
+    def _load(self):
+        self._log.debug(f'Loading configuration from "{self.get_file()}"..')
+        try:
+            self.read()
+        except OSError as err:
+            self._log.error(
+                f'Error loading configuration "{self.get_file()}", using defaults!',
+                err=err,
+            )
+        self._loaded = True
 
     def is_server(self):
         return False
 
     def forward(self, message):
+        if message is None:
+            return
         message["forward"] = True
         self._log.debug(f"Sending message 0x{message.header():02X} to internal Hooks.")
         self._dispatcher.add(None, message)
+
+    def send(self, eid, result):
+        pass
 
     def _watchdog(self, _, frame):
         self._log.error(
@@ -61,16 +78,8 @@ class Service(Storage):
 
     def get(self, name, default=None):
         if not self._loaded:
-            self._log.debug(f'Loading configuration from file "{self.get_file()}"..')
-            try:
-                self.read(ignore_errors=False)
-            except OSError as err:
-                self._log.error(
-                    f'Could not load configuration file "{self.get_file()}", using defaults!',
-                    err=err,
-                )
-            self._loaded = True
-        return super().get(name, default)
+            self._load()
+        return super(__class__, self).get(name, default)
 
     def info(self, message, err=None):
         self._log.info(message, err)
@@ -81,43 +90,36 @@ class Service(Storage):
     def error(self, message, err=None):
         self._log.error(message, err)
 
-    def send(self, eid, message_result):
-        pass
-
     def warning(self, message, err=None):
         self._log.warning(message, err)
 
     def notify(self, title, message=None, icon=None):
         pass
 
+    def set(self, name, value, only_not_exists=False):
+        if not self._loaded:
+            self._load()
+        return super(__class__, self).set(name, value, only_not_exists)
+
     def get_config(self, name, default=None, save=False):
-        result = self.get(name, default)
-        if save:
+        r = self.get(name, default)
+        if save and not self._read_only:
             try:
-                self.write(ignore_errors=False, perms=0o640)
+                self.write(perms=0o640)
             except OSError as err:
-                self.error(
-                    f'Could not save configuration file "{self.get_file()}"!', err=err
-                )
-        return result
+                self.error(f'Error saving configuration "{self.get_file()}"!', err=err)
+        return r
 
     def set_config(self, name, value, save=False, only_not_exists=False):
-        if not self._loaded:
-            self._log.debug(f'Loading configuration from file "{self.get_file()}"..')
+        r = self.set(name, value, only_not_exists)
+        if save and not self._read_only:
             try:
-                self.read(ignore_errors=False)
+                self.write(perms=0o640)
             except OSError as err:
-                self._log.error(
-                    f'Could not load configuration file "{self.get_file()}", using defaults!',
-                    err=err,
-                )
-            self._loaded = True
-        result = self.set(name, value, only_not_exists)
-        if save:
-            try:
-                self.write(ignore_errors=False, perms=0o640)
-            except OSError as err:
-                self.error(
-                    f'Could not save configuration file "{self.get_file()}"!', err=err
-                )
-        return result
+                self.error(f'Error saving configuration "{self.get_file()}"!', err=err)
+        return r
+
+    def write(self, path=None, indent=4, sort=True, perms=None, errors=True):
+        if self._read_only:
+            return
+        return super(__class__, self).write(path, indent, sort, perms, errors)

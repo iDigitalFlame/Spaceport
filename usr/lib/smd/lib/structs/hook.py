@@ -51,11 +51,10 @@ class Hook(object):
                     f'Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
                     f"is using the old format, please convert it!"
                 )
-                result = self._func(service, None, queue, message)
+                r = self._func(service, None, queue, message)
             except Exception as err:
                 service.error(
-                    f'Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
-                    f"raised an exception while running!",
+                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
                     err=err,
                 )
                 if isinstance(queue, list):
@@ -63,11 +62,10 @@ class Hook(object):
                 return False
         elif self._argcount == 4:
             try:
-                result = self._func(service, message, queue)
+                r = self._func(service, message, queue)
             except Exception as err:
                 service.error(
-                    f'Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
-                    f"raised an exception while running!",
+                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
                     err=err,
                 )
                 if isinstance(queue, list):
@@ -75,11 +73,10 @@ class Hook(object):
                 return False
         elif self._argcount == 3:
             try:
-                result = self._func(service, message)
+                r = self._func(service, message)
             except Exception as err:
                 service.error(
-                    f'Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
-                    f"raised an exception while running!",
+                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
                     err=err,
                 )
                 if isinstance(queue, list):
@@ -87,11 +84,10 @@ class Hook(object):
                 return False
         elif self._argcount == 2:
             try:
-                result = self._func(service)
+                r = self._func(service)
             except Exception as err:
                 service.error(
-                    f'Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
-                    f"raised an exception while running!",
+                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
                     err=err,
                 )
                 if isinstance(queue, list):
@@ -99,52 +95,44 @@ class Hook(object):
                 return False
         else:
             try:
-                result = self._func()
+                r = self._func()
             except Exception as err:
                 service.error(
-                    f'Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
-                    f"raised an exception while running!",
+                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
                     err=err,
                 )
                 if isinstance(queue, list):
                     queue.append(send_exception(message.header(), err))
                 return False
-        if result is None:
+        if r is None:
             return True
-        if isinstance(result, Message):
-            queue.append(result)
-        elif isinstance(result, dict):
-            queue.append(Message(header=message.header(), payload=result))
-        elif isinstance(result, str):
-            queue.append(Message(header=message.header(), payload={"result": result}))
-        elif isinstance(result, bool):
-            if result:
-                queue.append(Message(header=HOOK_OK))
+        if isinstance(r, Message):
+            queue.append(r)
+        elif isinstance(r, dict):
+            queue.append(Message(message.header(), r))
+        elif isinstance(r, str):
+            queue.append(Message(message.header(), {"result": r}))
+        elif isinstance(r, bool):
+            if r:
+                queue.append(Message(HOOK_OK))
             else:
-                queue.append(
-                    Message(
-                        header=HOOK_OK,
-                        payload={"error": "An unknown error occurred"},
-                    )
-                )
-        elif isinstance(result, int):
-            queue.append(Message(header=result))
-        elif isinstance(result, list) or isinstance(result, tuple):
-            for sub_result in result:
-                if isinstance(sub_result, Message):
-                    queue.append(sub_result)
-                elif isinstance(sub_result, dict):
-                    queue.append(Message(header=message.header(), payload=sub_result))
-                elif isinstance(sub_result, str):
-                    queue.append(
-                        Message(header=message.header(), payload={"result": sub_result})
-                    )
+                queue.append(Message(HOOK_OK, {"error": "An unknown error occurred"}))
+        elif isinstance(r, int):
+            queue.append(Message(header=r))
+        elif isinstance(r, list) or isinstance(r, tuple):
+            for s in r:
+                if isinstance(s, Message):
+                    queue.append(s)
+                elif isinstance(s, dict):
+                    queue.append(Message(message.header(), s))
+                elif isinstance(s, str):
+                    queue.append(Message(message.header(), {"result": s}))
         else:
             service.warning(
                 f'The return result for function "{self._func.__name__}" of Hook '
                 f'for "{self._class.__name__}" was not able to be parsed!'
             )
-        del result
+        del r
         return True
 
 
@@ -153,10 +141,12 @@ class HookList(list):
         list.__init__(self)
 
     def run(self, service, message):
-        queue = list()
-        for hook in self:
-            hook.run(service, message, queue)
-        return queue
+        q = list()
+        alarm(HOOK_THREAD_TIMEOUT)
+        for h in self:
+            h.run(service, message, q)
+        alarm(0)
+        return q
 
 
 class HookDaemon(Thread):
@@ -170,10 +160,8 @@ class HookDaemon(Thread):
         self._running.clear()
         self._service.debug("Starting Hooks Thread..")
         while not self._running.is_set():
-            for hook in self._hooks:
-                alarm(HOOK_THREAD_TIMEOUT)
-                hook.run(self._service, None, None)
-                alarm(0)
+            for h in self._hooks:
+                h.run(self._service, None, None)
             self._running.wait(1)
         self._service.debug("Stopping Hooks Thread..")
 

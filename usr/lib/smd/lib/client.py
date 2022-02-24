@@ -22,10 +22,9 @@
 #
 
 from uuid import uuid4
-from os.path import exists
-from lib.util import eval_env
 from lib.structs.service import Service
 from lib.structs.message import Message
+from os.path import exists, expandvars, expanduser
 from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
 from socket import (
     socket,
@@ -34,58 +33,47 @@ from socket import (
     SOL_SOCKET,
     SOCK_STREAM,
     SO_REUSEADDR,
-    error as socket_err,
 )
 from lib.constants import (
-    SOCKET,
     VERSION,
-    LOG_LEVEL,
     NAME_CLIENT,
     LOG_PAYLOAD,
-    CONFIG_CLIENT,
-    LOG_PATH_CLIENT,
     DIRECTORY_MODULES,
     HOOK_NOTIFICATION,
 )
 
 
 class Client(Service):
-    def __init__(
-        self,
-        config=CONFIG_CLIENT,
-        socket_path=SOCKET,
-        log_level=LOG_LEVEL,
-        log_file=LOG_PATH_CLIENT,
-    ):
+    def __init__(self, config, sock, level, log, read_only):
         Service.__init__(
             self,
             NAME_CLIENT,
             DIRECTORY_MODULES,
-            eval_env(config),
-            log_level,
-            eval_env(log_file),
+            expandvars(expanduser(config)),
+            level,
+            expandvars(expanduser(log)),
+            read_only,
         )
-        self._uuid = str(uuid4())
         self._socket = None
         self._messages = list()
-        self._socket_path = socket_path
+        self._socket_path = sock
+        self._uuid = str(uuid4())
 
     def stop(self):
         self.info("Stopping System Management Daemon Client..")
         self._dispatcher.stop()
+        if self._socket is None:
+            return
         try:
-            if self._socket is not None:
-                self._socket.shutdown(SHUT_RDWR)
-                self._socket.close()
-        except (OSError, socket_err) as err:
-            self.error(
-                f'Attempting to close the UNIX socket "{self._socket_path}" connection raised an exception!',
-                err=err,
-            )
+            self._socket.shutdown(SHUT_RDWR)
+            self._socket.close()
+        except OSError as err:
+            self.error(f'Error closing UNIX socket "{self._socket_path}"!', err=err)
+        self._socket = None
 
     def start(self):
         self.info(
-            f"Starting System Management Daemon Client (v{VERSION}) primary thread.."
+            f"Starting System Management Daemon client (v{VERSION}) base thread.."
         )
         if not exists(self._socket_path):
             self.error(f'Server UNIX socket "{self._socket_path}" does not exist!')
@@ -95,93 +83,88 @@ class Client(Service):
             self._socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self._socket.connect(self._socket_path)
             self._socket.setblocking(False)
-        except (OSError, socket_err) as err:
+        except OSError as err:
             self.error(
-                f'Attempting to connect to the UNIX socket "{self._socket_path}" raised an exception!',
-                err=err,
+                f'Error connecting to UNIX socket "{self._socket_path}"!', err=err
             )
             return False
-        running = True
-        poll = epoll()
-        poll.register(self._socket.fileno(), EPOLLIN)
+        r = True
+        p = epoll()
+        p.register(self._socket.fileno(), EPOLLIN)
         self._dispatcher.start()
         try:
-            while running:
+            while r:
                 if self._socket is None:
-                    running = False
+                    r = False
                     break
-                for _, event in poll.poll(1):
-                    if event & EPOLLIN:
+                for _, e in p.poll(1):
+                    if e & EPOLLIN:
                         try:
                             self._socket.setblocking(True)
-                            message = Message(stream=self._socket)
+                            m = Message(stream=self._socket)
                             self._socket.setblocking(False)
-                            self._dispatcher.add(None, message)
+                            self._dispatcher.add(None, m)
                             self.debug(
-                                f"Received a message type 0x{message.header():02X} from the server."
+                                f"Received a message type 0x{m.header():02X} from the server."
                             )
-                            if LOG_PAYLOAD and len(message) > 0:
-                                self.error(f"[RECV <] MESSAGE DUMP: {message}")
-                            del message
+                            if LOG_PAYLOAD and len(m) > 0:
+                                self.error(f"[RECV <] MESSAGE DUMP: {m}")
+                            del m
                         except OSError as err:
                             if err.errno == 1000 or err.errno == 104:
                                 self.debug("Disconnecting from the server..")
-                                running = False
+                                r = False
                                 break
                             else:
-                                self.error(
-                                    "Server connection raised an exception!", err=err
-                                )
+                                self.error("Server connection error!", err=err)
                         finally:
                             self._socket.setblocking(False)
-                    elif event & EPOLLHUP or event & EPOLLERR:
+                    elif e & EPOLLHUP or e & EPOLLERR:
                         self.debug("Disconnecting from the server..")
-                        running = False
+                        r = False
                         break
         except KeyboardInterrupt:
             self.debug("Stopping client thread..")
-            return True
         except Exception as err:
-            self.error("Exception was raised during thread operation!", err=err)
+            self.error("Exception during thread operation!", err=err)
             return False
         finally:
-            poll.unregister(self._socket.fileno())
+            p.unregister(self._socket.fileno())
+            p.close()
             self.stop()
-            del poll
-            del running
+            del p
+            del r
         return True
 
-    def send(self, _, message_result):
-        if isinstance(message_result, Message):
-            message_result = [message_result]
-        elif not isinstance(message_result, list) and not isinstance(
-            message_result, tuple
-        ):
+    def send(self, _, result):
+        if isinstance(result, Message):
+            result = [result]
+        elif not isinstance(result, list) and not isinstance(result, tuple):
             return
-        while len(message_result) > 0:
-            message = message_result.pop()
-            if "id" not in message:
-                message["id"] = self._uuid
+        while len(result) > 0:
+            m = result.pop()
+            if "id" not in m:
+                m["id"] = self._uuid
             try:
-                message.send(self._socket)
-                self.debug(f"Message 0x{message.header():02X} was sent to the server.")
-                if LOG_PAYLOAD and len(message) > 0:
-                    self.error(f"[SEND >] MESSAGE DUMP: {message}")
+                m.send(self._socket)
+                self.debug(f"Message 0x{m.header():02X} was sent to the server.")
+                if LOG_PAYLOAD and len(m) > 0:
+                    self.error(f"[SEND >] MESSAGE DUMP: {m}")
             except OSError as err:
                 if err.errno == 32:
                     self.info("Server has disconnected!")
                 else:
                     self.error(
-                        f"Attempting to send message 0x{message.header():02X} to the server raised an exception!",
+                        f"Error sending message 0x{m.header():02X} to the server!",
                         err=err,
                     )
             except Exception as err:
                 self.error(
-                    f"Attempting to send message 0x{message.header():02X} to the server raised an exception!",
+                    f"Error sending message 0x{m.header():02X} to the server!",
                     err=err,
                 )
             finally:
-                del message
+                del m
 
     def notify(self, title, message=None, icon=None):
         self.forward(

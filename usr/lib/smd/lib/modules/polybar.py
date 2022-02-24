@@ -61,7 +61,7 @@ class Polybar(object):
 
     def setup(self, server):
         self.default = server.get_config("polybar.default", DEFAULT_POLYBAR_NAME, True)
-        server.get_config("polybar.bars", dict(), True)
+        # server.get_config("polybar.bars", dict(), True)
         self.bars = {
             ROTATE_LEFT: server.get_config("polybar.bars.left", EMPTY, True),
             ROTATE_RIGHT: server.get_config("polybar.bars.right", EMPTY, True),
@@ -108,20 +108,16 @@ class Polybar(object):
             try:
                 self.process.send_signal(SIGSTOP)
             except OSError as err:
-                server.error(
-                    "Attempting to freeze Polybar raised an exception!", err=err
-                )
+                server.error("Error freezing Polybar!", err=err)
             else:
-                server.debug("Freezing Polybar due to lockscreen.")
+                server.debug("Freezing Polybar due to Lockscreen.")
             return
         try:
             self.process.send_signal(SIGCONT)
         except OSError as err:
-            server.error(
-                "Attempting to un-freeze Polybar raised an exception!", err=err
-            )
+            server.error("Error un-freezing Polybar!", err=err)
         else:
-            server.debug("Unfreezing Polybar due to lockscreen removal.")
+            server.debug("Unfreezing Polybar due to Lockscreen removal.")
 
     def update(self, server, message):
         if message.header() == HOOK_ROTATE:
@@ -146,11 +142,11 @@ class Polybar(object):
             self.failures -= 1
             if self.failures <= 0:
                 return server.error(
-                    "Max number of Polybar errors occurred! Use the reload command to restart Polybar!"
+                    "Max number of Polybar errors occurred, use the reload command to restart Polybar!"
                 )
             else:
                 server.warning(
-                    f"Polybar returned an error upon close! Will restart again {self.failures} "
+                    f"Polybar returned an error upon close, will restart again {self.failures} "
                     f"times before a reload is required!"
                 )
         server.debug(f'Attempting to start Polybar with bar "{self.current}"..')
@@ -162,4 +158,4 @@ class Polybar(object):
                 stderr=DEVNULL,
             )
         except (OSError, SubprocessError) as err:
-            server.error("Attempting to start Polybar raised an exception!", err=err)
+            server.error("Error starting Polybar!", err=err)
