@@ -189,6 +189,7 @@ DEFAULT_SESSION_COMPOSER = ["/usr/bin/picom", "-c"]
 SESSION_WINDOW_LIST = ["/usr/bin/wmctrl", "-lupx"]
 
 # Hydra Module Constants
+HYDRA_TAP = 0x24
 HYDRA_STOP = 0x11
 HYDRA_WAKE = 0x12
 HYDRA_UID = "kvm"

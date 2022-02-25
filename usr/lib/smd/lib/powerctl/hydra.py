@@ -30,6 +30,8 @@ from lib.modules.hydra import get_vm, get_usb
 from lib.util import read_json, print_error, run
 from lib.constants import (
     EMPTY,
+    HOOK_OK,
+    HYDRA_TAP,
     HOOK_HYDRA,
     HYDRA_STOP,
     HYDRA_WAKE,
@@ -349,6 +351,8 @@ def tokenize(args):
         if vm is None or args.all_stop or args.all_force:
             return do_all(args, False, False, True)
         return stop(args, vm)
+    if c == "tap" or args.tap:
+        return tap(args, vm)
     if c == "vnc" or c == "v" or args.connect_vnc:
         return connect(args, vm, True)
     if c == "view" or c == "connect" or args.connect:
@@ -516,6 +520,23 @@ def _resolve_usb(args):
     args.usb_vendor = c["vendor"]
     args.usb_product = c["product"]
     del c
+
+
+def tap(args, vm=None):
+    if vm is None:
+        vm = _resolve_vm(args)
+    vm["type"] = HYDRA_TAP
+    vm["force"] = args.stop_force
+    vm["timeout"] = args.timeout
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_OK, 5, vm)
+    except OSError as err:
+        return print_error("Error tapping VM!", err)
+    if r.is_error():
+        return print_error(f"Error tapping VM: {r.error}!")
+    del r
+    del vm
+    return True
 
 
 def stop(args, vm=None):

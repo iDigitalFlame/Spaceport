@@ -54,6 +54,7 @@ from lib.constants import (
     NAME,
     EMPTY,
     NEWLINE,
+    HYDRA_TAP,
     HYDRA_UID,
     HOOK_HYDRA,
     HYDRA_WAKE,
@@ -1145,11 +1146,18 @@ class HydraVM(Storage):
         del d
         return i
 
-    def _stop(self, manager, server, force, timeout=90, errors=True):
+    def _stop(self, manager, server, force, timeout=90, errors=True, tap=False):
         if self._ready == 3:
             return
         if force is not None and not isinstance(force, bool):
             force = False
+        if tap:
+            try:
+                if self._ga:
+                    return self._command(server, "guest-shutdown")
+                return self._command(server, "system_powerdown")
+            except (HydraError, OSError) as err:
+                raise HydraError(f"Error triggering shutdown: {err}")
         if (force is None or not force) and self._running():
             if self._event is not None:
                 raise HydraError("Soft shutdown is already in progress")
@@ -1620,6 +1628,13 @@ class HydraServer(object):
                 return as_error(f"Could not retrive the VM IP address: {err}")
         if message.type == HYDRA_GA_PING:
             return vm._ping(server)
+        if message.type == HYDRA_TAP:
+            try:
+                vm._stop(self, server, False, tap=True)
+            except HydraError as err:
+                server.error(f"HYDRA: VM({vm.vmid}) Error tapping VM!", err=err)
+                return as_error(f"Could not tap VM {vm.vmid}: {err}")
+            return True
         return as_error("Unknown or invalid command!")
 
     def _update_tokens(self, server):

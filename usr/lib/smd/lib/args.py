@@ -696,6 +696,16 @@ ARGS = {
             },
             "ip",
         ),
+        (
+            "-T",
+            {
+                "dest": "tap",
+                "help": "Tap the VM Power Button.",
+                "action": "store_true",
+                "required": False,
+            },
+            "tap",
+        ),
     ],
     "locker": [
         (
