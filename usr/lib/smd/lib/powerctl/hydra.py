@@ -353,11 +353,13 @@ def tokenize(args):
         return stop(args, vm)
     if c == "tap" or args.tap:
         return tap(args, vm)
+    if c == "web" or args.connect_web:
+        return connect(args, vm)
     if c == "vnc" or c == "v" or args.connect_vnc:
         return connect(args, vm, True)
-    if c == "view" or c == "connect" or args.connect:
-        return connect(args, vm)
     if c == "spice" or c == "s" or args.connect_spice:
+        return connect(args, vm, spice=True)
+    if c == "view" or c == "connect" or args.connect_spice:
         return connect(args, vm, spice=True)
     if c == "ip" or args.ga_ip:
         return ip(args, vm)

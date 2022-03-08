@@ -266,27 +266,6 @@ def run(command, shell=False, wait=None, errors=True):
     return output
 
 
-def write_json(path, obj, indent=0, sort=False, perms=None, errors=True):
-    if obj is None:
-        if errors:
-            raise OSError('"obj" cannot be None')
-        return False
-    try:
-        d = dumps(obj, indent=indent, sort_keys=sort)
-    except (TypeError, JSONDecodeError, OverflowError) as err:
-        if errors:
-            raise OSError(err)
-        return False
-    try:
-        return write(path, d, False, False, perms, errors)
-    except OSError as err:
-        if errors:
-            raise err
-    finally:
-        del d
-    return False
-
-
 def write(path, data, binary=False, append=False, perms=None, errors=True):
     if not isinstance(path, str):
         if errors:
@@ -328,6 +307,27 @@ def write(path, data, binary=False, append=False, perms=None, errors=True):
     finally:
         del m
     return True
+
+
+def write_json(path, obj, indent=None, sort=False, perms=None, errors=True):
+    if obj is None:
+        if errors:
+            raise OSError('"obj" cannot be None')
+        return False
+    try:
+        d = dumps(obj, indent=indent, sort_keys=sort)
+    except (TypeError, JSONDecodeError, OverflowError) as err:
+        if errors:
+            raise OSError(err)
+        return False
+    try:
+        return write(path, d, False, False, perms, errors)
+    except OSError as err:
+        if errors:
+            raise err
+    finally:
+        del d
+    return False
 
 
 class _ProcessThread(Thread):

@@ -23,7 +23,6 @@ cowsay
 cryptsetup
 cups
 device-mapper
-dfu-util
 dhcpcd
 diffutils
 dnsmasq
@@ -109,7 +108,6 @@ network-manager-applet
 networkmanager
 networkmanager-openvpn
 nextcloud-client
-nginx
 nm-connection-editor
 nmap
 noto-fonts-emoji

@@ -1258,6 +1258,7 @@ class HydraVM(Storage):
 
 class HydraServer(object):
     def __init__(self):
+        self.web = True
         self.vms = dict()
         self.usbs = dict()
         self.running = False
@@ -1363,41 +1364,49 @@ class HydraServer(object):
             server.warning(
                 "HYDRA: Dnsmasq is not installed, VMs will function, but will lack network connectivity!"
             )
-        if exists(HYDRA_EXEC_TOKENS):
-            try:
-                self.token_server = Popen(
-                    [
-                        "/usr/bin/python3",
-                        HYDRA_EXEC_TOKENS,
-                        "--token-plugin",
-                        "TokenFile",
-                        "--token-source",
-                        HYDRA_TOKENS,
-                        "127.0.0.1:8500",
-                    ],
-                    stderr=DEVNULL,
-                    stdout=DEVNULL,
+        self.web = server.get_config("hydra.web", True, True)
+        if self.web:
+            if exists(HYDRA_EXEC_TOKENS):
+                try:
+                    self.token_server = Popen(
+                        [
+                            "/usr/bin/python3",
+                            HYDRA_EXEC_TOKENS,
+                            "--token-plugin",
+                            "TokenFile",
+                            "--token-source",
+                            HYDRA_TOKENS,
+                            "127.0.0.1:8500",
+                        ],
+                        stderr=DEVNULL,
+                        stdout=DEVNULL,
+                    )
+                except (OSError, SubprocessError) as err:
+                    self.stop(server, True)
+                    raise HydraError(f"Error starting Tokens server: {err}")
+            else:
+                server.warning(
+                    "HYDRA: Websockify is not installed, VMs will function, but will lack local console connectivity!"
                 )
-            except (OSError, SubprocessError) as err:
-                self.stop(server, True)
-                raise HydraError(f"Error starting Tokens server: {err}")
-        else:
-            server.warning(
-                "HYDRA: Websockify is not installed, VMs will function, but will lack local console connectivity!"
-            )
-        if exists(HYDRA_EXEC_NGINX):
-            try:
-                self.web_server = Popen(
-                    [HYDRA_EXEC_NGINX, "-c", f"{DIRECTORY_STATIC}/nginx.conf"],
-                    stderr=DEVNULL,
-                    stdout=DEVNULL,
+            if exists(HYDRA_EXEC_NGINX):
+                try:
+                    self.web_server = Popen(
+                        [HYDRA_EXEC_NGINX, "-c", f"{DIRECTORY_STATIC}/nginx.conf"],
+                        stderr=DEVNULL,
+                        stdout=DEVNULL,
+                    )
+                except (OSError, SubprocessError) as err:
+                    self.stop(server, True)
+                    raise HydraError(f"Error starting NGINX: {err}")
+            else:
+                server.warning(
+                    "HYDRA: NGINX is not installed, VMs will function, but will lack screen connectivity!"
                 )
-            except (OSError, SubprocessError) as err:
-                self.stop(server, True)
-                raise HydraError(f"Error starting NGINX: {err}")
         else:
-            server.warning(
-                "HYDRA: NGINX is not installed, VMs will function, but will lack screen connectivity!"
+            self.web_server = None
+            self.token_server = None
+            server.debug(
+                "HYDRA: Not enabling Websockify as it's enable in the server config."
             )
         if exists(HYDRA_EXEC_SMB):
             try:
@@ -1462,7 +1471,7 @@ class HydraServer(object):
             self._clean_usb(server, self.vms[vmid])
             self.vms[vmid]._stop(self, server, True, errors=False)
             del self.vms[vmid]
-        if u and len(self.vms) > 0:
+        if u and len(self.vms) > 0 and self.web:
             try:
                 self._update_tokens(server)
             except HydraError as err:
@@ -1476,14 +1485,15 @@ class HydraServer(object):
             stop(self.dns_server)
         except AttributeError:
             pass
-        try:
-            stop(self.web_server)
-        except AttributeError:
-            pass
-        try:
-            stop(self.token_server)
-        except AttributeError:
-            pass
+        if self.web:
+            try:
+                stop(self.web_server)
+            except AttributeError:
+                pass
+            try:
+                stop(self.token_server)
+            except AttributeError:
+                pass
         run(["/usr/bin/systemctl", "stop", "smd-hydra-smb.service"], errors=False)
         for vm in list(self.vms.values()):
             try:
@@ -1638,6 +1648,8 @@ class HydraServer(object):
         return as_error("Unknown or invalid command!")
 
     def _update_tokens(self, server):
+        if not self.web:
+            return
         server.debug(f'HYDRA: Updating VM tokens file "{HYDRA_TOKENS}".')
         t = list()
         for vmid, vm in self.vms.items():

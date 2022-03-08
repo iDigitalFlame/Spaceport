@@ -547,7 +547,7 @@ ARGS = {
             },
         ),
         (
-            "-u2",
+            "--usb2",
             {
                 "dest": "usb_slow",
                 "help": "Use the USB2.0 bus instead of USB3.0 (Default is 3.0)",
@@ -557,9 +557,9 @@ ARGS = {
             "all",
         ),
         (
-            "-c",
+            "-cw",
             {
-                "dest": "connect",
+                "dest": "connect_web",
                 "help": "Connect to the selected VM (using NoVNC)",
                 "required": False,
                 "action": "store_true",
@@ -577,7 +577,7 @@ ARGS = {
             "connect",
         ),
         (
-            "-cs",
+            "-c",
             {
                 "dest": "connect_spice",
                 "help": "Connect to the selected VM (using SPICE)",
