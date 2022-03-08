@@ -1,5 +1,5 @@
 #!/usr/bin/false
-# Update the Mirrorlist Pacman Hook
+# VSCodium Links Removal Pacman Hook
 #
 # System Management Daemon
 #
@@ -21,11 +21,12 @@
 
 [Trigger]
 Type        = Package
-Target      = pacman-mirrorlist
+Target      = vscodium
+Target      = vscodium-bin
+Operation   = Install
 Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/bash -c "reflector --protocol https --latest 50 --number 20 --sort rate --country 'United States' --save /etc/pacman.d/mirrorlist; rm -f /etc/pacman.d/mirrorlist.pacnew 2> /dev/null"
-Depends     = reflector
-Description = Updating pacman-mirrorlist with reflector and removing pacnew..
+Exec        = /usr/bin/bash -c "rm -f /opt/vscodium-bin/VSCodium-linux-x64-*.tar.gz; rm -f /opt/vscodium-bin/vscodium-bin-uri-handler.desktop"
+Description = Removing VSCodium links..

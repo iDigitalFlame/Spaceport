@@ -1,5 +1,5 @@
 #!/usr/bin/false
-# Update the Mirrorlist Pacman Hook
+# Firefox Privacy Pacman Hook
 #
 # System Management Daemon
 #
@@ -21,11 +21,16 @@
 
 [Trigger]
 Type        = Package
-Target      = pacman-mirrorlist
+Target      = librewolf
+Operation   = Install
 Operation   = Upgrade
 
 [Action]
+When        = PreTransaction
+Exec        = /usr/bin/mv /usr/lib/librewolf/librewolf.cfg.pacnew /var/cache/librewolf.cfg.bak
+Description = Backing up old Librewolf config..
+
+[Action]
 When        = PostTransaction
-Exec        = /usr/bin/bash -c "reflector --protocol https --latest 50 --number 20 --sort rate --country 'United States' --save /etc/pacman.d/mirrorlist; rm -f /etc/pacman.d/mirrorlist.pacnew 2> /dev/null"
-Depends     = reflector
-Description = Updating pacman-mirrorlist with reflector and removing pacnew..
+Exec        = /usr/bin/diff /usr/lib/librewolf/librewolf.cfg.pacnew /var/cache/librewolf.cfg.bak
+Description = Diff-ing new and old Librewolf configs..

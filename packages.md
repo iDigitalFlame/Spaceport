@@ -23,6 +23,7 @@ cowsay
 cryptsetup
 cups
 device-mapper
+dfu-util
 dhcpcd
 diffutils
 dnsmasq
@@ -136,7 +137,6 @@ procps-ng
 psmisc
 pulseaudio
 pulseaudio-alsa
-pulseaudio-modules-bt
 python
 python-django
 python-pip

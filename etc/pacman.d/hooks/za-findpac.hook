@@ -27,5 +27,5 @@ Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/bash -c "find /etc -type f -name *.pac* -ls"
+Exec        = /usr/bin/find /etc -type f -name *.pac* -ls
 Description = Looking for *.pac* files..

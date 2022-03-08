@@ -17,6 +17,7 @@ korla-icon-theme
 novnc
 osslsigncode
 powershell-bin
+pulseaudio-modules-bt
 python-websockify
 surf
 ttf-weather-icons
