@@ -802,8 +802,10 @@ class HydraVM(Storage):
         del self._usb[usb]
 
     def _stop_interfaces(self, server):
+        if self._interfaces is None:
+            return
         if not isinstance(self._interfaces, list) or len(self._interfaces) == 0:
-            return None
+            return
         server.debug(f"HYDRA: VM({self.vmid}) Removing interfaces..")
         for i in self._interfaces:
             run(["/usr/bin/ip", "link", "set", i[1], "nomaster"])
@@ -1182,7 +1184,10 @@ class HydraVM(Storage):
             return
         if self._running():
             stop(self._process, True)
-            self._exit = self._process.wait(0.25)
+            try:
+                self._exit = self._process.wait(0.25)
+            except SubprocessError as err:
+                server.warning(f"HYDRA: VM({self.vmid}) Process wait failed!", err=err)
         if isinstance(self._exit, int) and self._exit > 0:
             server.warning(
                 f"HYDRA: VM({self.vmid}) Exit status was non-zero ({self._exit})"
