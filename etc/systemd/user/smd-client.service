@@ -29,7 +29,7 @@ Type        = simple
 ExecStart   = /usr/lib/smd/libexec/smd-client -f -w 1
 KillSignal  = SIGINT
 Environment = "DISPLAY=:0"
-Environment = "XAUTHORITY=%h/.Xauthority"
+Environment = "XAUTHORITY=/run/user/%U/Xauthority"
 
 [Install]
 WantedBy    = default.target

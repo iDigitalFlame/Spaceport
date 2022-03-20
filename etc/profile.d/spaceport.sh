@@ -22,26 +22,47 @@
 umask 027
 
 export PIP_USER=yes
-export LIBGL_DRI3_DISABLE=1 # Use to disable DRI3, remove line if causes issues. (linked to X11 conf file).
-export PYTHONUSERBASE="$HOME/.local/lib/python"
+export ERRFILE="/dev/null"
+# Use to disable DRI3, remove line if causes issues. (linked to X11 conf file).
+export LIBGL_DRI3_DISABLE=1
+export SCREENRC="${HOME}/screen/screenrc"
+export PYTHONUSERBASE="${HOME}/.local/lib/python"
+export GTK_RC_FILES="${HOME}/.config/gtk-1.0/gtkrc"
+export GTK2_RC_FILES="${HOME}/.config/gtk-2.0/gtkrc"
+export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
 
-if [ -d "$HOME/.local/bin" ] && [ $UID -ne 0 ]; then
-    PATH=$PATH:$HOME/.local/bin
+# XDG User items export
+export XDG_DESKTOP_DIR="${HOME}"
+export XDG_CACHE_HOME="${HOME}/.cache"
+export XDG_CONFIG_HOME="${HOME}/.config"
+export XDG_RUNTIME_DIR="/run/user/${UID}"
+export XDG_PICTURES_DIR="${HOME}/Pictures"
+export XDG_DATA_HOME="${HOME}/.local/share"
+export XDG_DOWNLOAD_DIR="${HOME}/Downloads"
+export XDG_DOCUMENTS_DIR="${HOME}/Documents"
+export XDG_STATE_HOME="${HOME}/.local/share"
+export XDG_MUSIC_DIR="${HOME}/Documents/Music"
+export XDG_VIDEOS_DIR="${HOME}/Documents/Videos"
+export XDG_PUBLICSHARE_DIR="${HOME}/Documents/Public"
+export XDG_TEMPLATES_DIR="${HOME}/Documents/Templates"
+
+if [ -d "${HOME}/.local/bin" ] && [ $UID -ne 0 ]; then
+    PATH=$PATH:${HOME}/.local/bin
 fi
 
-if [ ! -d "$PYTHONUSERBASE/bin" ] && [ $UID -ne 0 ]; then
-    mkdir -p "$PYTHONUSERBASE/bin" 2> /dev/null
+if [ ! -d "${PYTHONUSERBASE}/bin" ] && [ $UID -ne 0 ]; then
+    mkdir -p "${PYTHONUSERBASE}/bin" 2> /dev/null
 fi
 
-PATH=/usr/lib/smd/bin:/usr/local/bin:$PATH:$PYTHONUSERBASE/bin
+PATH=/usr/lib/smd/bin:/usr/local/bin:$PATH:${PYTHONUSERBASE}/bin
 export PATH
 
-if [ ! -d "/tmp/.usercache/$USER" ]; then
-    mkdir "/tmp/.usercache/$USER" 2> /dev/null
+if [ ! -d "/tmp/.usercache/${USER}" ]; then
+    mkdir "/tmp/.usercache/${USER}" 2> /dev/null
 fi
 
-if [ -d "$HOME/.surf" ]; then
-    rm -rf "$HOME/.surf/cache" 2> /dev/null
-    mkdir "/tmp/.usercache/$USER/surf" 2> /dev/null
-    ln -s "/tmp/.usercache/$USER/surf" "$HOME/.surf/cache" 2> /dev/null
+if [ -d "${HOME}/.surf" ]; then
+    rm -rf "${HOME}/.surf/cache" 2> /dev/null
+    mkdir "/tmp/.usercache/${USER}/surf" 2> /dev/null
+    ln -s "/tmp/.usercache/${USER}/surf" "${HOME}/.surf/cache" 2> /dev/null
 fi

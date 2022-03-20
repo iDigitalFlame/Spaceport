@@ -26,6 +26,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# Enable Strict Mode
+set -uo pipefail
+IFS=$'\n\t'
+
 for devid in $(xinput list --id-only); do
     devtap=$(xinput list-props $devid | grep "Tapping Enabled (")
     if [ ! -z "$devtap" ]; then

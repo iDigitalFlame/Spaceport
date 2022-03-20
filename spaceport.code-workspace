@@ -81,6 +81,7 @@
             "vncviewer",
             "wifictl",
             "xattrs",
+            "XAUTHORITY",
             "xdev",
             "xhci",
             "xrandr"

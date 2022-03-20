@@ -26,7 +26,7 @@ Description = System Management Client Daemon Exit
 Type        = oneshot
 ExecStart   = /usr/bin/systemctl --user stop smd-client.service
 Environment = "DISPLAY=:0"
-Environment = "XAUTHORITY=%h/.Xauthority"
+Environment = "XAUTHORITY=/run/user/%U/Xauthority"
 
 [Install]
 WantedBy    = exit.target

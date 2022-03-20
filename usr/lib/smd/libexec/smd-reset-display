@@ -27,6 +27,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# Enable Strict Mode
+set -uo pipefail
+IFS=$'\n\t'
+
 primary="eDP-1"
 cmdline="/usr/bin/xrandr --output $primary --primary --mode 1920x1080 --pos 0x0 --rotate normal"
 

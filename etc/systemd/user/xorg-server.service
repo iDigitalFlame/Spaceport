@@ -27,7 +27,7 @@ Type        = simple
 ExecStart   = /usr/bin/zsh --login -c "startx"
 KillSignal  = SIGINT
 Environment = "DISPLAY=:0"
-Environment = "XAUTHORITY=%h/.Xauthority"
+Environment = "XAUTHORITY=/run/user/%U/Xauthority"
 
 [Install]
 WantedBy    = default.target
