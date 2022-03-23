@@ -57,7 +57,7 @@ from lib.constants import (
 
 
 def _powerctl():
-    v = ArgumentParser(description="System Power Manager")
+    v = ArgumentParser(description="System Power Manager", usage="%(prog)s [options]")
     m = _load_modules(v, DIRECTORY_POWERCTL)
     try:
         b = basename(__file__).lower()
@@ -69,6 +69,7 @@ def _powerctl():
             b = b.replace("ctl", EMPTY)
         if b in m:
             p = m[b]
+            p.usage = f"{b} [options]"
     del b
     p.add_argument(
         "-S",
