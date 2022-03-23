@@ -947,8 +947,6 @@ class BackupThread(Thread):
                 != 0
             ):
                 raise OSError(_output_to_error(self._output, self._proc.returncode))
-        except OSError as err:
-            raise err
         finally:
             del k
         remove(f"{self.path}/data.tar.zx")

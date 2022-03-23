@@ -28,7 +28,7 @@ from traceback import format_exc
 from struct import unpack_from, pack
 from lib.structs.storage import Storage
 from json import loads, dumps, JSONDecodeError
-from socket import socket, AF_UNIX, SHUT_RDWR, SOCK_STREAM, timeout as socket_timeout
+from socket import socket, AF_UNIX, SHUT_RDWR, SOCK_STREAM
 from lib.constants import (
     HOOK_ERROR,
     SOCKET_READ_ERRNO,
@@ -114,8 +114,6 @@ def send_message(sock, header, wait=None, timeout=0, payload=None, errors=True):
                     s.settimeout(t)
                 except BlockingIOError:
                     pass
-        except (KeyboardInterrupt, socket_timeout) as err:
-            raise err
         finally:
             del k
             del header

@@ -99,8 +99,6 @@ def _get_class(class_module, class_name):
         return None
     try:
         obj = x()
-    except Exception as err:
-        raise err
     finally:
         del x
     return obj
