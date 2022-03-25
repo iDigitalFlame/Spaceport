@@ -216,8 +216,8 @@ def _output_to_error(output, code):
     for line in output.split(NEWLINE):
         if line.startswith("Removing leading"):
             continue
-        r.append(line)
-    return f'exit ({code}): {"; ".join(r)}'
+        r.append(line.strip())
+    return f'exit ({code}): {";".join(r)}'
 
 
 def _plan_state(server, plan, state):
