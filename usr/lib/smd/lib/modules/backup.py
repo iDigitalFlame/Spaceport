@@ -216,7 +216,10 @@ def _output_to_error(output, code):
     for line in output.split(NEWLINE):
         if line.startswith("Removing leading"):
             continue
-        r.append(line.strip())
+        v = line.strip()
+        if len(v) > 0:
+            r.append(v)
+        del v
     return f'exit ({code}): {";".join(r)}'
 
 
