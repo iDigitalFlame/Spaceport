@@ -37,13 +37,9 @@ file
 filesystem
 findutils
 firefox
-firefox-clearurls
 firefox-decentraleyes
 firefox-extension-bitwarden
-firefox-extension-https-everywhere
-firefox-extension-privacybadger
 firefox-noscript
-firefox-temporary-containers
 firefox-ublock-origin
 freerdp
 galculator
