@@ -496,8 +496,10 @@ class HydraVM(Storage):
             del a
         if not isinstance(x, str) or len(x) == 0 or not exists(x):
             x = HYDRA_EXEC_VM
+        if islink(x):
+            raise HydraError(f'Binary "{x}" cannot be a symlink')
         try:
-            s = stat(x, follow_symlinks=islink(x))
+            s = stat(x, follow_symlinks=False)
         except OSError as err:
             raise HydraError(f'Binary "{x}" could not be verified by stat: {err}')
         if s.st_uid != 0 or s.st_gid != 0:
