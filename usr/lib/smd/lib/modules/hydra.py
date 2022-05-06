@@ -535,8 +535,6 @@ class HydraVM(Storage):
             "-nographic",
             "-no-user-config",
             "-nodefaults",
-            "-D",
-            f"/tmp/{self.vmid}.log",
             "-boot",
             "order=cdn,menu=off,splash-time=0",
             "-rtc",
