@@ -135,7 +135,11 @@ python
 python-django
 python-pip
 python-pyusb
-qemu-headless
+qemu-audio-alsa
+qemu-audio-pa
+qemu-base
+qemu-system-aarch64
+qemu-system-arm
 qemu-user-static
 radare2
 reflector
