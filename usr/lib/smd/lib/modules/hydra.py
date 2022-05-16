@@ -530,8 +530,6 @@ class HydraVM(Storage):
             v,
             "-enable-kvm",
             "-no-hpet",
-            # "-k",
-            # "en-us",
             "-nographic",
             "-no-user-config",
             "-nodefaults",
@@ -558,9 +556,6 @@ class HydraVM(Storage):
                 f'{self.get("cpu.type", "host")},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,'
                 "hv_spinlocks=0x1fff,hv_vapic,hv_time"
             )
-
-            # enforce,hv_ipi,hv_relaxed,hv_reset,hv_runtime,hv_spinlocks=0x1fff,hv_stimer,hv_synic,
-            # hv_time,hv_vapic,hv_vpindex,+kvm_pv_eoi,+kvm_pv_unhalt
         del o
         y = self.get("dev.bus")
         v = self.get("vm.type", "q35")
@@ -599,7 +594,6 @@ class HydraVM(Storage):
             f"vnc=unix:{self._path}.vnc,connections=512,lock-key-sync=on,"
             "password=off,power-control=on,share=ignore",
             "-qmp",
-            # f"unix:{self._path}.sock,server,nowait",
             f"unix:{self._path}.sock,server=on,wait=off",
             "-chardev",
             f"socket,id=qga0,path={self._path}.qga,server=on,wait=off",
@@ -1036,16 +1030,21 @@ class HydraVM(Storage):
                 d["arguments"] = args
             e = bytes(dumps(d), "UTF-8")
             del d
+            server.debug(
+                f'HYDRA: VM({self.vmid}) QEMU command sent: "{e.decode("UTF-8")}"'
+            )
             s.sendall(e)
             o = _response(s.recv(4096))
             if o is None:
                 raise HydraError("Invalid server response")
+            server.debug(f'HYDRA: VM({self.vmid}) QEMU command response: "{o}"')
             del o
             # NOTE(dij): QMP seems to have a high lag and needs to have the
             #            message sent multiple times for it to be received.
             s.sendall(e)
             s.sendall(e)
             o = _response(s.recv(4096))
+            server.debug(f'HYDRA: VM({self.vmid}) QEMU command response: "{o}"')
             if o is None:
                 raise HydraError("Invalid server response")
             del o
@@ -1079,11 +1078,17 @@ class HydraVM(Storage):
                 d["arguments"] = args
             e = bytes(dumps(d), "UTF-8")
             del d
+            server.debug(
+                f'HYDRA: VM({self.vmid}) QEMU-GA command sent: "{e.decode("UTF-8")}"'
+            )
             s.sendall(e)
             # NOTE(dij): Is there a payload for this larger than 4096?
             r = s.recv(4096)
             if not isinstance(r, bytes):
                 raise HydraError("Invalid server response")
+            server.debug(
+                f'HYDRA: VM({self.vmid}) QEMU-GA command response: "{r.decode("UTF-8")}"'
+            )
             try:
                 v = loads(r.decode("UTF-8"))
             except (JSONDecodeError, UnicodeDecodeError):
@@ -1119,7 +1124,7 @@ class HydraVM(Storage):
                 server,
                 "device_add",
                 {
-                    "id": f"usb-dev-{id}",
+                    "id": f"usb-dev-{i}",
                     "bus": b,
                     "driver": "usb-host",
                     "vendorid": f"0x{vendor}",
@@ -1411,7 +1416,7 @@ class HydraServer(object):
             self.web_server = None
             self.token_server = None
             server.debug(
-                "HYDRA: Not enabling Websockify as it's enable in the server config."
+                "HYDRA: Not enabling Websockify as it's disabled in the server config."
             )
         if exists(HYDRA_EXEC_SMB):
             try:
