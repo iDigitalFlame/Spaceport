@@ -37,7 +37,6 @@ file
 filesystem
 findutils
 firefox
-firefox-decentraleyes
 firefox-extension-bitwarden
 firefox-noscript
 firefox-ublock-origin

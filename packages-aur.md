@@ -3,14 +3,10 @@ cnijfilter-mg5300series
 dvm
 evernote-for-linux-bin
 firefox-auto-tab-discard
-firefox-clearurls
 firefox-extension-canvasblocker
 firefox-extension-foxyproxy
 firefox-extension-gnome-keyring-git
-firefox-extension-google-search-link-fix
-firefox-extension-https-everywhere
 firefox-extension-multi-account-containers
-firefox-extension-privacybadger
 firefox-extension-smart-referer
 firefox-extension-user-agent-switcher
 firefox-temporary-containers
