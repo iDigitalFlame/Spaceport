@@ -121,7 +121,7 @@ def read_json(path, errors=True):
         j = loads(d)
     except (JSONDecodeError, OverflowError) as err:
         if errors:
-            raise OSError(err)
+            raise OSError(err) from err
         return None
     finally:
         del d
@@ -244,7 +244,7 @@ def run(command, shell=False, wait=None, errors=True):
             return None
         if isinstance(err, OSError):
             raise err
-        raise OSError(err)
+        raise OSError(err) from err
     finally:
         del cmd
     if time is None and wait is None:

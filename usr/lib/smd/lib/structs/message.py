@@ -62,7 +62,7 @@ def send_message(sock, header, wait=None, timeout=0, payload=None, errors=True):
             try:
                 d = loads(payload)
             except JSONDecodeError as err:
-                raise OSError(f'"payload" must be JSON formatted: {err}')
+                raise OSError(f'"payload" must be JSON formatted: {err}') from err
         else:
             raise OSError('"payload" must be a Dict or JSON string')
     try:
@@ -182,7 +182,7 @@ class Message(Storage):
                     raise OSError("Read payload returned a non-Dict object")
                 del d
             except (UnicodeDecodeError, JSONDecodeError) as err:
-                raise OSError(err)
+                raise OSError(err) from err
             del p
         del n
         del s
@@ -200,7 +200,7 @@ class Message(Storage):
             stream.sendall(p.encode("UTF-8"))
             del p
         except (UnicodeEncodeError, JSONDecodeError) as err:
-            raise OSError(err)
+            raise OSError(err) from err
 
     def is_multicast(self):
         return self._multicast

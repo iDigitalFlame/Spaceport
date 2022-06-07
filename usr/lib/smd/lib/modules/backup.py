@@ -704,7 +704,7 @@ class BackupThread(Thread):
         try:
             self._proc.send_signal(SIGSTOP)
         except (SubprocessError, OSError) as err:
-            raise OSError(f"Failed to pause process: {err}")
+            raise OSError(f"Failed to pause process: {err}") from err
         self._paused = True
 
     def resume(self):
@@ -713,7 +713,7 @@ class BackupThread(Thread):
         try:
             self._proc.send_signal(SIGCONT)
         except (SubprocessError, OSError) as err:
-            raise OSError(f"Failed to continue process: {err}")
+            raise OSError(f"Failed to continue process: {err}") from err
         self._paused = False
 
     def running(self):
@@ -1009,13 +1009,13 @@ class BackupThread(Thread):
                 self._proc.kill()
                 raise OSError("Error waiting for process: TimeoutExpired")
             except (SubprocessError, OSError) as err:
-                raise OSError(f"Error waiting for process: {err}")
+                raise OSError(f"Error waiting for process: {err}") from err
         if self._cancel.is_set():
             return self._proc.returncode
         try:
             self._output = self._proc.stdout.read()
         except (SubprocessError, OSError) as err:
-            raise OSError(f"Error reading process output: {err}")
+            raise OSError(f"Error reading process output: {err}") from err
         return self._proc.returncode
 
     def _execute(self, command, stdin=None, timeout=BACKUP_TIMEOUT):
@@ -1034,7 +1034,9 @@ class BackupThread(Thread):
                 universal_newlines=True,
             )
         except (SubprocessError, OSError) as err:
-            raise OSError(f'Error starting command "{" ".join(command)}": {err}')
+            raise OSError(
+                f'Error starting command "{" ".join(command)}": {err}'
+            ) from err
         del i
         run(
             ["/usr/bin/renice", "-n", "15", "--pid", f"{self._proc.pid}"],
@@ -1047,5 +1049,5 @@ class BackupThread(Thread):
         try:
             self._proc.communicate(stdin, timeout=timeout)
         except (SubprocessError, OSError) as err:
-            raise OSError(f"Error sending STDIN data to command: {err}")
+            raise OSError(f"Error sending STDIN data to command: {err}") from err
         return self._wait(timeout)

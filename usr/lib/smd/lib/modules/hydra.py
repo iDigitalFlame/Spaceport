@@ -177,7 +177,7 @@ def _response(output):
         try:
             d = loads(e)
         except JSONDecodeError as err:
-            raise OSError(f"Invalid server response: {err}")
+            raise OSError(f"Invalid server response: {err}") from err
         if not isinstance(d, dict):
             return None
         if "error" in d:
@@ -284,7 +284,7 @@ def _reserve(server, vmid, memory, remove):
     try:
         p = int(read(HYDRA_RESERVE).replace(NEWLINE, EMPTY), 10)
     except (OSError, ValueError) as err:
-        raise HydraError(f"Error reserving memory: {err}")
+        raise HydraError(f"Error reserving memory: {err}") from err
     if not remove:
         server.debug(f"HYDRA: VM({vmid}) Current page size {p}, adding {b} blocks..")
         p += b
@@ -296,7 +296,7 @@ def _reserve(server, vmid, memory, remove):
     try:
         write(HYDRA_RESERVE, f"{p}\n")
     except OSError as err:
-        raise HydraError(f"Error reserving memory: {err}")
+        raise HydraError(f"Error reserving memory: {err}") from err
     del p
     if not remove:
         server.debug(f"HYDRA: VM({vmid}) Reserved {b} blocks of memory.")
@@ -463,14 +463,14 @@ class HydraVM(Storage):
                 server.debug(f"HYDRA: VM({self.vmid}) Attempting to sleep VM..")
                 self._process.send_signal(SIGSTOP)
             except OSError as err:
-                raise HydraError(f"Could not send sleep signal: {err}")
+                raise HydraError(f"Could not send sleep signal: {err}") from err
             self._sleeping = True
             return server.debug(f"HYDRA: VM({self.vmid}) Was put to sleep!")
         try:
             server.debug(f"HYDRA: VM({self.vmid}) Attempting to wake VM..")
             self._process.send_signal(SIGCONT)
         except OSError as err:
-            raise HydraError(f"Could not send wake signal: {err}")
+            raise HydraError(f"Could not send wake signal: {err}") from err
         self._sleeping = False
         server.debug(f"HYDRA: VM({self.vmid}) Was woken up!")
 
@@ -501,7 +501,9 @@ class HydraVM(Storage):
         try:
             s = stat(x, follow_symlinks=False)
         except OSError as err:
-            raise HydraError(f'Binary "{x}" could not be verified by stat: {err}')
+            raise HydraError(
+                f'Binary "{x}" could not be verified by stat: {err}'
+            ) from err
         if s.st_uid != 0 or s.st_gid != 0:
             raise HydraError(
                 f'Binary "{x}" owner and/or group is not root (Binary must have root UID/GID!)'
@@ -711,7 +713,7 @@ class HydraVM(Storage):
             try:
                 self._start_interfaces(server)
             except OSError as err:
-                raise HydraError(f"Error creating interfaces: {err}")
+                raise HydraError(f"Error creating interfaces: {err}") from err
         try:
             self._process = Popen(c, stdout=PIPE, stderr=PIPE)
         except (OSError, SubprocessError) as err:
@@ -728,7 +730,7 @@ class HydraVM(Storage):
             )
             self._ready = 2
             self._stop(manager, server, True)
-            raise HydraError(f"Failed to start: {err}")
+            raise HydraError(f"Failed to start: {err}") from err
         finally:
             del c
         server.send(
@@ -778,7 +780,7 @@ class HydraVM(Storage):
         try:
             self._command(server, "device_del", {"id": f"usb-dev-{usb}"})
         except (HydraError, OSError) as err:
-            raise HydraError(f'Remove USB failed "{self._usb[usb]}": {err}')
+            raise HydraError(f'Remove USB failed "{self._usb[usb]}": {err}') from err
         server.debug(
             f'HYDRA: VM({self.vmid}) Removed USB device "{self._usb[usb]}" from the VM.'
         )
@@ -876,7 +878,9 @@ class HydraVM(Storage):
             try:
                 s = stat(f, follow_symlinks=False)
             except OSError as err:
-                raise HydraError(f'Error reading drive "{n}" file "{f}": {err}')
+                raise HydraError(
+                    f'Error reading drive "{n}" file "{f}": {err}'
+                ) from err
             u = 0
             g = 0
             try:
@@ -1134,7 +1138,7 @@ class HydraVM(Storage):
         except HydraError as err:
             # NOTE(dij): Ignoring 'OSError' here as upper function
             #            catches it.
-            raise HydraError(f'Could not add USB device "{d}": {err}')
+            raise HydraError(f'Could not add USB device "{d}": {err}') from err
         finally:
             del b
         server.debug(f'HYDRA: VM({self.vmid}) Added USB device "{d}" to the VM.')
@@ -1164,7 +1168,7 @@ class HydraVM(Storage):
                     return self._command(server, "guest-shutdown")
                 return self._command(server, "system_powerdown")
             except (HydraError, OSError) as err:
-                raise HydraError(f"Error triggering shutdown: {err}")
+                raise HydraError(f"Error triggering shutdown: {err}") from err
         if (force is None or not force) and self._running():
             if self._event is not None:
                 raise HydraError("Soft shutdown is already in progress")
@@ -1181,7 +1185,7 @@ class HydraVM(Storage):
                 else:
                     self._command(server, "system_powerdown")
             except (HydraError, OSError) as err:
-                raise HydraError(f"Error triggering shutdown: {err}")
+                raise HydraError(f"Error triggering shutdown: {err}") from err
             finally:
                 self._event = manager.scheduler.enter(
                     timeout, 1, self._stop, argument=(manager, server, True)
@@ -1231,7 +1235,7 @@ class HydraVM(Storage):
             self._stop_interfaces(server)
         except OSError as err:
             if errors:
-                raise HydraError(f"Could not stop interfaces: {err}")
+                raise HydraError(f"Could not stop interfaces: {err}") from err
             server.warning(
                 f"HYDRA: VM({self.vmid}) Error removing interfaces!", err=err
             )
@@ -1286,7 +1290,7 @@ class HydraServer(object):
         try:
             n = IPv4Network(HYDRA_BRIDGE_NETWORK)
         except ValueError as err:
-            raise HydraError(f"Invalid Network settings: {err}")
+            raise HydraError(f"Invalid Network settings: {err}") from err
         if n.num_addresses < 3:
             del n
             raise HydraError(
@@ -1338,7 +1342,7 @@ class HydraServer(object):
             run(["/usr/bin/chmod", "-R", "640", HYDRA_DNS_FILE])
         except OSError as err:
             self.stop(server, True)
-            raise HydraError(f"Error writing DNS config: {err}")
+            raise HydraError(f"Error writing DNS config: {err}") from err
         finally:
             del d
         s = HYDRA_SMB_CONFIG.format(
@@ -1351,7 +1355,7 @@ class HydraServer(object):
             run(["/usr/bin/chmod", "-R", "640", HYDRA_SMB_FILE])
         except OSError as err:
             self.stop(server, True)
-            raise HydraError(f"Error writing Samba config: {err}")
+            raise HydraError(f"Error writing Samba config: {err}") from err
         finally:
             del s
         if exists(HYDRA_EXEC_DNS):
@@ -1369,7 +1373,7 @@ class HydraServer(object):
                 )
             except (OSError, SubprocessError) as err:
                 self.stop(server, True)
-                raise HydraError(f"Error starting DNS server: {err}")
+                raise HydraError(f"Error starting DNS server: {err}") from err
         else:
             server.warning(
                 "HYDRA: Dnsmasq is not installed, VMs will function, but will lack network connectivity!"
@@ -1393,7 +1397,7 @@ class HydraServer(object):
                     )
                 except (OSError, SubprocessError) as err:
                     self.stop(server, True)
-                    raise HydraError(f"Error starting Tokens server: {err}")
+                    raise HydraError(f"Error starting Tokens server: {err}") from err
             else:
                 server.warning(
                     "HYDRA: Websockify is not installed, VMs will function, but will lack local console connectivity!"
@@ -1407,7 +1411,7 @@ class HydraServer(object):
                     )
                 except (OSError, SubprocessError) as err:
                     self.stop(server, True)
-                    raise HydraError(f"Error starting NGINX: {err}")
+                    raise HydraError(f"Error starting NGINX: {err}") from err
             else:
                 server.warning(
                     "HYDRA: NGINX is not installed, VMs will function, but will lack screen connectivity!"
@@ -1427,7 +1431,7 @@ class HydraServer(object):
                 run(["/usr/bin/systemctl", "start", "smd-hydra-smb.service"])
             except OSError as err:
                 self.stop(server, True)
-                raise HydraError(f"Error starting Samba Systemd unit: {err}")
+                raise HydraError(f"Error starting Samba Systemd unit: {err}") from err
         else:
             server.warning(
                 "HYDRA: Samba is not installed, VMs will function, but will lack file sharing!"
@@ -1667,7 +1671,7 @@ class HydraServer(object):
         try:
             write(HYDRA_TOKENS, NEWLINE.join(t), perms=0o640)
         except OSError as err:
-            raise HydraError(f'Error writing tokens "{HYDRA_TOKENS}": {err}')
+            raise HydraError(f'Error writing tokens "{HYDRA_TOKENS}": {err}') from err
         finally:
             del t
 
@@ -1731,7 +1735,9 @@ class HydraServer(object):
             try:
                 vm = HydraVM(path=get_vm(message.path))
             except (HydraError, OSError) as err:
-                raise HydraError(f'Cannot load VM from "{message.path}": {err}!')
+                raise HydraError(
+                    f'Cannot load VM from "{message.path}": {err}!'
+                ) from err
             if vm.vmid in self.vms and self.vms[vm.vmid]._running():
                 server.debug(
                     f'HYDRA: VM({vm.vmid}) Currently running VM was loaded from "{vm.get_file()}", '
@@ -1758,7 +1764,7 @@ class HydraServer(object):
         try:
             i = vm._add_usb(server, vendor, product, slow)
         except (HydraError, OSError) as err:
-            raise HydraError(f'Could not connect USB device "{d}": {err}')
+            raise HydraError(f'Could not connect USB device "{d}": {err}') from err
         self.usbs[d] = f"{vm.vmid}:{i}"
         server.debug(f'HYDRA: VM({vm.vmid}) Added USB device "{d}" to VM as "{i}"!')
         del d

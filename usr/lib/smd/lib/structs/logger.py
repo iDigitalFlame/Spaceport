@@ -30,7 +30,7 @@ from lib.constants import LOG_FORMAT, LOG_NAMES, LOG_LEVELS, LOG_LEVEL
 class Logger(object):
     def __init__(self, name, level="INFO", file=None):
         if not isinstance(level, str) or len(level) == 0:
-            raise OSError('"log_level" must be a non-empty String!')
+            raise OSError('"level" must be a non-empty String!')
         self._log = getLogger(name)
         self._log.setLevel(level.upper())
         f = Formatter(LOG_FORMAT)
@@ -44,7 +44,7 @@ class Logger(object):
                 try:
                     makedirs(d, exist_ok=True)
                 except OSError as err:
-                    raise OSError(f'Error creating log directory "{d}": {err}')
+                    raise OSError(f'Error creating log directory "{d}": {err}') from err
             del d
             try:
                 h = FileHandler(file)
@@ -53,7 +53,7 @@ class Logger(object):
                 self._log.addHandler(h)
                 chmod(file, 0o644, follow_symlinks=True)
             except OSError as err:
-                raise OSError(f'Error creating log file "{file}": {err}')
+                raise OSError(f'Error creating log file "{file}": {err}') from err
             del h
         del f
 
@@ -83,7 +83,9 @@ class Logger(object):
     def debug(self, message, err=None):
         if err is not None:
             return self._log.debug(f"{message} ({str(err)})\n{format_exc(limit=3)}")
-        self._log.debug(message)
+        self._log.debug(
+            message,
+        )
 
     def error(self, message, err=None):
         if err is not None:

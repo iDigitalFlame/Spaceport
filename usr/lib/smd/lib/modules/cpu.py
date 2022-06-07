@@ -103,7 +103,7 @@ def _get_socket(cpu):
             ),
         }
     except (ValueError, OSError) as err:
-        raise OSError(f'Error reading CPU "{cpu}" values: {err}')
+        raise OSError(f'Error reading CPU "{cpu}" values: {err}') from err
 
 
 def _save_cpu(server):
@@ -207,7 +207,7 @@ def get_cpu(selector=None):
         i["turbo_min"] = int(read(CPU_PATH_TURBO_MIN), 10)
         i["turbo_max"] = int(read(CPU_PATH_TURBO_MAX), 10)
     except (ValueError, OSError) as err:
-        raise OSError(f"Error reading CPU Turbo values: {err}")
+        raise OSError(f"Error reading CPU Turbo values: {err}") from err
     return i
 
 
