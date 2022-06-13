@@ -16,6 +16,6 @@ gnome-keyring-query
 korla-icon-theme
 osslsigncode
 powershell-bin
-pulseaudio-modules-bt
 surf
 ttf-weather-icons
+youtube-music-desktop

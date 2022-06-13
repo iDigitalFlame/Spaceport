@@ -198,6 +198,7 @@ chmod 0400 /usr/share/applications/libinput-gestures.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/pcmanfm-desktop-pref.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.gnome.FileRoller.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/youtube-music-desktop.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/net.sourceforge.liferea.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/xfce4-terminal-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.keepassxc.KeePassXC.desktop 2> /dev/null

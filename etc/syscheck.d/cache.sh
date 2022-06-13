@@ -19,6 +19,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+if [ $UID -ne 0 ]; then
+    printf "[!] Only root can do this!\n"
+    exit 1
+fi
+
 rm "/etc/ld.so.cache" 2> /dev/null
 rm "/etc/cups/printers.conf" 2> /dev/null
 rm -f "/etc/NetworkManager/system-connections" 2> /dev/null

@@ -122,13 +122,14 @@ patch
 pciutils
 perl
 picom-ibhagwan-git
+pipewire-alsa
+pipewire-pulse
 pkgconf
 pngcrush
 polkit-gnome
 polybar
 procps-ng
 psmisc
-pulseaudio
 pulseaudio-alsa
 python
 python-django
@@ -181,6 +182,7 @@ vscodium-bin
 vulkan-intel
 wget
 which
+wireplumber
 wmctrl
 xautolock
 xclip
