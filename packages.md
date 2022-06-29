@@ -8,6 +8,7 @@ arduino-avr-core
 autoconf
 automake
 bash
+bat
 bind
 binutils
 bluez
@@ -22,6 +23,7 @@ coreutils
 cowsay
 cryptsetup
 cups
+dbus
 device-mapper
 dhcpcd
 diffutils
