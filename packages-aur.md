@@ -1,4 +1,3 @@
-c-lolcat
 cnijfilter-mg5300series
 dvm
 evernote-for-linux-bin

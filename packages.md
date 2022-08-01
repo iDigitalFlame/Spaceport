@@ -1,6 +1,7 @@
 alsa-tools
 alsa-utils
 arandr
+archlinux-keyring
 archlinuxcn-keyring
 archstrike-keyring
 arduino
@@ -15,6 +16,7 @@ bluez
 bluez-utils
 btrfs-progs
 bzip2
+c-lolcat
 chaotic-keyring
 chaotic-mirrorlist
 cifs-utils
