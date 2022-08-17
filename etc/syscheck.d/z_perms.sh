@@ -173,6 +173,7 @@ chmod 0400 /usr/share/applications/gtk-lshw.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/hdspconf.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/chromium.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/geisview.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/ticktick.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/librewolf.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/ristretto.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/echomixer.desktop 2> /dev/null

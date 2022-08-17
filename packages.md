@@ -81,7 +81,6 @@ libgnome-keyring
 libheif
 librewolf
 libva-intel-driver
-liferea
 linux-firmware
 linux-lts
 linux-zen
@@ -133,6 +132,7 @@ pngcrush
 polkit-gnome
 polybar
 procps-ng
+proxychains-ng
 psmisc
 pulseaudio-alsa
 python

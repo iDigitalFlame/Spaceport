@@ -1,8 +1,6 @@
 cnijfilter-mg5300series
 dvm
 evernote-for-linux-bin
-firefox-auto-tab-discard
-firefox-extension-canvasblocker
 firefox-extension-foxyproxy
 firefox-extension-gnome-keyring-git
 firefox-extension-multi-account-containers
@@ -16,5 +14,6 @@ korla-icon-theme
 osslsigncode
 powershell-bin
 surf
+ticktick
 ttf-weather-icons
 youtube-music-desktop
