@@ -24,22 +24,19 @@ set -uo pipefail
 IFS=$'\n\t'
 
 source "/etc/sysconfig.conf" 2> /dev/null
-if [ $? -ne 0 ]; then
-    printf "Could not locate or source \"/etc/sysconfig.conf\"!\n"
-    exit 1
-fi
 if [ -z "$SYSCONFIG" ]; then
-    printf "Could not find System Configuration directory!\n"
+    echo "Could not find the System Configuration directory!"
     exit 1
 fi
 if ! [ -d "$SYSCONFIG" ]; then
-    printf "System Configuration directory \"$SYSCONFIG\" does not exist!\n"
+    echo "System Configuration directory \"$SYSCONFIG\" does not exist!"
     exit 1
 fi
+
 SYSCONFIG=${SYSCONFIG%/}
 
 if [ $UID -ne 0 ]; then
-    printf "Only root can do this!\n"
+    echo "Only root can do this!"
     exit 1
 fi
 
@@ -49,8 +46,8 @@ cp /etc/fstab "${SYSCONFIG}/etc/fstab.nlk"
 pacman -Qeqn 1> "${SYSCONFIG}/packages.md"
 pacman -Qeqm 1> "${SYSCONFIG}/packages-aur.md"
 systemctl list-unit-files | grep 'masked'| awk '{print $1}' 1> "${SYSCONFIG}/masked.md"
-systemctl list-unit-files | grep 'enabled' | grep -v 'enabled-runtime' | awk '{print $1}' 1> "${SYSCONFIG}/units.md"
 systemctl list-units | grep '@.' | grep -vE 'dead|exited'| awk '{print $1}' | grep -vE 'getty|user|blockdev' | grep '@.' 1> "${SYSCONFIG}/indirect.md"
+systemctl list-unit-files | awk '{print $1" "$2}' | grep 'enabled' | grep -v '.target' | grep -v 'enabled-runtime' | awk '{print $1}' 1> "${SYSCONFIG}/units.md"
 
 if [ -d "/etc/syscheck.d" ]; then
     for s in $(ls /etc/syscheck.d/*.sh); do
@@ -58,7 +55,7 @@ if [ -d "/etc/syscheck.d" ]; then
     done
 fi
 
-printf "Broken Links Found:\n"
+echo "Broken Links Found:"
 find / -xtype l -xdev 2> /dev/null | grep -v "/proc" | grep -v "/tmp" | grep -v "/run"
-printf "Done!\n"
+echo "Done!"
 exit 0

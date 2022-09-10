@@ -22,7 +22,7 @@
 DEBUG=0
 
 if [ $# -ne 2 ]; then
-    printf "relink <config source> <config target> [debug]\n"
+    echo "relink <config source> <config target> [debug]"
     exit 1
 fi
 
@@ -38,7 +38,7 @@ list() {
     ft=${2%/}
     for file in $(find "$fc" -type f -print); do
         fp=$(printf "$file" | awk "{gsub(\"${fc}\", \"\"); print \$1}")
-        if ! [ -z $(echo $fp | grep -vE '\.(nlk|nolink)$|^\/\.git(\/|ignore$|config$)|^\/(LICENSE|license|\.vscode)$|^\/[a-zA-Z0-9_.-]+\.(md|vscode|MD|code-workspace)$') ]; then
+        if ! [ -z $(echo $fp | grep -vE '.(nlk|nolink)$|^/.git(|ignore$|config$)|^/(LICENSE|license|.vscode)$|^/[a-zA-Z0-9_.-]+.(md|vscode|MD|code-workspace)$') ]; then
             check "$ft$fp" "$fc$fp"
         fi
     done
@@ -52,7 +52,7 @@ link() {
     rm -f "$1" 2> /dev/null
     fd=$(dirname "$1")
     if ! [ -d "$fd" ]; then
-        printf "Making $fd\n"
+        echo "Making \"$fd\".."
         mkdir -p "$fd" 2> /dev/null
         if [ $? -ne 0 ]; then
             panic "Cannot create directory \"$fd\"!"
@@ -67,7 +67,7 @@ link() {
     if [ $? -ne 0 ]; then
         panic "Could not link \"$1\" to \"$2\"!"
     fi
-    printf "[+] Relinked \"$1\" to \"$2\".\n"
+    echo "[+] Relinked \"$1\" to \"$2\"."
     return 0
 }
 
@@ -76,19 +76,19 @@ check() {
         return 1
     fi
     if [ $DEBUG -eq 1 ]; then
-        printf "[+] Checking \"$1\".. \n"
+        echo "[+] Checking \"$1\".."
     fi
     if ! [ -L "$1" ]; then
-        printf "File \"$1\" is invalid, updating!\n"
+        echo "File \"$1\" is invalid, updating!"
         link "$1" "$2"
     else
         fl=$(ls -al "$1" | awk '{print $11}')
         if ! [[ "$fl" == "$2" ]]; then
-            printf "File \"$1\" is invalid, updating!\n"
+            echo "File \"$1\" is invalid, updating!"
             link "$1" "$2"
         else
             if [ $DEBUG -eq 1 ]; then
-                printf "File \"$1\" is valid!\n"
+                echo "File \"$1\" is valid!"
             fi
         fi
     fi
@@ -96,7 +96,7 @@ check() {
 }
 
 panic() {
-    printf "[!] $1\n"
+    echo "[!] $1"
     exit 1
 }
 

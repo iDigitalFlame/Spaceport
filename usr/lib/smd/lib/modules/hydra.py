@@ -531,7 +531,6 @@ class HydraVM(Storage):
             "-smbios",
             v,
             "-enable-kvm",
-            "-no-hpet",
             "-nographic",
             "-no-user-config",
             "-nodefaults",
@@ -540,6 +539,9 @@ class HydraVM(Storage):
             "-rtc",
             "base=localtime,clock=host",
         ]
+        q = x.endswith("-x86_64")
+        if q:
+            c.append("-no-hpet")
         del v
         del x
         f = self.get("bios.file")
@@ -548,17 +550,13 @@ class HydraVM(Storage):
         del f
         c.append("-cpu")
         o = self.get("cpu.options", list())
+        j = self.get("cpu.type", "host")
+        if q:
+            j += ",kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,hv_spinlocks=0x1fff,hv_vapic,hv_time"
         if isinstance(o, list) and len(o) > 0:
-            c.append(
-                f'{self.get("cpu.type", "host")},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,'
-                f'hv_spinlocks=0x1fff,hv_vapic,hv_time,{",".join(o)}'
-            )
-        else:
-            c.append(
-                f'{self.get("cpu.type", "host")},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,'
-                "hv_spinlocks=0x1fff,hv_vapic,hv_time"
-            )
-        del o
+            j += f',{",".join(o)}'
+        c.append(j)
+        del o, j
         y = self.get("dev.bus")
         v = self.get("vm.type", "q35")
         if not isinstance(y, str) or len(y) == 0:
@@ -580,7 +578,7 @@ class HydraVM(Storage):
         n = self.get("cpu.sockets", 1)
         c += [
             "-machine",
-            f"type={v},mem-merge=on,dump-guest-core=off,vmport=on,nvdimm=off,"
+            f"type={v},mem-merge=on,dump-guest-core=off,nvdimm=off,{'vmport=on,' if q else ''}"
             f'hmat=off,suppress-vmdesc=on,accel={self.get("vm.accel", "kvm")}',
             "-smp",
             f"{n},sockets={n},cores=1,maxcpus={n}",
@@ -618,7 +616,7 @@ class HydraVM(Storage):
             "-device",
             f"pci-bridge,id=pci-bridge2,chassis_nr=2,bus={y}.0,addr=0x10",
         ]
-        del n
+        del n, q
         if self.get("vm.spice", True):
             c += [
                 "-spice",

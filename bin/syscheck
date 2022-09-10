@@ -26,7 +26,7 @@ pause() {
 }
 
 if [ $UID -ne 0 ]; then
-    printf "Only root can do this!\n"
+    echo "Only root can do this!"
     exit 1
 fi
 
@@ -45,7 +45,7 @@ pause
 mount
 pause
 pacman -Syy 1> /dev/null
-printf "Orphaned Packages Found:\n"
+echo "Orphaned Packages Found:"
 pacman -Qtdq
-printf "Done!\n"
+echo "Done!"
 exit 0

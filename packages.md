@@ -56,6 +56,7 @@ git
 glibc
 gnome-keyring
 go
+goland
 grc
 grep
 gtk-engines
@@ -153,11 +154,13 @@ rsync
 samba
 sbsigntools
 screen
+seahorse
 sed
 shadow
 skippy-xd-git
 slack-desktop
 spice-gtk
+squashfs-tools
 squid
 sudo
 swig
