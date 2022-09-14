@@ -34,7 +34,7 @@ IFS=$'\n\t'
 primary="eDP-1"
 cmdline="/usr/bin/xrandr --output $primary --primary --mode 1920x1080 --pos 0x0 --rotate normal"
 
-for mon in $(/usr/bin/xrandr | grep ' connected' | grep -v '0\+0' | awk '{print $1}' | grep -v 'VIRTUAL' | grep -v $primary); do
+for mon in $(/usr/bin/xrandr | grep ' connected' | grep -v '0+0' | awk '{print $1}' | grep -v 'VIRTUAL' | grep -v $primary); do
     cmdline="$cmdline --output $mon --off "
 done
 

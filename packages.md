@@ -139,7 +139,9 @@ pulseaudio-alsa
 python
 python-django
 python-pip
+python-pyparsing
 python-pyusb
+python-tomli
 qemu-audio-alsa
 qemu-audio-pa
 qemu-base
