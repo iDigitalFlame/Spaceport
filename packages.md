@@ -141,6 +141,8 @@ python-django
 python-pip
 python-pyparsing
 python-pyusb
+python-requests
+python-six
 python-tomli
 qemu-audio-alsa
 qemu-audio-pa
