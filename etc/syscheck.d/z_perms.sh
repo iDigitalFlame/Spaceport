@@ -153,6 +153,7 @@ chmod 0400 /usr/share/applications/bssh.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/bvnc.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/xdvi.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/htop.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/rofi.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/kitty.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/qv4l2.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/fluid.desktop 2> /dev/null
@@ -197,6 +198,7 @@ chmod 0400 /usr/share/applications/thunar-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/libinput-gestures.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/rofi-theme-selector.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/pcmanfm-desktop-pref.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.gnome.FileRoller.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/youtube-music-desktop.desktop 2> /dev/null
