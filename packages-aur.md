@@ -11,6 +11,7 @@ flatery-icon-theme-git
 font-bh-ttf
 gnome-keyring-query
 korla-icon-theme
+notesnook-bin
 osslsigncode
 powershell-bin
 surf

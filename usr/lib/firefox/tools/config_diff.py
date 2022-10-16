@@ -59,7 +59,7 @@ def output(p, file):
         if n is not None and n != k.split(".")[0].lower():
             print("", file=file)
         print("defaultPref(", file=file, end="")
-        print(('"' + k + '"').ljust(84), file=file, end="")
+        print(('"' + k + '"').ljust(88), file=file, end="")
         print(f", {v[2]});", file=file)
         n = k.split(".")[0].lower()
     print("", file=file)
@@ -70,7 +70,7 @@ def output(p, file):
         if n is not None and n != k.split(".")[0].lower():
             print("", file=file)
         print("lockPref(", file=file, end="")
-        print(('"' + k + '"').ljust(87), file=file, end="")
+        print(('"' + k + '"').ljust(91), file=file, end="")
         print(f", {v[2]});", file=file)
         n = k.split(".")[0].lower()
     del n

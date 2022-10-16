@@ -86,6 +86,7 @@ linux-firmware
 linux-lts
 linux-zen
 logrotate
+lsd
 lsof
 lvm2
 maim
@@ -158,13 +159,11 @@ rsync
 samba
 sbsigntools
 screen
-seahorse
 sed
 shadow
 skippy-xd-git
 slack-desktop
 spice-gtk
-squashfs-tools
 squid
 sudo
 swig
