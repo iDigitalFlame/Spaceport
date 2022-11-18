@@ -53,6 +53,7 @@ gdb
 gettext
 ghostscript
 git
+git-lfs
 glibc
 gnome-keyring
 go
@@ -102,14 +103,13 @@ mingw-w64-winpthreads
 mupdf
 nano
 nerd-fonts-fira-code
-nerd-fonts-hack
 net-tools
 network-manager-applet
 networkmanager
 networkmanager-openvpn
-nextcloud-client
 nm-connection-editor
 nmap
+notesnook-bin
 noto-fonts-emoji
 ntfs-3g
 onboard
@@ -136,7 +136,6 @@ polybar
 procps-ng
 proxychains-ng
 psmisc
-pulseaudio-alsa
 python
 python-django
 python-pip
@@ -176,6 +175,7 @@ texinfo
 thunar
 tigervnc
 touchegg
+ttf-hack-nerd
 ttf-roboto
 tumbler
 uboot-tools

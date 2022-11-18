@@ -179,6 +179,7 @@ chmod 0400 /usr/share/applications/librewolf.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/ristretto.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/echomixer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/hdspmixer.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/notesnook.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/cmake-gui.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/vncviewer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/nextcloud.desktop 2> /dev/null
