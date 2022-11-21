@@ -411,7 +411,7 @@ if [ $? -ne 0 ] || [ -z "$keydata" ]; then
     exit 1
 fi
 
-echo "Decrypting, please wait..."
+echo "Decrypting, please wait.."
 printf "$keydata" | openssl aes-256-cbc -a -d -pass stdin -pbkdf2 -in data.ebf -out data.tar.zx
 if [ $? -ne 0 ] || [ ! -f "data.tar.zx" ]; then
     echo "Decryption of backup file failed!"
@@ -430,7 +430,7 @@ if [[ "$hash_sum" != "$hash_orig" ]]; then
     exit 1
 fi
 
-echo "Extracting and dumping into \"$output\"..."
+echo "Extracting and dumping into \"$output\".."
 mkdir "$output" 12> /dev/null
 
 tar -xf data.tar.zx --zstd -C "$output"
