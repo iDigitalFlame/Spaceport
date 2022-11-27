@@ -24,7 +24,7 @@ Cmnd_Alias  SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /
 Defaults    env_keep += "LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET"
 Defaults    env_keep += "XDG_SESSION_COOKIE"
 Defaults    env_keep += "HOME"
-Defaults    env_keep = "LESSSECURE=1"
+Defaults    env_keep += "LESSSECURE=1"
 Defaults    tty_tickets
 Defaults    log_allowed
 Defaults    log_denied
