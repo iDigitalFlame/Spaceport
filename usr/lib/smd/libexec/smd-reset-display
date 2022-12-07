@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-reset-display
 #  Resets the display to only the built-in monitor (for locking/unlocking purposes).
 #
@@ -28,8 +28,7 @@
 #
 
 # Enable Strict Mode
-set -uo pipefail
-IFS=$'\n\t'
+set -u
 
 primary="eDP-1"
 cmdline="/usr/bin/xrandr --output $primary --primary --mode 1920x1080 --pos 0x0 --rotate normal"

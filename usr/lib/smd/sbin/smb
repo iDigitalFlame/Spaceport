@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # SMB Connect Sudo Wrapper
 #
 # System Management Daemon
@@ -19,7 +19,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ $UID -ne 0 ]; then
+if ! [ "$USER" = "root" ]; then
     printf "Only root can do this!\n"
     exit 1
 fi
@@ -29,16 +29,16 @@ if [ $# -ne 2 ]; then
 fi
 
 input=$(cat -)
-if [[ -z $input ]]; then
+if [ -z "$input" ]; then
     printf "Invalid input!\n"
     exit 1
 fi
 
-user=$(echo $input | awk -F'\b' '{print $1}')
-domain=$(echo $input | awk -F'\b' '{print $2}')
-password=$(echo $input | awk -F'\b' '{print $3}')
-username=$(echo $input | awk -F'\b' '{print $4}')
-if [[ -z $user ]] || [[ -z $password ]] || [[ -z $username ]]; then
+user=$(echo "$input" | awk -F'\b' '{print $1}')
+domain=$(echo "$input" | awk -F'\b' '{print $2}')
+password=$(echo "$input" | awk -F'\b' '{print $3}')
+username=$(echo "$input" | awk -F'\b' '{print $4}')
+if [ -z "$user" ] || [ -z "$password" ] || [ -z "$username" ]; then
     printf "Invalid input!\n"
     exit 1
 fi
@@ -48,7 +48,7 @@ if [ ! -d "$2" ]; then
 fi
 
 export PASSWD=$password
-mount -t cifs "//$1" "$2" -o "vers=3.11,seal,resilienthandles,nosharesock,sec=ntlmsspi,user=${user},domain=${domain},workgroup=$(echo $domain | awk -F'.' '{print toupper($1)}'),uid=${username},gid=${username},file_mode=0750,dir_mode=0750"
+mount -t cifs "//$1" "$2" -o "vers=3.11,seal,resilienthandles,nosharesock,sec=ntlmsspi,user=${user},domain=${domain},workgroup=$(echo "$domain" | awk -F'.' '{print toupper($1)}'),uid=${username},gid=${username},file_mode=0750,dir_mode=0750"
 result=$?
 
 export PASSWD=""

@@ -1,7 +1,7 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Build the DarkSky icon theme
 
-if [ $UID -ne 0 ]; then
+if ! [ "$USER" = "root" ]; then
     printf "[!] Only root can do this!\n"
     exit 1
 fi

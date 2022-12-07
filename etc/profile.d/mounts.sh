@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Volumes User Folder Mounts
 #
 # System Management Daemon

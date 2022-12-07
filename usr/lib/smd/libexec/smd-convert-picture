@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-convert-picture
 #  Converts a picture given in the arguments to a cache file to be used for the lockscreen.
 #  Resizes and applies the gradient for the lockscreen.
@@ -29,8 +29,7 @@
 #
 
 # Enable Strict Mode
-set -uo pipefail
-IFS=$'\n\t'
+set -u
 
 if [ $# -ne 3 ]; then
     printf "$0 <resolution> <source> <destination>\n"
@@ -48,12 +47,12 @@ if [ -e "${HOME}/.config/user.ico" ]; then
     -draw "ellipse $((hx)),$((hy)) 100,100 0,360" \
     -draw "image Over 0,0,150,150 user" \
     -fill "rgba(0,0,0,0.5)" -strokewidth 0 \
-    -draw "rectangle $(($hx-55)),$(($hy+115)) $(($hx+55)),$(($hy+160))" "$2" "$3"
+    -draw "rectangle $((hx-55)),$((hy+115)) $((hx+55)),$((hy+160))" "$2" "$3"
 else
     convert -quality 100 -resize "$1!" -gravity center \
     -fill "rgb(25,25,25)" \
     -draw "ellipse $((hx)),$((hy)) 100,100 0,360" \
     -fill "rgba(0,0,0,0.5)" -strokewidth 0 \
-    -draw "rectangle $(($hx-55)),$(($hy+115)) $(($hx+55)),$(($hy+160))" "$2" "$3"
+    -draw "rectangle $((hx-55)),$((hy+115)) $((hx+55)),$((hy+160))" "$2" "$3"
 fi
 exit 0

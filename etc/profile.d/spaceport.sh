@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # User Profile Defaults Script
 #
 # System Management Daemon
@@ -35,22 +35,22 @@ export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
 export XDG_DESKTOP_DIR="${HOME}"
 export XDG_CACHE_HOME="${HOME}/.cache"
 export XDG_CONFIG_HOME="${HOME}/.config"
-export XDG_RUNTIME_DIR="/run/user/${UID}"
 export XDG_PICTURES_DIR="${HOME}/Pictures"
 export XDG_DATA_HOME="${HOME}/.local/share"
 export XDG_DOWNLOAD_DIR="${HOME}/Downloads"
 export XDG_DOCUMENTS_DIR="${HOME}/Documents"
 export XDG_STATE_HOME="${HOME}/.local/share"
 export XDG_MUSIC_DIR="${HOME}/Documents/Music"
+export XDG_RUNTIME_DIR="/run/user/$(id --user)"
 export XDG_VIDEOS_DIR="${HOME}/Documents/Videos"
 export XDG_PUBLICSHARE_DIR="${HOME}/Documents/Public"
 export XDG_TEMPLATES_DIR="${HOME}/Documents/Templates"
 
-if [ -d "${HOME}/.local/bin" ] && [ $UID -ne 0 ]; then
+if [ -d "${HOME}/.local/bin" ] && [ ! "$USER" = "root" ]; then
     PATH=$PATH:${HOME}/.local/bin
 fi
 
-if [ ! -d "${PYTHONUSERBASE}/bin" ] && [ $UID -ne 0 ]; then
+if [ ! -d "${PYTHONUSERBASE}/bin" ] && [ ! "$USER" = "root" ]; then
     mkdir -p "${PYTHONUSERBASE}/bin" 2> /dev/null
 fi
 

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Relinks files to their respective directories.
 #
 # System Management Daemon
@@ -57,7 +57,7 @@ link() {
         if [ $? -ne 0 ]; then
             panic "Cannot create directory \"$fd\"!"
         fi
-        if [ $UID -eq 0 ]; then
+        if [ "$USER" = "root" ]; then
             chmod 555 "$fd"
         else
             chmod 755 "$fd"
@@ -83,7 +83,7 @@ check() {
         link "$1" "$2"
     else
         fl=$(ls -al "$1" | awk '{print $11}')
-        if ! [[ "$fl" == "$2" ]]; then
+        if ! [ "$fl" = "$2" ]; then
             echo "File \"$1\" is invalid, updating!"
             link "$1" "$2"
         else

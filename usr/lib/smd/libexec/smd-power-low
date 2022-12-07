@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-power-low
 #  Script used by udev to inform the System Management Daemon that the battery power is low or near empty.
 #  Should only be called by udev. Exit code is always 0.

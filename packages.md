@@ -25,6 +25,7 @@ coreutils
 cowsay
 cryptsetup
 cups
+dash
 dbus
 device-mapper
 dhcpcd

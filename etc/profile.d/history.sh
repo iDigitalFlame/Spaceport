@@ -1,6 +1,6 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 
-if [ $UID -eq 0 ]; then
+if [ "$USER" = "root" ]; then
     HISTSIZE=500
     HISTFILESIZE=0
     HISTFILE=/dev/null

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-auto-display
 #  Attempts to determine the monitors connected and will try to use xrandr to auto-add them.
 #
@@ -24,8 +24,7 @@
 #
 
 # Enable Strict Mode
-set -uo pipefail
-IFS=$'\n\t'
+set -u
 
 primary="eDP-1"
 connected=$(/usr/bin/xrandr | grep -E ' connected' | awk '{print $1}' | grep -v $primary)
@@ -36,7 +35,7 @@ if [ -z "$connected" ] || [ -z "$size" ]; then
 fi
 
 index=0
-width=$(echo $size | awk -F'x' '{print $1}')
+width=$(echo "$size" | awk -F'x' '{print $1}')
 command="/usr/bin/xrandr --output $primary --mode $size --pos 0x0 --rotate normal"
 
 # Prevent CRC failed, turn off all monitors first (except $primary).
@@ -48,8 +47,8 @@ eval "$command"
 # Reset command and set monitors.
 command="/usr/bin/xrandr --output $primary --mode $size --pos 0x0 --rotate normal"
 for monitor in $connected; do
-    command="$command --output $monitor --mode $size --pos $(($width*$index))x0 --rotate normal"
-    index=$(($index + 1))
+    command="$command --output $monitor --mode $size --pos $((width*index))x0 --rotate normal"
+    index=$((index + 1))
 
     # XRANDR will sometimes fail on mutliple display add, so increment each addition instead.
     eval "$command"

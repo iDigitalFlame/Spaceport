@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Cache Links Configuration
 #
 # System Management Daemon
@@ -19,7 +19,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ $UID -ne 0 ]; then
+if ! [ "$USER" = "root" ]; then
     printf "[!] Only root can do this!\n"
     exit 1
 fi

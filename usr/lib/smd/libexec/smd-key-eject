@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-key-eject
 #  Script used by udev to inform the System Management Daemon that a security key was removed.
 #  Should only be called by udev. Exit code is always 0.

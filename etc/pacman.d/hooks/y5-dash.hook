@@ -1,7 +1,5 @@
-#!/usr/bin/dash
-# smd-suspend-post
-#  Script used by systemd after the system resumes from suspend and starts the post-suspend process.
-#  Should only be called by systemd. Exit code is always 0.
+#!/usr/bin/false
+# Librewolf Config Pacman Hook
 #
 # System Management Daemon
 #
@@ -21,6 +19,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/usr/bin/xset -display :0 dpms force on 2> /dev/null
-/usr/lib/smd/libexec/smd-message -u suspend -p '{"type": 1}'
-exit 0
+[Trigger]
+Type        = Package
+Target      = bash
+Operation   = Install
+Operation   = Upgrade
+
+[Action]
+When        = PostTransaction
+Exec        = /usr/bin/ln -sfT "/usr/bin/dash" "/usr/bin/sh"
+Depends     = dash
+Description = Re-pointing /bin/sh symlink to dash..

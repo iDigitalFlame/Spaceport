@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-enable-tap
 #  Uses grep and for loops to enable Tap to Click on all eligible input devices.
 #
@@ -27,18 +27,17 @@
 #
 
 # Enable Strict Mode
-set -uo pipefail
-IFS=$'\n\t'
+set -u
 
 for devid in $(xinput list --id-only); do
-    devtap=$(xinput list-props $devid | grep "Tapping Enabled (")
-    if [ ! -z "$devtap" ]; then
-        devtid=$(echo $devtap | awk '{print $4}' | sed -e 's/(//g' | sed -e 's/)//g' | sed -e 's/://g')
+    devtap=$(xinput list-props "$devid" | grep "Tapping Enabled (")
+    if [ -n "$devtap" ]; then
+        devtid=$(echo "$devtap" | awk '{print $4}' | sed -e 's/(//g' | sed -e 's/)//g' | sed -e 's/://g')
         xinput set-prop "$devid" "$devtid" 1
     fi
-    devtap=$(xinput list-props $devid | grep "Tapping Drag Enabled (")
-    if [ ! -z "$devtap" ]; then
-        devtid=$(echo $devtap | awk '{print $5}' | sed -e 's/(//g' | sed -e 's/)//g' | sed -e 's/://g')
+    devtap=$(xinput list-props "$devid" | grep "Tapping Drag Enabled (")
+    if [ -n "$devtap" ]; then
+        devtid=$(echo "$devtap" | awk '{print $5}' | sed -e 's/(//g' | sed -e 's/)//g' | sed -e 's/://g')
         xinput set-prop "$devid" "$devtid" 0
     fi
 done

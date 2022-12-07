@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # IPTables Pacman Wrapper
 #
 # System Management Daemon
@@ -27,7 +27,7 @@ if [ $is_install -eq 0 ]; then
 fi
 
 /usr/bin/sg firewall-web -c "/usr/bin/pacman $args"; ret=$?
-if [ $is_install -eq 0 ] && [ -z $SYSBATCH ]; then
+if [ $is_install -eq 0 ] && [ -z "$SYSBATCH" ]; then
     /usr/bin/mount -ro remount,ro / 2> /dev/null || /usr/bin/mount -Rro remount,ro /
 fi
 

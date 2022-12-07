@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-locker
 #  Script used by xautolock to attempt to lock the system screen.
 #

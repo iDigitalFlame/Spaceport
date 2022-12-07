@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Hook xrandr to send updates to SMD based on video changes
 #
 # System Management Daemon

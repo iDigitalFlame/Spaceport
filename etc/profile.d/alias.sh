@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Default Alias Settings
 #
 # System Management Daemon

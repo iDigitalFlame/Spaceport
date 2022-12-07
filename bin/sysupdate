@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Attempts to update the system and relink any broken configuration links.
 #
 # System Management Daemon
@@ -19,7 +19,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ $UID -ne 0 ]; then
+if ! [ "$USER" = "root" ]; then
     echo "Only root can do this!"
     exit 1
 fi

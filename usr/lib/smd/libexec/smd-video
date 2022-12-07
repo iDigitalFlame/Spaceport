@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-video
 #  Script used by udev to inform the System Management Daemon that a video adapter was attached/detached.
 #  Should only be called by udev. Exit code is always 0.

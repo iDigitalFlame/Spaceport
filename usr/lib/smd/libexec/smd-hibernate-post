@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-hibernate-post
 #  Script used by systemd after the system resumes from hibernate and starts the post-hibernate process.
 #  Should only be called by systemd. Exit code is always 0.

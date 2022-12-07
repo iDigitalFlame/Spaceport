@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Preforms basic system information display checks.
 #
 # System Management Daemon
@@ -21,11 +21,11 @@
 
 pause() {
     printf "Press ENTER to continue.."
-    read -s
-    printf "\n"
+    read unused
+    echo
 }
 
-if [ $UID -ne 0 ]; then
+if ! [ "$USER" = "root" ]; then
     echo "Only root can do this!"
     exit 1
 fi

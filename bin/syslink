@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # Wrapper and permissions fix-er for "relink".
 #
 # System Management Daemon
@@ -20,10 +20,9 @@
 #
 
 # Enable Strict Mode
-set -uo pipefail
-IFS=$'\n\t'
+set -u
 
-source "/etc/sysconfig.conf" 2> /dev/null
+. "/etc/sysconfig.conf" 2> /dev/null
 if [ -z "$SYSCONFIG" ]; then
     echo "Could not find the System Configuration directory!"
     exit 1
@@ -35,7 +34,7 @@ fi
 
 SYSCONFIG=${SYSCONFIG%/}
 
-if [ $UID -ne 0 ]; then
+if ! [ "$USER" = "root" ]; then
     echo "Only root can do this!"
     exit 1
 fi
@@ -51,7 +50,7 @@ systemctl list-unit-files | awk '{print $1" "$2}' | grep 'enabled' | grep -v '.t
 
 if [ -d "/etc/syscheck.d" ]; then
     for s in $(ls /etc/syscheck.d/*.sh); do
-        source "$s"
+        . "$s"
     done
 fi
 

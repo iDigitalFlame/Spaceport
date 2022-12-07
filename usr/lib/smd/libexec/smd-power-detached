@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-power-detached
 #  Script used by udev to inform the System Management Daemon that the power adapter was removed.
 #  Should only be called by udev. Exit code is always 0.

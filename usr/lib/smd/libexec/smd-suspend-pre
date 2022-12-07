@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/dash
 # smd-hibernate-pre
 #  Script used by systemd before the system hibernates and starts the pre-suspend process.
 #  Should only be called by systemd. Exit code is always 0.
