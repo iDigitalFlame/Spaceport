@@ -163,7 +163,6 @@ chmod 0400 /usr/share/applications/sudoku.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/blocks.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/lstopo.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/codium.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/discord.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/arduino.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/qvidcap.desktop 2> /dev/null
@@ -202,8 +201,8 @@ chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/rofi-theme-selector.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/pcmanfm-desktop-pref.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.gnome.FileRoller.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/org.telegram.desktop.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/youtube-music-desktop.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/net.sourceforge.liferea.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/betterdiscord-installer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/xfce4-terminal-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.keepassxc.KeePassXC.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/com.nextcloud.desktopclient.nextcloud.desktop 2> /dev/null

@@ -96,6 +96,7 @@ make
 man-db
 man-pages
 mariadb-clients
+mesa
 mingw-w64-binutils
 mingw-w64-crt
 mingw-w64-gcc
@@ -103,7 +104,6 @@ mingw-w64-headers
 mingw-w64-winpthreads
 mupdf
 nano
-nerd-fonts-fira-code
 net-tools
 network-manager-applet
 networkmanager
@@ -176,6 +176,7 @@ texinfo
 thunar
 tigervnc
 touchegg
+ttf-firacode-nerd
 ttf-hack-nerd
 ttf-roboto
 tumbler
