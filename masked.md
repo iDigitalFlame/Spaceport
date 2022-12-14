@@ -11,5 +11,6 @@ systemd-network-generator.service
 systemd-pstore.service
 systemd-repart.service
 systemd-sysusers.service
+systemd-journald-audit.socket
 emergency.target
 first-boot-complete.target

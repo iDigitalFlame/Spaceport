@@ -24,7 +24,7 @@ Description = Xorg Desktop Daemon
 
 [Service]
 Type        = simple
-ExecStart   = /usr/bin/zsh --login -c "startx"
+ExecStart   = /usr/bin/dash -l -c startx
 KillSignal  = SIGINT
 Environment = "DISPLAY=:0"
 Environment = "XAUTHORITY=/run/user/%U/Xauthority"
