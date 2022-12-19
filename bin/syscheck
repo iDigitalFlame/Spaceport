@@ -21,7 +21,7 @@
 
 pause() {
     printf "Press ENTER to continue.."
-    read unused
+    read -r
     echo
 }
 

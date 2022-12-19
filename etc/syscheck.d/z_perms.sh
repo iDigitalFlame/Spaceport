@@ -20,7 +20,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    printf "[!] Only root can do this!\n"
+    echo "[!] Only root can do this!"
     exit 1
 fi
 
@@ -37,10 +37,10 @@ chmod 0555 -R "${BASE_DIR}/etc/chromium"
 chmod 0555 -R "/etc/chromium"
 
 # General No Execute Permission for files
-find "${BASE_DIR}/" -type f -exec chmod 444 {} \; 2> /dev/null
+find "${BASE_DIR}/" -type f -exec chmod 0444 {} \; 2> /dev/null
 
 # Remove non-root permissions on copied files
-find "/" -xdev -group firewall-web -exec sh -c 'chgrp -h root {}' \;
+find "/" -xdev -group firewall-web -exec chgrp -h root {} \;
 
 # General Execute
 chmod 0550 -R "/etc/smd"

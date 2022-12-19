@@ -19,7 +19,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ ! -d "/tmp/.mounts/$USER" ]; then
-    mkdir "/tmp/.mounts/$USER" 2> /dev/null
-    chmod 1750 "/tmp/.mounts/$USER" 2> /dev/null
+if [ ! -d "/tmp/.mounts/${USER}" ]; then
+    mkdir "/tmp/.mounts/${USER}" 2> /dev/null
+    chmod 1750 "/tmp/.mounts/${USER}" 2> /dev/null
 fi

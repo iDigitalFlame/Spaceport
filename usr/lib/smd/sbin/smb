@@ -20,17 +20,17 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    printf "Only root can do this!\n"
+    echo "Only root can do this!"
     exit 1
 fi
 if [ $# -ne 2 ]; then
-    printf "Invalid arguments!\n"
+    echo "Invalid arguments!"
     exit 1
 fi
 
 input=$(cat -)
 if [ -z "$input" ]; then
-    printf "Invalid input!\n"
+    echo "Invalid input!"
     exit 1
 fi
 
@@ -39,16 +39,16 @@ domain=$(echo "$input" | awk -F'\b' '{print $2}')
 password=$(echo "$input" | awk -F'\b' '{print $3}')
 username=$(echo "$input" | awk -F'\b' '{print $4}')
 if [ -z "$user" ] || [ -z "$password" ] || [ -z "$username" ]; then
-    printf "Invalid input!\n"
+    echo "Invalid input!"
     exit 1
 fi
 if [ ! -d "$2" ]; then
-    printf "Mount path \"$2\" does not exist or is not a directory!\n"
+    printf "Mount path \"%s\" does not exist or is not a directory!\n" "$2"
     exit 1
 fi
 
 export PASSWD=$password
-mount -t cifs "//$1" "$2" -o "vers=3.11,seal,resilienthandles,nosharesock,sec=ntlmsspi,user=${user},domain=${domain},workgroup=$(echo "$domain" | awk -F'.' '{print toupper($1)}'),uid=${username},gid=${username},file_mode=0750,dir_mode=0750"
+mount -t cifs "//$1" "$2" -o "rw,vers=3.1.1,sort,noacl,seal,noresilienthandles,nopersistenthandles,nouser_xattr,cache=none,nosharesock,sec=ntlmsspi,user=${user},domain=${domain},workgroup=$(echo "$domain" | awk -F'.' '{print toupper($1)}'),uid=${username},gid=${username},file_mode=0750,dir_mode=0750"
 result=$?
 
 export PASSWD=""

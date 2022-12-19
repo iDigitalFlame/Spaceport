@@ -20,7 +20,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    printf "[!] Only root can do this!\n"
+    echo "[!] Only root can do this!"
     exit 1
 fi
 
@@ -35,11 +35,6 @@ fi
 # CUPS Startup Link
 ln -s "/usr/lib/systemd/system/cups.service" "/etc/systemd/system/multi-user.target.wants/cups.service" 2> /dev/null
 
-# BTRFS FSCK Empty Shell Script
-printf "#!/bin/sh\nexit 0\n" > "/usr/local/bin/fsck.btrfs"
-chown root:root "/usr/local/bin/fsck.btrfs"
-chmod 550 "/usr/local/bin/fsck.btrfs"
-
 # Firefox file Link
 rm -f "/usr/lib/firefox/firefox.cfg" 2> /dev/null
 rm -f "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
@@ -49,16 +44,16 @@ ln -s "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg" "/usr/lib/librewol
 chown root:root "/usr/lib/firefox/firefox.cfg" 2> /dev/null
 chown root:root "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
 chown root:root "/usr/lib/librewolf/defaults/pref/librewolf.cfg" 2> /dev/null
-chmod 444 "/usr/lib/firefox/firefox.cfg" 2> /dev/null
-chmod 444 "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
-chmod 444 "/usr/lib/librewolf/defaults/pref/librewolf.cfg" 2> /dev/null
+chmod 0444 "/usr/lib/firefox/firefox.cfg" 2> /dev/null
+chmod 0444 "/usr/lib/librewolf/librewolf.cfg" 2> /dev/null
+chmod 0444 "/usr/lib/librewolf/defaults/pref/librewolf.cfg" 2> /dev/null
 
 # Less Syskeys
 ln -s "/etc/sysless" "/etc/syslesskey" 2> /dev/null
 ln -s "/etc/sysless" "/usr/local/etc/syslesskey" 2> /dev/null
-chmod 444 "/etc/sysless"
-chmod 444 "/etc/syslesskey"
-chmod 444 "/usr/local/etc/syslesskey"
+chmod 0444 "/etc/sysless"
+chmod 0444 "/etc/syslesskey"
+chmod 0444 "/usr/local/etc/syslesskey"
 
 # Fontconfig Links
 ln -s "/usr/share/fontconfig/conf.avail/10-sub-pixel-rgb.conf" "/etc/fonts/conf.d/10-sub-pixel-rgb.conf" 2> /dev/null
@@ -73,6 +68,6 @@ for module in $(/usr/bin/python3 ${BASE_DIR}/usr/lib/smd/bin/powerctl modules 2>
     ln -s "${BASE_DIR}/usr/lib/smd/bin/powerctl" "/usr/local/bin/${module}ctl" 2> /dev/null
     chown root:root "/usr/local/bin/${module}" 2> /dev/null
     chown root:root "/usr/local/bin/${module}ctl" 2> /dev/null
-    chmod 555 "/usr/local/bin/${module}" 2> /dev/null
-    chmod 555 "/usr/local/bin/${module}ctl" 2> /dev/null
+    chmod 0555 "/usr/local/bin/${module}" 2> /dev/null
+    chmod 0555 "/usr/local/bin/${module}ctl" 2> /dev/null
 done

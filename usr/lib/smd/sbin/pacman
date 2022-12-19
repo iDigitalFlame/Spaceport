@@ -19,16 +19,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-args=$@
+args="$*"
 is_install=$(echo "$args" | grep -qE '\-S\s|-U\s'; echo $?)
 
-if [ $is_install -eq 0 ]; then
-    /usr/bin/mount -o remount,rw /
+if [ "$is_install" -eq 0 ]; then
+    mount -o remount,rw /
 fi
 
-/usr/bin/sg firewall-web -c "/usr/bin/pacman $args"; ret=$?
-if [ $is_install -eq 0 ] && [ -z "$SYSBATCH" ]; then
-    /usr/bin/mount -ro remount,ro / 2> /dev/null || /usr/bin/mount -Rro remount,ro /
+sg firewall-web -c "/usr/bin/pacman $args"
+ret=$?
+
+if [ "$is_install" -eq 0 ] && [ -z "$SYSBATCH" ]; then
+    mount -ro remount,ro / 2> /dev/null || mount -Rro remount,ro /
 fi
 
 exit $ret

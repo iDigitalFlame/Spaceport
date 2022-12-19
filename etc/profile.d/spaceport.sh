@@ -23,8 +23,10 @@ umask 027
 
 export PIP_USER=yes
 export ERRFILE="/dev/null"
+
 # Use to disable DRI3, remove line if causes issues. (linked to X11 conf file).
 export LIBGL_DRI3_DISABLE=1
+
 export SCREENRC="${HOME}/screen/screenrc"
 export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export GTK_RC_FILES="${HOME}/.config/gtk-1.0/gtkrc"
@@ -41,10 +43,10 @@ export XDG_DOWNLOAD_DIR="${HOME}/Downloads"
 export XDG_DOCUMENTS_DIR="${HOME}/Documents"
 export XDG_STATE_HOME="${HOME}/.local/share"
 export XDG_MUSIC_DIR="${HOME}/Documents/Music"
-export XDG_RUNTIME_DIR="/run/user/$(id --user)"
 export XDG_VIDEOS_DIR="${HOME}/Documents/Videos"
 export XDG_PUBLICSHARE_DIR="${HOME}/Documents/Public"
 export XDG_TEMPLATES_DIR="${HOME}/Documents/Templates"
+export XDG_RUNTIME_DIR="/run/user/$(/usr/bin/id --user)"
 
 if [ -d "${HOME}/.local/bin" ] && [ ! "$USER" = "root" ]; then
     PATH=$PATH:${HOME}/.local/bin

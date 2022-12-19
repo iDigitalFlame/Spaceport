@@ -113,6 +113,7 @@ nmap
 notesnook-bin
 noto-fonts-emoji
 ntfs-3g
+nvme-cli
 onboard
 onefetch
 openbsd-netcat
@@ -161,6 +162,7 @@ sbsigntools
 screen
 sed
 shadow
+shellcheck
 skippy-xd-git
 slack-desktop
 spice-gtk

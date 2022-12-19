@@ -20,7 +20,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    printf "[!] Only root can do this!\n"
+    echo "[!] Only root can do this!"
     exit 1
 fi
 

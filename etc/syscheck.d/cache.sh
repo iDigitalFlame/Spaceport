@@ -20,7 +20,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    printf "[!] Only root can do this!\n"
+    echo "[!] Only root can do this!"
     exit 1
 fi
 
@@ -44,15 +44,15 @@ chown root:cups "/var/cache/cups/printers.conf"
 chown root:root -R "/var/lib/NetworkManager/system-connections"
 
 chmod 2755 -R "/var/cache/fontconfig"
-chmod 644 /var/cache/fontconfig/*
+chmod 2644 /var/cache/fontconfig/*
 chown root:root -R "/var/cache/fontconfig"
 
 chmod 2750 -R "/var/cache/pacman/pkg"
-chmod 640 /var/cache/pacman/pkg/*
+chmod 2640 /var/cache/pacman/pkg/*
 chown root:root -R "/var/cache/pacman/pkg"
 
 chmod 2755 "/var/lib/pacman/sync"
-chmod 644 /var/lib/pacman/sync/*
+chmod 2644 /var/lib/pacman/sync/*
 chown root:root -R "/var/lib/pacman/sync"
 
 chmod 2755 "/var/lib/pacman/local"
