@@ -1,5 +1,5 @@
-#!/usr/bin/dash
-# Initram Root FS and Kernel Signing Utility
+#!/usr/bin/false
+# Librewolf Config Pacman Hook
 #
 # System Management Daemon
 #
@@ -19,16 +19,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ $# -eq 0 ]; then
-    find "/boot" -type f \( -name 'vmlinuz-*' -o -iname '*.efi' \) -exec "$0" {} \;
-    exit 0
-fi
+[Trigger]
+Type        = Package
+Target      = xz
+Operation   = Install
+Operation   = Upgrade
 
-if ! [ -f "$1" ]; then
-    printf "File \"%s\" does not exist!\n" "$1"
-    exit 1
-fi
-
-if ! sbverify --list "$1" 2> /dev/null | grep -q "signature certificates"; then
-    sbsign --key "/opt/secureboot/db.key" --cert "/opt/secureboot/db.crt" --output "$1" "$1" 2> &1 | grep -v 'warning: data remaining['
-fi
+[Action]
+When        = PostTransaction
+Exec        = /usr/bin/rm "/usr/share/doc/xz/COPYING.GPLv2"
+Description = Removing bad-linked xz files..
