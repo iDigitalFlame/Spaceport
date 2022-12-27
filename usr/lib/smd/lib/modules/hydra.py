@@ -510,11 +510,11 @@ class HydraVM(Storage):
             )
         if s.st_mode & (S_IWGRP | S_IWOTH) > 0:
             raise HydraError(
-                f'Binary "{x}" cannot be writable by Group or Other (chmod 755 it!)'
+                f'Binary "{x}" cannot be writable by Group or Other (chmod 0755 it!)'
             )
         if s.st_mode & (S_IXUSR | S_IXGRP) == 0:
             raise HydraError(
-                f'Binary "{x}" is not executable by User or Group (chmod 755 it!)'
+                f'Binary "{x}" is not executable by User or Group (chmod 0755 it!)'
             )
         del s
         if self.get("bios.version", 1) == 0:
@@ -760,8 +760,8 @@ class HydraVM(Storage):
             return self._stop(manager, server, True, errors=False)
         if self._ready == 1:
             try:
-                chmod(f"{self._path}.vnc", 0o762, follow_symlinks=False)
-                chmod(f"{self._path}.spice", 0o762, follow_symlinks=False)
+                chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
+                chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
             except OSError:
                 return
             server.debug(
@@ -1317,9 +1317,9 @@ class HydraServer(object):
                 mkdir(HYDRA_DHCP_DIR)
             write(HYDRA_TOKENS, EMPTY)
             run(["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", DIRECTORY_HYDRA])
-            run(["/usr/bin/chmod", "-R", "755", DIRECTORY_HYDRA])
-            run(["/usr/bin/chown", "-R", f"{HYDRA_UID}:", HYDRA_DHCP_DIR])
-            run(["/usr/bin/chmod", "-R", "750", HYDRA_DHCP_DIR])
+            run(["/usr/bin/chmod", "-R", "0755", DIRECTORY_HYDRA])
+            run(["/usr/bin/chown", "-R", f"{HYDRA_UID}:{HYDRA_UID}", HYDRA_DHCP_DIR])
+            run(["/usr/bin/chmod", "-R", "0750", HYDRA_DHCP_DIR])
         except OSError as err:
             self.stop(server, True)
             HydraError(f"Error setting up interfaces and directories: {err}")
@@ -1335,9 +1335,9 @@ class HydraServer(object):
             user=HYDRA_UID,
         )
         try:
-            write(HYDRA_DNS_FILE, d)
-            run(["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", HYDRA_DNS_FILE])
-            run(["/usr/bin/chmod", "-R", "640", HYDRA_DNS_FILE])
+            write(HYDRA_DNS_FILE, d, perms=0o0640)
+            run(["/usr/bin/chown", f"root:{HYDRA_UID}", HYDRA_DNS_FILE])
+            # run(["/usr/bin/chmod", "0640", HYDRA_DNS_FILE])
         except OSError as err:
             self.stop(server, True)
             raise HydraError(f"Error writing DNS config: {err}") from err
@@ -1348,9 +1348,8 @@ class HydraServer(object):
         )
         del n
         try:
-            write(HYDRA_SMB_FILE, s)
+            write(HYDRA_SMB_FILE, s, 0o0640)
             run(["/usr/bin/chown", "-R", f"root:{HYDRA_UID}", HYDRA_SMB_FILE])
-            run(["/usr/bin/chmod", "-R", "640", HYDRA_SMB_FILE])
         except OSError as err:
             self.stop(server, True)
             raise HydraError(f"Error writing Samba config: {err}") from err
@@ -1492,7 +1491,8 @@ class HydraServer(object):
         self.scheduler.run(blocking=False)
 
     def stop(self, server, force):
-        server.debug("HYDRA: Stopping services and freeing resources..")
+        if self.running:
+            server.debug("HYDRA: Stopping services and freeing resources..")
         try:
             stop(self.dns_server)
         except AttributeError:
@@ -1536,8 +1536,9 @@ class HydraServer(object):
                 rmtree(DIRECTORY_HYDRA)
             except OSError as err:
                 server.warning("HYDRA: Error removing the working directory!", err=err)
+        if self.running:
+            server.debug("HYDRA: Shutdown complete.")
         self.running = False
-        server.debug("HYDRA: Shutdown complete.")
 
     def hook(self, server, message):
         if "type" not in message or not isinstance(message.type, int):
@@ -1667,7 +1668,7 @@ class HydraServer(object):
         for vmid, vm in self.vms.items():
             t.append(f"VM{vmid}: unix_socket:{vm._path}.vnc")
         try:
-            write(HYDRA_TOKENS, NEWLINE.join(t), perms=0o640)
+            write(HYDRA_TOKENS, NEWLINE.join(t), perms=0o0640)
         except OSError as err:
             raise HydraError(f'Error writing tokens "{HYDRA_TOKENS}": {err}') from err
         finally:

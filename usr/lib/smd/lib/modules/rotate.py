@@ -194,7 +194,7 @@ class RotateServer(object):
     def setup_server(self, server):
         self.lock = server.get_config("rotate", False, True)
         server.debug("Detecting gyro sensor devices..")
-        write(ROTATE_PATH_STATUS, str(self.lock).lower(), perms=0o644, errors=False)
+        write(ROTATE_PATH_STATUS, str(self.lock).lower(), perms=0o0644, errors=False)
         for d in glob(ROTATE_PATH_GYROS):
             try:
                 n = read(f"{d}/name")
@@ -207,7 +207,7 @@ class RotateServer(object):
             del n
         if self.sensor is None:
             self.tries = self.tries - 1
-            write(ROTATE_PATH_STATUS, "invalid", perms=0o644, errors=False)
+            write(ROTATE_PATH_STATUS, "invalid", perms=0o0644, errors=False)
             if self.tries <= 0:
                 return server.error(
                     "Could not find any compatible gyro sensors after 5 attempts, bailing out!"
@@ -226,7 +226,7 @@ class RotateServer(object):
             self.y = open(f"{self.sensor}/in_accel_y_raw", "r")
         except OSError as err:
             self.sensor = None
-            write(ROTATE_PATH_STATUS, "invalid", perms=0o644, errors=False)
+            write(ROTATE_PATH_STATUS, "invalid", perms=0o0644, errors=False)
             return server.error("Error reading Gyro devices!", err=err)
         server.debug("Gyro sensor setup complete!")
         if exists(ROTATE_PATH_BUTTON):
@@ -261,7 +261,7 @@ class RotateServer(object):
         self.lock = lock
         server.debug(f'Set screen rotation lock status to "{self.lock}".')
         server.set_config("rotate", lock, True)
-        write(ROTATE_PATH_STATUS, str(self.lock).lower(), perms=0o644, errors=False)
+        write(ROTATE_PATH_STATUS, str(self.lock).lower(), perms=0o0644, errors=False)
         server.send(
             None,
             Message(

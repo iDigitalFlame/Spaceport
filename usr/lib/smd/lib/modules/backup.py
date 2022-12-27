@@ -98,13 +98,13 @@ def _get_config(path):
                 raise ValueError(f'Backup path "{x}" does not exist')
             del x
     del p
-    c.write(path, perms=0o640)
+    c.write(path, perms=0o0640)
     if not c.__contains__("upload"):
         return c
     u = c.get("upload")
     if not isinstance(u, dict):
         c.__delitem__("upload")
-        c.write(path, perms=0o640)
+        c.write(path, perms=0o0640)
         return c
     h = c.get("upload.host")
     if not isinstance(h, str) and len(h) == 0:
@@ -856,7 +856,7 @@ class BackupThread(Thread):
         o = f"/bin/ssh -o VisualHostKey=no -o UserKnownHostsFile={BACKUP_HOSTS} -p {self.port}"
         if isinstance(self.acl, str) and len(self.acl) > 0:
             try:
-                chmod(self.acl, 0o400, follow_symlinks=True)
+                chmod(self.acl, 0o0400, follow_symlinks=True)
             except OSError:
                 pass
             o += f" -i {self.acl}"
@@ -984,7 +984,7 @@ class BackupThread(Thread):
         if not self.increment and isfile(d):
             remove(d)
         makedirs(BACKUP_STATE_DIR, exist_ok=True)
-        chmod(BACKUP_STATE_DIR, 0o750, follow_symlinks=False)
+        chmod(BACKUP_STATE_DIR, 0o0750, follow_symlinks=False)
         c.append(f"--listed-incremental={d}")
         del d
         c += ["-f", f"{self.path}/data.tar.zx", self.plan["path"]]

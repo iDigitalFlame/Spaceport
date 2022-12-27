@@ -51,7 +51,7 @@ class Logger(object):
                 h.setFormatter(f)
                 h.setLevel(level.upper())
                 self._log.addHandler(h)
-                chmod(file, 0o644, follow_symlinks=True)
+                chmod(file, 0o0644, follow_symlinks=True)
             except OSError as err:
                 raise OSError(f'Error creating log file "{file}": {err}') from err
             del h

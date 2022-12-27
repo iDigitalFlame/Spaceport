@@ -205,7 +205,7 @@ vm {
 
         Paths supplied must have root owner and group, cannot be
         writable by group or other and must have execute permissions
-        for owner and group (ie: chmod 755) in order to be executed.
+        for owner and group (ie: chmod 0755) in order to be executed.
 
     debug       <Bool, Optional>
         Supported values: false | true

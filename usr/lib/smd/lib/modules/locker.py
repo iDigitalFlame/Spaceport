@@ -545,7 +545,7 @@ class LockerServer(object):
         self.event_check = None
 
     def setup_server(self, server):
-        write(LOCKER_PATH_STATUS, EMPTY, perms=0o644, errors=False)
+        write(LOCKER_PATH_STATUS, EMPTY, perms=0o0644, errors=False)
         if self.lid_switch is not None:
             try:
                 self.lid_switch.close()
@@ -572,7 +572,7 @@ class LockerServer(object):
         write(
             LOCKER_PATH_STATUS,
             NEWLINE.join(self.lockers.keys()),
-            perms=0o644,
+            perms=0o0644,
             errors=False,
         )
         message = "No lockers are enabled."

@@ -105,7 +105,7 @@ class Service(Storage):
         r = self.get(name, default)
         if save and not self._read_only:
             try:
-                self.write(perms=0o640)
+                self.write(perms=0o0640)
             except OSError as err:
                 self.error(f'Error saving configuration "{self.get_file()}"!', err=err)
         return r
@@ -114,7 +114,7 @@ class Service(Storage):
         r = self.set(name, value, only_not_exists)
         if save and not self._read_only:
             try:
-                self.write(perms=0o640)
+                self.write(perms=0o0640)
             except OSError as err:
                 self.error(f'Error saving configuration "{self.get_file()}"!', err=err)
         return r

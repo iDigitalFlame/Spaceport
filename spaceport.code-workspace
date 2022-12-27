@@ -23,6 +23,7 @@
             "fileno",
             "frsize",
             "GETFL",
+            "getgrnam",
             "getpwnam",
             "Govs",
             "hpet",

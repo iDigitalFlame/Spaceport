@@ -38,6 +38,10 @@ from lib.constants import (
 
 
 def as_error(err):
+    if not isinstance(err, str) or len(err) == 0:
+        return {"error": ""}
+    if err[-1] == "\n":
+        return {"error": err[:-1]}
     return {"error": err}
 
 

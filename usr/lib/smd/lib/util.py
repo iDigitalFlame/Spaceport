@@ -147,8 +147,7 @@ def clean_path(path, root, links=False):
         p = f"{root}{v}"
     else:
         p = f"{root}/{v}"
-    del v
-    del c
+    del v, c
     if realpath(path) != p:
         raise ValueError(f'Invalid path "{path}" in base "{root}"')
     if not links and islink(p):
@@ -249,16 +248,18 @@ def run(command, shell=False, wait=None, errors=True):
         del cmd
     if time is None and wait is None:
         ret = out.returncode
-        del out
-        del time
+        text = out.stdout
+        del out, time
         if not errors:
             return ret == 0
         if ret == 0:
             return True
+        if isinstance(text, str) and len(text) > 0:
+            raise OSError(f'Process "{command}" exit code was non-zero ({ret}): {text}')
+        del text
         raise OSError(f'Process "{command}" exit code was non-zero ({ret})')
     output = out.stdout
-    del out
-    del time
+    del out, time
     if output is None or len(output) == 0:
         return None
     if output[len(output) - 1] == "\n":
@@ -278,7 +279,7 @@ def write(path, data, binary=False, append=False, perms=None, errors=True):
         except OSError as err:
             if errors:
                 raise err
-        return False
+            return False
     del d
     m = ("ab" if binary else "a") if append else ("wb" if binary else "w")
     try:
@@ -347,5 +348,4 @@ class _ProcessThread(Thread):
             )
         except Exception:
             pass
-        del self._cmd
-        del self._shell
+        del self._cmd, self._shell
