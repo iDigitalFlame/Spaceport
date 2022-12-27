@@ -58,7 +58,7 @@ def __init__(path):
 
 EMPTY = str()
 NEWLINE = "\n"
-VERSION = "SMD-6.1Tank"
+VERSION = "SMD-6.2Tank"
 BOOLEANS = ["0", "1", "true", "false", "on", "off", "t", "f", "yes", "no"]
 
 NAME_POWERCTL = "powerctl"
