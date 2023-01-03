@@ -15,6 +15,5 @@ korla-icon-theme
 osslsigncode
 powershell-bin
 surf
-ticktick
 ttf-weather-icons
 youtube-music-desktop

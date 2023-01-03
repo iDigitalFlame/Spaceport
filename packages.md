@@ -162,6 +162,7 @@ sbsigntools
 screen
 sed
 shadow
+shellcheck
 skippy-xd-git
 slack-desktop
 spice-gtk
@@ -175,6 +176,7 @@ tcpdump
 telegram-desktop
 texinfo
 thunar
+ticktick
 tigervnc
 touchegg
 ttf-firacode-nerd
