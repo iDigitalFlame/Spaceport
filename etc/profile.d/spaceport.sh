@@ -19,7 +19,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-umask 027
+umask 0027
 
 export PIP_USER=yes
 export ERRFILE="/dev/null"
