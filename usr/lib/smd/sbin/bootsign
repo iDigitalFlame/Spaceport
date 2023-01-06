@@ -30,5 +30,5 @@ if ! [ -f "$1" ]; then
 fi
 
 if ! sbverify --list "$1" 2> /dev/null | grep -q "signature certificates"; then
-    sbsign --key "/opt/secureboot/db.key" --cert "/opt/secureboot/db.crt" --output "$1" "$1" 2> &1 | grep -v 'warning: data remaining['
+    sbsign --key "/opt/secureboot/db.key" --cert "/opt/secureboot/db.crt" --output "$1" "$1" 2>&1 | grep -v 'warning: data remaining\['
 fi

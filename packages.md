@@ -65,7 +65,7 @@ gtk-engines
 gzip
 htop
 hunspell-en_us
-i3-gaps
+i3-wm
 i3lock-color
 iio-sensor-proxy
 inetutils

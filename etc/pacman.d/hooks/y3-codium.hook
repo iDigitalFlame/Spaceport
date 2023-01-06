@@ -28,5 +28,5 @@ Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/bash -c "rm -f /opt/vscodium-bin/VSCodium-linux-x64-*.tar.gz; rm -f /opt/vscodium-bin/vscodium-bin-uri-handler.desktop"
+Exec        = /usr/bin/dash -c "rm -f /opt/vscodium-bin/VSCodium-linux-x64-*.tar.gz; rm -f /opt/vscodium-bin/vscodium-bin-uri-handler.desktop"
 Description = Removing VSCodium links..

@@ -1,5 +1,5 @@
 #!/usr/bin/false
-# Boot Update Pacman Hook
+# Librewolf Config Pacman Hook
 #
 # System Management Daemon
 #
@@ -21,10 +21,11 @@
 
 [Trigger]
 Type        = Package
-Target      = systemd
+Target      = python-django
+Operation   = Install
 Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/dash -c "mount -o remount,rw /sys/firmware/efi/efivars; bootctl update; mount -o remount,ro /sys/firmware/efi/efivars"
-Description = Updating systemd-boot..
+Exec        = /usr/bin/rm "/usr/bin/django-admin3.py"
+Description = Removing bad-linked Django files..

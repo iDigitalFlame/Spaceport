@@ -28,5 +28,5 @@ Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/bash -c "rm -f /usr/lib/firefox/browser/features/*.xpi; rm -f /usr/lib/librewolf/browser/features/*.xpi"
+Exec        = /usr/bin/dash -c "rm -f /usr/lib/firefox/browser/features/*.xpi; rm -f /usr/lib/librewolf/browser/features/*.xpi"
 Description = Applying Firefox/Librewolf hardening..

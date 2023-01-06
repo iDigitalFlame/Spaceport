@@ -27,5 +27,5 @@ Operation   = Upgrade
 
 [Action]
 When        = PreTransaction
-Exec        = /usr/bin/mv /usr/lib/librewolf/librewolf.cfg.pacnew /var/cache/librewolf.cfg.bak
+Exec        = /usr/bin/dash -c "[ -e /usr/lib/librewolf/librewolf.cfg.pacnew ] && mv /usr/lib/librewolf/librewolf.cfg.pacnew /var/cache/librewolf.cfg.bak"
 Description = Backing up old Librewolf config..
