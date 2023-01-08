@@ -162,7 +162,6 @@ sbsigntools
 screen
 sed
 shadow
-shellcheck
 skippy-xd-git
 slack-desktop
 spice-gtk
