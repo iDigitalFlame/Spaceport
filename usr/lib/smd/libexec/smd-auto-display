@@ -47,7 +47,12 @@ eval "$command"
 # Reset command and set monitors.
 command="/usr/bin/xrandr --output $primary --mode $size --pos 0x0 --rotate normal"
 for monitor in $connected; do
-    command="$command --output $monitor --mode $size --pos $((width*index))x0 --rotate normal"
+    # Check for an alt mode first
+    if /usr/bin/xrandr --output "$monitor" --mode "${size}_Alt" 2> /dev/null; then
+        command="$command --output $monitor --mode ${size}_Alt --pos $((width*index))x0 --rotate normal"
+    else
+        command="$command --output $monitor --mode $size --pos $((width*index))x0 --rotate normal"
+    fi
     index=$((index + 1))
 
     # XRANDR will sometimes fail on mutliple display add, so increment each addition instead.

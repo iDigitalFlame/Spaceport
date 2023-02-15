@@ -12,6 +12,7 @@ bash
 bat
 bind
 binutils
+binwalk
 bluez
 bluez-utils
 btrfs-progs
@@ -85,6 +86,7 @@ libheif
 librewolf
 libva-intel-driver
 linux-firmware
+linux-headers
 linux-lts
 linux-zen
 logrotate
@@ -96,6 +98,7 @@ make
 man-db
 man-pages
 mariadb-clients
+mediainfo
 mesa
 mingw-w64-binutils
 mingw-w64-crt
@@ -104,6 +107,7 @@ mingw-w64-headers
 mingw-w64-winpthreads
 mupdf
 nano
+nasm
 net-tools
 network-manager-applet
 networkmanager
@@ -113,7 +117,6 @@ nmap
 notesnook-bin
 noto-fonts-emoji
 ntfs-3g
-nvme-cli
 onboard
 onefetch
 openbsd-netcat
@@ -128,6 +131,7 @@ pam-u2f
 patch
 pciutils
 perl
+perl-image-exiftool
 picom-ibhagwan-git
 pipewire-alsa
 pipewire-pulse
@@ -141,6 +145,7 @@ psmisc
 python
 python-django
 python-pip
+python-pycryptodome
 python-pyparsing
 python-pyusb
 python-requests
@@ -152,7 +157,6 @@ qemu-base
 qemu-system-aarch64
 qemu-system-arm
 qemu-user-static
-radare2
 reflector
 ristretto
 rofi
@@ -167,7 +171,6 @@ slack-desktop
 spice-gtk
 squid
 sudo
-swig
 sysfsutils
 systemd-sysvcompat
 tar
