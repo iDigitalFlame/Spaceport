@@ -48,7 +48,7 @@ if [ ! -d "$2" ]; then
 fi
 
 export PASSWD=$password
-mount -t cifs "//$1" "$2" -o "rw,vers=3.1.1,noacl,seal,noresilienthandles,nopersistenthandles,nouser_xattr,cache=none,nosharesock,sec=ntlmsspi,user=${user},domain=${domain},workgroup=$(echo "$domain" | awk -F'.' '{print toupper($1)}'),uid=${username},gid=${username},file_mode=0750,dir_mode=0750"
+mount -t cifs "//$1" "$2" -o "rw,vers=3.1.1,noacl,seal,noserverino,noresilienthandles,nopersistenthandles,nouser_xattr,cache=none,nosharesock,sec=ntlmsspi,user=${user},domain=${domain},workgroup=$(echo "$domain" | awk -F'.' '{print toupper($1)}'),uid=${username},gid=${username},file_mode=0750,dir_mode=0750"
 result=$?
 
 export PASSWD=""

@@ -1,0 +1,4 @@
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+bin/gh filter=lfs diff=lfs merge=lfs -text
+etc/sysless filter=lfs diff=lfs merge=lfs -text

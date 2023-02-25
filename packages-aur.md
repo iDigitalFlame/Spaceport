@@ -3,7 +3,6 @@ cnijfilter-mg5300series
 dvm
 evernote-for-linux-bin
 firefox-extension-foxyproxy
-firefox-extension-gnome-keyring-git
 firefox-extension-multi-account-containers
 firefox-extension-smart-referer
 firefox-extension-user-agent-switcher
@@ -11,7 +10,7 @@ firefox-temporary-containers
 flatery-icon-theme-git
 font-bh-ttf
 gnome-keyring-query
-korla-icon-theme
+kora-icon-theme
 osslsigncode
 powershell-bin
 surf
