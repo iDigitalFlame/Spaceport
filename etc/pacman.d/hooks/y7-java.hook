@@ -1,5 +1,5 @@
 #!/usr/bin/false
-# Update Package Cache Pacman Hook
+# Java Runtime Pacman Hook
 #
 # System Management Daemon
 #
@@ -21,11 +21,11 @@
 
 [Trigger]
 Type        = Package
-Target      = *
-Operation   = Remove
+Target      = java-runtime-common
+Operation   = Install
 Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/dash -c "paccache -rk2; paccache -ruk0"
-Description = Removing old cached packages..
+Exec        = /usr/bin/rm "/usr/bin/orbd" "/usr/bin/pack200" "/usr/bin/rmid" "/usr/bin/servertool" "/usr/bin/tnameserv" "/usr/bin/unpack200" "/usr/bin/javah" "/usr/bin/rmic" "/usr/bin/schemagen" "/usr/bin/wsgen" "/usr/bin/wsimport" "/usr/bin/xjc"
+Description = Removing bad-linked Java Runtime files..

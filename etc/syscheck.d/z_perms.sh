@@ -197,11 +197,14 @@ chmod 0400 /usr/share/applications/libfm-pref-apps.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/thunar-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard-settings.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/libinput-gestures.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/java-java-openjdk.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/rofi-theme-selector.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/jshell-java-openjdk.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/pcmanfm-desktop-pref.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.gnome.FileRoller.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.telegram.desktop.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/jconsole-java-openjdk.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/youtube-music-desktop.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/betterdiscord-installer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/xfce4-terminal-settings.desktop 2> /dev/null

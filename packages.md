@@ -76,6 +76,7 @@ intel-undervolt
 iproute2
 iputils
 iw
+jdk-openjdk
 jq
 keepassxc
 kitty

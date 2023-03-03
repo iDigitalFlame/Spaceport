@@ -335,7 +335,13 @@ class HydraVM(Storage):
         return self._ready == 3 and self._process is None
 
     def _ip(self, server):
-        d = self._ga_command(server, "guest-network-get-interfaces")
+        try:
+            d = self._ga_command(server, "guest-network-get-interfaces")
+        except Exception as err:
+            server.warning(
+                f"HYDRA: VM({self.vmid}) QEMU-GA IP address check failed!", err=err
+            )
+            return self._status()
         if not isinstance(d, list) or len(d) == 0:
             return self._status()
         i = list()
