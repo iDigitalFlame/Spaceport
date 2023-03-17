@@ -22,13 +22,11 @@
 #
 
 from lib.util import run, boolean
-from lib.structs.message import Message
 from lib.constants import (
     RADIO_EXEC,
     HOOK_RADIO,
     HOOK_STARTUP,
     HOOK_HIBERNATE,
-    HOOK_NOTIFICATION,
     MESSAGE_TYPE_POST,
     MESSAGE_TYPE_ACTION,
     MESSAGE_TYPE_CONFIG,
@@ -94,14 +92,8 @@ def _radio_set(server, radio, enable, notify):
     server.set_config(f"{radio}.enabled", enable, True)
     if not notify:
         return
-    server.send(
-        None,
-        Message(
-            header=HOOK_NOTIFICATION,
-            payload={
-                "title": "Radio Status Change",
-                "body": f"{radio.title()} was {'Enabled' if enable else 'Disabled'}",
-                "icon": "configuration-section",
-            },
-        ),
+    server.notify(
+        "Radio Status Change",
+        f"{radio.title()} was {'Enabled' if enable else 'Disabled'}",
+        "configuration-section",
     )

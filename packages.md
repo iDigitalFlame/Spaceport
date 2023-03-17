@@ -162,6 +162,7 @@ reflector
 ristretto
 rofi
 rsync
+rustup
 samba
 sbsigntools
 screen

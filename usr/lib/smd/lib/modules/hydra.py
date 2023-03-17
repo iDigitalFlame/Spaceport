@@ -32,9 +32,9 @@ from threading import Thread
 from ipaddress import IPv4Network
 from signal import SIGCONT, SIGSTOP
 from lib.structs.storage import Storage
+from lib.structs.message import as_error
 from json import dumps, loads, JSONDecodeError
 from socket import socket, AF_UNIX, SOCK_STREAM
-from lib.structs.message import Message, as_error
 from os import mkdir, listdir, environ, getcwd, chmod, stat
 from subprocess import Popen, DEVNULL, PIPE, SubprocessError
 from lib.util import read, write, stop, run, remove_file, read_json
@@ -90,7 +90,6 @@ from lib.constants import (
     HYDRA_VM_CONFIGS,
     DIRECTORY_STATIC,
     HYDRA_USB_DEVICES,
-    HOOK_NOTIFICATION,
     HYDRA_EXEC_TOKENS,
     HYDRA_BRIDGE_NAME,
     HYDRA_RESERVE_SIZE,
@@ -722,32 +721,14 @@ class HydraVM(Storage):
             self._process = Popen(c, stdout=PIPE, stderr=PIPE)
         except (OSError, SubprocessError) as err:
             server.send(
-                None,
-                Message(
-                    header=HOOK_NOTIFICATION,
-                    payload={
-                        "title": "Hydra VM Status",
-                        "body": f"VM({self.vmid}) failed to start!",
-                        "icon": "virt-viewer",
-                    },
-                ),
+                "Hydra VM Status", f"VM({self.vmid}) failed to start!", "virt-viewer"
             )
             self._ready = 2
             self._stop(manager, server, True)
             raise HydraError(f"Failed to start: {err}") from err
         finally:
             del c
-        server.send(
-            None,
-            Message(
-                header=HOOK_NOTIFICATION,
-                payload={
-                    "title": "Hydra VM Status",
-                    "body": f"VM({self.vmid}) started!",
-                    "icon": "virt-viewer",
-                },
-            ),
-        )
+        server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
         if not self._running():
             server.warning(
                 f"HYDRA: VM({self.vmid}) is taking longer to startup, passing to thread!"
@@ -788,16 +769,10 @@ class HydraVM(Storage):
         server.debug(
             f'HYDRA: VM({self.vmid}) Removed USB device "{self._usb[usb]}" from the VM.'
         )
-        server.send(
-            None,
-            Message(
-                header=HOOK_NOTIFICATION,
-                payload={
-                    "title": "Hydra USB Device Removed",
-                    "body": f'USB Device "{self._usb[usb]}" disconnected from VM({self.vmid}).',
-                    "icon": "usb-creator",
-                },
-            ),
+        server.notify(
+            "Hydra USB Device Removed",
+            f'USB Device "{self._usb[usb]}" disconnected from VM({self.vmid}).',
+            "usb-creator",
         )
         del self._usb[usb]
 
@@ -1147,16 +1122,10 @@ class HydraVM(Storage):
             del b
         server.debug(f'HYDRA: VM({self.vmid}) Added USB device "{d}" to the VM.')
         self._usb[i] = d
-        server.send(
-            None,
-            Message(
-                header=HOOK_NOTIFICATION,
-                payload={
-                    "title": "Hydra USB Device Connected",
-                    "body": f'USB Device "{d}" connected to VM({self.vmid}).',
-                    "icon": "usb-creator",
-                },
-            ),
+        server.notify(
+            "Hydra USB Device Connected",
+            f'USB Device "{d}" connected to VM({self.vmid}).',
+            "usb-creator",
         )
         del d
         return i
@@ -1473,17 +1442,7 @@ class HydraServer(object):
                 and len(self.vms[vmid]._output) > 0
             ):
                 m += f"\n({self.vms[vmid]._output})"
-            server.send(
-                None,
-                Message(
-                    header=HOOK_NOTIFICATION,
-                    payload={
-                        "title": "Hydra VM Status",
-                        "body": m,
-                        "icon": "virt-viewer",
-                    },
-                ),
-            )
+            server.notify("Hydra VM Status", m, "virt-viewer")
             del m
             self._clean_usb(server, self.vms[vmid])
             self.vms[vmid]._stop(self, server, True, errors=False)

@@ -41,7 +41,6 @@ from lib.constants import (
     HOOK_BACKGROUND,
     ROTATE_INVERTED,
     ROTATE_THRESHOLD,
-    HOOK_NOTIFICATION,
     ROTATE_PATH_GYROS,
     ROTATE_ITHRESHOLD,
     ROTATE_PATH_STATUS,
@@ -262,16 +261,10 @@ class RotateServer(object):
         server.debug(f'Set screen rotation lock status to "{self.lock}".')
         server.set_config("rotate", lock, True)
         write(ROTATE_PATH_STATUS, str(self.lock).lower(), perms=0o0644, errors=False)
-        server.send(
-            None,
-            Message(
-                header=HOOK_NOTIFICATION,
-                payload={
-                    "title": "Rotation Lock Status",
-                    "body": f'Rotation lock was {"Enabled" if self.lock else "Disabled"}.',
-                    "icon": "mintBackup",
-                },
-            ),
+        server.notify(
+            "Rotation Lock Status",
+            f'Rotation lock was {"Enabled" if self.lock else "Disabled"}.',
+            "mintBackup",
         )
 
     def update(self, server, message):
