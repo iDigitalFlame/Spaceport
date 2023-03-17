@@ -69,7 +69,7 @@ class Notifer(GObject.Object):
         self.cache = dict()
 
     def _find_icon(self, server, icon=None):
-        if not server.get_config("notify.full_path", DEFAULT_NOTIFY_FULLPATH, False):
+        if server.get_config("notify.full_path", DEFAULT_NOTIFY_FULLPATH, False):
             return icon
         if "default" not in self.cache:
             v = (
@@ -98,7 +98,7 @@ class Notifer(GObject.Object):
             if isfile(t):
                 p = t
                 break
-            if "." not in t:
+            if "." not in t or t.rfind(".") >= len(t) - 3:
                 f = False
                 for e in NOTIFY_ICONS_EXTENSIONS:
                     x = f"{t}.{e}"
@@ -114,6 +114,7 @@ class Notifer(GObject.Object):
         del e
         if p is None or not isfile(p):
             p = self.cache["default"]
+        server.debug(f'Catching icon "{icon}" as "{p}".')
         self.cache[icon] = p
         return p
 
