@@ -140,6 +140,7 @@ pkgconf
 pngcrush
 polkit-gnome
 polybar
+powershell-bin
 procps-ng
 proxychains-ng
 psmisc

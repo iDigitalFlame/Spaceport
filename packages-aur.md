@@ -12,7 +12,6 @@ font-bh-ttf
 gnome-keyring-query
 kora-icon-theme
 osslsigncode
-powershell-bin
 surf
 ttf-weather-icons
 youtube-music-desktop
