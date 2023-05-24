@@ -92,6 +92,8 @@ class Notifer(GObject.Object):
         e = server.get_config("notify.dirs", list(), False)
         if not isinstance(e, list):
             e = list()
+        else:
+            e = e.copy()
         e.append(server.get_config("notify.theme", DEFAULT_NOTIFY_THEME, False))
         for d in e:
             t = expandvars(expanduser(f"{d}/{p}"))
