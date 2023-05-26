@@ -122,6 +122,7 @@ onboard
 onefetch
 openbsd-netcat
 openssh
+openssl-1.1
 openvpn
 otf-fira-mono
 otf-font-awesome-4
@@ -174,6 +175,7 @@ slack-desktop
 spice-gtk
 squid
 sudo
+swig
 sysfsutils
 systemd-sysvcompat
 tar
