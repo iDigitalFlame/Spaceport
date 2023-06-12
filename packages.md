@@ -21,6 +21,7 @@ c-lolcat
 chaotic-keyring
 chaotic-mirrorlist
 cifs-utils
+clang
 cmake
 coreutils
 cowsay
@@ -86,10 +87,12 @@ libgnome-keyring
 libheif
 librewolf
 libva-intel-driver
+liferea
 linux-firmware
 linux-headers
 linux-lts
 linux-zen
+lld
 logrotate
 lsd
 lsof
@@ -106,6 +109,7 @@ mingw-w64-crt
 mingw-w64-gcc
 mingw-w64-headers
 mingw-w64-winpthreads
+msitools
 mupdf
 nano
 nasm
