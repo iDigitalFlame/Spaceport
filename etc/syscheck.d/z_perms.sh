@@ -191,6 +191,7 @@ chmod 0400 /usr/share/applications/envy24control.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/teensy-loader.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.kde.falkon.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/avahi-discover.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/codium-wayland.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/evernote-client.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/telegramdesktop.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/libfm-pref-apps.desktop 2> /dev/null
