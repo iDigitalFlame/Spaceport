@@ -138,7 +138,6 @@ patch
 pciutils
 perl
 perl-image-exiftool
-picom-ibhagwan-git
 pipewire-alsa
 pipewire-pulse
 pkgconf

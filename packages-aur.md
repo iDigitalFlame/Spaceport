@@ -12,6 +12,7 @@ font-bh-ttf
 gnome-keyring-query
 kora-icon-theme
 osslsigncode
+picom-ibhagwan-git
 surf
 ttf-weather-icons
 youtube-music-desktop
