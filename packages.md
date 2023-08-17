@@ -83,6 +83,7 @@ keepassxc
 kitty
 leafpad
 less
+libfaketime
 libgnome-keyring
 libheif
 librewolf
@@ -176,6 +177,7 @@ shadow
 skippy-xd-git
 slack-desktop
 spice-gtk
+sqlmap
 squid
 sudo
 swig
