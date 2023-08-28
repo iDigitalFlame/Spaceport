@@ -18,8 +18,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/umount, /usr/bin/sync, /usr/lib/smd/sbin/smb, /usr/bin/netstat
 Cmnd_Alias  SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/reboot, /usr/bin/poweroff
+Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/umount, /usr/bin/sync, /usr/lib/smd/sbin/smb, /usr/bin/netstat, /usr/bin/rfcomm
 
 Defaults    env_keep += "LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET"
 Defaults    env_keep += "XDG_SESSION_COOKIE"

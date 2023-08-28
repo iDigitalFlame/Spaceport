@@ -14,7 +14,7 @@ bind
 binutils
 binwalk
 bluez
-bluez-utils
+bluez-utils-compat
 btrfs-progs
 bzip2
 c-lolcat
