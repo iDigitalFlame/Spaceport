@@ -41,22 +41,22 @@ chmod 0600 /var/lib/NetworkManager/system-connections/*
 
 chown root:root "/var/cache/ld.so.cache"
 chown root:cups "/var/cache/cups/printers.conf"
-chown root:root -R "/var/lib/NetworkManager/system-connections"
+chown -R root:root "/var/lib/NetworkManager/system-connections"
 
-chmod 2755 -R "/var/cache/fontconfig"
+chmod -R 2755 "/var/cache/fontconfig"
 chmod 2644 /var/cache/fontconfig/*
-chown root:root -R "/var/cache/fontconfig"
+chown -R root:root "/var/cache/fontconfig"
 
-chmod 2750 -R "/var/cache/pacman/pkg"
+chmod -R 2750 "/var/cache/pacman/pkg"
 chmod 2640 /var/cache/pacman/pkg/*
-chown root:root -R "/var/cache/pacman/pkg"
+chown -R root:root "/var/cache/pacman/pkg"
 
 chmod 2755 "/var/lib/pacman/sync"
 chmod 2644 /var/lib/pacman/sync/*
-chown root:root -R "/var/lib/pacman/sync"
+chown -R root:root "/var/lib/pacman/sync"
 
 chmod 2755 "/var/lib/pacman/local"
-chown root:root -R "/var/lib/pacman/local"
+chown -R root:root "/var/lib/pacman/local"
 
 chmod 2700 "/var/cache/ldconfig"
-chown root:root -R "/var/cache/ldconfig"
+chown -R root:root "/var/cache/ldconfig"

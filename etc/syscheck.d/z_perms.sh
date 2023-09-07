@@ -27,14 +27,14 @@ fi
 BASE_DIR="/opt/spaceport"
 
 # Base Permissions
-chmod u-s -R "$BASE_DIR"
-chmod g-s -R "$BASE_DIR"
-chown root:root -R "$BASE_DIR"
-chmod 0555 -R "$BASE_DIR"
-chmod 0555 -R "${BASE_DIR}/etc"
-chmod 0555 -R "${BASE_DIR}/usr"
-chmod 0555 -R "${BASE_DIR}/etc/chromium"
-chmod 0555 -R "/etc/chromium"
+chmod -R u-s "$BASE_DIR"
+chmod -R g-s "$BASE_DIR"
+chown -R root:root "$BASE_DIR"
+chmod -R 0555 "$BASE_DIR"
+chmod -R 0555 "${BASE_DIR}/etc"
+chmod -R 0555 "${BASE_DIR}/usr"
+chmod -R 0555 "${BASE_DIR}/etc/chromium"
+chmod -R 0555 "/etc/chromium"
 
 # General No Execute Permission for files
 find "${BASE_DIR}/" -type f -exec chmod 0444 {} \; 2> /dev/null
@@ -43,23 +43,23 @@ find "${BASE_DIR}/" -type f -exec chmod 0444 {} \; 2> /dev/null
 find "/" -xdev -group firewall-web -exec chgrp -h root {} \;
 
 # General Execute
-chmod 0550 -R "/etc/smd"
-chmod 0555 -R "${BASE_DIR}/bin"
-chmod 0555 -R "${BASE_DIR}/etc/ssh"
-chmod 0555 -R "${BASE_DIR}/etc/udev"
-chmod 0550 -R "${BASE_DIR}/etc/squid"
-chmod 0550 -R "${BASE_DIR}/etc/iptables"
-chmod 0550 -R "${BASE_DIR}/etc/security"
-chmod 0550 -R "${BASE_DIR}/etc/sysctl.d"
-chmod 0555 -R "${BASE_DIR}/var/cache/smd"
-chmod 0555 -R "${BASE_DIR}/etc/profile.d"
-chmod 0550 -R "${BASE_DIR}/etc/sudoers.d"
-chmod 0555 -R "${BASE_DIR}/etc/syscheck.d"
-chmod 0550 -R "${BASE_DIR}/etc/tmpfiles.d"
-chmod 0550 -R "${BASE_DIR}/etc/modprobe.d"
-chmod 0550 -R "${BASE_DIR}/etc/pacman.d/hooks"
-chmod 0550 -R "${BASE_DIR}/etc/modules-load.d"
-chmod 0550 -R "${BASE_DIR}/etc/NetworkManager"
+chmod -R 0550 "/etc/smd"
+chmod -R 0555 "${BASE_DIR}/bin"
+chmod -R 0555 "${BASE_DIR}/etc/ssh"
+chmod -R 0555 "${BASE_DIR}/etc/udev"
+chmod -R 0550 "${BASE_DIR}/etc/squid"
+chmod -R 0550 "${BASE_DIR}/etc/iptables"
+chmod -R 0550 "${BASE_DIR}/etc/security"
+chmod -R 0550 "${BASE_DIR}/etc/sysctl.d"
+chmod -R 0555 "${BASE_DIR}/var/cache/smd"
+chmod -R 0555 "${BASE_DIR}/etc/profile.d"
+chmod -R 0550 "${BASE_DIR}/etc/sudoers.d"
+chmod -R 0555 "${BASE_DIR}/etc/syscheck.d"
+chmod -R 0550 "${BASE_DIR}/etc/tmpfiles.d"
+chmod -R 0550 "${BASE_DIR}/etc/modprobe.d"
+chmod -R 0550 "${BASE_DIR}/etc/pacman.d/hooks"
+chmod -R 0550 "${BASE_DIR}/etc/modules-load.d"
+chmod -R 0550 "${BASE_DIR}/etc/NetworkManager"
 
 # Remove Execute Permissions
 find "${BASE_DIR}/etc/smd/" -type f -exec chmod 0660 {} \; 2> /dev/null
@@ -84,8 +84,8 @@ chmod 0440 "${BASE_DIR}/etc/mkinitcpio.conf"
 chmod 0440 "${BASE_DIR}/etc/NetworkManager/NetworkManager.conf"
 
 # Setup Ownership
-chown root:cups -R "/etc/cups"
-chown root:proxy -R "/etc/squid"
+chown root:cups "/etc/cups"
+chown root:proxy "/etc/squid"
 chown root:root "/usr/share/applications/mimeinfo.cache"
 
 # Group Helper Permissions
@@ -93,18 +93,18 @@ chown root:root "${BASE_DIR}/bin/gh"
 chmod 4755 "${BASE_DIR}/bin/gh"
 
 # Theme Permissions
-chown root:root -R "/usr/share/icons/DarkSky" 2> /dev/null
-chown root:root -R "/usr/share/themes/DarkSky" 2> /dev/null
-chmod 0755 -R "/usr/share/icons/DarkSky" 2> /dev/null
-chmod 0755 -R "/usr/share/themes/DarkSky" 2> /dev/null
+chown -R root:root "/usr/share/icons/DarkSky" 2> /dev/null
+chown -R root:root "/usr/share/themes/DarkSky" 2> /dev/null
+chmod -R 0755 "/usr/share/icons/DarkSky" 2> /dev/null
+chmod -R 0755 "/usr/share/themes/DarkSky" 2> /dev/null
 find "/usr/share/icons/DarkSky" -type f -exec chmod 0644 {} \; 2> /dev/null
 find "/usr/share/themes/DarkSky" -type f -exec chmod 0644 {} \; 2> /dev/null
 
 # SMD Permissions
 chmod 0640 /var/cache/smd/*.json
-chmod 0555 -R "${BASE_DIR}/usr/lib/smd"
-chmod 0555 -R "${BASE_DIR}/usr/lib/smd/bin"
-chmod 0550 -R "${BASE_DIR}/usr/lib/smd/sbin"
+chmod -R 0555 "${BASE_DIR}/usr/lib/smd"
+chmod -R 0555 "${BASE_DIR}/usr/lib/smd/bin"
+chmod -R 0550 "${BASE_DIR}/usr/lib/smd/sbin"
 chmod 0644 "${BASE_DIR}/var/cache/smd/constants.json"
 chmod 0555 "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
 chmod 0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
@@ -125,8 +125,8 @@ chmod 0440 "${BASE_DIR}/usr/lib/smd/static/nginx.conf"
 chmod 0440 "/usr/lib/smd/static/nginx.conf"
 
 # Secureboot Key Permissons
-chown root:root -R "/opt/secureboot"
-chmod 0500 -R "/opt/secureboot"
+chown -R root:root "/opt/secureboot"
+chmod -R 0500 "/opt/secureboot"
 chmod 0400 /opt/secureboot/*
 
 # Backup Key Permissions

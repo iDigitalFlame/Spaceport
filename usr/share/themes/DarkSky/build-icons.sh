@@ -46,7 +46,7 @@ for icon in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | aw
     done
 done
 
-chown root:root -R "$THEME_DIR"
+chown -R root:root "$THEME_DIR"
 find "$THEME_DIR" -type d -exec chmod 0755 {} \;
 find "$THEME_DIR" -type f -exec chmod 0644 {} \;
 exit 0
