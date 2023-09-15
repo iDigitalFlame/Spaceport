@@ -150,6 +150,7 @@ procps-ng
 proxychains-ng
 psmisc
 python
+python-cherrypy
 python-django
 python-pip
 python-pycryptodome
