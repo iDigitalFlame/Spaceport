@@ -1,5 +1,6 @@
 betterdiscord-installer-bin
 cnijfilter-mg5300series
+cura-modern-appimage
 dvm
 evernote-for-linux-bin
 firefox-extension-foxyproxy
