@@ -21,11 +21,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from os import getpid
+import threading
+
 from pprint import pformat
-from signal import signal, SIGALRM
+from os import getpid, kill
 from lib.structs.logger import Logger
 from lib.structs.storage import Storage
+from signal import signal, SIGALRM, SIGINT
 from lib.structs.dispatcher import Dispatcher
 
 
@@ -42,6 +44,7 @@ class Service(Storage):
         self._log.info(f'Service "{name}" starting up init functions..')
         self._dispatcher = Dispatcher(self, modules)
         signal(SIGALRM, self._watchdog)
+        threading.excepthook = self._thread_except
 
     def _load(self):
         self._log.debug(f'Loading configuration from "{self.get_file()}"..')
@@ -75,6 +78,13 @@ class Service(Storage):
 
     def set_level(self, log_level):
         self._log.set_level(log_level)
+
+    def _thread_except(self, args):
+        self._log.error(
+            f"Received a Thread error {args.exc_type} ({args.exc_value})!",
+            err=args.exc_traceback,
+        )
+        kill(getpid(), SIGINT)
 
     def get(self, name, default=None):
         if not self._loaded:

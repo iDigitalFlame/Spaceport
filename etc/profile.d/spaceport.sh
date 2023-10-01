@@ -27,6 +27,10 @@ export ERRFILE="/dev/null"
 # Use to disable DRI3, remove line if causes issues. (linked to X11 conf file).
 export LIBGL_DRI3_DISABLE=1
 
+# Disable telemetry
+export POWERSHELL_TELEMETRY_OPTOUT=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
 export SCREENRC="${HOME}/screen/screenrc"
 export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export GTK_RC_FILES="${HOME}/.config/gtk-1.0/gtkrc"

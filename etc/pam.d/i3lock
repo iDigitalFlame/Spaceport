@@ -1,4 +1,4 @@
-#!/usr/bin/false
+#%PAM-1.0
 # PAM i3lock Configuration
 #
 # System Management Daemon

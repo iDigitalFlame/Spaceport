@@ -1,4 +1,4 @@
-#!/usr/bin/false
+#%PAM-1.0
 # PAM Login Configuration
 #
 # System Management Daemon

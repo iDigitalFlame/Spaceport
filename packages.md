@@ -165,6 +165,7 @@ qemu-base
 qemu-system-aarch64
 qemu-system-arm
 qemu-user-static
+qt5-wayland
 reflector
 ristretto
 rofi
@@ -181,6 +182,7 @@ spice-gtk
 sqlmap
 squid
 sudo
+sway
 swig
 sysfsutils
 systemd-sysvcompat
@@ -208,10 +210,12 @@ vimix-cursors
 vlc
 vscodium-bin
 vulkan-intel
+waybar
 wget
 which
 wireplumber
 wmctrl
+wofi
 xautolock
 xclip
 xf86-input-libinput
@@ -222,10 +226,12 @@ xorg-xdpyinfo
 xorg-xinit
 xorg-xinput
 xorg-xkill
+xorg-xlsclients
 xorg-xprop
 xorg-xrandr
 xorg-xset
 xorg-xsetroot
+xorg-xwayland
 yay
 zsh
 zsh-completions

@@ -1,0 +1,73 @@
+#!/usr/bin/false
+# Login Defaults Configuration
+#
+# System Management Daemon
+#
+# Copyright (C) 2016 - 2023 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+UMASK                   0027
+MAIL_DIR                /var/spool/mail
+MOTD_FILE               /etc/motd
+HOME_MODE               0700
+FAIL_DELAY              3
+CREATE_HOME             no
+NONEXISTENT             /nonexistent
+DEFAULT_HOME            yes
+FORCE_SHADOW            yes
+CHFN_RESTRICT           rwh
+ENCRYPT_METHOD          YESCRYPT
+HUSHLOGIN_FILE          .config/hushlogin
+USERGROUPS_ENAB         yes
+HMAC_CRYPTO_ALGO        SHA512
+LOG_UNKFAIL_ENAB        no
+YESCRYPT_COST_FACTOR    5
+MAX_MEMBERS_PER_GROUP   0
+GRANT_AUX_GROUP_SUBIDS  yes
+
+ENV_PATH                PATH=/usr/local/sbin:/usr/local/bin:/usr/bin
+ENV_SUPATH              PATH=/usr/local/sbin:/usr/bin
+
+TTYPERM                 0620
+TTYGROUP                tty
+
+PASS_MAX_DAYS           99999
+PASS_MIN_DAYS           0
+PASS_WARN_AGE           14
+
+LOGIN_RETRIES           5
+LOGIN_TIMEOUT           120
+
+UID_MIN                 1000
+UID_MAX                 60000
+
+GID_MIN                 1000
+GID_MAX                 60000
+
+SYS_UID_MIN             500
+SYS_UID_MAX             999
+SUB_UID_MIN             100000
+SUB_UID_MAX             600100000
+SUB_UID_COUNT           65536
+
+SYS_GID_MIN             500
+SYS_GID_MAX             999
+SUB_GID_MIN             100000
+SUB_GID_MAX             600100000
+SUB_GID_COUNT           65536
+
+SHA_CRYPT_MIN_ROUNDS    5000
+SHA_CRYPT_MAX_ROUNDS    5000
