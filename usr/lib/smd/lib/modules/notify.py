@@ -119,10 +119,6 @@ class Notifier(GObject.Object):
         del v, t, d, x
 
     def reload(self, server):
-        # TODO(dij): I think calling uninit breaks notifications? At least for
-        #            reloads.
-        #
-        # Notify.uninit()
         server.debug("[m/notify]: Clearing cache and reloading configuration..")
         self._dirs.clear()
         self._cache.clear()
