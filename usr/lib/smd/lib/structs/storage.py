@@ -107,6 +107,9 @@ class Flex(object):
         if not isinstance(data, dict) or len(data) == 0:
             return
         for k, v in data.items():
+            if len(k) == 1 and k == "_":
+                self._data.__setitem__("_ro", True)
+                continue
             if Flex.__reserved(k):
                 continue
             self._data.__setitem__(k, v)
@@ -226,6 +229,9 @@ class Storage(Flex):
 
     def path(self):
         return self._file
+
+    def is_read_only(self):
+        return self._data.pop("_ro", False)
 
     def load(self, path=None, errors=True):
         super(__class__, self).load(path if nes(path) else self._file, errors)

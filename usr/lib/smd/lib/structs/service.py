@@ -93,6 +93,8 @@ class Service(object):
             # NOTE(dij): Allow SGID here.
             perm_check(self.config.path(), 0o4137, getuid(), getgid())
             self.config.load()
+            if self.config.is_read_only() and not self._read_only:
+                self._read_only = True
         except (ValueError, OSError) as err:
             self._log.error(
                 f'[service]: Cannot load configuration "{self.config.path()}", using default values!',
