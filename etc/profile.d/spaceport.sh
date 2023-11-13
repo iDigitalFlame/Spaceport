@@ -1,9 +1,25 @@
 #!/usr/bin/dash
-# User Profile Defaults Script
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## System Profile Configuration
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,21 +37,22 @@
 
 umask 0027
 
-export PIP_USER=yes
 export ERRFILE="/dev/null"
-
-# Use to disable DRI3, remove line if causes issues. (linked to X11 conf file).
-export LIBGL_DRI3_DISABLE=1
 
 # Disable telemetry
 export POWERSHELL_TELEMETRY_OPTOUT=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-export SCREENRC="${HOME}/screen/screenrc"
+export NO_AT_BRIDGE=1
+export SCREENRC="${HOME}/.screen/screenrc"
 export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export GTK_RC_FILES="${HOME}/.config/gtk-1.0/gtkrc"
 export GTK2_RC_FILES="${HOME}/.config/gtk-2.0/gtkrc"
 export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
+
+# *Just Wayland Things*
+export QT_QPA_PLATFORM="wayland;xcb"
+export _JAVA_AWT_WM_NONREPARENTING="1"
 
 # XDG User items export
 export XDG_DESKTOP_DIR="${HOME}"
@@ -56,19 +73,17 @@ if [ -d "${HOME}/.local/bin" ] && [ ! "$USER" = "root" ]; then
     PATH=$PATH:${HOME}/.local/bin
 fi
 
-if [ ! -d "${PYTHONUSERBASE}/bin" ] && [ ! "$USER" = "root" ]; then
+if ! [ -d "${PYTHONUSERBASE}/bin" ] && [ ! "$USER" = "root" ]; then
     mkdir -p "${PYTHONUSERBASE}/bin" 2> /dev/null
 fi
 
 PATH=/usr/lib/smd/bin:/usr/local/bin:$PATH:${PYTHONUSERBASE}/bin
 export PATH
 
-if [ ! -d "/tmp/.usercache/${USER}" ]; then
+if ! [ -d "/tmp/.usercache/${USER}" ]; then
     mkdir "/tmp/.usercache/${USER}" 2> /dev/null
 fi
 
-if [ -d "${HOME}/.surf" ]; then
-    rm -rf "${HOME}/.surf/cache" 2> /dev/null
-    mkdir "/tmp/.usercache/${USER}/surf" 2> /dev/null
-    ln -s "/tmp/.usercache/${USER}/surf" "${HOME}/.surf/cache" 2> /dev/null
+if ! [ -d "/tmp/.usercache/${USER}/mesa" ]; then
+    mkdir "/tmp/.usercache/${USER}/mesa" 2> /dev/null
 fi

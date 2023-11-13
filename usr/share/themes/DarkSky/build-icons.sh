@@ -1,5 +1,39 @@
 #!/usr/bin/dash
-# Build the DarkSky icon theme
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Icon Builder Utility for DarkSky
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 
 if ! [ "$USER" = "root" ]; then
     echo "Only root can do this!"
@@ -28,15 +62,15 @@ if ! cp -R "/usr/share/icons/Flatery-Dark" "$THEME_DIR"; then
     exit 0
 fi
 
-rm -rf "${THEME_DIR}/apps" 2> /dev/null
-rm -f "${THEME_DIR}/index.theme" 2> /dev/null
-rm -f "${THEME_DIR}/icon-theme.cache" 2> /dev/null
-find "${THEME_DIR}/actions" -type l -name "go-*" -delete 2> /dev/null
-find "${THEME_DIR}/actions" -type f -name "go-*" -delete 2> /dev/null
+rm -rf "${THEME_DIR}/apps"
+rm -f "${THEME_DIR}/index.theme"
+rm -f "${THEME_DIR}/icon-theme.cache"
+find "${THEME_DIR}/actions" -type l -name "go-*" -delete
+find "${THEME_DIR}/actions" -type f -name "go-*" -delete
 
-ln -s "/usr/share/icons/kora/apps" "${THEME_DIR}/apps" 2> /dev/null
+ln -s "/usr/share/icons/kora/apps" "${THEME_DIR}/apps"
 ln -s "/usr/share/icons/Vimix-cursors/cursors" "${THEME_DIR}/cursors" 2> /dev/null
-ln -s "/usr/share/themes/DarkSky/icons.theme" "${THEME_DIR}/index.theme" 2> /dev/null
+ln -s "/usr/share/themes/DarkSky/icons.theme" "${THEME_DIR}/index.theme"
 
 for icon in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | awk '{print $11}'); do
     for d in "${THEME_DIR}"/actions/*; do

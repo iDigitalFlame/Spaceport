@@ -1,11 +1,24 @@
 #!/usr/bin/false
-# The Service class is the base object for Daemon threads that run
-# such as the client and system daemons. This allows the daemons to share
-# common functions, such as logging and dispatching.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,75 +34,101 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# service.py
+#   The Service class is the base object for Daemon threads that run
+#   such as the client and system daemons. This allows the daemons to share
+#   common functions, such as logging and dispatching.
+
 import threading
 
+from lib.util import nes
 from pprint import pformat
-from os import getpid, kill
+from lib.util.file import perm_check
 from lib.structs.logger import Logger
 from lib.structs.storage import Storage
 from signal import signal, SIGALRM, SIGINT
+from os import getgid, getpid, getuid, kill
 from lib.structs.dispatcher import Dispatcher
 
 
-class Service(Storage):
-    def __init__(self, name, modules, config, level, file, read_only=False):
-        Storage.__init__(self, path=config)
-        self._loaded = False
+class Service(object):
+    __slots__ = ("config", "_log", "_read_only", "_dispatcher")
+
+    def __init__(self, name, modules, config, level, log, ro=False, journal=False):
         self._log = Logger(
             name,
-            level,
-            file.replace("{pid}", str(getpid())).replace("{name}", name),
+            10,
+            log.replace("{uid}", f"{getuid()}")
+            .replace("{pid}", f"{getpid()}")
+            .replace("{name}", name)
+            if nes(log)
+            else None,
+            journal,
         )
-        self._read_only = read_only
-        self._log.info(f'Service "{name}" starting up init functions..')
+        self._read_only = ro
+        self._log.info(f'[service]: "{name}" starting up..')
+        self._log.set_level(level)
         self._dispatcher = Dispatcher(self, modules)
+        self.config = Storage(config)
         signal(SIGALRM, self._watchdog)
         threading.excepthook = self._thread_except
 
-    def _load(self):
-        self._log.debug(f'Loading configuration from "{self.get_file()}"..')
+    def save(self):
+        if self._read_only:
+            return
+        self._log.debug(f'[service]: Saving configuration to "{self.config.path()}"..')
         try:
-            self.read()
-        except OSError as err:
+            self.config.save(perms=0o0640)
+        except (ValueError, OSError) as err:
             self._log.error(
-                f'Error loading configuration "{self.get_file()}", using defaults!',
-                err=err,
+                f'[service]: Cannot save configuration file "{self.config.path()}"!',
+                err,
             )
-        self._loaded = True
+
+    def load(self):
+        self._log.debug(
+            f'[service]: Loading configuration from "{self.config.path()}"..'
+        )
+        try:
+            # NOTE(dij): Allow SGID here.
+            perm_check(self.config.path(), 0o4137, getuid(), getgid())
+            self.config.load()
+        except (ValueError, OSError) as err:
+            self._log.error(
+                f'[service]: Cannot load configuration "{self.config.path()}", using default values!',
+                err,
+            )
 
     def is_server(self):
         return False
+
+    def cancel(self, event):
+        return self._dispatcher.cancel_task(event)
 
     def forward(self, message):
         if message is None:
             return
         message["forward"] = True
-        self._log.debug(f"Sending message 0x{message.header():02X} to internal Hooks.")
+        self._log.debug(
+            f"[service]: Forwarding message 0x{message.header():02X} to internal Hooks."
+        )
         self._dispatcher.add(None, message)
 
-    def send(self, eid, result):
-        pass
+    def set(self, name, value):
+        return self.config.set(name, value)
 
     def _watchdog(self, _, frame):
         self._log.error(
-            f'Received a Watchdog timeout for "{frame.f_code.co_name}" '
+            f'[service]: Received a Watchdog timeout for "{frame.f_code.co_name}" '
             f"({frame.f_code.co_filename}:{frame.f_lineno}) [{pformat(frame.f_locals, indent=4)}]"
         )
 
-    def set_level(self, log_level):
-        self._log.set_level(log_level)
-
     def _thread_except(self, args):
         self._log.error(
-            f"Received a Thread error {args.exc_type} ({args.exc_value})!",
-            err=args.exc_traceback,
+            f"[service]: Received a Thread error {args.exc_type} ({args.exc_value})!",
+            err=args.exc_value,
         )
         kill(getpid(), SIGINT)
-
-    def get(self, name, default=None):
-        if not self._loaded:
-            self._load()
-        return super(__class__, self).get(name, default)
 
     def info(self, message, err=None):
         self._log.info(message, err)
@@ -100,36 +139,17 @@ class Service(Storage):
     def error(self, message, err=None):
         self._log.error(message, err)
 
+    def set_log_level(self, log_level):
+        self._log.set_level(log_level)
+
     def warning(self, message, err=None):
         self._log.warning(message, err)
 
-    def notify(self, title, message=None, icon=None):
-        pass
+    def watch(self, proc, func=None, args=(), kwargs={}):
+        self._dispatcher.watch_process(proc, func, args, kwargs)
 
-    def set(self, name, value, only_not_exists=False):
-        if not self._loaded:
-            self._load()
-        return super(__class__, self).set(name, value, only_not_exists)
+    def get(self, name, default=None, set_non_exist=False):
+        return self.config.get(name, default, set_non_exist)
 
-    def get_config(self, name, default=None, save=False):
-        r = self.get(name, default)
-        if save and not self._read_only:
-            try:
-                self.write(perms=0o0640)
-            except OSError as err:
-                self.error(f'Error saving configuration "{self.get_file()}"!', err=err)
-        return r
-
-    def set_config(self, name, value, save=False, only_not_exists=False):
-        r = self.set(name, value, only_not_exists)
-        if save and not self._read_only:
-            try:
-                self.write(perms=0o0640)
-            except OSError as err:
-                self.error(f'Error saving configuration "{self.get_file()}"!', err=err)
-        return r
-
-    def write(self, path=None, indent=4, sort=True, perms=None, errors=True):
-        if self._read_only:
-            return
-        return super(__class__, self).write(path, indent, sort, perms, errors)
+    def task(self, timeout, func, args=(), kwargs={}, priority=10):
+        return self._dispatcher.add_task(timeout, func, args, kwargs, priority)

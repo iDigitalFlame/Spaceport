@@ -1,11 +1,10 @@
 cups.path
 cups.service
 getty@.service
-ip6tables.service
-iptables.service
 NetworkManager-dispatcher.service
 NetworkManager-wait-online.service
 NetworkManager.service
+nftables.service
 smd-boot.service
 smd-daemon.service
 smd-hibernate-post.service

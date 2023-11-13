@@ -1,19 +1,24 @@
 #!/usr/bin/false
-# The Storage class is the basis for all file based Python dictionaries.
-# This class extends the "dict" class and has options for saving and loading data
-# from files.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# All non-private (lacking "_" prefixes) attributes are treated as data from the
-# internal dictionary.
-#
-# This allows a Storage class to have attributes set to the internal dictionary
-# using standard Python conventions. The other functions, including the "get"
-# function, allow for setting defaults while attempting to get information from
-# the internal dictionary.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,177 +34,203 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from json import dumps
-from os.path import isfile
-from lib.util import write_json, read_json
+# storage.py
+#   The Storage class is the basis for all file based Python dictionaries.
+#   This class extends the "dict" class and has options for saving and loading
+#   data from files.
+#
+#   All non-private (lacking "_" prefixes) attributes are treated as data from the
+#   internal dictionary.
+#
+#   This allows a Storage class to have attributes set to the internal dictionary
+#   using standard Python conventions. The other functions, including the "get"
+#   function, allow for setting defaults while attempting to get information from
+#   the internal dictionary.
 
+from json import dumps
+from lib.util import nes
+from lib.util.file import write_json, read_json
 
 _INTERNAL = [
     "get",
     "set",
+    "uid",
+    "pid",
+    "path",
     "send",
     "recv",
-    "read",
-    "write",
+    "save",
+    "load",
+    "keys",
+    "items",
     "update",
     "header",
-    "set_file",
-    "get_file",
+    "values",
     "is_error",
-    "set_config",
-    "get_config",
-    "set_header",
+    "multicast",
     "is_multicast",
     "set_multicast",
-    "is_from_client",
+    "is_same_client",
 ]
 
 
-class Storage(dict):
-    def __init__(self, data=None, path=None, errors=True, no_fail=False):
-        dict.__init__(self)
-        if isinstance(data, dict):
-            self.update(data)
-        self._file = path
-        if isinstance(path, str) and len(path) > 0 and isfile(path):
-            self.read(self._file, errors=errors)
-        self._no_fail = no_fail
+class Flex(object):
+    __slots__ = ("_data",)
+
+    def __init__(self):
+        self._data = dict()
+
+    def keys(self):
+        return self._data.keys()
+
+    def items(self):
+        return self._data.items()
+
+    def values(self):
+        return self._data.values()
 
     def __str__(self):
-        return dumps(self, indent=4, sort_keys=True)
+        return dumps(self._data, indent=4, sort_keys=True)
 
-    def get_file(self):
-        return self._file
-
-    def update(self, data):
-        if not isinstance(data, dict) or len(data) == 0:
-            return
-        d = data.copy()
-        for k in d.keys():
-            if not Storage.__is_reserved(k):
-                continue
-            del d[k]
-        super(__class__, self).update(d)
-        del d
+    def __len__(self):
+        return self._data.__len__()
 
     @staticmethod
-    def __is_reserved(name):
+    def __reserved(name):
         if not isinstance(name, str) or len(name) == 0:
             return False
         if name[0] == "_":
             return True
         return name in _INTERNAL
 
-    def set_file(self, path):
-        self._file = path
+    def update(self, data):
+        if not isinstance(data, dict) or len(data) == 0:
+            return
+        for k, v in data.items():
+            if Flex.__reserved(k):
+                continue
+            self._data.__setitem__(k, v)
 
-    def __getitem__(self, name):
-        v = self.__get_set(name, True, None, False)
-        if v is None:
-            raise KeyError(name)
-        return v
+    def set(self, name, value):
+        if not isinstance(name, str):
+            return self._data.__setitem__(name, value)
+        return self.__get(name, value, True, False)
 
     def __delattr__(self, name):
-        if Storage.__is_reserved(name):
+        if Flex.__reserved(name):
             return super(__class__, self).__delattr__(name)
-        if super(__class__, self).__contains__(name):
-            return self.__delitem__(name)
-        return super(__class__, self).__delattr__(name)
+        try:
+            return super(__class__, self).__delattr__(name)
+        except AttributeError:
+            pass
+        try:
+            del self._data.__delitem__[name]
+        except KeyError:
+            pass
+
+    def __getitem__(self, name):
+        if not isinstance(name, str):
+            return self._data.get(name)
+        return self.__get(name, None, False, False)
 
     def __getattr__(self, name):
         return self.__getattribute__(name)
 
+    def __contains__(self, name):
+        return self._data.__contains__(name)
+
     def __getattribute__(self, name):
-        if Storage.__is_reserved(name):
+        if Flex.__reserved(name):
             return super(__class__, self).__getattribute__(name)
-        if super(__class__, self).__contains__(name):
-            return self.__getitem__(name)
         try:
             return super(__class__, self).__getattribute__(name)
-        except AttributeError as err:
-            if self._no_fail:
-                return None
-            raise err
+        except AttributeError:
+            pass
+        return self._data.get(name)
 
-    def get(self, name, default=None):
-        return self.__get_set(name, True, default, False)
-
-    def __setattr__(self, name, value):
-        if Storage.__is_reserved(name):
-            return super(__class__, self).__setattr__(name, value)
-        return self.__setitem__(name, value)
-
-    def __setitem__(self, name, value):
-        return self.__get_set(name, False, value, False)
-
-    def __get_single(self, name, default):
-        if default is not None and not super(__class__, self).__contains__(name):
-            super(__class__, self).__setitem__(name, default)
-            return default
-        if super().__contains__(name):
-            return super(__class__, self).__getitem__(name)
-        return None
-
-    def read(self, path=None, errors=True):
-        f = self._file if path is None else path
-        d = read_json(f, errors=errors)
-        if not isinstance(d, dict):
-            if not errors:
-                raise OSError(f'Result from "{f}" was not a Dict')
-            del f
+    def load(self, path, errors=True):
+        d = read_json(path, errors=errors)
+        try:
+            if not isinstance(d, dict):
+                if not errors:
+                    raise ValueError("data is not a valid type")
+                return False
+            self.update(d)
+        finally:
             del d
-            return False
-        self.update(d)
-        del f
-        del d
         return True
 
-    def set(self, name, value, only_not_exists=False):
-        return self.__get_set(name, False, value, only_not_exists)
+    def __setitem__(self, name, value):
+        if Flex.__reserved(name):
+            # NOTE(dij): Let's raise an error so we can catch anything attempting
+            #            to add an invalid attribute.
+            raise ValueError(f'cannot use reserved name "{name}"')
+        if not isinstance(name, str):
+            return self._data.__setitem__(name, value)
+        return self.__get(name, value, True, False)
 
-    def __set_single(self, name, value, only_not_exists):
-        if only_not_exists and super(__class__, self).__contains__(name):
-            return
-        return super(__class__, self).__setitem__(name, value)
-
-    def __get_set(self, name, get, value, only_not_exists):
+    def __get(self, name, value, set, set_non_exist):
         if "." not in name:
-            if get:
-                return self.__get_single(name, value)
-            return self.__set_single(name, value, only_not_exists)
-        s = name.split(".")
-        if len(s) == 1:
-            if get:
-                return self.__get_single(s[0], value)
-            return self.__set_single(s[0], value, only_not_exists)
-        o = dict()
-        if super(__class__, self).__contains__(s[0]):
-            o = super(__class__, self).__getitem__(s[0])
-        elif value is not None or not get:
-            super(__class__, self).__setitem__(s[0], o)
-        elif get:
-            del o
-            del s
+            if set or (set_non_exist and not self._data.__contains__(name)):
+                if Flex.__reserved(name):
+                    raise ValueError(f'cannot use reserved name "{name}"')
+                self._data[name] = value
+                return value
+            return self._data.get(name, value)
+        v = name.split(".")
+        if (set or set_non_exist) and Flex.__reserved(v[0]):
+            raise ValueError(f'cannot use reserved name "{v[0]}"')
+        d = self._data.get(v[0])
+        if d is None and not (set or set_non_exist):
             return value
-        for x in range(1, len(s) - 1):
-            n = o.get(s[x])
-            if n is None:
-                o[s[x]] = dict()
-                n = o[s[x]]
-            o = n
+        elif d is None:
+            d = dict()
+            self._data.__setitem__(v[0], d)
+        for x in range(1, len(v) - 1):
+            n = d.get(v[x])
+            if n is None and not (set or set_non_exist):
+                return value
+            elif n is None:
+                n = dict()
+                d.__setitem__(v[x], n)
+            d = n
             del n
-        name = s[len(s) - 1]
-        del s
-        if only_not_exists and not get and name in o:
+        if not set:
+            if d.__contains__(v[-1]):
+                return d.get(v[-1])
+            if set_non_exist:
+                d.__setitem__(v[-1], value)
+            del d
             return value
-        if not get or (value is not None and name not in o):
-            o[name] = value
-        elif get and name in o:
-            return o[name]
-        del o
+        d.__setitem__(v[-1], value)
+        del d
         return value
 
-    def write(self, path=None, indent=4, sort=True, perms=None, errors=True):
-        return write_json(
-            self._file if path is None else path, self, indent, sort, perms, errors
+    def get(self, name, default=None, set_non_exist=False):
+        if not isinstance(name, str):
+            return self._data.get(name, default)
+        return self.__get(name, default, False, set_non_exist)
+
+    def save(self, path, errors=True, indent=4, sort=True, perms=None):
+        write_json(path, self._data, errors, indent, sort, perms)
+
+
+class Storage(Flex):
+    __slots__ = ("_file",)
+
+    def __init__(self, path=None, load=False):
+        Flex.__init__(self)
+        self._file = path
+        if load and self._file is not None:
+            self.load()
+
+    def path(self):
+        return self._file
+
+    def load(self, path=None, errors=True):
+        super(__class__, self).load(path if nes(path) else self._file, errors)
+
+    def save(self, path=None, errors=True, indent=4, sort=True, perms=None):
+        super(__class__, self).save(
+            path if nes(path) else self._file, errors, indent, sort, perms
         )

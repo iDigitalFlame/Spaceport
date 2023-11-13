@@ -13,4 +13,4 @@ __pypackages__/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-etc/udev/rules.d/15-usb.rules
+etc/udev/rules.d/20-network.rules

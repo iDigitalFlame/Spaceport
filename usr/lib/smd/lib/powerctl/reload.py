@@ -1,12 +1,24 @@
 #!/usr/bin/false
-# PowerCTL Module: Reload
-#  powerctl reload, reloadctl, reload
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# PowerCTL command line user module to reload the system configuration.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,18 +34,24 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from lib.util import print_error
-from lib.structs.message import send_message
-from lib.constants import HOOK_LOG, HOOK_RELOAD
+# PowerCTL Module: Reload
+#   Command line user module to reload the system configuration.
+
+from lib.util import boolean
+from lib.constants import HOOK_RELOAD
+from lib import print_error, send_message
 
 
-def default(arguments):
-    try:
-        if arguments.level > -1 and arguments.level < 5:
-            send_message(arguments.socket, HOOK_LOG, payload={"level": arguments.level})
-        if arguments.no_reload:
+def default(args):
+    if not args.force:
+        try:
+            a = input("Confirm reload? [y/N]: ")
+        except (OSError, KeyboardInterrupt):
             return
-        send_message(arguments.socket, HOOK_RELOAD, payload={"all": arguments.all})
-    except OSError as err:
-        return print_error("Error sending a Reload message!", err)
-    print("Sent a Reload message to the system.")
+        if not boolean(a):
+            return
+    try:
+        send_message(args.socket, HOOK_RELOAD, payload={"all": args.all})
+    except Exception as err:
+        return print_error("Cannot send the Reload request!", err)
+    print("Reload request was sent!")

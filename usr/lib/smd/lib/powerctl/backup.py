@@ -1,12 +1,24 @@
 #!/usr/bin/false
-# PowerCTL Module: Rotate
-#  powerctl rotate, rotatectl, rotate
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# PowerCTL command line user module to configure screen rotaion options.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,63 +34,74 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# PowerCTL Module: Backup
+#   Command line user module to start/stop/pause/resume Backups.
+
+from lib.util import nes
 from datetime import datetime
-from lib.util import print_error
-from lib.structs.message import send_message
+from lib.constants.config import TIMEOUT_SEC_MESSAGE
+from lib import print_error, send_message, check_error
 from lib.constants import (
     EMPTY,
+    MSG_PRE,
+    MSG_POST,
+    MSG_USER,
+    MSG_STATUS,
+    MSG_CONFIG,
+    MSG_ACTION,
     HOOK_BACKUP,
-    MESSAGE_TYPE_PRE,
-    MESSAGE_TYPE_POST,
-    MESSAGE_TYPE_STATUS,
-    MESSAGE_TYPE_CONFIG,
-    MESSAGE_TYPE_ACTION,
-    BACKUP_STATUS_UPLOADING,
 )
 
 
-def config(arguments):
-    q = dict()
-    if arguments.start or arguments.dir or arguments.path:
-        q["force"] = arguments.force
-        q["type"] = MESSAGE_TYPE_ACTION
-        if isinstance(arguments.dir, str) and len(arguments.dir) > 0:
-            q["path"] = arguments.dir
-        if isinstance(arguments.path, str) and len(arguments.path) > 0:
-            q["path"] = arguments.path
-    elif arguments.pause:
-        q["type"] = MESSAGE_TYPE_PRE
-    elif arguments.resume:
-        q["type"] = MESSAGE_TYPE_POST
-    elif arguments.stop:
-        q["type"] = MESSAGE_TYPE_CONFIG
-    elif arguments.clear:
-        q["type"] = BACKUP_STATUS_UPLOADING
+def config(args):
+    p = dict()
+    if args.start or ((nes(args.dir) or nes(args.path)) and not args.stop):
+        p["force"], p["type"], p["action"] = args.force, MSG_ACTION, MSG_PRE
+        if nes(args.dir):
+            p["dir"] = args.dir
+        elif nes(args.path):
+            p["dir"] = args.path
+        if "dir" in p and p["dir"][-1] != "/":
+            p["dir"] = f'{p["dir"]}/'
+        p["full"] = args.full
+    elif args.pause:
+        p["type"], p["action"] = MSG_CONFIG, MSG_PRE
+    elif args.resume:
+        p["type"], p["action"] = MSG_CONFIG, MSG_POST
+    elif args.stop:
+        p["type"], p["action"] = MSG_ACTION, MSG_POST
+        if nes(args.dir):
+            p["dir"] = args.dir
+        elif nes(args.path):
+            p["dir"] = args.path
+    elif args.clear:
+        p["type"] = MSG_USER
     else:
-        return default(arguments)
+        return default(args)
     try:
-        r = send_message(arguments.socket, HOOK_BACKUP, HOOK_BACKUP, 5, q)
-    except OSError as err:
-        return print_error("Error retriving Backup Plans!", err)
-    del q
-    if r.is_error():
-        return print_error(f"Error retriving Backup Plans: {r.error}!")
-    if not isinstance(r.result, str) or len(r.result) == 0:
-        return
-    print(r.result)
-    del r
+        r = send_message(args.socket, HOOK_BACKUP, HOOK_BACKUP, TIMEOUT_SEC_MESSAGE, p)
+    except Exception as err:
+        return print_error("Cannot configure Backup Plans!", err)
+    check_error(r)
+    m = r.result
+    if nes(m):
+        print(m)
+    del m, r
 
 
-def default(arguments):
+def default(args):
     try:
         r = send_message(
-            arguments.socket, HOOK_BACKUP, HOOK_BACKUP, 5, {"type": MESSAGE_TYPE_STATUS}
+            args.socket,
+            HOOK_BACKUP,
+            HOOK_BACKUP,
+            TIMEOUT_SEC_MESSAGE,
+            {"type": MSG_STATUS},
         )
-    except OSError as err:
-        return print_error("Error retriving Backup Plans!", err)
-    if r.is_error():
-        return print_error(f"Error retriving Backup Plans: {r.error}!")
-    print(f'{"UUID":9}{"Status":18}{"Last Backup":25} Path\n{"="*65}')
+    except Exception as err:
+        return print_error("Cannot retrive Backup Plans!", err)
+    check_error(r, "Cannot retrive Backup Plans")
+    print(f'{"UUID":9}{"Status":18}{"Last Backup":25}{"Last Size":9} Path\n{"="*65}')
     if not isinstance(r.plans, list) or len(r.plans) == 0:
         return
     for p in r.plans:
@@ -95,10 +118,13 @@ def default(arguments):
         v = EMPTY
         if p.get("error", False):
             v = "FAIL "
-        elif p.get("stop", False):
-            v = "STOP "
         t = f"{v}{t}"
         del v
-        print(f'{p["uuid"][:8]:9}{p["status"]:<18}{t:<25} {p["path"]}')
-        del t
+        s = p["size"]
+        if not nes(s):
+            s = ""
+        else:
+            s = s[:-2]
+        print(f'{p["uuid"][:8]:9}{p["status"]:<18}{t:<25}{s:>9} {p["path"]}')
+        del t, s
     del r

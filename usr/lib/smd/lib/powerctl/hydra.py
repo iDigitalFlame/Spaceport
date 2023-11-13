@@ -1,12 +1,24 @@
 #!/usr/bin/false
-# PowerCTL Module: Hydra
-#  powerctl hydra, hydractl, hydra
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# PowerCTL command line user module to control and configure Hydra VMs
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,12 +34,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# PowerCTL Module: Hydra
+#   Command line user module to configure and control Hydra VMs.
+
 from os import fork
 from time import sleep
-from os.path import expandvars, expanduser
-from lib.structs.message import send_message
-from lib.modules.hydra import get_vm, get_usb
-from lib.util import read_json, print_error, run
+from lib.util import nes, num
+from lib.util.exec import nulexec
+from lib.util.file import read_json, expand
+from lib.shared.hydra import load_vm, get_devices
+from lib import print_error, send_message, check_error
 from lib.constants import (
     EMPTY,
     HOOK_OK,
@@ -41,19 +57,23 @@ from lib.constants import (
     HYDRA_STATUS,
     HYDRA_GA_PING,
     HYDRA_USB_ADD,
-    CONFIG_CLIENT,
     HYDRA_USB_QUERY,
     HYDRA_USB_CLEAN,
-    DIRECTORY_HYDRA,
     HYDRA_USB_DELETE,
-    HYDRA_USB_COMMANDS,
     HYDRA_USER_DIRECTORY,
     HYDRA_USER_ADD_ALIAS,
     HYDRA_USER_DELETE_ALIAS,
 )
+from lib.constants.config import (
+    HYDRA_DIR,
+    CONFIG_CLIENT,
+    HYDRA_EXEC_VNC,
+    HYDRA_EXEC_SPICE,
+    TIMEOUT_SEC_MESSAGE,
+)
 
-NAMES = dict()
-SCHEMA = """# HydraVM Schema v1-release
+_CACHE = dict()
+_SCHEMA = """# HydraVM Schema v2-release
 
 bios {
     file            <String[File Path], Optional>
@@ -246,7 +266,7 @@ vmid        <Integer>
         This value is used to indicate the VM in operations or via the
         command line.
 """
-EXAMPLE = """{{
+_EXAMPLE = """{{
     "bios": {{
         "uefi": false,
         "version": 1
@@ -292,132 +312,158 @@ EXAMPLE = """{{
 """
 
 
-def all(args):
-    return do_all(args, args.all_sleep, args.all_wake, args.all_stop)
+def _usb(e):
+    print(f'{"ID":>4} {"Device ID":12}{"Description":20}\n{"=" * 50}')
+    if not isinstance(e, dict) or len(e) == 0:
+        return
+    d = get_devices()
+    for k, v in e.items():
+        if k not in d:
+            print(f'{v:4} {k:<12}{"USB Device":<20}')
+        else:
+            print(f"{v:4} {k:<12}{d[k].name:<20}")
+    del d
 
 
-def default(args):
-    return list_vms(args)
+def _vm(x, p):
+    global _CACHE
+    if len(_CACHE) == 0:
+        d = read_json(expand(CONFIG_CLIENT), errors=False)
+        if isinstance(d, dict) and "hydra" in d and isinstance(d["hydra"], dict):
+            i = d["hydra"].get("aliases")
+            if isinstance(i, dict) and len(i) > 0:
+                for k, v in i.items():
+                    _CACHE[v.lower()] = k.title()
+            del i
+        _CACHE["__loaded"] = True
+        del d
+    n = _CACHE.get(p.lower())
+    if isinstance(n, str) and len(n) > 0:
+        return f"{n} ({x})"
+    return f"VM({x})"
 
 
-def list_vms(args):
+def _usb_vet(args):
+    d, n = get_devices(), args.usb_name.lower()
+    if len(n) == 9 and ":" in n and n in d:
+        args.usb_vendor, args.usb_product = n[:4], n[5:]
+        del n, d
+        return
+    m = list()
+    for i in d.values():
+        if n not in i.name.lower():
+            continue
+        m.append(i)
+    del d
+    c = None
+    if len(m) > 1:
+        c = _usb_prompt(n, m)
+    elif len(m) == 1:
+        c = m[0]
+    else:
+        return print_error(f'Cannot find any USB devices matching "{n}"!')
+    del m, n
+    print(
+        f'\nSelected Device "{c.vendor}:{c.product} - {c.name}" based on search results.\n'
+    )
+    args.usb_vendor, args.usb_product = c.vendor, c.product
+    del c
+
+
+def _get_check(args, vm):
+    if vm is not None:
+        return vm
+    return _get_vm(args)
+
+
+def _all(args, wake, stop):
+    p = {"all": True}
+    if not stop and not args.all_force:
+        p["type"] = HYDRA_WAKE if wake else HYDRA_SLEEP
+    else:
+        p["type"], p["force"] = HYDRA_STOP, True if args.all_force else False
     try:
         r = send_message(
-            args.socket, HOOK_HYDRA, (HOOK_HYDRA, "vms"), 5, {"type": HYDRA_STATUS}
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, "vms"), TIMEOUT_SEC_MESSAGE, p
         )
     except OSError as err:
-        return print_error("Error retriving VM list!", err)
-    if r.is_error():
-        return print_error(f"Error retriving VM list: {r.error}!")
-    if not args.dmenu:
-        print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
+        return print_error('Cannot perform a "set all" operation!', err)
+    del p
+    check_error(r, 'Cannot perform a "set all" operation')
+    print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
-        return
-    for vm in r.vms:
-        if args.dmenu:
-            print(
-                f'{_resolve(vm["vmid"], vm["path"])},{vm["status"].title()},{vm["vmid"]}'
-            )
-            continue
+        return True
+    for x in r.vms:
         print(
-            f'{_resolve(vm["vmid"], vm["path"]):20}{vm["vmid"]:<8}'
-            f'{vm["pid"] if vm["pid"] is not None else EMPTY:<12}{vm["status"].title()}'
+            f'{_vm(x["vmid"], x["path"]):20}{x["vmid"]:<8}'
+            f'{x["pid"] if x["pid"] is not None else EMPTY:<12}{x["status"].title():<12}'
         )
     del r
     return True
 
 
-def tokenize(args):
-    if args.command is None:
-        return list_vms(args)
-    c = args.command.lower()
-    if c == "list" or args.list:
-        return list_vms(args)
-    if c == "dir" or c == "directory" or args.directory:
-        if len(args.args) >= 1:
-            args.directory = args.args[0]
-        return directory(args)
-    if c == "example" or args.example:
-        return example(args, False)
-    if c == "schema" or args.schema:
-        return example(args, True)
-    if len(args.args) >= 1:
-        vm = _resolve_vm(args, args.args[0])
-    else:
-        vm = _resolve_vm(args)
-    if c == "start" or args.start:
-        return start(args, vm)
-    if c == "stop" or args.stop:
-        if vm is None or args.all_stop or args.all_force:
-            return do_all(args, False, False, True)
-        return stop(args, vm)
-    if c == "tap" or args.tap:
-        return tap(args, vm)
-    if c == "web" or args.connect_web:
-        return connect(args, vm)
-    if c == "vnc" or c == "v" or args.connect_vnc:
-        return connect(args, vm, True)
-    if c == "spice" or c == "s" or args.connect_spice:
-        return connect(args, vm, spice=True)
-    if c == "view" or c == "connect" or args.connect_spice:
-        return connect(args, vm, spice=True)
-    if c == "ip" or args.ga_ip:
-        return ip(args, vm)
-    if c == "ping" or args.ga_ping:
-        return ping(args, vm)
-    if c == "wake" or args.wake:
-        if vm is None or args.all_wake:
-            return do_all(args, False, True, False)
-        return sleep_vm(args, False, vm)
-    if c == "sleep" or args.sleep:
-        if vm is None or args.all_sleep:
-            return do_all(args, True, False, False)
-        return sleep_vm(args, True, vm)
-    if c == "usb" or args.usb_add or args.usb_delete:
-        n = EMPTY
-        o = EMPTY
-        if len(args.args) >= 2:
-            o = args.args[1].lower()
-        if len(args.args) >= 3:
-            n = args.args[2].lower()
-        if len(n) > 0:
-            args.usb_name = n
-        if o not in HYDRA_USB_COMMANDS and not (args.usb_delete or args.usb_add):
-            if len(o) > 0:
-                args.usb_name = o
-            else:
-                usb_list(args, vm)
-        if len(n) == 0 and (args.usb_list or o == "list"):
-            usb_list(args, vm)
-        elif o == "clean" or o == "clear":
-            usb_clean(args, vm)
-        else:
-            usb(args, (o == "remove" or o == "del") or args.usb_delete, vm)
-        del n
-        del o
-    elif c == "alias" or c == "name" or args.alias_add or args.alias_delete:
-        n = EMPTY
-        o = EMPTY
-        if len(args.args) >= 2:
-            o = args.args[1].lower()
-        if len(args.args) >= 3:
-            n = args.args[2].lower()
-        if o == "add" and len(n) > 0:
-            args.alias_add = n
-        elif (o == "delete" or o == "del") and len(n) > 0:
-            args.alias_delete = n
-        elif len(o) > 0 and len(n) == 0:
-            args.alias_add = o
-        alias(args, vm)
-        del n
-        del o
-    else:
-        return print_error(f'Invalid command "{c}"!')
-    del c
-    return True
+def _get_vm(args, name=None):
+    if name == "all":
+        return None
+    n = name
+    if not nes(n):
+        n = args.name
+    if not nes(n):
+        n = args.command
+    if nes(n):
+        f = load_vm(n, expand(CONFIG_CLIENT))
+        if not nes(f):
+            try:
+                return {"vmid": num(name, False)}
+            except ValueError:
+                pass
+            return print_error(f'Cannot find the VM "{n}"!')
+        return {"file": f}
+    del n
+    if args.command is not None:
+        try:
+            return {"vmid": num(name, False)}
+        except ValueError:
+            pass
+    if args.vmid is not None:
+        try:
+            return {"vmid": num(name, False)}
+        except ValueError as err:
+            return print_error(
+                "Cannot use an invalid VMID (it must be a positive number)!", err
+            )
+    return print_error("Cannot find VM: no valid VMID, path or alias given!")
 
 
-def directory(args):
+def _usb_prompt(name, matches):
+    print(f'Multiple devices match "{name}", please select from the list:')
+    try:
+        while True:
+            print(f'{"#":>4} {"Device ID":12}{"Description":20}\n{"="*50}')
+            for x in range(0, len(matches)):
+                v = f"{matches[x].vendor}:{matches[x].product}"
+                print(f"{x:4} {v:<12}{matches[x].name:<20}")
+                del v
+            r = input("Selected Index [Default 0, Cancel 'q']: ")
+            if not nes(r):
+                return matches[0]
+            if len(r) == 1 and (r[0] == "q" or r[0] == "Q"):
+                return print_error("USB selection aborted.")
+            try:
+                i = num(r)
+            except ValueError:
+                print(f'Invalid number value "{r}"!\n')
+                continue
+            if 0 <= i < len(matches):
+                return matches[i]
+            print(f'Invalid index value "{i}"!\n')
+            del i, r
+    except KeyboardInterrupt:
+        print()
+        return print_error("USB selection aborted.")
+
+
+def user_directory(args):
     try:
         send_message(
             args.socket,
@@ -429,448 +475,358 @@ def directory(args):
             },
         )
     except OSError as err:
-        return print_error("Error setting VM search directory!", err)
+        return print_error("Cannot set the VM search directory!", err)
     return True
 
 
-def _print_usb(usbs):
-    d = get_usb()
-    print(f'{"ID":3}{"USB-ID":12}{"Description":20}\n{"=" * 50}')
-    for i, e in usbs.items():
-        if e not in d:
-            print(f'{i:3}{e:<12}{"USB Device":<20}')
-            continue
-        print(f'{i:3}{e:<12}{d[e]["name"]:<20}')
-    del d
-
-
-def ip(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    vm["type"] = HYDRA_GA_IP
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error("Error retriving IP from VM!", err)
-    if r.is_error():
-        return print_error(f"Error retriving IP from VM: {r.error}!")
-    print(f'{_resolve(r.vmid, r.path)} - {r.status.title()}\n{"="*26}')
-    if "ips" in r and isinstance(r["ips"], list):
-        for e in r["ips"]:
-            print(e)
-    del r
-    del vm
-    return True
-
-
-def _resolve_usb(args):
-    if not args.usb_name:
-        return
-    d = get_usb()
-    s = str(args.usb_name).lower()
-    if len(s) == 9 and ":" in s and s in d:
-        args.usb_vendor = s[:4]
-        args.usb_product = s[5:]
-        del s
-        del d
-        return
-    m = list()
-    for e in d.values():
-        if s not in e["name"].lower():
-            continue
-        m.append(e)
-    del d
-    c = None
-    if len(m) > 1:
-        print(f'Multiple devices match "{s}", please select from the list:')
-        try:
-            while True:
-                print(f'{"#":3}{"USB-ID":12}{"Description":20}\n{"="*50}')
-                for x in range(0, len(m)):
-                    i = f'{m[x]["vendor"]}:{m[x]["product"]}'
-                    print(f'{x:3}{i:<12}{m[x]["name"]:<20}')
-                    del i
-                i = input("Index [Default 0, Cancel 'q']: ")
-                if i is None or len(i) == 0:
-                    c = m[0]
-                    break
-                if len(i) == 1 and i.lower() == "q":
-                    return print_error("USB operation aborted.")
-                try:
-                    n = int(i, 10)
-                    if 0 <= n < len(n):
-                        c = m[n]
-                        break
-                    del n
-                except ValueError:
-                    pass
-                print(f'Invalid index "{i}"!\n')
-                del i
-        except KeyboardInterrupt:
-            print()
-            return print_error("USB operation aborted.")
-    elif len(m) == 1:
-        c = m[0]
-    else:
-        return print_error(f'Could not find any USB devices matching "{s}"!')
-    del m
-    del s
-    print(
-        f'\nSelected Device "{c["vendor"]}:{c["product"]} - {c["name"]}" '
-        f"based on search results."
-    )
-    args.usb_vendor = c["vendor"]
-    args.usb_product = c["product"]
-    del c
-
-
-def tap(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    vm["type"] = HYDRA_TAP
-    vm["force"] = args.stop_force
-    vm["timeout"] = args.timeout
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_OK, 5, vm)
-    except OSError as err:
-        return print_error("Error tapping VM!", err)
-    if r.is_error():
-        return print_error(f"Error tapping VM: {r.error}!")
-    del r
-    del vm
-    return True
-
-
-def stop(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    vm["type"] = HYDRA_STOP
-    vm["force"] = args.stop_force
-    vm["timeout"] = args.timeout
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error("Error stopping VM!", err)
-    if r.is_error():
-        return print_error(f"Error stopping VM: {r.error}!")
-    print(f"{_resolve(r.vmid, r.path)} - {r.status.title()}!")
-    del r
-    del vm
-    return True
-
-
-def ping(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    vm["type"] = HYDRA_GA_PING
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error("Error pinging VM!", err)
-    if r.is_error():
-        return print_error(f"Error pinging VM: {r.error}!")
-    m = "Guest Agent Not Running"
-    if r.get("ping", False):
-        m = "Guest Agent Running"
-    print(f"{_resolve(r.vmid, r.path)} - {m}!")
-    del r
-    del m
-    del vm
-    return True
-
-
-def start(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    vm["type"] = HYDRA_START
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error("Error starting VM!", err)
-    if r.is_error():
-        return print_error(f"Error starting VM: {r.error}!")
-    print(f"{_resolve(r.vmid, r.path)} - {r.status.title()}!")
-    del r
-    del vm
-    return True
-
-
-def alias(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
+def user_alias(args, vm=None):
+    vm = _get_check(args, vm)
     vm["user"] = True
-    if args.alias_add and not args.alias_delete:
-        vm["name"] = args.alias_add
-        vm["type"] = HYDRA_USER_ADD_ALIAS
-    elif args.alias_delete and not args.alias_add:
-        vm["name"] = args.alias_delete
-        vm["type"] = HYDRA_USER_DELETE_ALIAS
+    if nes(args.alias_add) and not nes(args.alias_delete):
+        vm["name"], vm["type"] = args.alias_add, HYDRA_USER_ADD_ALIAS
+    elif nes(args.alias_delete) and not nes(args.alias_add):
+        vm["name"], vm["type"] = args.alias_delete, HYDRA_USER_DELETE_ALIAS
     if "type" not in vm:
-        return print_error("An action must be specified!")
+        return print_error('Cannot perform operation: a "type" must be specified!')
     try:
-        send_message(args.socket, HOOK_HYDRA, None, 0, vm)
+        send_message(args.socket, HOOK_HYDRA, payload=vm)
     except OSError as err:
-        return print_error("Error adding an alias!", err)
-    del vm
-    return True
-
-
-def _resolve(vmid, path):
-    if len(NAMES) == 0:
-        c = read_json(expandvars(expanduser(CONFIG_CLIENT)), errors=False)
-        if isinstance(c, dict) and "hydra" in c:
-            if isinstance(c["hydra"], dict) and "aliases" in c["hydra"]:
-                for n, f in c["hydra"]["aliases"].items():
-                    NAMES[f.lower()] = n.title()
-        NAMES["__loaded"] = True
-        del c
-    n = NAMES.get(path.lower(), None)
-    if isinstance(n, str) and len(n) > 0:
-        return f"{n} ({vmid})"
-    return f"VM({vmid})"
-
-
-def usb_list(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    vm["type"] = HYDRA_USB_QUERY
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error("Error listing USB devices!", err)
-    if r.is_error():
-        return print_error(f"Error listing USB devices: {r.error}!")
-    d = get_usb()
-    if isinstance(r.usb, dict) and len(r.usb) > 0:
-        _print_usb(r.usb)
-    del r
-    del d
-    del vm
-    return True
-
-
-def usb_clean(args, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    vm["type"] = HYDRA_USB_CLEAN
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error("Error removing all USB devices!", err)
-    if r.is_error():
-        return print_error(f"Error removing all USB devices: {r.error}!")
-    print(f"Removed all USB devices from {_resolve(r.vmid, r.path)}.")
-    del r
+        if vm["type"] == HYDRA_USER_ADD_ALIAS:
+            return print_error("Cannot add an alias!", err)
+        return print_error("Cannot remove an alias!", err)
     del vm
     return True
 
 
 def example(args, schema=False):
     if args.schema or schema:
-        print(SCHEMA)
+        print(_SCHEMA)
     else:
         n = args.vmid
-        if n is None:
+        if not nes(n):
             n = args.name
-        if n is None and args.command != "example":
+        if not nes(n) and args.command != "example":
             n = args.command
-        if n is None:
+        if not nes(n):
             n = "[vmid]"
-        print(EXAMPLE.format(vmid=n))
+        print(_EXAMPLE.format(vmid=n))
         del n
     return True
 
 
-def _resolve_vm(args, name=None):
-    if name == "all":
-        return None
-    if name is None:
-        name = args.name
-    if name is None:
-        name = args.command
-    if name is not None:
-        p = get_vm(name, expandvars(expanduser(CONFIG_CLIENT)))
-        if p is None:
-            try:
-                return {"vmid": int(name)}
-            except ValueError:
-                pass
-            return print_error(f'Cannot locate VM "{name}"!')
-        return {"path": p}
-    if args.command is not None:
-        try:
-            return {"vmid": int(args.command)}
-        except ValueError:
-            pass
-    if args.vmid is not None:
-        try:
-            return {"vmid": int(args.vmid)}
-        except ValueError as err:
-            return print_error("VMID must be an integer!", err)
-    print_error("No valid VMID, Path or Name given!")
+def vm_all(args):
+    return _all(args, args.all_sleep, args.all_wake, args.all_stop)
 
 
-def usb(args, remove=False, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    if args.usb_name is not None:
-        if (remove or args.usb_delete) and args.usb_name == "all":
-            return usb_clean(args, vm)
-        _resolve_usb(args)
-    elif args.usb_vendor and args.usb_product:
-        pass
-    elif not (remove or args.usb_delete) or args.usb_id is None:
-        return print_error("USB Name, ID or VendorID and ProductID must be specified!")
-    if remove or args.usb_delete:
-        if args.usb_id is None:
-            vm["type"] = HYDRA_USB_QUERY
-            try:
-                r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-            except OSError as err:
-                return print_error("Error retriving the connected USB devices!", err)
-            if r.is_error():
-                return print_error(
-                    f"Error retriving the connected USB devices: {r.error}!"
-                )
-            if not isinstance(r.usb, dict) and len(r.usb) == 0:
-                return print_error("No USB devices are connected to the VM!")
-            v = f"{args.usb_vendor}:{args.usb_product}".lower()
-            for i, d in r.usb.items():
-                if d.lower() == v:
-                    args.usb_id = i
-                    break
-            del r
-            del v
-        vm["usb"] = args.usb_id
-        vm["type"] = HYDRA_USB_DELETE
-    else:
-        vm["type"] = HYDRA_USB_ADD
-        vm["slow"] = args.usb_slow
-        vm["vendor"] = args.usb_vendor
-        vm["product"] = args.usb_product
+def default(args):
+    return vm_list(args)
+
+
+def vm_list(args):
     try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error("Error performing USB operation!", err)
-    if r.is_error():
-        return print_error(f"Error performing USB operation: {r.error}!")
-    if remove or args.usb_delete:
-        print(f'USB Device "ID-{args.usb_id}" removed from {_resolve(r.vmid, r.path)}!')
-    elif isinstance(r.usb, dict) and len(r.usb) > 0:
-        _print_usb(r.usb)
-    del r
-    del vm
-    return True
-
-
-def sleep_vm(args, do_sleep=True, vm=None):
-    if vm is None:
-        vm = _resolve_vm(args)
-    if do_sleep or args.sleep:
-        vm["type"] = HYDRA_SLEEP
-    elif not do_sleep or args.wake:
-        vm["type"] = HYDRA_WAKE
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
-    except OSError as err:
-        return print_error(
-            f"Error {'sleeping' if do_sleep or args.sleep else 'waking'} the VM!", err
+        r = send_message(
+            args.socket,
+            HOOK_HYDRA,
+            (HOOK_HYDRA, "vms"),
+            TIMEOUT_SEC_MESSAGE,
+            {"type": HYDRA_STATUS},
         )
-    if r.is_error():
-        return print_error(
-            f"Error {'sleeping' if do_sleep or args.sleep else 'waking'} the VM: {r.error}!"
-        )
-    print(f"{_resolve(r.vmid, r.path)} - {r.status.title()}")
-    del r
-    del vm
-    return True
-
-
-def do_all(args, do_sleep, do_wake, do_stop):
-    q = {"all": True}
-    if do_sleep and not (do_wake or do_stop):
-        q["type"] = HYDRA_SLEEP
-    elif do_wake and not (do_sleep or do_stop):
-        q["type"] = HYDRA_WAKE
-    elif do_stop or args.all_force and not (do_sleep or do_wake):
-        if args.all_force:
-            q["force"] = True
-        q["type"] = HYDRA_STOP
-    if "type" not in q:
-        return print_error("An action must be specified!")
-    try:
-        r = send_message(args.socket, HOOK_HYDRA, (HOOK_HYDRA, "vms"), 5, q)
-    except OSError as err:
-        return print_error('Error attempting a "set all" operation!', err)
-    if r.is_error():
-        return print_error(f'Error attempting a "set all" operation: {r.error}')
-    del q
-    print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
+    except Exception as err:
+        return print_error("Cannot retrive the VM list!", err)
+    check_error(r, "Cannot retrive the VM list!")
+    if not args.dmenu:
+        print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
-        return True
-    for vm in r.vms:
+        return
+    for x in r.vms:
+        if args.dmenu:
+            print(f'{_vm(x["vmid"], x["file"])},{x["status"].title()},{x["vmid"]}')
+            continue
         print(
-            f'{_resolve(vm["vmid"], vm["path"]):20}{vm["vmid"]:<8}'
-            f'{vm["pid"] if vm["pid"] is not None else EMPTY:<12}{vm["status"].title():<12}'
+            f'{_vm(x["vmid"], x["file"]):20}{x["vmid"]:<8}'
+            f'{x["pid"] if x["pid"] is not None else EMPTY:<12}{x["status"].title()}'
         )
     del r
     return True
 
 
-def connect(args, vm=None, vnc=False, spice=False):
-    if vm is None:
-        vm = _resolve_vm(args)
+def tokenize(args):
+    if not nes(args.command):
+        return vm_list(args)
+    c = args.command.lower()
+    if c == "list" or args.list:
+        return vm_list(args)
+    if c == "dir" or c == "directory" or nes(args.directory):
+        if not nes(args.directory) and len(args.args) >= 1:
+            args.directory = args.args[0]
+        return user_directory(args)
+    if c == "example" or args.example:
+        return example(args, False)
+    if c == "schema" or args.schema:
+        return example(args, True)
+    if len(args.args) >= 1:
+        vm = _get_vm(args, args.args[0])
+    else:
+        vm = _get_vm(args)
+    if c == "start" or args.start:
+        return vm_start(args, vm)
+    if c == "stop" or args.stop:
+        if vm is None or args.all_stop or args.all_force or args.args[0] == "all":
+            return _all(args, False, True)
+        return vm_stop(args, vm)
+    if c == "tap" or args.tap:
+        return vm_tap(args, vm)
+    if c == "vnc" or c == "v" or args.connect_vnc:
+        return vm_connect(args, vm, True)
+    if c == "spice" or c == "s" or c == "view" or c == "connect" or args.connect:
+        return vm_connect(args, vm)
+    if c == "ip" or args.ga_ip:
+        return vm_ip(args, vm)
+    if c == "ping" or args.ga_ping:
+        return vm_ping(args, vm)
+    if c == "wake" or args.wake:
+        if vm is None or args.all_wake or args.args[0] == "all":
+            return _all(args, True, False)
+        return vm_sleep(args, True, vm)
+    if c == "sleep" or args.sleep:
+        if vm is None or args.all_sleep or args.args[0] == "all":
+            return _all(args, False, False)
+        return vm_sleep(args, False, vm)
+    if c == "alias" or c == "name" or args.alias_add or args.alias_delete:
+        o = args.args[1].lower() if len(args.args) >= 2 else None
+        n = args.args[2].lower() if len(args.args) >= 3 else None
+        if nes(o) and nes(n) and o == "add":
+            args.alias_add = n
+        elif nes(o) and nes(n) and (o == "delete" or o == "del"):
+            args.alias_delete = n
+        elif nes(o) and not nes(n):
+            args.alias_add = o
+        del n, o
+        return user_alias(args, vm)
+    if c == "usb" or args.usb_add or args.usb_delete:
+        o = args.args[1].lower() if len(args.args) >= 2 else None
+        n = args.args[2].lower() if len(args.args) >= 3 else None
+        if nes(n):
+            args.usb_name = n
+        if nes(o) and not (args.usb_delete or args.usb_add):  # and o in :
+            if o != "add" and o != "del" and o != "list" and o != "remove":
+                args.usb_name = o
+        if not nes(o):
+            return vm_usb_list(args, vm)
+        if not nes(n) and (args.usb_list or o == "list"):
+            return vm_usb_list(args, vm)
+        if o == "clean" or o == "clear":
+            return vm_usb_clean(args, vm)
+        vm_usb(args, (o == "remove" or o == "del") or args.usb_delete, vm)
+        del n, o
+        return
+    return print_error(f'invalid or unknown command "{c}"!')
+
+
+def vm_ip(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_GA_IP
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot retrive the IP from the VM!", err)
+    check_error(r, "Cannot retrive the IP from the VM")
+    print(
+        f'{_vm(r.vmid, r.file)} - {r.status.title()}\n\n{"Interface":16}IP Address\n{"="*32}'
+    )
+    a = r.get("ips")
+    del r
+    if not isinstance(a, list) or len(a) == 0:
+        return True
+    for i in a:
+        print(f'{i["name"]:16}{i["ip"]}')
+    del a, vm
+    return True
+
+
+def vm_tap(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"], vm["force"], vm["timeout"] = HYDRA_TAP, args.stop_force, args.timeout
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_OK, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot signal ACPI shutdown to the VM!", err)
+    check_error(r, "Cannot signal ACPI shutdown to the VM")
+    del r, vm
+    return True
+
+
+def vm_stop(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"], vm["force"], vm["timeout"] = HYDRA_STOP, args.stop_force, args.timeout
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot stop the VM!", err)
+    check_error(r, "Cannot stop the VM")
+    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    del r, vm
+    return True
+
+
+def vm_ping(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_GA_PING
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot ping the VM!", err)
+    check_error(r, "Cannot ping the VM")
+    print(
+        f'{_vm(r.vmid, r.file)} - Guest Agent {"" if r.get("ping", False) else "not "}Running!'
+    )
+    del r, vm
+    return True
+
+
+def vm_start(args, vm=None):
+    vm = _get_check(args, vm)
     vm["type"] = HYDRA_START
     try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot start the VM!", err)
+    check_error(r, "Cannot start the VM")
+    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    del r, vm
+    return True
+
+
+def vm_usb_list(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_USB_QUERY
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot list USB devices!", err)
+    check_error(r, "Cannot list USB devices")
+    _usb(r.usb)
+    del r, vm
+    return True
+
+
+def vm_usb_clean(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_USB_CLEAN
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot remove all USB devices!", err)
+    check_error(r, "Cannot remove all USB devices")
+    print(f"Removed all USB devices from {_vm(r.vmid, r.file)}.")
+    del r, vm
+    return True
+
+
+def vm_usb(args, remove=False, vm=None):
+    vm = _get_check(args, vm)
+    if nes(args.usb_name):
+        if args.usb_name == "all" and (remove or args.usb_delete):
+            return vm_usb_clean(args, vm)
+        # NOTE(dij): We already checked the name so we're good.
+        _usb_vet(args)
+    elif nes(args.usb_vendor) and nes(args.usb_product):
+        pass
+    elif not (remove or args.usb_delete) or isinstance(args.usb_id, int):
+        return print_error("USB name, ID or vendor and product must be specified!")
+    if remove or args.usb_delete:
+        if not isinstance(args.usb_id, int):
+            vm["type"] = HYDRA_USB_QUERY
+            try:
+                r = send_message(
+                    args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm
+                )
+            except OSError as err:
+                return print_error("Cannot retrive the connected USB devices!", err)
+            check_error(r, "Cannot retrive the connected USB devices")
+            if not isinstance(r.usb, dict) or len(r.usb) == 0:
+                return print_error("No USB devices are connected to the VM!")
+            args.usb_id = r.usb.get(f"{args.usb_vendor}:{args.usb_product}".lower())
+            del r
+        if not isinstance(args.usb_id, int) or args.usb_id <= 0:
+            return print_error("Missing or invalid USB ID!")
+        vm["usb"], vm["type"] = args.usb_id, HYDRA_USB_DELETE
+    else:
+        vm["type"], vm["slow"] = HYDRA_USB_ADD, args.usb_slow
+        vm["vendor"], vm["product"] = args.usb_vendor, args.usb_product
+    try:
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, 5, vm)
     except OSError as err:
-        return print_error("Error starting the VM!", err)
-    if r.is_error():
-        return print_error(f"Error starting the VM: {r.error}!")
+        return print_error("Cannot perform USB operation!", err)
+    check_error(r, "Cannot perform USB operation")
+    if remove or args.usb_delete:
+        print(f'USB Device "ID-{args.usb_id}" was removed from {_vm(r.vmid, r.file)}!')
+    else:
+        _usb(r.usb)
+    del r, vm
+    return True
+
+
+def vm_sleep(args, wake=False, vm=None):
+    vm = _get_check(args, vm)
+    if args.wake and args.sleep:
+        return print_error('"resume" and "suspend" cannot be used at the same time!')
+    w = wake
+    if args.wake:
+        w = True
+    elif args.sleep:
+        w = False
+    vm["type"] = HYDRA_WAKE if w else HYDRA_SLEEP
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error(f'Cannot {"resume" if w else "suspend"} the VM!', err)
+    check_error(r, f'Cannot {"resume" if w else "suspend"} the VM')
+    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}")
+    del r, w, vm
+    return True
+
+
+def vm_connect(args, vm=None, vnc=False):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_START
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot start the VM!", err)
+    check_error(r, "Cannot start the VM")
+    del vm
     if fork() != 0:
         return True
     if r.status == "waiting":
         sleep(2)
     if args.connect_vnc or vnc:
         try:
-            run(
+            nulexec(
                 [
-                    "/usr/bin/vncviewer",
+                    HYDRA_EXEC_VNC,
                     "FullscreenSystemKeys=0",
                     "Shared=1",
-                    f"{DIRECTORY_HYDRA}/{r.vmid}.vnc",
-                ]
+                    f"{HYDRA_DIR}/{r.vmid}.vnc",
+                ],
+                wait=True,
+                timeout=None,
             )
         except OSError as err:
-            return print_error("Error connecting to the VM!", err)
+            return print_error("Cannot connect to the VM via VNC!", err)
         del r
-        del vm
-        return True
-    if args.connect_spice or spice:
-        try:
-            run(
-                [
-                    "/usr/bin/spicy",
-                    f"--title=VM{r.vmid}",
-                    f"--uri=spice+unix:///var/run/smd/hydra/{r.vmid}.spice",
-                ]
-            )
-        except OSError as err:
-            return print_error("Error connecting to the VM!", err)
-        del r
-        del vm
         return True
     try:
-        run(
+        nulexec(
             [
-                "/usr/bin/surf",
-                "-BDfgIKmnSTxc",
-                "/dev/null",
-                f"http://hydra:8600/?path=websockify?token=VM{r.vmid}&scaling=local&autoconnect=true",
-            ]
+                HYDRA_EXEC_SPICE,
+                f"--title=VM{r.vmid}",
+                f"--uri=spice+unix:///var/run/smd/hydra/{r.vmid}.spice",
+            ],
+            wait=True,
+            timeout=None,
         )
     except OSError as err:
-        return print_error("Error connecting to the VM!", err)
+        return print_error("Cannot connect to the VM via Spice!", err)
     del r
-    del vm
     return True

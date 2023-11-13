@@ -1,18 +1,24 @@
 #!/usr/bin/dash
-# smd-locker
-#  Script used by xautolock to attempt to lock the system screen.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Usage:
-#  smd-locker [non-lock]
-#
-#  Discouraged for general usage. The only paramater may be specified to indicate that this is not a Lockscreen
-#  Trigger, such as the uses for the lid closing action.
-#  If a user is required to lock the system manually, the appropriate command would be to use "powerctl lock [-f]".
-#  Exit code is always 0.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,9 +34,28 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ $# -eq 1 ]; then
-    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 1}'
-else
+# smd-locker
+#   Script used by swaylock to inform SMD about Blank and Lock events.
+#
+# Usage:
+#   smd-locker [type]
+#
+#   Discouraged for general usage. The only paramater used may be specified to
+#   indicate that this is not a Lockscreen Trigger.
+
+if [ $# -eq 0 ]; then
     /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 0}'
+    exit 0
 fi
-exit 0
+
+case "$1" in
+    "blank")
+    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 1}'
+    ;;
+    "suspend")
+    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 2}'
+    ;;
+    *)
+    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 0}'
+    ;;
+esac

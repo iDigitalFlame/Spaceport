@@ -1,9 +1,24 @@
-#!/usr/bin/false
-# Login Defaults Configuration
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Login Defaults Configuration
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,9 +34,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# Currently not used.
+# YESCRYPT_COST_FACTOR    5
+
 UMASK                   0027
 MAIL_DIR                /var/spool/mail
-MOTD_FILE               /etc/motd
+MOTD_FILE
 HOME_MODE               0700
 FAIL_DELAY              3
 CREATE_HOME             no
@@ -34,8 +52,6 @@ HUSHLOGIN_FILE          .config/hushlogin
 USERGROUPS_ENAB         yes
 HMAC_CRYPTO_ALGO        SHA512
 LOG_UNKFAIL_ENAB        no
-# Currently not used.
-# YESCRYPT_COST_FACTOR    5
 MAX_MEMBERS_PER_GROUP   0
 GRANT_AUX_GROUP_SUBIDS  yes
 

@@ -1,12 +1,24 @@
 #!/usr/bin/false
-# PowerCTL Module: Lock
-#  powerctl lock, lockctl, lock
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# PowerCTL command line user module to lock the screen session.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,40 +34,41 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from lib.util import print_error
-from lib.powerctl.locker import get_locker
-from lib.structs.message import send_message
+# PowerCTL Module: Lock
+#   Command line user module to lock the screen and optionally add some inhibitors
+#   using the Locker framework to execute before locking.
+
+from lib import print_error, send_message
+from lib.shared.locker import pase_locker
 from lib.constants import (
     HOOK_LOCK,
+    MSG_ACTION,
     HOOK_LOCKER,
-    LOCKER_TRIGGER_LOCK,
-    MESSAGE_TYPE_ACTION,
+    TRIGGER_LOCK,
     LOCKER_TYPE_SUSPEND,
     LOCKER_TYPE_HIBERNATE,
 )
 
 
-def default(arguments):
-    e = list()
-    if arguments.timeout:
-        arguments.suspend = arguments.timeout
-    get_locker(e, LOCKER_TYPE_SUSPEND, arguments.suspend, arguments.suspend_force)
-    get_locker(e, LOCKER_TYPE_HIBERNATE, arguments.hibernate, arguments.hibernate_force)
-    if len(e) > 0:
+def default(args):
+    if args.timeout:
+        args.suspend = args.timeout
+    v = list()
+    pase_locker(v, LOCKER_TYPE_SUSPEND, args.suspend, args.suspend_force)
+    pase_locker(v, LOCKER_TYPE_HIBERNATE, args.hibernate, args.hibernate_force)
+    if len(v) > 0:
         try:
             send_message(
-                arguments.socket,
-                HOOK_LOCKER,
-                payload={"type": MESSAGE_TYPE_ACTION, "list": e},
+                args.socket, HOOK_LOCKER, payload={"type": MSG_ACTION, "list": v}
             )
-        except OSError as err:
-            return print_error("Error updating Lockers!", err)
-    del e
+        except Exception as err:
+            return print_error("Cannot update Lockers!", err)
+    del v
     try:
         send_message(
-            arguments.socket,
+            args.socket,
             HOOK_LOCK,
-            payload={"force": arguments.force, "trigger": LOCKER_TRIGGER_LOCK},
+            payload={"force": args.force, "trigger": TRIGGER_LOCK},
         )
-    except OSError as err:
-        print_error("Error triggering the Lockscreen!", err)
+    except Exception as err:
+        return print_error("Cannot trigger the Lockscreen!", err)

@@ -1,11 +1,24 @@
 #!/usr/bin/dash
-# smd-video
-#  Script used by udev to inform the System Management Daemon that a video adapter was attached/detached.
-#  Should only be called by udev. Exit code is always 0.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,5 +34,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/usr/lib/smd/libexec/smd-message -u monitor
-exit 0
+# smd-video
+#   Script used by udev to inform SMD that a video adapter was attached/detached.
+#   Can only be called by udev as root.
+
+/usr/lib/smd/libexec/smd-message -u monitor -e 0

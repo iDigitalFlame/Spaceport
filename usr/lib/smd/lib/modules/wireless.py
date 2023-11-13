@@ -1,11 +1,24 @@
 #!/usr/bin/false
-# Module: Wireless (System)
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Sets and changes the System Wireless Radio settings.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,79 +34,109 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from lib.util import run, boolean
+# Module: System/Wireless (System)
+#   Sets and changes the system Wireless Radio settings. Allows radio settings to
+#   be controlled from userspace. Also starts services related to the radio if
+#   enabled (like with Bluetooth).
+
+from lib.util import boolean
+from lib.util.exec import nulexec
+from lib.constants.config import RADIO_EXEC, RADIO_TYPES
 from lib.constants import (
-    RADIO_EXEC,
+    MSG_PRE,
+    MSG_POST,
+    MSG_ACTION,
+    MSG_CONFIG,
     HOOK_RADIO,
     HOOK_STARTUP,
+    HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
-    MESSAGE_TYPE_POST,
-    MESSAGE_TYPE_ACTION,
-    MESSAGE_TYPE_CONFIG,
 )
+
 
 HOOKS_SERVER = {
     HOOK_RADIO: "config",
     HOOK_STARTUP: "startup",
+    HOOK_SHUTDOWN: "shutdown",
     HOOK_HIBERNATE: "hibernate",
 }
 
 
 def startup(server):
-    _radio_set(
-        server, "wireless", server.get_config("wireless.boot", True, False), False
-    )
-    _radio_set(
-        server, "bluetooth", server.get_config("bluetooth.boot", True, False), False
-    )
+    _radio(server, "wireless", server.get("radio.wireless.boot", True), True)
+    _radio(server, "bluetooth", server.get("radio.bluetooth.boot", True), True)
+
+
+def shutdown(server):
+    if not server.get("radio.wireless.boot", False):
+        _radio(server, "wireless", False, True)
+    if not server.get("radio.bluetooth.boot", False):
+        _radio(server, "bluetooth", False, True)
 
 
 def config(server, message):
-    if message.radio is None:
+    if message.radio not in RADIO_TYPES:
         return
-    if message.type == MESSAGE_TYPE_CONFIG:
-        server.set_config(
-            f"{message.radio}.boot", boolean(message.get("boot", True)), True
-        )
-    elif message.type == MESSAGE_TYPE_ACTION:
-        _radio_set(server, message.radio, boolean(message.get("enabled", True)), True)
+    if message.type == MSG_CONFIG:
+        server.set(f"radio.{message.radio}.boot", boolean(message.get("boot", True)))
+        return server.save()
+    if message.type != MSG_ACTION:
+        return
+    r = _radio(
+        server,
+        message.radio,
+        boolean(message.get("enabled", True)),
+        message.force,
+        True,
+        True,
+    )
+    if not r or message.force:
+        return
+    return message.multicast()
 
 
 def hibernate(server, message):
-    if message.state != MESSAGE_TYPE_POST:
-        return
-    _radio_set(
-        server, "wireless", server.get_config("wireless.enabled", True, False), False
-    )
-    _radio_set(
-        server, "bluetooth", server.get_config("bluetooth.enabled", False, False), False
-    )
+    # NOTE(dij): Disable the wireless devices before Hibernating.
+    if message.state == MSG_PRE:
+        _radio(server, "wireless", False, True)
+        _radio(server, "bluetooth", False, True)
+    elif message.state == MSG_POST:
+        _radio(server, "wireless", server.get("radio.wireless.state", True), True)
+        _radio(server, "bluetooth", server.get("radio.bluetooth.state", True), True)
 
 
-def _radio_set(server, radio, enable, notify):
-    c = RADIO_EXEC.get(f'{radio.lower()}_{"enable" if enable else "disable"}')
-    if not isinstance(c, list):
-        return
-    s = server.get_config(f"{radio}.enabled", not enable)
-    if s == enable:
-        del s
-        return server.debug(
-            f'Not re-{"enabling" if enable else "disabling"} already '
-            f'{"enabled" if enable else "disabed"} radio {radio}.'
+def _radio_set(server, name, enable, state, save):
+    c = RADIO_EXEC.get(f"{name}_{state}")
+    if not isinstance(c, list) or len(c) == 0:
+        return server.warning(
+            f'[m/wireless]: Cannot {state} radio "{name}", no commands found!'
         )
-    del s
-    server.debug(f'{"Enabling" if enable else "Disabling"} "{radio}"..')
+    server.debug(f'[m/wireless]: {state.title()[0:-1]}ing radio "{name}".')
     for x in c:
         try:
-            run(x)
+            nulexec(x, wait=True)
         except OSError as err:
-            server.error(f'Error running the command "{x}"!', err=err)
+            server.error(f'[m/wireless]: Cannot execute the radio command "{x}"!', err)
     del c
-    server.set_config(f"{radio}.enabled", enable, True)
-    if not notify:
+    server.set(f"radio.{name}.state", enable)
+    if not save:
         return
-    server.notify(
-        "Radio Status Change",
-        f"{radio.title()} was {'Enabled' if enable else 'Disabled'}",
-        "configuration-section",
-    )
+    server.save()
+
+
+def _radio(server, radio, enable, force, notify=False, save=False):
+    v = "enable" if enable else "disable"
+    if not force:
+        if server.get(f"radio.{radio}.state", not enable) == enable:
+            return server.debug(
+                f'[m/wireless]: Not re-{v[0:-1]}ing already {v}d radio "{radio}".'
+            )
+    _radio_set(server, radio, enable, v, save)
+    if notify:
+        server.notify(
+            "Radio Status Change",
+            f"{radio.title()} was {v.title()}d",
+            "configuration-section",
+        )
+    del v
+    return True

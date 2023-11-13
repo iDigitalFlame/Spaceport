@@ -1,23 +1,24 @@
 #!/usr/bin/python3
-# smd-message
-#  Allows processes and users to communicate to the System Management Daemon through commands.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Usage:
-#  smd-message [-s socket_file] [-t (int)wait_seconds] [-t (string)wait_header] [-p (string)json_payload] header
-#
-#  Attempts to connect to the System Management Daemon and send the message specified.
-#  If the parameter "-t" is used, "-w" is implied and will be "0" (forever) by default, which waits until a response
-#  from the daemon matching the header is received.
-#  This command will also output the header and JSON payload (if included) when a message is received.
-#
-# Exit Codes:
-#  0 - Completion/Received message response (if waiting)
-#  1 - Error in parameters or syntax
-#  2 - The wait timeout expired (if waiting)
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,101 +34,134 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# smd-message
+#   Allows processes and users to communicate to SMD through Messages.
+#
+# Usage:
+#   smd-message [-s socket_file] [-t wait_seconds] [-t wait_header] [-p json_payload] [-e code] header
+#
+#   Attempts to connect to the System Management Daemon and send the specified message.
+#   If the "-w" argument is specified this command will wait until the supplied header
+#   is received
+#   when a message is received.
+#
+# Exit Codes:
+#   0 - Send completed successfully or message received (if waiting)
+#   1 - Error occurred or syntax error
+#   2 - Wait timeout expired (if waiting)
+#   N - Other exit codes may be specified with "-e"
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
 
-from lib.util import print_error
+from sys import exit
+from lib.util import nes
 from argparse import ArgumentParser
-from lib.structs.message import send_message
-from lib.constants import SOCKET, HOOK_TRANSLATIONS
+from lib import print_error, send_message
+from lib.constants.config import SOCKET, HOOK_TRANSLATIONS
 
 
 def _main(args):
-    if args.timeout > 0 and args.wait is None:
-        return print_error('You must specify a wait timeout with "-w"!')
     if args.translate:
-        if args.header.lower() in HOOK_TRANSLATIONS:
-            args.header = HOOK_TRANSLATIONS[args.header.lower()]
-        else:
-            return print_error(
-                f'Name "{args.header}" does not resolve to a valid header!'
-            )
-    try:
-        args.header = int(args.header)
-    except ValueError as err:
-        return print_error("Header must be an Integer!", err)
+        h = HOOK_TRANSLATIONS.get(args.header.lower())
+        if h is None:
+            return print_error(f'Value "{args.header}" is not a valid header name!')
+        args.header = h
+        del h
+    if not isinstance(args.header, int):
+        try:
+            args.header = abs(int(args.header))
+        except ValueError as err:
+            return print_error("Header must be a valid number!", err)
     try:
         w = args.wait
-        if isinstance(w, str) and "," in w:
-            w = [w.strip() for w in w.split(",")]
+        if nes(w):
+            i = w.find(",")
+            if i > 0 and i + 1 < len(w):
+                w = (i[0:1], i[1 + 1 :])
+            del i
         r = send_message(args.socket, args.header, w, args.timeout, args.payload)
+        del w
     except Exception as err:
-        return print_error(str(err), err)
+        return print_error("Cannot send message!", err)
     if args.wait is None:
-        return True
+        return args.exit
     if r is not None:
         if len(r) > 0:
             print(r)
         else:
             print(r.get_header())
+        if isinstance(args.exit, int):
+            return args.exit
+        return 2
     del r
-    return False
+    return args.exit
 
 
 if __name__ == "__main__":
-    parameters = ArgumentParser(description="System Management Daemon Messager")
-    parameters.add_argument(
+    p = ArgumentParser(description="System Management Daemon Messager")
+    p.add_argument(
         "header",
         type=str,
-        help="Message header to send.",
+        help="header to use in integer format",
         action="store",
         metavar="header",
     )
-    parameters.add_argument(
+    p.add_argument(
         "-p",
         type=str,
         dest="payload",
-        help="Send a message to the daemon with this JSON payload.",
+        help="payload to send in JSON format",
         action="store",
         metavar="payload",
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-w",
         type=str,
         dest="wait",
-        help="Send a message to the daemon and wait for this response header.",
+        help="wait for a response with this header",
         action="store",
         default=None,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-t",
         type=int,
         dest="timeout",
-        help="Specify wait time (in seconds) to wait (implies -w).",
+        help="wait time (in seconds) for sending and response",
         action="store",
         default=0,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-s",
         type=str,
         dest="socket",
-        help="Specify socket to connect to.",
+        help="socket to use for messages",
         action="store",
         default=SOCKET,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-u",
+        dest="translate",
+        help="specify header by it's name",
         action="store_true",
         default=False,
         required=False,
-        dest="translate",
-        help="Translate hook header before sending.",
     )
-    if not _main(parameters.parse_args()):
-        sys.exit(2)
-    sys.exit(0)
+    p.add_argument(
+        "-e",
+        type=int,
+        dest="exit",
+        help="exit code to always exit with, regardless of errors",
+        action="store",
+        default=None,
+        required=False,
+    )
+    e = _main(p.parse_args())
+    if isinstance(e, int):
+        exit(e)
+    exit(0)

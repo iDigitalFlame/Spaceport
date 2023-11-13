@@ -1,3 +1,39 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Mime Mappings Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
 [MIME Cache]
 audio/dv=vlc.desktop;
 video/dv=vlc.desktop;
@@ -110,20 +146,17 @@ application/oxps=mupdf.desktop;
 application/x-flac=vlc.desktop;
 audio/x-real-audio=vlc.desktop;
 audio/x-vorbis+ogg=vlc.desktop;
-image/x-tiff=ristretto.desktop;
 text/x-arduino=arduino.desktop;
 video/x-theora+ogg=vlc.desktop;
 application/x-cbz=mupdf.desktop;
 application/x-pdf=mupdf.desktop;
 audio/vnd.dolby.mlp=vlc.desktop;
-image/svg+xml=ristretto.desktop;
 video/x-mpeg-system=vlc.desktop;
 x-content/video-dvd=vlc.desktop;
 x-content/video-vcd=vlc.desktop;
 application/xspf+xml=vlc.desktop;
 audio/x-pn-realaudio=vlc.desktop;
 image/vnd.rn-realpix=vlc.desktop;
-image/x-pixmap=ristretto.desktop;
 x-content/audio-cdda=vlc.desktop;
 x-content/video-svcd=vlc.desktop;
 x-scheme-handler/icy=vlc.desktop;
@@ -131,7 +164,6 @@ x-scheme-handler/mms=vlc.desktop;
 x-scheme-handler/rtp=vlc.desktop;
 application/mpeg4-iod=vlc.desktop;
 application/x-fluid=fluid.desktop;
-image/x-xpixmap=ristretto.desktop;
 video/x-ms-asf-plugin=vlc.desktop;
 x-scheme-handler/icyx=vlc.desktop;
 x-scheme-handler/mmsh=vlc.desktop;
@@ -146,61 +178,55 @@ audio/vnd.rn-realaudio=vlc.desktop;
 audio/x-pn-windows-acm=vlc.desktop;
 video/vnd.rn-realvideo=vlc.desktop;
 x-content/audio-player=vlc.desktop;
-application/rdf+xml=liferea.desktop;
-application/rss+xml=liferea.desktop;
 audio/vnd.dolby.heaac.1=vlc.desktop;
 audio/vnd.dolby.heaac.2=vlc.desktop;
-application/atom+xml=liferea.desktop;
 x-scheme-handler/slack=slack.desktop;
 application/x-flash-video=vlc.desktop;
 application/x-onboard=onboard.desktop;
 text/google-video-pointer=vlc.desktop;
-x-scheme-handler/feed=liferea.desktop;
-application/x-spkac=gcr-viewer.desktop;
 application/x-extension-m4a=vlc.desktop;
 application/x-extension-mp4=vlc.desktop;
 audio/x-pn-realaudio-plugin=vlc.desktop;
-image/bmp=ristretto.desktop;feh.desktop;
-image/jpg=feh.desktop;ristretto.desktop;
-image/png=feh.desktop;ristretto.desktop;
 text/x-google-video-pointer=vlc.desktop;
 application/vnd.rn-realmedia=vlc.desktop;
-image/jpeg=feh.desktop;ristretto.desktop;
-image/tiff=feh.desktop;ristretto.desktop;
 application/vnd.apple.mpegurl=vlc.desktop;
 application/x-quicktimeplayer=vlc.desktop;
 application/x-shockwave-flash=vlc.desktop;
-image/pjpeg=feh.desktop;ristretto.desktop;
-image/x-bmp=feh.desktop;ristretto.desktop;
-image/x-pcx=feh.desktop;ristretto.desktop;
-image/x-png=feh.desktop;ristretto.desktop;
-image/x-tga=feh.desktop;ristretto.desktop;
+text/plain=codium.desktop;leafpad.desktop;
+image/x-xpixmap=org.xfce.ristretto.desktop;
 application/mpeg4-muxcodetable=vlc.desktop;
-text/plain=VSCodium.desktop;leafpad.desktop;
 x-scheme-handler/tg=telegramdesktop.desktop;
 application/vnd.ms-xpsdocument=mupdf.desktop;
 application/vnd.rn-realmedia-vbr=vlc.desktop;
 text/html=librewolf.desktop;chromium.desktop;
-application/x-spkac+base64=gcr-viewer.desktop;
-application/x-x509-ca-cert=gcr-viewer.desktop;
-image/x-xbitmap=feh.desktop;ristretto.desktop;
 inode/directory=thunar.desktop;Thunar.desktop;
 application/x-quicktime-media-link=vlc.desktop;
-application/x-x509-user-cert=gcr-viewer.desktop;
-application/json=vscode.desktop;librewolf.desktop;
+application/json=codium.desktop;librewolf.desktop;
+image/x-portable-anymap=org.xfce.ristretto.desktop;
+image/x-portable-bitmap=org.xfce.ristretto.desktop;
+image/x-portable-pixmap=org.xfce.ristretto.desktop;
 application/xml=chromium.desktop;librewolf.desktop;
-image/x-portable-anymap=feh.desktop;ristretto.desktop;
-image/x-portable-bitmap=feh.desktop;ristretto.desktop;
-image/x-portable-pixmap=feh.desktop;ristretto.desktop;
+image/x-portable-graymap=org.xfce.ristretto.desktop;
+image/bmp=swayimg.desktop;org.xfce.ristretto.desktop;
+image/jpg=swayimg.desktop;org.xfce.ristretto.desktop;
+image/png=swayimg.desktop;org.xfce.ristretto.desktop;
+image/jpeg=swayimg.desktop;org.xfce.ristretto.desktop;
+image/tiff=swayimg.desktop;org.xfce.ristretto.desktop;
+image/pjpeg=swayimg.desktop;org.xfce.ristretto.desktop;
+image/x-bmp=swayimg.desktop;org.xfce.ristretto.desktop;
+image/x-pcx=swayimg.desktop;org.xfce.ristretto.desktop;
+image/x-png=swayimg.desktop;org.xfce.ristretto.desktop;
+image/x-tga=swayimg.desktop;org.xfce.ristretto.desktop;
 application/x-keepass2=org.keepassxc.KeePassXC.desktop;
-application/x-onboardsettings=onboard-settings.desktop;
-image/x-portable-graymap=feh.desktop;ristretto.desktop;
+image/x-tiff=swayimg.desktop;org.xfce.ristretto.desktop;
 application/xhtml+xml=chromium.desktop;librewolf.desktop;
 application/xhtml_xml=chromium.desktop;librewolf.desktop;
-image/gif=chromium.desktop;ristretto.desktop;feh.desktop;
 x-scheme-handler/http=librewolf.desktop;chromium.desktop;
+image/svg+xml=swayimg.desktop;org.xfce.ristretto.desktop;
+image/x-pixmap=swayimg.desktop;org.xfce.ristretto.desktop;
 application/x-xpinstall=librewolf.desktop;firefox.desktop;
 x-scheme-handler/https=librewolf.desktop;chromium.desktop;
-text/xml=chromium.desktop;librewolf.desktop;vscode.desktop;
+image/x-xbitmap=swayimg.desktop;org.xfce.ristretto.desktop;
+text/xml=chromium.desktop;librewolf.desktop;codium.desktop;
+image/gif=chromium.desktop;swayimg.desktop;org.xfce.ristretto.desktop;
 application/pdf=mupdf.desktop;chromium.desktop;librewolf.desktop;
-application/vnd.nextcloud=com.nextcloud.desktopclient.nextcloud.desktop;

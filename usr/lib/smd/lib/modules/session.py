@@ -1,11 +1,24 @@
 #!/usr/bin/false
-# Module: Session (User)
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Manages the User's startup and session processes.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,331 +34,243 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from sched import scheduler
-from time import time, sleep
-from os import environ, kill
+# Module: User/Session
+#   Manages the User's startup and session processes. Handles "Trigger" actions
+#   for user-defined events that can execute ba program(s) in response.
+
+from os import kill
+from lib.sway import windows
+from lib.util import boolean
+from lib.util.file import expand
 from signal import SIGCONT, SIGSTOP
-from lib.util import stop, boolean, run
-from os.path import expanduser, expandvars
-from lib.modules.background import background
-from subprocess import Popen, DEVNULL, SubprocessError
+from lib.constants.config import RADIO_TYPES
+from lib.util.exec import stop, nulexec, split
 from lib.constants import (
-    NEWLINE,
+    MSG_PRE,
+    MSG_POST,
     HOOK_LOCK,
     HOOK_POWER,
-    HOOK_DAEMON,
+    HOOK_RADIO,
+    MSG_ACTION,
     HOOK_RELOAD,
-    HOOK_ROTATE,
     HOOK_SUSPEND,
     HOOK_DISPLAY,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
-    MESSAGE_TYPE_PRE,
-    MESSAGE_TYPE_POST,
-    DIRECTORY_LIBEXEC,
-    SESSION_WINDOW_LIST,
-    DEFAULT_SESSION_TAP,
-    BACKGROUND_EXEC_AUTO,
+)
+from lib.constants.defaults import (
     DEFAULT_SESSION_IGNORE,
     DEFAULT_SESSION_FREEZE,
-    DEFAULT_SESSION_MONITOR,
-    DEFAULT_SESSION_COMPOSER,
     DEFAULT_SESSION_STARTUPS,
-    DEFAULT_BACKGROUND_SWITCH,
 )
 
 HOOKS = {
-    HOOK_LOCK: "Session.freeze",
-    HOOK_DAEMON: "Session.thread",
-    HOOK_POWER: "Session.profile",
+    HOOK_LOCK: "Session.lock",
+    HOOK_POWER: "Session.trigger",
+    HOOK_RADIO: "Session.trigger",
     HOOK_RELOAD: "Session.reload",
-    HOOK_ROTATE: "Session.profile",
+    HOOK_DISPLAY: "Session.trigger",
+    HOOK_SUSPEND: "Session.trigger",
     HOOK_SHUTDOWN: "Session.reload",
-    HOOK_DISPLAY: "Session.profile",
-    HOOK_SUSPEND: "Session.profile",
-    HOOK_HIBERNATE: "Session.profile",
+    HOOK_HIBERNATE: "Session.trigger",
 }
 
 
-def _get_profile(server, name):
-    p = server.get_config(f"profile.{name}", None, False)
-    if p is None:
-        server.set_config(f"profile.{name}", list(), True)
+def _trigger(server, name):
+    t = server.get(f"trigger.{name}", list(), True)
+    if t is None or len(t) == 0:
+        return
+    c = split(t)
+    del t
+    if c is None:
+        return server.warning(
+            f'[m/session]: Trigger config value "trigger.{name}" is not a list or string!'
+        )
+    if len(c) == 0:
         return None
-    if len(p) == 0:
-        return None
-    return p
+    return c
+
+
+def _can_freeze(ignore, window):
+    if window.app.startswith("i3lock") or window.app.startswith("swaylock"):
+        return False
+    if not isinstance(ignore, list) or len(ignore) == 0:
+        return True
+    for i in ignore:
+        if i in window.app:
+            return False
+    return True
 
 
 class Session(object):
+    __slots__ = ("_ignore", "_last_ac", "_startup", "_profiles", "_can_freeze")
+
     def __init__(self):
-        self.composer = None
-        self.switch_time = 0
-        self.running = list()
-        self.profiles = dict()
-        self.switch_event = None
-        self.auto_monitor = False
-        self.freeze_ignore = None
-        self.freeze_windows = False
-        self.scheduler = scheduler(timefunc=time, delayfunc=sleep)
+        self._ignore = list()
+        self._last_ac = None
+        self._startup = list()
+        self._profiles = dict()
+        self._can_freeze = False
 
     def setup(self, server):
-        self.auto_monitor = boolean(
-            server.get_config("session.auto_monitor", DEFAULT_SESSION_MONITOR, True)
+        self._can_freeze = boolean(
+            server.get("session.freeze.enabled", DEFAULT_SESSION_FREEZE, True)
         )
-        try:
-            self.switch_time = int(
-                server.get_config(
-                    "background.auto_change", DEFAULT_BACKGROUND_SWITCH, True
+        if self._can_freeze:
+            e = server.get("session.freeze.ignore", DEFAULT_SESSION_IGNORE, True)
+            if not isinstance(e, list) or len(e) == 0:
+                server.warning(
+                    '[m/waybar]: Config value "session.freeze.ignore" is invalid (must be a list), '
+                    "using an empty value!"
                 )
-            )
-        except (TypeError, ValueError) as err:
-            server.error(
-                'Improper value for "background.autochange", resetting to default!',
-                err=err,
-            )
-            self.switch_time = int(
-                server.set_config(
-                    "background.auto_change", DEFAULT_BACKGROUND_SWITCH, True
-                )
-            )
-        c = server.get_config("session.composer", DEFAULT_SESSION_COMPOSER, True)
-        if len(c) > 0:
-            if isinstance(c, list):
-                c = c.copy()
-            elif not isinstance(c, str):
-                server.error(
-                    'Improper value for "session.composer", resetting to default!'
-                )
-                server.set_config("session.composer", DEFAULT_SESSION_COMPOSER, True)
-                c = DEFAULT_SESSION_COMPOSER
-            if isinstance(c, str):
-                c = c.split(" ")
-        if isinstance(c, list):
-            for x in range(0, len(c)):
-                c[x] = expandvars(expanduser(c[x]))
-            try:
-                self.composer = Popen(c, stderr=DEVNULL, stdout=DEVNULL, env=environ)
-            except (OSError, SubprocessError) as err:
-                server.error(f'Error starting the composer "{" ".join(c)}"!', err=err)
-        del c
-        t = server.get_config("session.enable_tap", DEFAULT_SESSION_TAP, True)
-        if t is not None and boolean(t):
-            server.debug("Enabling Tap..")
-            try:
-                run(f"{DIRECTORY_LIBEXEC}/smd-enable-tap")
-            except OSError as err:
-                server.warning("Error enabling tap!", err=err)
-        del t
-        s = server.get_config("session.startups", DEFAULT_SESSION_STARTUPS)
-        if isinstance(s, list) and len(s) > 0:
-            for x in s:
-                try:
-                    self.running.append(
-                        Popen(
-                            expandvars(expanduser(x)).split(" "),
-                            env=environ,
-                            stdout=DEVNULL,
-                            stderr=DEVNULL,
-                        )
-                    )
-                except (OSError, SubprocessError) as err:
-                    server.warning(f'Error starting startup process "{x}"!', err=err)
-        del s
-        self.freeze_ignore = server.get_config(
-            "session.freeze.ignore", DEFAULT_SESSION_IGNORE, True
-        )
-        if self.freeze_ignore is not None:
-            if not isinstance(self.freeze_ignore, list):
-                server.error(
-                    'Improper value for "session.freeze.ignore"!',
-                )
-                self.freeze_ignore = None
             else:
-                for x in range(0, len(self.freeze_ignore)):
-                    self.freeze_ignore[x] = expandvars(
-                        expanduser(self.freeze_ignore[x]).lower()
-                    )
-        self.freeze_windows = boolean(
-            server.get_config("session.freeze.enabled", DEFAULT_SESSION_FREEZE, True)
-        )
-        self.profiles["video"] = _get_profile(server, "video")
-        self.profiles["rotate"] = _get_profile(server, "rotate")
-        self.profiles["power_ac"] = _get_profile(server, "power_ac")
-        self.profiles["lock_pre"] = _get_profile(server, "lock_pre")
-        self.profiles["lock_post"] = _get_profile(server, "lock_post")
-        self.profiles["suspend_pre"] = _get_profile(server, "suspend_pre")
-        self.profiles["suspend_post"] = _get_profile(server, "suspend_post")
-        self.profiles["power_battery"] = _get_profile(server, "power_battery")
-        self.profiles["hibernate_pre"] = _get_profile(server, "hibernate_pre")
-        self.profiles["hibernate_post"] = _get_profile(server, "hibernate_post")
-
-    def thread(self, server):
-        if not self.scheduler.empty():
-            self.scheduler.run(blocking=False)
-        elif self.switch_time is not None and self.switch_time > 0:
-            self.switch_event = self.scheduler.enter(
-                self.switch_time, 1, background, argument=(server,)
-            )
-        if self.composer is not None and self.composer.poll() is not None:
-            stop(self.composer)
-            self.composer = None
-        if len(self.running) == 0:
+                for i in e:
+                    self._ignore.append(expand(i).lower())
+            del e
+        self._profiles["display"] = _trigger(server, "display")
+        self._profiles["power_ac"] = _trigger(server, "power_ac")
+        self._profiles["power_battery"] = _trigger(server, "power_battery")
+        self._profiles["lock_pre"] = _trigger(server, "lock_pre")
+        self._profiles["lock_post"] = _trigger(server, "lock_post")
+        self._profiles["suspend_pre"] = _trigger(server, "suspend_pre")
+        self._profiles["suspend_post"] = _trigger(server, "suspend_post")
+        self._profiles["hibernate_pre"] = _trigger(server, "hibernate_pre")
+        self._profiles["hibernate_post"] = _trigger(server, "hibernate_post")
+        self._profiles["wireless_enable"] = _trigger(server, "wireless.enable")
+        self._profiles["wireless_disable"] = _trigger(server, "wireless.disable")
+        self._profiles["bluetooth_enable"] = _trigger(server, "bluetooth.enable")
+        self._profiles["bluetooth_disable"] = _trigger(server, "bluetooth.disable")
+        s = server.get("session.startups", DEFAULT_SESSION_STARTUPS, True)
+        if not isinstance(s, list) or len(s) == 0:
             return
-        for p in list(self.running):
-            if p is not None and p.poll() is not None:
-                self.running.remove(p)
-                stop(p)
-            del p
-
-    def reload(self, server, message):
-        if self.switch_event is not None:
+        for x in s:
+            server.debug(f'[m/session]: Running startup process "{x}"..')
             try:
-                self.scheduler.cancel(self.switch_event)
-            except ValueError:
-                pass
-            self.switch_event = None
-        if self.composer is not None:
-            stop(self.composer)
-        for p in self.running:
-            stop(p)
-        self.running.clear()
-        self.profiles.clear()
-        if message.header() == HOOK_SHUTDOWN:
-            return
-        server.debug("Reloading configuration..")
-        self.setup(server)
-
-    def freeze(self, server, message):
-        self._freeze_windows(server, message.trigger is not None)
-        self._freeze_composer(server, message.trigger is not None)
-        if message.trigger is not None:
-            return self._trigger_profile(server, "lock_pre")
-        if message.type == MESSAGE_TYPE_POST:
-            return self._trigger_profile(server, "lock_post")
-
-    def profile(self, server, message):
-        if message.header() == HOOK_POWER:
-            if message.type == MESSAGE_TYPE_PRE:
-                return self._trigger_profile(server, "power_battery")
-            if message.type == MESSAGE_TYPE_POST:
-                return self._trigger_profile(server, "power_ac")
-        elif message.header() == HOOK_DISPLAY:
-            if (
-                self.auto_monitor
-                and message.get("active") == 1
-                and message.get("connected", 1) > 1
-            ):
-                self._exec_profile_command(server, BACKGROUND_EXEC_AUTO)
-            background(server)
-            return self._trigger_profile(server, "video")
-        elif message.header() == HOOK_ROTATE:
-            return self._trigger_profile(server, "rotate")
-        elif message.header() == HOOK_SUSPEND:
-            if message.type == MESSAGE_TYPE_PRE:
-                return self._trigger_profile(server, "suspend_pre")
-            if message.type == MESSAGE_TYPE_POST:
-                return self._trigger_profile(server, "suspend_post")
-        elif message.header() == HOOK_HIBERNATE:
-            if message.type == MESSAGE_TYPE_PRE:
-                return self._trigger_profile(server, "hibernate_pre")
-            if message.type == MESSAGE_TYPE_POST:
-                return self._trigger_profile(server, "hibernate_post")
-
-    def _freeze_windows(self, server, pre):
-        if not self.freeze_windows:
-            return server.debug("Not freezing windows as it's disabled in config.")
-        try:
-            e = run(SESSION_WINDOW_LIST, wait=True, errors=False)
-        except OSError as err:
-            return server.error("Error retriving the window list!", err=err)
-        v = e.split(NEWLINE)
-        del e
-        if len(v) == 0:
-            return server.debug("No windows detected, not freezing.")
-        for w in v:
-            e = w.split()
-            if len(e) < 4:
-                continue
-            try:
-                p = int(e[2], 10)
-            except ValueError:
-                continue
-            if not self._can_freeze_window(e[3], p):
-                if pre:
-                    del p
-                    continue
-                server.debug(f'Not freezing ignored window PID "{p}" class "{e[3]}"".')
+                p = nulexec(split(x, True))
+                self._startup.append(p)
+                server.watch(p)
                 del p
+            except OSError as err:
+                server.warning(
+                    f'[m/session]: Cannot execute the startup process "{x}"!', err
+                )
+        del s
+
+    def _freeze(self, server, pre):
+        if not self._can_freeze:
+            return server.debug("[m/session]: Not freezing windows as it's disabled.")
+        try:
+            w = windows()
+        except OSError as err:
+            return server.error("[m/session]: Cannot retrive the window list!", err)
+        if len(w) == 0:
+            return server.debug("[m/session]: No windows detected, not freezing.")
+        for i in w:
+            if not _can_freeze(self._ignore, i):
+                if pre:
+                    server.debug(
+                        f'[m/session]: Ignorining Window (pid="{i.pid}", app="{i.app}").'
+                    )
                 continue
             if pre:
                 try:
-                    kill(p, SIGSTOP)
+                    kill(i.pid, SIGSTOP)
                 except OSError as err:
-                    server.error(f'Error freezing PID "{p}"!', err=err)
+                    server.error(
+                        f'[m/session]: Cannot freeze Window (pid="{i.pid}", app="{i.app}")"!',
+                        err,
+                    )
                 continue
             try:
-                kill(p, SIGCONT)
+                kill(i.pid, SIGCONT)
             except OSError as err:
-                server.error(f'Error un-freezing PID "{p}"!', err=err)
-            del p
-        del v
-
-    def _freeze_composer(self, server, pre):
-        if self:
-            # NOTE(dij): Disabling this for now as it seems a race
-            #            condition occurs between the composer and
-            #            the lock screen which causes the screen to
-            #            freeze on unlock.
-            return server.debug("Not freezing the composer..")
-        if self.composer is None or self.composer.poll() is not None:
-            return
-        if pre:
-            try:
-                self.composer.send_signal(SIGSTOP)
-            except OSError as err:
-                return server.error("Error freezing the composer!", err=err)
-            return server.debug("Freezing the composer due to lockscreen.")
-        try:
-            self.composer.send_signal(SIGCONT)
-        except OSError as err:
-            return server.error("Error un-freezing the composer!", err=err)
-        return server.debug("Unfreezing the composer due to lockscreen removal.")
-
-    def _trigger_profile(self, server, name):
-        p = self.profiles.get(name)
-        if p is None or len(p) == 0:
-            return
-        server.debug(f'Triggering profile commands for "{name}"!')
-        if isinstance(p, str):
-            self._exec_profile_command(server, p)
-        elif isinstance(p, list):
-            for c in p:
-                self._exec_profile_command(server, c)
-
-    def _can_freeze_window(self, win_class, win_pid):
-        if win_pid == 0:
-            return False
-        if win_class.startswith("i3lock"):
-            return False
-        if not isinstance(self.freeze_ignore, list):
-            return True
-        for e in self.freeze_ignore:
-            if e in win_class.lower():
-                return False
-        return True
-
-    def _exec_profile_command(self, server, command):
-        try:
-            self.running.append(
-                Popen(
-                    expandvars(expanduser(command)).split(" "),
-                    stdout=DEVNULL,
-                    stderr=DEVNULL,
-                    env=environ,
+                server.error(
+                    f'[m/session]: Cannot un-freeze Window (pid="{i.pid}", app="{i.app}")!',
+                    err,
                 )
-            )
-        except (OSError, SubprocessError) as err:
-            server.error(f'Error starting the profile command "{command}"!', err=err)
+        del w
+
+    def lock(self, server, message):
+        if message.type == MSG_PRE:
+            self._freeze(server, True)
+            self._trigger(server, "lock_pre")
+        elif message.type == MSG_POST:
+            self._freeze(server, False)
+            self._trigger(server, "lock_post")
+
+    def _trigger(self, server, name):
+        t = self._profiles.get(name)
+        if t is None or not isinstance(t, list) or len(t) == 0:
             return
-        server.debug(f'Started the profile command "{command}"!')
+        server.debug(f'[m/session]: Running trigger commands for "{name}"!')
+        for i in t:
+            try:
+                server.watch(nulexec(i))
+            except OSError as err:
+                server.error(
+                    f'[m/session]: Cannot start the trigger ({name}) command "{i}"!',
+                    err,
+                )
+            else:
+                server.debug(
+                    f'[m/session]: Started the trigger ({name}) command "{i}"!'
+                )
+        del t
+
+    def reload(self, server, message):
+        self._last_ac = None
+        self._ignore.clear()
+        self._profiles.clear()
+        for i in self._startup:
+            stop(i)
+        self._startup.clear()
+        if message.header() == HOOK_SHUTDOWN:
+            return
+        server.debug(
+            "[m/session]: Reloading configuration and re-running startup commands.."
+        )
+        self.setup(server)
+
+    def trigger(self, server, message):
+        if message.header() == HOOK_POWER:
+            if message.type == MSG_PRE:
+                # NOTE(dij): Prevent re-running power triggers when the AC
+                #            device reconnects.
+                if self._last_ac is not None and not self._last_ac:
+                    return
+                self._last_ac = False
+                return self._trigger(server, "power_battery")
+            if message.type == MSG_POST:
+                if self._last_ac is not None and self._last_ac:
+                    return
+                self._last_ac = True
+                return self._trigger(server, "power_ac")
+        if message.header() == HOOK_DISPLAY:
+            return self._trigger(server, "display")
+        if message.header() == HOOK_SUSPEND:
+            return self._trigger(
+                server, "suspend_pre" if message.type == MSG_PRE else "suspend_post"
+            )
+        if message.header() == HOOK_HIBERNATE:
+            return self._trigger(
+                server, "hibernate_pre" if message.type == MSG_PRE else "hibernate_post"
+            )
+        if (
+            message.header() == HOOK_RADIO
+            and message.type == MSG_ACTION
+            and message.radio in RADIO_TYPES
+        ):
+            if message.radio == "wireless":
+                return self._trigger(
+                    server,
+                    "wireless_enable"
+                    if message.get("enabled", True)
+                    else "wireless_disable",
+                )
+            elif message.radio == "bluetooth":
+                return self._trigger(
+                    server,
+                    "bluetooth_enable"
+                    if message.get("enabled", True)
+                    else "bluetooth_disable",
+                )

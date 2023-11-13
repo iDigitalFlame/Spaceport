@@ -1,11 +1,24 @@
 #!/usr/bin/false
-# Module: Forwarder (System)
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Forwards server specific calls to the clients.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +33,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+
+# Module: System/Forwarder
+#   Forwards server specific calls to the userspace clients. Also handles error
+#   messages returned to the server.
 
 from lib.constants import (
     HOOK_OK,
@@ -41,13 +58,15 @@ HOOKS_SERVER = {
 
 
 def forward(_, message):
-    return message.set_multicast()
+    return message.multicast()
 
 
 def error(server, message):
-    if not message.is_error():
+    e = message.is_error()
+    if not e:
         return
     server.error(
-        f'Error detected on hook 0x{message.get("hook", HOOK_ERROR):02X}: '
-        f'{message.error}\n{message.get("trace", "..")}'
+        f'[m/forwarder]: Error detected on hook 0x{message.get("hook", HOOK_ERROR):02X}: '
+        f'{e}\n{message.get("trace", "..")}'
     )
+    del e

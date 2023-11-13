@@ -1,14 +1,48 @@
 /*
- DarkSkyTheme
-    Dark black/gray and purple color scheme.
-    Edits by iDigitalFlame
+    ################################
+    ### iDigitalFlame  2016-2024 ###
+    #                              #
+    #            -/`               #
+    #            -yy-   :/`        #
+    #         ./-shho`:so`         #
+    #    .:- /syhhhh//hhs` `-`     #
+    #   :ys-:shhhhhhshhhh.:o- `    #
+    #   /yhsoshhhhhhhhhhhyho`:/.   #
+    #   `:yhyshhhhhhhhhhhhhh+hd:   #
+    #     :yssyhhhhhyhhhhhhhhdd:   #
+    #    .:.oyshhhyyyhhhhhhddd:    #
+    #    :o+hhhhhyssyhhdddmmd-     #
+    #     .+yhhhhyssshdmmddo.      #
+    #       `///yyysshd++`         #
+    #                              #
+    ########## SPACEPORT ###########
+    ### Spaceport + SMD
 
- Original Credits:
-    Simon Steinbeiß <simon.steinbeiss@univie.ac.at>
-    Joern Konopka <cldx3000@googlemail.com>
-    Georgi Karavasilev <motorslav@gmail.com>
-    David Barr <dpbarr@gmail.com>
-    Christian Medel (Elbullazul) <cmedelahumada@gmail.com>
+    Copyright (C) 2016 - 2024 iDigitalFlame
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    DarkSkyTheme
+        Dark black/gray and purple color scheme.
+        Edits by iDigitalFlame
+
+    Original Credits:
+        Simon Steinbeiß <simon.steinbeiss@univie.ac.at>
+        Joern Konopka <cldx3000@googlemail.com>
+        Georgi Karavasilev <motorslav@gmail.com>
+        David Barr <dpbarr@gmail.com>
+        Christian Medel (Elbullazul) <cmedelahumada@gmail.com>
 */
 
 XfceHeading{margin:0;padding:0;border-width:0;background-color:@theme_base_color;background-image:none;color:@theme_text_color}.xfce4-panel{background-color:@panel_bg_color;color:@panel_fg_color;font:normal}.xfce4-panel .button{padding:0 2px;border-radius:0;border-style:none;color:@panel_fg_color}.xfce4-panel .button:active{background-color:shade(@panel_bg_color,.8);background-image:none;color:@panel_fg_color}.xfce4-panel .button:active:hover,.xfce4-panel .button:hover{background-color:mix(@panel_bg_color,@panel_fg_color,.21);background-image:none;color:shade(@panel_fg_color,1.08)}.xfce4-panel .menu{-gtk-image-effect:none}

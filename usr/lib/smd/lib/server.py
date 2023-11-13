@@ -1,11 +1,24 @@
 #!/usr/bin/false
-# The Server class is the daemon responsible for the primary privileged functions
-# executed by the System Management Daemon. This class extends the Service class and
-# is executed as a thread for socket processing.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,13 +34,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# server.py
+#   The Server class is the daemon responsible for the primary privileged functions
+#   executed by SMD.
+
 from grp import getgrnam
-from threading import Thread, Event
-from lib.structs.service import Service
-from lib.structs.message import Message
-from os.path import exists, isdir, dirname
-from os import remove, chmod, chown, makedirs
+from threading import Event
+from os.path import exists, dirname
+from lib.util.file import ensure_dir
+from lib.structs import Service, Message
+from os import getpid, remove, chmod, chown, stat
 from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
+from lib.constants import VERSION, HOOK_SHUTDOWN, HOOK_NOTIFICATION
 from socket import (
     socket,
     AF_UNIX,
@@ -37,115 +55,131 @@ from socket import (
     SO_PEERCRED,
     SO_REUSEADDR,
 )
-from lib.constants import (
-    VERSION,
+from lib.constants.config import (
     NAME_SERVER,
     LOG_PAYLOAD,
     SOCKET_GROUP,
-    HOOK_SHUTDOWN,
     SOCKET_BACKLOG,
-    HOOK_NOTIFICATION,
+    TIMEOUT_SEC_STOP,
     DIRECTORY_MODULES,
 )
 
 
-class ServerClient(object):
-    def __init__(self, client):
-        self._pid = 0
+class Conn(object):
+    __slots__ = ("_uid", "_pid", "_sock", "_queue")
+
+    def __init__(self, sock):
+        self._sock = sock
+        self._sock.setblocking(False)
         self._queue = list()
-        self._client = client
-        self._client.setblocking(False)
         try:
-            self._pid = int(client.getsockopt(SOL_SOCKET, SO_PEERCRED))
-        except OSError:
-            pass
+            self._pid = int(self._sock.getsockopt(SOL_SOCKET, SO_PEERCRED))
+            self._uid = stat(f"/proc/{self._pid}").st_uid
+        except (ValueError, OSError):
+            self._pid, self._uid = None, None
 
     def read(self):
-        self._client.setblocking(True)
-        m = Message(stream=self._client)
-        m["pid"] = self._pid
-        self._client.setblocking(False)
-        return m
+        self._sock.setblocking(True)
+        try:
+            return Message(stream=self._sock, pid=self._pid, uid=self._uid)
+        finally:
+            self._sock.setblocking(False)
 
     def close(self):
-        self._client.shutdown(SHUT_RDWR)
-        self._client.close()
-
-    def socket(self):
-        return self._client
+        if self._sock is None:
+            return
+        self._sock.shutdown(SHUT_RDWR)
+        self._sock.close()
+        self._queue.clear()
+        self._sock, self._queue, self._uid, self._pid = None, None, None, None
 
     def add(self, message):
+        if self._sock is None:
+            return
         self._queue.append(message)
 
     def flush(self, server):
-        while len(self._queue) > 0:
-            self._flush(server)
+        if self._sock is None or self._queue is None:
+            return
+        try:
+            while len(self._queue) > 0:
+                self._flush(server)
+        except (TypeError, AttributeError):
+            # NOTE(dij): Catch race condition that happens when a client disconnects
+            #            during a flush operation.
+            pass
 
     def _flush(self, server):
         m = self._queue.pop()
+        m["server_pid"] = server._pid
         try:
-            m.send(self._client)
+            m.send(self._sock)
             server.debug(
-                f"Message 0x{m.header():02X} was sent to client socket FD({self._client.fileno()})."
+                f"[conn]: Message 0x{m.header():02X} was sent to socket FD({self._sock.fileno()})."
             )
-            if LOG_PAYLOAD and len(m) > 0:
-                server.error(f"[SEND >] MESSAGE DUMP: {m}")
+            if LOG_PAYLOAD:
+                server.error(f"[dump]: OUT > {m}")
         except OSError as err:
-            if err.errno == 32 or err.errno == 9:
-                if self._client.fileno() == -1:
+            if err.errno == 0x20 or err.errno == 0x9:
+                if self._sock.fileno() == -1:
                     return
                 return server.debug(
-                    f"Client socket FD({self._client.fileno()}) has disconnected!"
+                    f"[conn]: Socket FD({self._sock.fileno()}) has disconnected!"
                 )
             server.error(
-                f"Error sending message 0x{m.header():02X} to client socket FD({self._client.fileno()})!",
-                err=err,
+                f"[conn]: Cannot send message 0x{m.header():02X} to socket FD({self._sock.fileno()})!",
+                err,
             )
         except Exception as err:
             server.error(
-                f"Error sending message 0x{m.header():02X} to client socket FD({self._client.fileno()})!",
-                err=err,
+                f"[conn]: Cannot send message 0x{m.header():02X} to socket FD({self._sock.fileno()})!",
+                err,
             )
         finally:
             del m
 
+    def setblocking(self, blocking):
+        self._sock.setblocking(blocking)
 
-class Server(Service, Thread):
-    def __init__(self, config, sock, level, log, read_only):
-        Thread.__init__(self, name="SMDServerThread", daemon=False)
+
+class Server(Service):
+    __slots__ = ("_pid", "_path", "_socket", "_clients", "_running", "_complete")
+
+    def __init__(self, config, sock, level, log, read_only, journal):
         Service.__init__(
-            self, NAME_SERVER, DIRECTORY_MODULES, config, level, log, read_only
+            self, NAME_SERVER, DIRECTORY_MODULES, config, level, log, read_only, journal
         )
+        self._pid = getpid()
         self._path = sock
         self._socket = None
-        self._done = Event()
         self._clients = dict()
         self._running = Event()
+        self._complete = Event()
 
-    def run(self):
-        self.info(
-            f"Starting System Management Daemon Server (v{VERSION}) listening thread.."
-        )
+    def stop(self):
+        self._running.set()
+        self._complete.wait(TIMEOUT_SEC_STOP)
+
+    def start(self):
+        self.info(f"[main]: Starting System Management Daemon Server (v{VERSION})..")
         if exists(self._path):
             try:
                 remove(self._path)
             except OSError as err:
-                self.error(f'Error removing UNIX socket "{self._path}"!', err=err)
+                self.error(f'[main]: Cannot remove the socket "{self._path}"!', err)
                 return self._stop()
-        d = dirname(self._path)
-        if not isdir(d) or not exists(d):
-            try:
-                makedirs(d, exist_ok=True)
-            except OSError as err:
-                self.error(
-                    f'Error creating UNIX socket directory for "{self._path}"!', err=err
-                )
-                return self._stop()
-        del d
+        try:
+            ensure_dir(self._path, mode=0o0750)
+        except OSError as err:
+            self.error(
+                f'[main]: Cannot create the socket directory for "{self._path}"!',
+                err,
+            )
+            return self._stop()
         try:
             g = getgrnam(SOCKET_GROUP).gr_gid
         except Exception as err:
-            self.error(f'Error resolving UNIX socket group "{SOCKET_GROUP}"!', err=err)
+            self.error(f'[main]: Cannot resolve the group "{SOCKET_GROUP}"!', err)
             return self._stop()
         try:
             self._socket = socket(AF_UNIX, SOCK_STREAM)
@@ -153,65 +187,67 @@ class Server(Service, Thread):
             self._socket.bind(self._path)
             self._socket.listen(SOCKET_BACKLOG)
             chown(self._path, 0, g)
+            chown(dirname(self._path), 0, g)
             chmod(self._path, 0o0660)
             self._socket.setblocking(False)
         except OSError as err:
-            self.error(f'Error listining on UNIX socket "{self._path}"!', err=err)
+            self.error(f'[main]: Cannot listen on socket "{self._path}"!', err)
             return self.stop()
-        del g
-        self._done.clear()
-        self._running.clear()
+        finally:
+            del g
         self._dispatcher.start()
         p = epoll()
         p.register(self._socket.fileno(), EPOLLIN | EPOLLHUP)
         try:
             while not self._running.is_set():
-                self._poll(p)
+                for f, e in p.poll(None):
+                    if not self._poll(p, f, e):
+                        break
+        except KeyboardInterrupt:
+            self.debug("[main]: Stopping Server Thread..")
         except Exception as err:
-            self.error("Error during server thread operation!", err=err)
-        if self._socket is not None and self._socket.fileno() != -1:
-            p.unregister(self._socket.fileno())
-        p.close()
-        del p
-        self._stop()
-
-    def stop(self):
-        self._running.set()
-        if self._socket is not None:
-            try:
-                self._socket.shutdown(SHUT_RDWR)
-            except OSError as err:
-                return self.error("Error stopping the server thread!", err=err)
-        self._done.wait()
-
-    def wait(self):
-        self._done.wait()
+            return self.error("[main]: Unexpected runtime error!", err)
+        finally:
+            if self._socket is not None and self._socket.fileno() != -1:
+                p.unregister(self._socket.fileno())
+            p.close()
+            del p
+            self._stop()
+        return True
 
     def _stop(self):
-        self.info("Stopping System Management Daemon server thread..")
-        self.send(None, [Message(header=HOOK_SHUTDOWN)])
+        self._send_one(None, Message(HOOK_SHUTDOWN))
         self._dispatcher.stop()
+        self.info("[main]: Stopping System Management Daemon Server..")
+        self._running.set()
+        c = list(self._clients.values())
+        for i in c:
+            try:
+                i.close()
+            except OSError:
+                pass
+        del c
+        self._clients.clear()
         try:
             if self._socket is not None:
                 self._socket.shutdown(SHUT_RDWR)
                 self._socket.close()
             self._socket = None
         except OSError as err:
-            self.error(f'Error closing the UNIX socket "{self._path}"!', err=err)
+            self.error(f'[main]: Cannot close the socket "{self._path}"!', err)
         if exists(self._path):
             try:
                 remove(self._path)
             except OSError as err:
-                self.error(f'Error removing the UNIX socket "{self._path}"!', err=err)
-        self.debug("Server Thread shutdown complete.")
-        self._done.set()
+                self.error(f'[main]: Cannot remove the socket "{self._path}"!', err)
+        self.debug("[main]: Server shutdown complete.")
+        self._complete.set()
 
     def _flush(self):
-        e = list(self._clients.keys())
-        for c in e:
-            if c in self._clients:
-                self._clients[c].flush(self)
-        del e
+        c = list(self._clients.values())
+        for i in c:
+            i.flush(self)
+        del c
 
     def __hash__(self):
         return hash(NAME_SERVER)
@@ -219,75 +255,84 @@ class Server(Service, Thread):
     def is_server(self):
         return True
 
-    def _poll(self, poll):
-        for f, e in poll.poll(None):
-            if f == self._socket.fileno():
-                if e & EPOLLHUP:
-                    self.debug("Received socket shutdown event.")
-                    return self._running.set()
-                c, _ = self._socket.accept()
-                poll.register(c, EPOLLIN)
-                self._clients[c.fileno()] = ServerClient(c)
-                self.debug(f"Client connected to server on socket FD({c.fileno()}).")
-                del c
-                continue
-            if f not in self._clients:
-                continue
-            if e & EPOLLIN:
-                self._read_client(poll, f)
-                continue
-            if e & (EPOLLHUP | EPOLLERR):
-                self.error(
-                    f"Client on socket FD({f}) has been disconnected due to errors!"
-                )
-                poll.unregister(f)
-                self._clients[f].close()
-                del self._clients[f]
-
-    def send(self, eid, result):
-        if isinstance(result, Message):
-            result = [result]
-        elif not isinstance(result, list) and not isinstance(result, tuple):
+    def send(self, eid, message):
+        if isinstance(message, Message):
+            return self._send_one(eid, message)
+        if not isinstance(message, list) and not isinstance(message, tuple):
             return
-        for m in result:
-            if eid is None or m.is_multicast():
-                e = list(self._clients.keys())
-                for c in e:
-                    if c in self._clients:
-                        self._clients[c].add(m)
-                del e
-            elif eid is not None and eid in self._clients:
-                self._clients[eid].add(m)
+        if len(message) == 0:
+            return
+        for i in message:
+            if not isinstance(i, Message):
+                continue
+            self._send_one(eid, i, flush=False)
         self._flush()
 
-    def _read_client(self, poll, f):
-        try:
-            m = self._clients[f].read()
-            self._dispatcher.add(f, m)
-            self.debug(
-                f"Received message type 0x{m.header():02X} from client "
-                f"socket PID({m.get('pid', -1)})/FD({f})."
+    def broadcast(self, message):
+        self.send(None, message)
+
+    def _poll(self, poll, file, event):
+        if file == self._socket.fileno():
+            if event & EPOLLHUP:
+                self.debug("[conn]: Received socket shutdown event.")
+                return self._running.set()
+            c, _ = self._socket.accept()
+            poll.register(c, EPOLLIN)
+            self._clients[c.fileno()] = Conn(c)
+            self.debug(f"[conn]: Client connected on socket FD({c.fileno()}).")
+            del c
+            return True
+        if file not in self._clients:
+            return True
+        if event & EPOLLIN:
+            self._read_client(poll, file)
+        elif event & (EPOLLHUP | EPOLLERR):
+            self.error(
+                f"[conn]: Client on socket FD({file}) has disconnected with errors!"
             )
-            if LOG_PAYLOAD and len(m) > 0:
-                self.error(f"[RECV <] MESSAGE DUMP: {m}")
+            poll.unregister(file)
+            self._clients[file].close()
+            del self._clients[file]
+        return True
+
+    def _read_client(self, poll, file):
+        try:
+            m = self._clients[file].read()
+            self._dispatcher.add(file, m)
+            self.debug(
+                f"[conn]: Received Message type 0x{m.header():02X} from client "
+                f"PID({m.pid()})/UID({m.uid()})/FD({file})."
+            )
+            if LOG_PAYLOAD:
+                self.error(f"[dump]:  IN < {m}")
             del m
             return
         except OSError as err:
-            if err.errno != 1000:
-                self._clients[f].socket().setblocking(False)
+            if err.errno != 0x3E8:
+                self._clients[file].setblocking(False)
                 return self.error(
-                    f"Error reading from client on socket FD({f})!", err=err
+                    f"[conn]: Cannot read from client on FD({file})!", err
                 )
-        self.debug(f"Client on socket FD({f}) disconnected!")
-        poll.unregister(f)
-        self._clients[f].close()
-        del self._clients[f]
+        self.debug(f"[conn]: Client on FD({file}) disconnected!")
+        poll.unregister(file)
+        self._clients[file].close()
+        del self._clients[file]
+
+    def _send_one(self, eid, message, flush=True):
+        if eid is None or message.is_multicast():
+            c = list(self._clients.values())
+            for i in c:
+                i.add(message)
+            del c
+        elif eid is not None and eid in self._clients:
+            self._clients[eid].add(message)
+        else:
+            return
+        if flush:
+            self._flush()
 
     def notify(self, title, message=None, icon=None):
-        self.send(
+        self._send_one(
             None,
-            Message(
-                header=HOOK_NOTIFICATION,
-                payload={"icon": icon, "title": title, "body": message},
-            ),
+            Message(HOOK_NOTIFICATION, {"icon": icon, "title": title, "body": message}),
         )

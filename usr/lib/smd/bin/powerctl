@@ -1,22 +1,24 @@
 #!/usr/bin/python3
-# powerctl
-#  Allows users to interact with the System Management Daemon to change Power and System settings.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Usage:
-#  powerctl [-S socket] <module> [-h] [module_options]
-#
-# This utility loads up the System Management Daemon modules and allows specific actions on each module.
-# Each module may have separate parameters that can be queried by using the "-h" flag when calling a module.
-# The only default parameter supported by powerctl is the "-S" flag, which accepts a file path to be used as the
-# UNIX socket for the System Management Daemon.
-#
-# Exit Codes:
-#  0 - Completion without exceptions or errors.
-#  1 - Permissions issue, incorrect arguments used or error in command specified.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,177 +34,31 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# powerctl
+#   Allows users to interact with SMD to change Power, User and System settings.
+#   Features can be added dynamically similar to SMD Modules, placed in the
+#   "DIRECTORY_POWERCTL" value set in the "constants/config.py" file.
+#
+# Usage:
+#   powerctl [-S socket] <module> [-h] [module_options]
+#
+# This utility loads up the System Management Daemon modules and allows specific
+# actions on each module. Each module may have separate parameters that can be
+# queried by using the "-h" flag when calling a module. The only default parameter
+# supported by powerctl is the "-S" flag, which accepts a file path to be used as
+# the UNIX socket for SMD.
+#
+# Exit Codes:
+#  0 - Completion without exceptions or errors.
+#  1 - Permissions issue, incorrect arguments used or error in command.
+#  N - Custom exit codes may be implemented by specific modules.
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
 
-from os import listdir
-from os.path import basename
-from lib.util import print_error
-from argparse import ArgumentParser
-from importlib import import_module
-from lib.loader import try_get_attr
-from lib.args import ARGS, DESCRIPTIONS
-from lib.constants import (
-    NAME,
-    EMPTY,
-    SOCKET,
-    NEWLINE,
-    VERSION,
-    NAME_CLIENT,
-    NAME_SERVER,
-    NAME_POWERCTL,
-    DIRECTORY_POWERCTL,
-)
-
-
-def _powerctl():
-    v = ArgumentParser(description="System Power Manager", usage="%(prog)s [options]")
-    m = _load_modules(v, DIRECTORY_POWERCTL)
-    try:
-        b = basename(__file__).lower()
-    except OSError:
-        b = None
-    p = v
-    if isinstance(b, str) and b != NAME_POWERCTL:
-        if "ctl" in b:
-            b = b.replace("ctl", EMPTY)
-        if b in m:
-            p = m[b]
-            p.usage = f"{b} [options]"
-    del b
-    p.add_argument(
-        "-S",
-        type=str,
-        dest="socket",
-        help="Specify server socket to use for communication.",
-        action="store",
-        default=SOCKET,
-        metavar="socket",
-        required=False,
-    )
-    p.add_argument(
-        "--version",
-        dest="version",
-        help="Show version information.",
-        action="store_true",
-        default=False,
-        required=False,
-    )
-    a = p.parse_args()
-    if a.version:
-        print(
-            f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2023\n\n"
-            f"System: {NAME} ({NAME_SERVER}, {NAME_CLIENT})"
-        )
-        sys.exit(0)
-    f = None
-    if hasattr(a, "subs") and isinstance(a.subs, dict) and len(a.subs) > 0:
-        f = list()
-        for n, x in a.subs.items():
-            if not callable(x):
-                continue
-            if x in f:
-                continue
-            try:
-                if not bool(getattr(a, n)):
-                    continue
-            except AttributeError:
-                continue
-            f.append(x)
-    if isinstance(f, list) and len(f) > 0:
-        for x in f:
-            try:
-                q = x(a)
-            except Exception as err:
-                return print_error("Error processing request!", err)
-            if isinstance(q, bool):
-                break
-            del q
-    elif "func" in a and callable(a.func):
-        try:
-            a.func(a)
-        except Exception as err:
-            return print_error("Error processing request!", err)
-    else:
-        v.print_help()
-        sys.exit(1)
-    del a
-    del p
-    del m
-    del f
-    del v
-    sys.exit(0)
-
-
-def _load_modules(parser, directory):
-    try:
-        m = listdir(directory)
-    except OSError as err:
-        return print_error(f'Error loading modules from "{directory}"!', err)
-    n = dict()
-    p = parser.add_subparsers(title="System Power Management Modules")
-    for x in m:
-        if ".py" not in x:
-            continue
-        v = x.replace(".py", EMPTY).lower()
-        try:
-            e = import_module(f"lib.powerctl.{v}")
-        except Exception as err:
-            print_error(f'Error loading module "{v}"!', err, False)
-            continue
-        d = try_get_attr(e, "DESCRIPTION", True)
-        if not isinstance(d, str) and v in DESCRIPTIONS:
-            d = DESCRIPTIONS[v]
-        if not isinstance(d, str):
-            d = f"{v.capitalize()} Power Module"
-        a = try_get_attr(e, "ARGS", True)
-        if a is None and v in ARGS:
-            a = ARGS[v]
-        f = try_get_attr(e, "DEFAULT", False)
-        if not callable(f):
-            print_error(
-                f'Could not load module "{v}", the "default" function does not exist!',
-                None,
-                False,
-            )
-            continue
-        s = dict()
-        r = p.add_parser(v, description=d)
-        if isinstance(a, list):
-            for i in a:
-                if len(i) < 2:
-                    continue
-                r.add_argument(i[0], **i[1])
-                if len(i) != 3:
-                    continue
-                g = i[2]
-                if isinstance(g, str):
-                    g = try_get_attr(e, g, False)
-                if callable(g):
-                    if "dest" in i[1]:
-                        s[i[1]["dest"]] = g
-                    elif "metavar" in i[1]:
-                        s[i[1]["metavar"]] = g
-                    else:
-                        s[i[0].replace("-", EMPTY)] = g
-                del g
-        del a
-        r.set_defaults(func=f, subs=s)
-        n[v] = r
-        del s
-        del f
-        del v
-        del r
-        del e
-        del d
-    z = p.add_parser("modules", description="Loaded Modules List")
-    z.set_defaults(func=lambda _: print(NEWLINE.join(n.keys())))
-    del z
-    del m
-    del p
-    return n
+from lib import powerctl
 
 
 if __name__ == "__main__":
-    _powerctl()
+    powerctl()

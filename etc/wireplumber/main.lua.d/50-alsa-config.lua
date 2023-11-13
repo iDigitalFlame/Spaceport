@@ -1,8 +1,24 @@
--- Wireplumber Configuration File
+-- ################################
+-- ### iDigitalFlame  2016-2024 ###
+-- #                              #
+-- #            -/`               #
+-- #            -yy-   :/`        #
+-- #         ./-shho`:so`         #
+-- #    .:- /syhhhh//hhs` `-`     #
+-- #   :ys-:shhhhhhshhhh.:o- `    #
+-- #   /yhsoshhhhhhhhhhhyho`:/.   #
+-- #   `:yhyshhhhhhhhhhhhhh+hd:   #
+-- #     :yssyhhhhhyhhhhhhhhdd:   #
+-- #    .:.oyshhhyyyhhhhhhddd:    #
+-- #    :o+hhhhhyssyhhdddmmd-     #
+-- #     .+yhhhhyssshdmmddo.      #
+-- #       `///yyysshd++`         #
+-- #                              #
+-- ########## SPACEPORT ###########
+-- ### Spaceport + SMD
+-- ## WirePlumber Main Configuration
 --
--- System Management Daemon
---
--- Copyright (C) 2016 - 2023 iDigitalFlame
+-- Copyright (C) 2016 - 2024 iDigitalFlame
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -20,38 +36,39 @@
 
 alsa_monitor.enabled = true
 alsa_monitor.properties = {
-  ["alsa.midi"] = false,
-  ["alsa.reserve"] = true,
-  ["alsa.jack-device"] = false,
-  ["alsa.reserve.priority"] = -20,
-  ["alsa.midi.monitoring"] = false,
-  ["alsa.reserve.application-name"] = "WirePlumber",
+    ["alsa.midi"] = false,
+    ["alsa.reserve"] = true,
+    ["alsa.jack-device"] = false,
+    ["alsa.reserve.priority"] = -20,
+    ["alsa.midi.monitoring"] = false,
+    ["alsa.reserve.application-name"] = "WirePlumber",
 }
 alsa_monitor.rules = {
-  {
-    matches = {
-      {
-        { "device.name", "matches", "alsa_card.*" },
-      },
+    {
+        matches = {
+            {
+                { "device.name", "matches", "alsa_card.*" },
+            },
+        },
+        apply_properties = {
+            ["api.alsa.use-acp"] = false,
+            ["api.alsa.use-ucm"] = true,
+            ["api.acp.auto-port"] = false,
+            ["api.alsa.ignore-dB"] = false,
+            ["api.alsa.soft-mixer"] = false,
+            ["api.acp.auto-profile"] = false,
+        },
     },
-    apply_properties = {
-      ["api.alsa.use-acp"] = true,
-      ["api.acp.auto-port"] = false,
-      ["api.alsa.ignore-dB"] = false,
-      ["api.alsa.soft-mixer"] = false,
-      ["api.acp.auto-profile"] = false,
+    {
+        matches = {
+            {
+                { "node.name", "matches", "alsa_input.*" },
+            },
+            {
+                { "node.name", "matches", "alsa_output.*" },
+            },
+        },
+        apply_properties = {
+        },
     },
-  },
-  {
-    matches = {
-      {
-        { "node.name", "matches", "alsa_input.*" },
-      },
-      {
-        { "node.name", "matches", "alsa_output.*" },
-      },
-    },
-    apply_properties = {
-    },
-  },
 }

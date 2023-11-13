@@ -1,9 +1,24 @@
-#!/usr/bin/false
-# Librewolf Config Pacman Hook
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## LibreWolf Config Backup Pacman Hook
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,4 +43,4 @@ Operation   = Upgrade
 [Action]
 When        = PreTransaction
 Exec        = /usr/bin/dash -c "[ -e /usr/lib/librewolf/librewolf.cfg.pacnew ] && mv /usr/lib/librewolf/librewolf.cfg.pacnew /var/cache/librewolf.cfg.bak || exit 0"
-Description = Backing up old Librewolf config..
+Description = Backing up old LibreWolf config..

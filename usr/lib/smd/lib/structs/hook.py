@@ -1,11 +1,24 @@
 #!/usr/bin/false
-# The Hook class contains all the primary functions for storing and running hook
-# functions.  This class container allows for invocation of multiple hooks using
-# a single function call.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,149 +34,144 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# hook.py
+#   Hooks contains all the primary functions for storing and running hook or loaded
+#   functions. This class container allows for invocation of multiple hooks using
+#   a single function call.
+
 from signal import alarm
-from threading import Thread, Event
-from lib.structs.message import Message, send_exception
-from lib.constants import HOOK_OK, HOOK_THREAD_TIMEOUT, LOG_TICKS
+from lib.constants import HOOK_OK, HOOK_ERROR
+from lib.structs.message import Message, as_exception
+from lib.constants.config import TIMEOUT_SEC_HOOK, LOG_TICKS
 
 
 class Hook(object):
-    def __init__(self, hook_object, hook_func, hook_class):
-        self._func = hook_func
-        self._class = hook_class
-        self._argcount = hook_func.__code__.co_argcount
-        if hook_object is None:
-            self._argcount += 1
+    __slots__ = ("_args", "_func", "_class")
+
+    def __init__(self, obj, func, cls):
+        self._func = func
+        self._args = func.__code__.co_argcount
+        self._class = cls
+        if obj is None:
+            self._args += 1
 
     def run(self, service, message, queue):
         if LOG_TICKS:
             service.debug(
-                f'Running function "{self._func.__name__}" of "{self._class.__name__}".'
+                f'[hook]: Running function "{self._func.__name__}" of "{self._class.__name__}".'
             )
-        if self._func is None or not callable(self._func):
-            service.warning(
-                f'Hook for "{self._class.__name__}" has a missing function!'
-            )
+        r, s = self._exec(service, message, queue)
+        if not s:
             return False
-        if self._argcount == 5:
-            try:
-                service.warning(
-                    f'Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
-                    f"is using the old format, please convert it!"
-                )
-                r = self._func(service, None, queue, message)
-            except Exception as err:
-                service.error(
-                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
-                    err=err,
-                )
-                if isinstance(queue, list):
-                    queue.append(send_exception(message.header(), err))
-                return False
-        elif self._argcount == 4:
-            try:
-                r = self._func(service, message, queue)
-            except Exception as err:
-                service.error(
-                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
-                    err=err,
-                )
-                if isinstance(queue, list):
-                    queue.append(send_exception(message.header(), err))
-                return False
-        elif self._argcount == 3:
-            try:
-                r = self._func(service, message)
-            except Exception as err:
-                service.error(
-                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
-                    err=err,
-                )
-                if isinstance(queue, list):
-                    queue.append(send_exception(message.header(), err))
-                return False
-        elif self._argcount == 2:
-            try:
-                r = self._func(service)
-            except Exception as err:
-                service.error(
-                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
-                    err=err,
-                )
-                if isinstance(queue, list):
-                    queue.append(send_exception(message.header(), err))
-                return False
-        else:
-            try:
-                r = self._func()
-            except Exception as err:
-                service.error(
-                    f'Error calling function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
-                    err=err,
-                )
-                if isinstance(queue, list):
-                    queue.append(send_exception(message.header(), err))
-                return False
         if r is None:
             return True
         if isinstance(r, Message):
             queue.append(r)
-        elif isinstance(r, dict):
-            queue.append(Message(message.header(), r))
-        elif isinstance(r, str):
-            queue.append(Message(message.header(), {"result": r}))
         elif isinstance(r, bool):
             if r:
                 queue.append(Message(HOOK_OK))
             else:
-                queue.append(Message(HOOK_OK, {"error": "An unknown error occurred"}))
+                queue.append(Message(HOOK_ERROR, {"error": "unknown error occurred"}))
         elif isinstance(r, int):
-            queue.append(Message(header=r))
+            queue.append(Message(r))
+        elif isinstance(r, dict):
+            queue.append(Message(message.header(), r))
+        elif isinstance(r, str):
+            queue.append(Message(message.header(), {"result": r}))
         elif isinstance(r, list) or isinstance(r, tuple):
-            for s in r:
-                if isinstance(s, Message):
-                    queue.append(s)
-                elif isinstance(s, dict):
-                    queue.append(Message(message.header(), s))
-                elif isinstance(s, str):
-                    queue.append(Message(message.header(), {"result": s}))
+            for i in r:
+                if isinstance(i, Message):
+                    queue.append(i)
+                elif isinstance(i, int):
+                    queue.append(Message(i))
+                elif isinstance(i, dict):
+                    queue.append(Message(message.header(), i))
+                elif isinstance(i, str):
+                    queue.append(Message(message.header(), {"result": i}))
         else:
             service.warning(
-                f'The return result for function "{self._func.__name__}" of Hook '
+                f'[hook]: The return result for function "{self._func.__name__}" (type: {type(r)}) of Hook '
                 f'for "{self._class.__name__}" was not able to be parsed!'
             )
-        del r
+        del r, s
         return True
+
+    def _exec(self, service, message, queue):
+        if not callable(self._func):
+            service.warning(
+                f'[hook]: Hook for "{self._class.__name__}" is missing a function!'
+            )
+            return None, False
+        if self._args == 5:
+            try:
+                service.warning(
+                    f'[hook]: Function "{self._func.__name__}" of Hook for "{self._class.__name__}" '
+                    f"is using the old format, please convert it!"
+                )
+                return self._func(service, None, queue, message), True
+            except Exception as err:
+                service.error(
+                    f'[hook]: Cannot execute function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
+                    err,
+                )
+                if queue is not None:
+                    queue.append(as_exception(message.header(), err))
+            return False, False
+        if self._args == 4:
+            try:
+                return self._func(service, message, queue), True
+            except Exception as err:
+                service.error(
+                    f'[hook]: Cannot execute function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
+                    err,
+                )
+                if queue is not None:
+                    queue.append(as_exception(message.header(), err))
+            return False, False
+        if self._args == 3:
+            try:
+                return self._func(service, message), True
+            except Exception as err:
+                service.error(
+                    f'[hook]: Cannot execute function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
+                    err,
+                )
+                if queue is not None:
+                    queue.append(as_exception(message.header(), err))
+            return False, False
+        if self._args == 2:
+            try:
+                return self._func(service), True
+            except Exception as err:
+                service.error(
+                    f'[hook]: Cannot execute function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
+                    err,
+                )
+                if queue is not None:
+                    queue.append(as_exception(message.header(), err))
+            return False, False
+        try:
+            return self._func(), True
+        except Exception as err:
+            service.error(
+                f'[hook]: Cannot execute function "{self._func.__name__}" of Hook for "{self._class.__name__}"!',
+                err,
+            )
+            if queue is not None:
+                queue.append(as_exception(message.header(), err))
+        return False, False
 
 
 class HookList(list):
+    __slots__ = []
+
     def __init__(self):
         list.__init__(self)
 
     def run(self, service, message):
         q = list()
-        alarm(HOOK_THREAD_TIMEOUT)
+        alarm(TIMEOUT_SEC_HOOK)
         for h in self:
             h.run(service, message, q)
         alarm(0)
         return q
-
-
-class HookDaemon(Thread):
-    def __init__(self, service, hooks):
-        Thread.__init__(self, name="SMBHooksThread", daemon=False)
-        self._hooks = hooks
-        self._service = service
-        self._running = Event()
-
-    def run(self):
-        self._running.clear()
-        self._service.debug("Starting Hooks Thread..")
-        while not self._running.is_set():
-            for h in self._hooks:
-                h.run(self._service, None, None)
-            self._running.wait(1)
-        self._service.debug("Stopping Hooks Thread..")
-
-    def stop(self):
-        self._running.set()

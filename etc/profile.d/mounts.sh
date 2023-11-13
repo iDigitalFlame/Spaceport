@@ -1,9 +1,25 @@
 #!/usr/bin/dash
-# Volumes User Folder Mounts
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## User-specific Mount Configration
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +35,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if [ ! -d "/tmp/.mounts/${USER}" ]; then
+if ! [ -d "/tmp/.mounts/${USER}" ]; then
     mkdir "/tmp/.mounts/${USER}" 2> /dev/null
-    chmod 1750 "/tmp/.mounts/${USER}" 2> /dev/null
+    chmod 1750 "/tmp/.mounts/${USER}"
 fi

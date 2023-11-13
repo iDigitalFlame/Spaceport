@@ -1,22 +1,24 @@
 #!/usr/bin/python3
-# smd-daemon
-#  Starts the primary processes and threads for the System Management Daemon
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Usage:
-#  smd-daemon [-s socket_file] [-l log_file] [-n (int)log_level]
-#
-#  Starts the system management daemon. Recommended to be only used by systemd as root.
-#  The "-s" parameter will specify the socket file that is used by the daemon. Recommenced to be used only if more than
-#  one instance is running to prevent deadlock issues. The "-l" and "-n" parameters specify options on how the daemon
-#  will log. The "-l" parameter is a file path, while the "-n" parameter is a log level specified as an integer.
-#
-# Exit Codes:
-#  0 - Completion without exceptions or errors.
-#  1 - Permissions error or exception occurred while running the daemon.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,87 +34,112 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# smd-daemon
+#   Entrypoint for the SMD server daemon.
+#
+# Usage:
+#   smd-daemon [-s socket_file] [-l log_file] [-n log_level] [-c config_file] [-r]
+#
+#   Starts the system management daemon. Recommended only to be used by systemd as
+#   root.
+#
+# Exit Codes:
+#   0 - Completed successfully
+#   1 - Error occurred or syntax error
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
 
+from sys import exit
 from os import getuid
-from lib.server import Server
-from lib.util import print_error
+from lib import Server, print_error
 from argparse import ArgumentParser
-from lib.constants import LOG_PATH_SERVER, LOG_LEVEL, LOG_LEVELS, SOCKET, CONFIG_SERVER
+from lib.constants import LOG_LEVELS
+from lib.constants.config import LOG_PATH_SERVER, LOG_LEVEL, SOCKET, CONFIG_SERVER
+
+
+def _main(args):
+    try:
+        s = Server(
+            args.config,
+            args.socket,
+            args.log_level,
+            args.log_file,
+            args.read_only,
+            args.journal,
+        )
+    except Exception as err:
+        return print_error("Cannot create the Server instance!", err)
+    try:
+        if not s.start():
+            return print_error("Server encountered an error, quitting!", quit=False)
+    except KeyboardInterrupt:
+        pass
+    except Exception as err:
+        return print_error("Error during runtime!", err, False)
+    finally:
+        s.stop()
+        del s
+    return True
 
 
 if __name__ == "__main__":
     if getuid() != 0:
-        print("Only root may run the daemon!", file=sys.stderr)
-        sys.exit(1)
+        print_error("Cannot run the daemon as a non-root user!")
 
-    parameters = ArgumentParser(description="System Management Daemon Server")
-    parameters.add_argument(
+    p = ArgumentParser(description="System Management Daemon Server")
+    p.add_argument(
         "-s",
         type=str,
         dest="socket",
-        help="The server socket to host on.",
+        help="socket to use for messages",
         action="store",
         metavar="socket",
         default=SOCKET,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-l",
         type=str,
         dest="log_file",
-        help="The log file to output to.",
+        help="log file to output to",
         action="store",
         metavar="log_file",
         default=LOG_PATH_SERVER,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-n",
         type=str,
         dest="log_level",
-        help="The log level for logging.",
+        help="log level for logging",
         action="store",
         metavar="log_level",
         default=LOG_LEVEL.lower(),
         choices=LOG_LEVELS.keys(),
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-c",
         type=str,
         dest="config",
-        help="The path to the system config file.",
+        help="path to the client configuration file",
         action="store",
         metavar="config",
         default=CONFIG_SERVER,
         required=False,
     )
-    parameters.add_argument(
-        "-r", action="store_true", help="Don't write config files.", dest="read_only"
+    p.add_argument(
+        "-j",
+        dest="journal",
+        help="format stdout log for journal/syslog",
+        action="store_true",
+    )
+    p.add_argument(
+        "-r", dest="read_only", help="do not write to config files", action="store_true"
     )
 
-    args = parameters.parse_args()
-    try:
-        s = Server(
-            args.config,
-            args.socket,
-            LOG_LEVELS[args.log_level],
-            args.log_file,
-            args.read_only,
-        )
-        s.start()
-    except Exception as err:
-        print_error(str(err), err)
-    else:
-        try:
-            s.wait()
-        except KeyboardInterrupt:
-            s.stop()
-        except Exception as err:
-            print_error(str(err), err)
-        finally:
-            del s
-    sys.exit(0)
+    if not _main(p.parse_args()):
+        exit(1)
+    exit(0)

@@ -1,23 +1,24 @@
 #!/usr/bin/python3
-# smd-client
-#  Starts the primary processes and threads for the System Management Client.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Usage:
-#  smd-client [-s socket_file] [-l log_file] [-n (int)log_level] [-f]
-#
-#  Starts the system management client. Recommended to be only used by systemd-user or the workspace manager.
-#  The "-s" parameter will specify the socket file that is read by the client.
-#  The "-l" and "-n" parameters specify options on how the daemon will log. The "-l" parameter is a file path,
-#  while the "-n" parameter is a log level specified as an integer. The "-f" parameter will prevent the process from
-#  forking into the background, recommended for systemd units or scripts.
-#
-# Exit Codes:
-#  0 - Completion without exceptions or errors.
-#  1 - Permissions error or exception occurred while running the daemon.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,49 +34,65 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# smd-client
+#   Entrypoint for the SMD client daemon.
+#
+# Usage:
+#   smd-client [-s socket_file] [-l log_file] [-n log_level] [-f] [-c config_file] [-r]
+#
+#   Starts the system management client. Recommended to be only used by systemd-user
+#   or the workspace manager.
+#
+# Exit Codes:
+#   0 - Completed successfully
+#   1 - Error occurred or syntax error
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
 
 from os import fork
+from sys import exit
 from time import sleep
-from lib.client import Client
-from lib.util import print_error
+from lib import Client, print_error
 from argparse import ArgumentParser
-from lib.constants import LOG_PATH_CLIENT, LOG_LEVEL, LOG_LEVELS, SOCKET, CONFIG_CLIENT
+from lib.constants import LOG_LEVELS
+from lib.constants.config import LOG_PATH_CLIENT, LOG_LEVEL, SOCKET, CONFIG_CLIENT
+
+
+def _fork(args):
+    if args.fork:
+        try:
+            if fork() > 0:
+                if args.wait > 0:
+                    sleep(args.wait)
+                return True
+        except OSError as err:
+            return print_error("Cannot fork to background!", err)
+    if args.wait > 0:
+        sleep(args.wait)
+    return _main(args)
 
 
 def _main(args):
-    p = 0
-    try:
-        if args.fork:
-            p = fork()
-        if p == 0:
-            if args.wait > 0:
-                sleep(args.wait)
-        elif args.fork:
-            return True
-    except Exception as err:
-        return print_error(str(err), err)
     try:
         c = Client(
             args.config,
             args.socket,
-            LOG_LEVELS[args.log_level],
+            args.log_level,
             args.log_file,
             args.read_only,
+            args.journal,
         )
     except Exception as err:
-        return print_error(str(err), err)
+        return print_error("Cannot create the Client instance!", err)
     try:
         if not c.start():
-            return print_error(
-                "Client Threaded encountered an error, quitting!", None, False
-            )
+            return print_error("Client encountered an error, quitting!", quit=False)
     except KeyboardInterrupt:
         pass
     except Exception as err:
-        return print_error(str(err), err)
+        return print_error("Error during runtime!", err, False)
     finally:
         c.stop()
         del c
@@ -83,64 +100,71 @@ def _main(args):
 
 
 if __name__ == "__main__":
-    parameters = ArgumentParser(description="System Management Daemon Client")
-    parameters.add_argument(
+    p = ArgumentParser(description="System Management Daemon Client")
+    p.add_argument(
         "-s",
         type=str,
         dest="socket",
-        help="The server socket to connect to.",
+        help="socket to use for messages",
         action="store",
         metavar="socket",
         default=SOCKET,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-l",
         type=str,
         dest="log_file",
-        help="The log file to output to.",
+        help="log file to output to",
         action="store",
         metavar="log_file",
         default=LOG_PATH_CLIENT,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-n",
         type=str,
         dest="log_level",
-        help="The log level for logging.",
+        help="log level for logging",
         action="store",
         metavar="log_level",
         default=LOG_LEVEL.lower(),
         choices=LOG_LEVELS.keys(),
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-c",
         type=str,
         dest="config",
-        help="The path to the client configuration file.",
+        help="path to the client configuration file",
         action="store",
         metavar="config",
         default=CONFIG_CLIENT,
         required=False,
     )
-    parameters.add_argument(
+    p.add_argument(
         "-w",
         type=int,
         dest="wait",
-        help="Wait X seconds before startup.",
+        help="seconds to wait before startup",
         action="store",
         metavar="wait",
         default=0,
         required=False,
     )
-    parameters.add_argument(
-        "-f", action="store_false", help="Don't fork to the background.", dest="fork"
+    p.add_argument(
+        "-j",
+        dest="journal",
+        help="format stdout log for journal/syslog",
+        action="store_true",
     )
-    parameters.add_argument(
-        "-r", action="store_true", help="Don't write config files.", dest="read_only"
+    p.add_argument(
+        "-r", dest="read_only", help="do not write to config files", action="store_true"
     )
-    if not _main(parameters.parse_args()):
-        sys.exit(1)
-    sys.exit(0)
+    p.add_argument(
+        "-f", dest="fork", help="do not fork to the background", action="store_false"
+    )
+
+    if not _fork(p.parse_args()):
+        exit(1)
+    exit(0)

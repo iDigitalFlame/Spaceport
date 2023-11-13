@@ -1,9 +1,25 @@
 #!/usr/bin/dash
-# Theme Icons Configuration
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Themes Configuration
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,10 +41,19 @@ if ! [ "$USER" = "root" ]; then
 fi
 
 if ! [ -d "/usr/share/icons/DarkSky" ]; then
-    bash "/usr/share/themes/DarkSky/build-icons.sh"
+    dash "/usr/share/themes/DarkSky/build-icons.sh"
+fi
+if ! [ -d "/usr/share/icons/MoonlightSky" ]; then
+    dash "/usr/share/themes/MoonlightSky/build-icons.sh"
 fi
 
 find "/usr/share/icons" -xdev -xtype l -delete
 find "/usr/share/themes" -xdev -xtype l -delete
 find "/usr/share/icons/DarkSky" -xdev -type f -name .directory -delete
 find "/usr/share/themes/DarkSky" -xdev -type f -name .directory -delete
+find "/usr/share/icons/MoonlightSky" -xdev -type f -name .directory -delete
+find "/usr/share/themes/MoonlightSky" -xdev -type f -name .directory -delete
+
+# Fix for Rofi not showing the icons for Codium
+rm -f "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"
+ln -s "/usr/share/icons/kora/apps/scalable/vscodium.svg" "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"

@@ -1,3 +1,38 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
 # DarkSkyTheme
 #   Dark black/gray and purple color scheme.
 #   Edits by iDigitalFlame
@@ -173,7 +208,7 @@ style "menu" {
     engine "murrine" {
         contrast                                            = 0.001
         roundness                                           = 0
-        gradient_shades                                     = {1.0,1.0,1.0,1.0}
+        gradient_shades                                     = { 1.0, 1.0, 1.0, 1.0 }
         lightborder_shade                                   = 1.0
     }
 }
@@ -219,7 +254,7 @@ style "scale" {
             detail                                          = "trough-upper"
             border                                          = { 8, 8, 0, 0 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             orientation                                     = HORIZONTAL
         }
         image {
@@ -227,7 +262,7 @@ style "scale" {
             detail                                          = "trough-lower"
             border                                          = { 8, 8, 0, 0 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             orientation                                     = HORIZONTAL
         }
         image {
@@ -235,7 +270,7 @@ style "scale" {
             detail                                          = "trough-upper"
             border                                          = { 0, 0, 8, 8 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             orientation                                     = VERTICAL
         }
         image {
@@ -243,7 +278,7 @@ style "scale" {
             detail                                          = "trough-lower"
             border                                          = { 0, 0, 8, 8 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             orientation                                     = VERTICAL
         }
         image {
@@ -251,7 +286,7 @@ style "scale" {
             state                                           = NORMAL
             border                                          = { 0, 0, 0, 0 }
             stretch                                         = TRUE
-            function                                        = SLIDER
+            function = SLIDER
             orientation                                     = HORIZONTAL
             overlay_file                                    = "assets/slider-horiz.png"
             overlay_stretch                                 = FALSE
@@ -261,7 +296,7 @@ style "scale" {
             state                                           = PRELIGHT
             border                                          = { 0, 0, 0, 0 }
             stretch                                         = TRUE
-            function                                        = SLIDER
+            function = SLIDER
             orientation                                     = HORIZONTAL
             overlay_file                                    = "assets/slider-horiz-hover.png"
             overlay_stretch                                 = FALSE
@@ -271,7 +306,7 @@ style "scale" {
             state                                           = INSENSITIVE
             border                                          = { 0, 0, 0, 0 }
             stretch                                         = TRUE
-            function                                        = SLIDER
+            function = SLIDER
             orientation                                     = HORIZONTAL
             overlay_file                                    = "assets/slider-horiz-insensitive.png"
             overlay_stretch                                 = FALSE
@@ -281,7 +316,7 @@ style "scale" {
             state                                           = NORMAL
             border                                          = { 0, 0, 0, 0 }
             stretch                                         = TRUE
-            function                                        = SLIDER
+            function = SLIDER
             orientation                                     = VERTICAL
             overlay_file                                    = "assets/slider-vert.png"
             overlay_stretch                                 = FALSE
@@ -291,7 +326,7 @@ style "scale" {
             state                                           = PRELIGHT
             border                                          = { 0, 0, 0, 0 }
             stretch                                         = TRUE
-            function                                        = SLIDER
+            function = SLIDER
             orientation                                     = VERTICAL
             overlay_file                                    = "assets/slider-vert-hover.png"
             overlay_stretch                                 = FALSE
@@ -301,7 +336,7 @@ style "scale" {
             state                                           = INSENSITIVE
             border                                          = { 0, 0, 0, 0 }
             stretch                                         = TRUE
-            function                                        = SLIDER
+            function = SLIDER
             orientation                                     = VERTICAL
             overlay_file                                    = "assets/slider-vert-insensitive.png"
             overlay_stretch                                 = FALSE
@@ -310,7 +345,7 @@ style "scale" {
             file                                            = "assets/null.png"
             border                                          = { 3, 3, 3, 3 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
         }
     }
 }
@@ -334,105 +369,105 @@ style "radio" {
         image {
             state                                           = NORMAL
             shadow                                          = OUT
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-unchecked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = PRELIGHT
             shadow                                          = OUT
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-unchecked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = ACTIVE
             shadow                                          = OUT
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-unchecked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = SELECTED
             shadow                                          = OUT
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-unchecked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = INSENSITIVE
             shadow                                          = OUT
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-unchecked-insensitive.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = NORMAL
             shadow                                          = IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-checked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = PRELIGHT
             shadow                                          = IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-checked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = ACTIVE
             shadow                                          = IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-checked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = SELECTED
             shadow                                          = IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-checked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = INSENSITIVE
             shadow                                          = IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-checked-insensitive.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = NORMAL
             shadow                                          = ETCHED_IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-mixed.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = PRELIGHT
             shadow                                          = ETCHED_IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-mixed-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = ACTIVE
             shadow                                          = ETCHED_IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-mixed-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = SELECTED
             shadow                                          = ETCHED_IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-mixed.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = INSENSITIVE
             shadow                                          = ETCHED_IN
-            function                                        = OPTION
+            function = OPTION
             overlay_file                                    = "assets/radio-mixed-insensitive.png"
             overlay_stretch                                 = FALSE
         }
@@ -441,7 +476,7 @@ style "radio" {
             detail                                          = "buttondefault"
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -449,7 +484,7 @@ style "radio" {
             file                                            = "assets/button-hover.png"
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -457,20 +492,20 @@ style "radio" {
             state                                           = ACTIVE
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
         }
         image {
             file                                            = "assets/button-insensitive.png"
             state                                           = INSENSITIVE
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
         }
         image {
             file                                            = "assets/button-default.png"
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
         }
     }
 }
@@ -490,105 +525,105 @@ style "check" {
         image {
             state                                           = NORMAL
             shadow                                          = OUT
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-unchecked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = PRELIGHT
             shadow                                          = OUT
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-unchecked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = ACTIVE
             shadow                                          = OUT
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-unchecked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = SELECTED
             shadow                                          = OUT
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-unchecked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = INSENSITIVE
             shadow                                          = OUT
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-unchecked-insensitive.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = NORMAL
             shadow                                          = IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-checked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = PRELIGHT
             shadow                                          = IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-checked.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = ACTIVE
             shadow                                          = IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-checked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = SELECTED
             shadow                                          = IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-checked-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = INSENSITIVE
             shadow                                          = IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-checked-insensitive.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = NORMAL
             shadow                                          = ETCHED_IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-mixed.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = PRELIGHT
             shadow                                          = ETCHED_IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-mixed-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = ACTIVE
             shadow                                          = ETCHED_IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-mixed-over.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = SELECTED
             shadow                                          = ETCHED_IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-mixed.png"
             overlay_stretch                                 = FALSE
         }
         image {
             state                                           = INSENSITIVE
             shadow                                          = ETCHED_IN
-            function                                        = CHECK
+            function = CHECK
             overlay_file                                    = "assets/checkbox-mixed-insensitive.png"
             overlay_stretch                                 = FALSE
         }
@@ -597,7 +632,7 @@ style "check" {
             detail                                          = "buttondefault"
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -605,7 +640,7 @@ style "check" {
             state                                           = PRELIGHT
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -613,20 +648,20 @@ style "check" {
             state                                           = ACTIVE
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
         }
         image {
             file                                            = "assets/button-insensitive.png"
             state                                           = INSENSITIVE
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
         }
         image {
             file                                            = "assets/button-default.png"
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
         }
     }
 }
@@ -754,7 +789,7 @@ style "resize-grip" {
     engine "pixmap" {
         image {
             detail                                          = "statusbar"
-            function                                        = RESIZE_GRIP
+            function = RESIZE_GRIP
             recolorable                                     = FALSE
             overlay_file                                    = "assets/resize_grip.png"
             overlay_border                                  = { 0, 0, 0, 0 }
@@ -832,7 +867,7 @@ style "panelbuttons" {
             state                                           = NORMAL
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -840,7 +875,7 @@ style "panelbuttons" {
             state                                           = PRELIGHT
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -849,7 +884,7 @@ style "panelbuttons" {
             shadow                                          = OUT
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -858,7 +893,7 @@ style "panelbuttons" {
             shadow                                          = IN
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -866,7 +901,7 @@ style "panelbuttons" {
             state                                           = ACTIVE
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
         image {
@@ -874,7 +909,7 @@ style "panelbuttons" {
             state                                           = INSENSITIVE
             border                                          = { 4, 4, 4, 4 }
             stretch                                         = TRUE
-            function                                        = BOX
+            function = BOX
             recolorable                                     = TRUE
         }
     }
@@ -895,7 +930,7 @@ style "comboboxentry" {
     engine "murrine" {
         contrast                                            = 1.4
         reliefstyle                                         = 0
-        border_shades                                       = { 1.0,1.0 }
+        border_shades                                       = { 1.0, 1.0 }
     }
 }
 style "spin" = "combo" {
@@ -971,12 +1006,12 @@ style "text" = "default" {
     }
 }
 style "theme-panel-text" {
-    fg[NORMAL]                                              = shade(1.5,@selected_bg_color)
-    fg[ACTIVE]                                              = shade(1.5,@selected_bg_color)
+    fg[NORMAL]                                              = shade(1.5, @selected_bg_color)
+    fg[ACTIVE]                                              = shade(1.5, @selected_bg_color)
     fg[PRELIGHT]                                            = @selected_fg_color
 
-    text[NORMAL]                                            = shade(1.5,@selected_bg_color)
-    text[ACTIVE]                                            = shade(1.5,@selected_bg_color)
+    text[NORMAL]                                            = shade(1.5, @selected_bg_color)
+    text[ACTIVE]                                            = shade(1.5, @selected_bg_color)
     text[PRELIGHT]                                          = @selected_fg_color
 
     engine "murrine" {

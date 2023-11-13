@@ -1,12 +1,24 @@
 #!/usr/bin/false
-# PowerCTL Module: Bluetooth
-#  powerctl blue, bluectl, blue
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# PowerCTL command line user module to configure bluetooth options.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,35 +34,41 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# PowerCTL Module: Bluetooth
+#   Command line user module to configure Bluetooth options.
+
 from glob import glob
-from lib.util import print_error, read
-from lib.powerctl.wifi import set_command, set_config
-from lib.constants import RADIO_PATH_BLUE, EMPTY, NEWLINE
+from lib.util import nes
+from lib import print_error
+from lib.util.file import read
+from lib.constants.config import RADIO_PATH_BLUE
+from lib.shared.wireless import set_command, set_config
 
 
 def default(_):
     try:
-        if _is_enabled():
+        if _bluetooth_enabled():
             return print("Bluetooth is enabled.")
     except OSError as err:
-        return print_error("Error retriving Bluetooth status!", err)
+        return print_error("Cannot retrive Bluetooth status!", err)
     print("Bluetooth is disabled.")
 
 
-def _is_enabled():
-    for d in glob(RADIO_PATH_BLUE):
-        f = read(d, errors=False)
-        del d
-        if isinstance(f, str) and f.replace(NEWLINE, EMPTY) == "1":
+def config(args):
+    set_config(args, "bluetooth", _bluetooth_enabled)
+
+
+def command(args):
+    if set_command(args, "bluetooth"):
+        return True
+    default(args)
+
+
+def _bluetooth_enabled():
+    for i in glob(RADIO_PATH_BLUE):
+        v = read(i, strip=True, errors=False)
+        if nes(v) and v == "1":
             return True
+        del v
+        continue
     return False
-
-
-def config(arguments):
-    set_config(arguments, "bluetooth", _is_enabled)
-
-
-def command(arguments):
-    if set_command(arguments, "bluetooth"):
-        return
-    default(arguments)

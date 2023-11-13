@@ -1,0 +1,48 @@
+/*
+    ################################
+    ### iDigitalFlame  2016-2024 ###
+    #                              #
+    #            -/`               #
+    #            -yy-   :/`        #
+    #         ./-shho`:so`         #
+    #    .:- /syhhhh//hhs` `-`     #
+    #   :ys-:shhhhhhshhhh.:o- `    #
+    #   /yhsoshhhhhhhhhhhyho`:/.   #
+    #   `:yhyshhhhhhhhhhhhhh+hd:   #
+    #     :yssyhhhhhyhhhhhhhhdd:   #
+    #    .:.oyshhhyyyhhhhhhddd:    #
+    #    :o+hhhhhyssyhhdddmmd-     #
+    #     .+yhhhhyssshdmmddo.      #
+    #       `///yyysshd++`         #
+    #                              #
+    ########## SPACEPORT ###########
+    ### Spaceport + SMD
+
+    Copyright (C) 2016 - 2024 iDigitalFlame
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    MoonlightSky
+        Dark black/gray and purple color scheme.
+        Edits by iDigitalFlame
+
+    Original Credits:
+        Simon Steinbeiß <simon.steinbeiss@univie.ac.at>
+        Joern Konopka <cldx3000@googlemail.com>
+        Georgi Karavasilev <motorslav@gmail.com>
+        David Barr <dpbarr@gmail.com>
+        Christian Medel (Elbullazul) <cmedelahumada@gmail.com>
+*/
+
+.check,.check row:selected,.check row:selected:focus{background-image:url("assets/checkbox-unchecked.png")}.check row:selected:focus:insensitive,.check row:selected:insensitive,.check:insensitive{background-image:url("assets/checkbox-unchecked-insensitive.png")}.check row:selected:focus:hover,.check row:selected:hover,.check:hover{background-image:url("assets/checkbox-unchecked-over.png")}.check row:selected:active,.check row:selected:focus:active,.check:active{background-image:url("assets/checkbox-checked.png")}.check row:selected:active:hover,.check row:selected:focus:active:hover,.check:active:hover{background-image:url("assets/checkbox-checked-over.png")}.check row:selected:active:insensitive,.check row:selected:focus:active:insensitive,.check:active:insensitive{background-image:url("assets/checkbox-checked-insensitive.png")}.check row:selected:focus:inconsistent,.check row:selected:inconsistent,.check:inconsistent{background-image:url("assets/checkbox-mixed.png")}.check row:selected:focus:inconsistent:insensitive,.check row:selected:inconsistent:insensitive,.check:inconsistent:insensitive{background-image:url("assets/checkbox-mixed-insensitive.png")}.radio,.view.cell.radio{background-image:url("assets/radio-unselected.png")}.radio:insensitive{background-image:url("assets/radio-unselected-insensitive.png")}.radio:hover{background-image:url("assets/radio-unselected-over.png")}.radio:active{background-image:url("assets/radio-selected.png")}.radio:active:hover{background-image:url("assets/radio-selected-over.png")}.radio:active:insensitive{background-image:url("assets/radio-selected-insensitive.png")}.radio:inconsistent{background-image:url("assets/radio-mixed.png")}.radio:inconsistent:insensitive{background-image:url("assets/radio-mixed-insensitive.png")}.titlebar .titlebutton.minimize{color:transparent;border-image:none;box-shadow:none;background-position:center;background-repeat:no-repeat;background-image:-gtk-scaled(url("buttons/minimize-focused-normal.png"))}.titlebar .titlebutton.minimize:backdrop{background-image:-gtk-scaled(url("buttons/minimize-unfocused-normal.png"));color:transparent}.titlebar .titlebutton.minimize:active,.titlebar .titlebutton.minimize:checked,.titlebar .titlebutton.minimize:hover{color:transparent;border-image:none;box-shadow:none;background-position:center;background-repeat:no-repeat;background-image:-gtk-scaled(url("buttons/minimize-focused-active.png"))}.titlebar .titlebutton.maximize{color:transparent;border-image:none;box-shadow:none;background-position:center;background-repeat:no-repeat;background-image:-gtk-scaled(url("buttons/maximize-focused-normal.png"))}.titlebar .titlebutton.maximize:backdrop{background-image:-gtk-scaled(url("buttons/maximize-unfocused-normal.png"));color:transparent}.titlebar .titlebutton.maximize:active,.titlebar .titlebutton.maximize:checked,.titlebar .titlebutton.maximize:hover{color:transparent;border-image:none;box-shadow:none;background-position:center;background-repeat:no-repeat;background-image:-gtk-scaled(url("buttons/maximize-focused-active.png"))}.titlebar .titlebutton.close{color:transparent;border-image:none;box-shadow:none;background-position:center;background-repeat:no-repeat;background-image:-gtk-scaled(url("buttons/close-focused-normal.png"))}.titlebar .titlebutton.close:backdrop{background-image:-gtk-scaled(url("buttons/close-unfocused-normal.png"));color:transparent}.titlebar .titlebutton.close:active,.titlebar .titlebutton.close:checked,.titlebar .titlebutton.close:hover{color:transparent;border-image:none;box-shadow:none;background-position:center;background-repeat:no-repeat;background-image:-gtk-scaled(url("buttons/close-focused-active.png"))}.check,.check row:selected,.check row:selected:focus{-gtk-icon-source:-gtk-scaled(url("assets/checkbox-unchecked.png"), url("assets/checkbox-unchecked@2.png"))}.check row:selected:focus:insensitive,.check row:selected:insensitive,.check:insensitive{-gtk-icon-source:url("assets/checkbox-unchecked-insensitive.png")}.check row:selected:active,.check row:selected:checked,.check row:selected:focus:active,.check row:selected:focus:checked,.check:active,.check:checked{-gtk-icon-source:-gtk-scaled(url("assets/checkbox-checked.png"), url("assets/checkbox-checked@2.png"))}.check row:selected:active:insensitive,.check row:selected:checked:insensitive,.check row:selected:focus:active:insensitive,.check row:selected:focus:checked:insensitive,.check:active:insensitive,.check:checked:insensitive{-gtk-icon-source:url("assets/checkbox-checked-insensitive.png")}.check row:selected:focus:inconsistent,.check row:selected:inconsistent,.check:inconsistent{-gtk-icon-source:url("assets/checkbox-mixed.png")}.check row:selected:focus:inconsistent:insensitive,.check row:selected:inconsistent:insensitive,.check:inconsistent:insensitive{-gtk-icon-source:url("assets/checkbox-mixed-insensitive.png")}.radio,.radio row:selected,.radio row:selected:focus{-gtk-icon-source:url("assets/radio-unselected.png")}.radio row:selected:focus:insensitive,.radio row:selected:insensitive,.radio:insensitive{-gtk-icon-source:url("assets/radio-unselected-insensitive.png")}.radio row:selected:active,.radio row:selected:checked,.radio row:selected:focus:active,.radio row:selected:focus:checked,.radio:active,.radio:checked{-gtk-icon-source:url("assets/radio-selected.png")}.radio row:selected:active:insensitive,.radio row:selected:checked:insensitive,.radio row:selected:focus:active:insensitive,.radio row:selected:focus:checked:insensitive,.radio:active:insensitive,.radio:checked:insensitive{-gtk-icon-source:url("assets/radio-selected-insensitive.png")}.radio row:selected:focus:inconsistent,.radio row:selected:inconsistent,.radio:inconsistent{-gtk-icon-source:url("assets/radio-mixed.png")}.radio row:selected:focus:inconsistent:insensitive,.radio row:selected:inconsistent:insensitive,.radio:inconsistent:insensitive{-gtk-icon-source:url("assets/radio-mixed-insensitive.png")}.menuitem.check{-gtk-icon-source:-gtk-scaled(url("assets/checkbox-unchecked.png"));color:@theme_fg_color;icon-shadow:none}.menuitem.check:active,.menuitem.check:checked{-gtk-icon-source:-gtk-scaled(url("assets/checkbox-checked.png"))}.menuitem.check:inconsistent{-gtk-icon-source:-gtk-scaled(url("assets/checkbox-mixed.png"))}.menuitem.check:active:hover{color:@theme_selected_fg_color}.menuitem.check:insensitive{color:@insensitive_fg_color}.menuitem.radio{-gtk-icon-source:-gtk-scaled(url("assets/radio-unselected.png"));color:@theme_fg_color;icon-shadow:none}.menuitem.radio:active,.menuitem.radio:checked{-gtk-icon-source:-gtk-scaled(url("assets/radio-selected.png"))}.menuitem.radio:inconsistent{-gtk-icon-source:-gtk-scaled(url("assets/radio-mixed.png"))}.menuitem.radio:hover{color:@theme_selected_fg_color}.menuitem.radio:insensitive{color:@insensitive_fg_color}.scrollbar.button.vertical.top,.scrollbar.button.vertical.top:insensitive{background-image:url("scrollbars/up.png");border-image:url("scrollbars/up.png");background-size:cover;border-width:0;border-style:none;color:transparent}.scrollbar.button.vertical.bottom,.scrollbar.button.vertical.bottom:insensitive{background-image:url("scrollbars/down.png");border-image:url("scrollbars/down.png");background-size:cover;border-width:0;border-style:none}.scrollbar.button.horizontal.left,.scrollbar.button.horizontal.left:insensitive{background-image:url("scrollbars/left.png");border-image:url("scrollbars/left.png");border-width:0;border-style:none}.scrollbar.button.horizontal.right,.scrollbar.button.horizontal.right:insensitive{background-image:url("scrollbars/right.png");border-image:url("scrollbars/right.png");border-width:0;border-style:none}

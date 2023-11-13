@@ -1,10 +1,24 @@
 #!/usr/bin/false
-# This is the static arguments and descriptions storage file. This stores some of
-# the static content that does not belong in constants.py.
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +34,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# args.py
+#   This is the static arguments and descriptions storage file. This stores some
+#   of the static content that can be dynamically loaded by the powerctl loader.
+
 from lib.constants import BOOLEANS
 
 ARGS = {
@@ -28,7 +46,7 @@ ARGS = {
             "-a",
             {
                 "dest": "advanced",
-                "help": "Display detailed CPU information.",
+                "help": "display detailed CPU information",
                 "action": "store_true",
                 "required": False,
             },
@@ -38,7 +56,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "governor",
-                "help": "Set the CPU governor.",
+                "help": "set the CPU governor",
                 "action": "store",
                 "metavar": "governor",
                 "required": False,
@@ -50,7 +68,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "minimum",
-                "help": "Set the minimum CPU frequency.",
+                "help": "set the minimum CPU frequency",
                 "action": "store",
                 "metavar": "frequency",
                 "required": False,
@@ -62,7 +80,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "maximum",
-                "help": "Set the maximum CPU frequency.",
+                "help": "set the maximum CPU frequency",
                 "action": "store",
                 "metavar": "frequency",
                 "required": False,
@@ -74,7 +92,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "power_governor",
-                "help": "Set the CPU power governor.",
+                "help": "set the CPU power governor",
                 "action": "store",
                 "metavar": "power_governor",
                 "required": False,
@@ -86,7 +104,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "turbo",
-                "help": "Enable or disable CPU turbo mode.",
+                "help": "enable or disable CPU turbo mode",
                 "action": "store",
                 "metavar": "turbo",
                 "choices": BOOLEANS,
@@ -99,7 +117,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "turbo_minimum",
-                "help": "Set the CPU turbo driver minimum percentage.",
+                "help": "set the CPU turbo driver minimum percentage",
                 "action": "store",
                 "metavar": "percentage",
                 "required": False,
@@ -112,7 +130,7 @@ ARGS = {
                 "type": str,
                 "action": "store",
                 "dest": "turbo_maximum",
-                "help": "Set the CPU turbo driver maximum percentage.",
+                "help": "set the CPU turbo driver maximum percentage",
                 "metavar": "percentage",
                 "required": False,
             },
@@ -123,7 +141,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "selector",
-                "help": "Filter to specific CPU(s) (Name, Number or Comma Separated).",
+                "help": "filter to specific CPU(s) (name, number or comma separated)",
                 "action": "store",
                 "metavar": "selector",
                 "required": False,
@@ -133,9 +151,22 @@ ARGS = {
             "-w",
             {
                 "dest": "wait",
-                "help": "Display CPU details after setting.",
+                "help": "display CPU details after setting",
                 "action": "store_true",
                 "required": False,
+            },
+        ),
+    ],
+    "log": [
+        (
+            "-l",
+            {
+                "type": str,
+                "dest": "level",
+                "help": "set the log level to use (temporary, 0 [debug] - 4 [critical])",
+                "action": "store",
+                "metavar": "level",
+                "required": True,
             },
         ),
     ],
@@ -144,7 +175,7 @@ ARGS = {
             "-d",
             {
                 "dest": "disable",
-                "help": "Disable Bluetooth.",
+                "help": "disable Bluetooth",
                 "action": "store_true",
                 "required": False,
             },
@@ -154,7 +185,7 @@ ARGS = {
             "-e",
             {
                 "dest": "enable",
-                "help": "Enable Bluetooth.",
+                "help": "enable Bluetooth",
                 "action": "store_true",
                 "required": False,
             },
@@ -164,7 +195,7 @@ ARGS = {
             "-t",
             {
                 "dest": "toggle",
-                "help": "Toggle Bluetooth.",
+                "help": "toggle Bluetooth",
                 "action": "store_true",
                 "required": False,
             },
@@ -175,7 +206,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "boot",
-                "help": "Set the Bluetooth status on boot.",
+                "help": "set the Bluetooth boot state",
                 "required": False,
                 "action": "store",
                 "metavar": "boot",
@@ -184,9 +215,18 @@ ARGS = {
             "config",
         ),
         (
+            "-f",
+            {
+                "dest": "force",
+                "help": "force enable/disable Bluetooth regardless of current state",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "command",
             {
-                "help": "Bluetooth commands.",
+                "help": "bluetooth commands.",
                 "nargs": "?",
                 "action": "store",
                 "default": None,
@@ -198,7 +238,7 @@ ARGS = {
             "args",
             {
                 "nargs": "*",
-                "help": "Optional arguments to command.",
+                "help": "optional arguments",
                 "action": "store",
                 "default": None,
             },
@@ -209,7 +249,7 @@ ARGS = {
             "-d",
             {
                 "dest": "disable",
-                "help": "Disable wireless.",
+                "help": "disable Wireless",
                 "action": "store_true",
                 "required": False,
             },
@@ -219,7 +259,7 @@ ARGS = {
             "-e",
             {
                 "dest": "enable",
-                "help": "Enable wireless.",
+                "help": "enable Wireless",
                 "action": "store_true",
                 "required": False,
             },
@@ -229,7 +269,7 @@ ARGS = {
             "-t",
             {
                 "dest": "toggle",
-                "help": "Toggle wireless.",
+                "help": "toggle Wireless",
                 "action": "store_true",
                 "required": False,
             },
@@ -240,7 +280,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "boot",
-                "help": "Set the wireless status on boot.",
+                "help": "set the Wireless boot state",
                 "action": "store",
                 "metavar": "boot",
                 "choices": BOOLEANS,
@@ -249,9 +289,18 @@ ARGS = {
             "config",
         ),
         (
+            "-f",
+            {
+                "dest": "force",
+                "help": "force enable/disable Wireless regardless of current state",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "command",
             {
-                "help": "Wireless commands.",
+                "help": "wireless commands",
                 "nargs": "?",
                 "action": "store",
                 "default": None,
@@ -262,7 +311,7 @@ ARGS = {
         (
             "args",
             {
-                "help": "Optional arguments to the command.",
+                "help": "Optional arguments",
                 "nargs": "*",
                 "action": "store",
                 "default": None,
@@ -274,7 +323,7 @@ ARGS = {
             "-f",
             {
                 "dest": "force",
-                "help": "Force Lockscreen regardless of locker settings",
+                "help": "force Lockscreen and override lockers",
                 "action": "store_true",
                 "required": False,
             },
@@ -284,7 +333,7 @@ ARGS = {
             {
                 "type": int,
                 "dest": "suspend",
-                "help": "Set the suspend locker timeout (in seconds) on lock, zero to disable.",
+                "help": "set the Suspend timeout (in seconds), zero to disable",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -295,7 +344,7 @@ ARGS = {
             {
                 "type": int,
                 "dest": "suspend_force",
-                "help": "Force set the suspend locker timeout (in seconds) on lock, zero to disable.",
+                "help": "force set the Suspend timeout (in seconds), zero to disable",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -308,7 +357,7 @@ ARGS = {
                 "dest": "hibernate",
                 "action": "store",
                 "metavar": "seconds",
-                "help": "Set the hibernate locker timeout (in seconds) on lock, zero to disable.",
+                "help": "set the Hibernate timeout (in seconds), zero to disable",
                 "required": False,
             },
         ),
@@ -317,7 +366,7 @@ ARGS = {
             {
                 "type": int,
                 "dest": "hibernate_force",
-                "help": "Force set the hibernate locker timeout (in seconds) on lock, zero to disable.",
+                "help": "force set the Hibernate timeout (in seconds), zero to disable.",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -326,7 +375,7 @@ ARGS = {
         (
             "timeout",
             {
-                "help": "Set the suspend locker timeout (in seconds) on lock, zero to disable.",
+                "help": "set the Suspend timeout (in seconds), zero to disable.",
                 "nargs": "?",
                 "action": "store",
                 "default": None,
@@ -338,18 +387,18 @@ ARGS = {
             "-l",
             {
                 "dest": "list",
-                "help": "List running VMs.",
+                "help": "list running VMs",
                 "action": "store_true",
                 "required": False,
             },
-            "list_vms",
+            "vm_list",
         ),
         (
             "-i",
             {
                 "type": int,
                 "dest": "vmid",
-                "help": "VMID of VM to select.",
+                "help": "VMID of VM to select",
                 "action": "store",
                 "metavar": "vmid",
                 "required": False,
@@ -360,16 +409,327 @@ ARGS = {
             {
                 "type": str,
                 "dest": "name",
-                "help": "Name or Path of VM to select.",
+                "help": "name or path of VM to select",
                 "action": "store",
                 "metavar": "name",
                 "required": False,
             },
         ),
         (
+            "-d",
+            {
+                "dest": "directory",
+                "type": str,
+                "help": "set the user VM search directory",
+                "action": "store",
+                "metavar": "dir",
+                "required": False,
+            },
+            "user_directory",
+        ),
+        (
+            "-a",
+            {
+                "dest": "alias_add",
+                "type": str,
+                "help": "add an alias to the selected VM",
+                "action": "store",
+                "metavar": "alias",
+                "required": False,
+            },
+            "user_alias",
+        ),
+        (
+            "-ar",
+            {
+                "dest": "alias_delete",
+                "type": str,
+                "help": "remove an alias from the selected VM",
+                "action": "store",
+                "metavar": "alias",
+                "required": False,
+            },
+            "user_alias",
+        ),
+        (
+            "-T",
+            {
+                "dest": "tap",
+                "help": "tap the VM power button",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_tap",
+        ),
+        (
+            "-x",
+            {
+                "dest": "stop",
+                "help": "softly stop the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_stop",
+        ),
+        (
+            "-xa",
+            {
+                "dest": "all_stop",
+                "help": "stop all running VMs",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_all",
+        ),
+        (
+            "-f",
+            {
+                "dest": "stop_force",
+                "help": "force poweroff (halt) the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_stop",
+        ),
+        (
+            "-fa",
+            {
+                "dest": "all_force",
+                "help": "force poweroff (halt) all running VMs",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_all",
+        ),
+        (
+            "-t",
+            {
+                "type": int,
+                "dest": "timeout",
+                "help": 'optional shutdown timeout, ignored using "-f"',
+                "action": "store",
+                "metavar": "timeout",
+                "default": 90,
+                "required": False,
+            },
+        ),
+        (
+            "-s",
+            {
+                "dest": "start",
+                "help": "start the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_start",
+        ),
+        (
+            "-ul",
+            {
+                "dest": "usb_list",
+                "help": "list USB devices connected to the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_usb_list",
+        ),
+        (
+            "-u",
+            {
+                "dest": "usb_add",
+                "help": "connect a USB device to the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_usb",
+        ),
+        (
+            "-ur",
+            {
+                "dest": "usb_delete",
+                "help": "disconnect a USB device from the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_usb",
+        ),
+        (
+            "-un",
+            {
+                "type": str,
+                "dest": "usb_name",
+                "help": "name of USB device to select",
+                "action": "store",
+                "metavar": "name",
+                "required": False,
+            },
+        ),
+        (
+            "-ui",
+            {
+                "type": int,
+                "dest": "usb_id",
+                "help": "USB device ID to select",
+                "action": "store",
+                "metavar": "id",
+                "required": False,
+            },
+        ),
+        (
+            "-uv",
+            {
+                "type": str,
+                "dest": "usb_vendor",
+                "help": "USB device vendor ID to select",
+                "action": "store",
+                "metavar": "vendor",
+                "required": False,
+            },
+        ),
+        (
+            "-up",
+            {
+                "type": str,
+                "dest": "usb_product",
+                "help": "USB device product ID to select",
+                "action": "store",
+                "metavar": "product",
+                "required": False,
+            },
+        ),
+        (
+            "-uc",
+            {
+                "dest": "usb_clean",
+                "help": "remove all USB devices connected to the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_usb_clean",
+        ),
+        (
+            "--usb2",
+            {
+                "dest": "usb_slow",
+                "help": "use the USB2.0 bus instead of USB3.0 (default is 3.0)",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
+            "-c",
+            {
+                "dest": "connect",
+                "help": "connect to the selected VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_connect",
+        ),
+        (
+            "-cv",
+            {
+                "dest": "connect_vnc",
+                "help": "connect to the selected VM (using VNC)",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_connect",
+        ),
+        (
+            "-w",
+            {
+                "dest": "wake",
+                "help": "resume the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_sleep",
+        ),
+        (
+            "-wa",
+            {
+                "dest": "all_wake",
+                "help": "resume all suspended VMs",
+                "required": False,
+                "action": "store_true",
+            },
+            "vm_all",
+        ),
+        (
+            "-z",
+            {
+                "dest": "sleep",
+                "help": "suspend the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_sleep",
+        ),
+        (
+            "-za",
+            {
+                "dest": "all_sleep",
+                "help": "suspend all running VMs",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_all",
+        ),
+        (
+            "-es",
+            {
+                "dest": "schema",
+                "help": "output the VM config file schema.",
+                "action": "store_true",
+                "required": False,
+            },
+            "example",
+        ),
+        (
+            "-e",
+            {
+                "dest": "example",
+                "help": "output a VM config file example.",
+                "action": "store_true",
+                "required": False,
+            },
+            "example",
+        ),
+        (
+            "-p",
+            {
+                "dest": "ga_ping",
+                "help": "check the status of the QEMU Guest Agent",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_ping",
+        ),
+        (
+            "-I",
+            {
+                "dest": "ga_ip",
+                "help": "retrive the VM IP addresses using the QEMU Guest Agent",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_ip",
+        ),
+        (
+            "--dmenu",
+            {
+                "dest": "dmenu",
+                "help": "list output in a dmenu compatible format",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_list",
+        ),
+        (
             "command",
             {
-                "help": "Hydra command to execute.",
+                "help": "command to execute",
                 "nargs": "?",
                 "action": "store",
                 "default": None,
@@ -382,329 +742,8 @@ ARGS = {
                 "nargs": "*",
                 "default": None,
                 "action": "store",
-                "help": "Optional arguments to command.",
+                "help": "optional arguments",
             },
-        ),
-        (
-            "-d",
-            {
-                "dest": "directory",
-                "type": str,
-                "help": "Set the user VM search directory.",
-                "action": "store",
-                "metavar": "dir",
-                "required": False,
-            },
-            "directory",
-        ),
-        (
-            "-a",
-            {
-                "dest": "alias_add",
-                "type": str,
-                "help": "Add an alias to the selected VM.",
-                "action": "store",
-                "metavar": "alias",
-                "required": False,
-            },
-            "alias",
-        ),
-        (
-            "-ar",
-            {
-                "dest": "alias_delete",
-                "type": str,
-                "help": "Remove an alias from the selected VM.",
-                "action": "store",
-                "metavar": "alias",
-                "required": False,
-            },
-            "alias",
-        ),
-        (
-            "-x",
-            {
-                "dest": "stop",
-                "help": "Softly stop the selected VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "stop",
-        ),
-        (
-            "-s",
-            {
-                "dest": "start",
-                "help": "Start the selected VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "start",
-        ),
-        (
-            "-f",
-            {
-                "dest": "stop_force",
-                "help": "Force poweroff (halt) the selected VM.",
-                "action": "store_true",
-                "required": False,
-            },
-        ),
-        (
-            "-t",
-            {
-                "type": int,
-                "dest": "timeout",
-                "help": "Optional shutdown timeout. (Ignored with -f)",
-                "action": "store",
-                "metavar": "timeout",
-                "default": 90,
-                "required": False,
-            },
-        ),
-        (
-            "-u",
-            {
-                "dest": "usb_add",
-                "help": "Connect a USB device to the selected VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "usb",
-        ),
-        (
-            "-ur",
-            {
-                "dest": "usb_delete",
-                "help": "Disconnect a USB device from the selected VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "usb",
-        ),
-        (
-            "-ul",
-            {
-                "dest": "usb_list",
-                "help": "List a USB devices connected to the selected VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "usb_list",
-        ),
-        (
-            "-uc",
-            {
-                "dest": "usb_clean",
-                "help": "Remove all USB devices connected to the selected VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "usb_clean",
-        ),
-        (
-            "-un",
-            {
-                "type": str,
-                "dest": "usb_name",
-                "help": "Name of USB device to select.",
-                "action": "store",
-                "metavar": "name",
-                "required": False,
-            },
-        ),
-        (
-            "-ui",
-            {
-                "type": int,
-                "dest": "usb_id",
-                "help": "USB device ID to select.",
-                "action": "store",
-                "metavar": "id",
-                "required": False,
-            },
-        ),
-        (
-            "-uv",
-            {
-                "type": str,
-                "dest": "usb_vendor",
-                "help": "USB device vendor ID to select.",
-                "action": "store",
-                "metavar": "vendor",
-                "required": False,
-            },
-        ),
-        (
-            "-up",
-            {
-                "type": str,
-                "dest": "usb_product",
-                "help": "USB device product ID to select.",
-                "action": "store",
-                "metavar": "product",
-                "required": False,
-            },
-        ),
-        (
-            "--usb2",
-            {
-                "dest": "usb_slow",
-                "help": "Use the USB2.0 bus instead of USB3.0 (Default is 3.0)",
-                "action": "store_true",
-                "required": False,
-            },
-            "all",
-        ),
-        (
-            "-cw",
-            {
-                "dest": "connect_web",
-                "help": "Connect to the selected VM (using NoVNC)",
-                "required": False,
-                "action": "store_true",
-            },
-            "connect",
-        ),
-        (
-            "-cv",
-            {
-                "dest": "connect_vnc",
-                "help": "Connect to the selected VM (using VNC)",
-                "action": "store_true",
-                "required": False,
-            },
-            "connect",
-        ),
-        (
-            "-c",
-            {
-                "dest": "connect_spice",
-                "help": "Connect to the selected VM (using SPICE)",
-                "action": "store_true",
-                "required": False,
-            },
-            "connect",
-        ),
-        (
-            "-w",
-            {
-                "dest": "wake",
-                "help": "Wake VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "sleep_vm",
-        ),
-        (
-            "-z",
-            {
-                "dest": "sleep",
-                "help": "Sleep VM.",
-                "action": "store_true",
-                "required": False,
-            },
-            "sleep_vm",
-        ),
-        (
-            "-za",
-            {
-                "dest": "all_sleep",
-                "help": "Sleep all running VMs.",
-                "action": "store_true",
-                "required": False,
-            },
-            "all",
-        ),
-        (
-            "-wa",
-            {
-                "dest": "all_wake",
-                "help": "Wake all sleeping VMs.",
-                "required": False,
-                "action": "store_true",
-            },
-            "all",
-        ),
-        (
-            "-xa",
-            {
-                "dest": "all_stop",
-                "help": "Stop all running VMs",
-                "action": "store_true",
-                "required": False,
-            },
-            "all",
-        ),
-        (
-            "-fa",
-            {
-                "dest": "all_force",
-                "help": "Force poweroff (halt) all running VMs",
-                "action": "store_true",
-                "required": False,
-            },
-            "all",
-        ),
-        (
-            "--dmenu",
-            {
-                "dest": "dmenu",
-                "help": "List output in a dmenu compatible format",
-                "action": "store_true",
-                "required": False,
-            },
-            "all",
-        ),
-        (
-            "-es",
-            {
-                "dest": "schema",
-                "help": "Output VM config file schema format.",
-                "action": "store_true",
-                "required": False,
-            },
-            "example",
-        ),
-        (
-            "-e",
-            {
-                "dest": "example",
-                "help": "Output VM config file example.",
-                "action": "store_true",
-                "required": False,
-            },
-            "example",
-        ),
-        (
-            "-p",
-            {
-                "dest": "ga_ping",
-                "help": "Check the status of the QEMU Guest Agent.",
-                "action": "store_true",
-                "required": False,
-            },
-            "ping",
-        ),
-        (
-            "-I",
-            {
-                "dest": "ga_ip",
-                "help": "Retrive the VM IP addresses using the QEMU Guest Agent.",
-                "action": "store_true",
-                "required": False,
-            },
-            "ip",
-        ),
-        (
-            "-T",
-            {
-                "dest": "tap",
-                "help": "Tap the VM Power Button.",
-                "action": "store_true",
-                "required": False,
-            },
-            "tap",
         ),
     ],
     "locker": [
@@ -713,67 +752,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "blank",
-                "help": "Set the screen blank locker time (Seconds, True - Until Reboot, False - Disable).",
-                "action": "store",
-                "metavar": "seconds",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-l",
-            {
-                "type": str,
-                "dest": "lockscreen",
-                "help": "Set the Lockscreen locker time (Seconds, True - Until Reboot, False - Disable).",
-                "action": "store",
-                "metavar": "seconds",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-s",
-            {
-                "type": str,
-                "dest": "suspend",
-                "help": "Set the suspend locker time (Seconds, True - Until Reboot, False - Disable).",
-                "action": "store",
-                "metavar": "seconds",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-z",
-            {
-                "type": str,
-                "dest": "hibernate",
-                "help": "Set the hibernate locker time (Seconds, True - Until Reboot, False - Disable).",
-                "action": "store",
-                "metavar": "seconds",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-d",
-            {
-                "type": str,
-                "dest": "lid",
-                "help": "Set the lid locker time (Seconds, True - Until Reboot, False - Disable).",
-                "action": "store",
-                "metavar": "seconds",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-y",
-            {
-                "type": str,
-                "dest": "key",
-                "help": "Set the key locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "set the Blank inhibitor time (seconds / true - until reboot / false - disable)",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -785,7 +764,19 @@ ARGS = {
             {
                 "type": str,
                 "dest": "blank_force",
-                "help": "Force the screen blank locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "force set the Blank inhibitor time (seconds / true - until reboot / false - disable)",
+                "action": "store",
+                "metavar": "seconds",
+                "required": False,
+            },
+            "config",
+        ),
+        (
+            "-l",
+            {
+                "type": str,
+                "dest": "lockscreen",
+                "help": "set the Lockscreen inhibitor time (seconds / true - until reboot / false - disable)",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -797,7 +788,19 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lockscreen_force",
-                "help": "Force the Lockscreen locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "force set the Lockscreen inhibitor time (seconds / true - until reboot / false - disable)",
+                "action": "store",
+                "metavar": "seconds",
+                "required": False,
+            },
+            "config",
+        ),
+        (
+            "-s",
+            {
+                "type": str,
+                "dest": "suspend",
+                "help": "set the Suspend inhibitor time (seconds / true - until reboot / false - disable)",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -809,7 +812,19 @@ ARGS = {
             {
                 "type": str,
                 "dest": "suspend_force",
-                "help": "Force the suspend locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "force set the Suspend inhibitor time (seconds / true - until reboot / false - disable)",
+                "action": "store",
+                "metavar": "seconds",
+                "required": False,
+            },
+            "config",
+        ),
+        (
+            "-z",
+            {
+                "type": str,
+                "dest": "hibernate",
+                "help": "set the Hibernate inhibitor time (seconds / true - until reboot / false - disable)",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -821,7 +836,19 @@ ARGS = {
             {
                 "type": str,
                 "dest": "hibernate_force",
-                "help": "Force the hibernate locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "force set the Hibernate inhibitor time (seconds / true - until reboot / false - disable)",
+                "action": "store",
+                "metavar": "seconds",
+                "required": False,
+            },
+            "config",
+        ),
+        (
+            "-d",
+            {
+                "type": str,
+                "dest": "lid",
+                "help": "set the Lid inhibitor time (seconds / true - until reboot / false - disable)",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -833,7 +860,19 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lid_force",
-                "help": "Force the lid locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "force set the Lid inhibitor time (seconds / true - until reboot / false - disable)",
+                "action": "store",
+                "metavar": "seconds",
+                "required": False,
+            },
+            "config",
+        ),
+        (
+            "-y",
+            {
+                "type": str,
+                "dest": "key",
+                "help": "set the Key inhibitor time (seconds / true - until reboot / false - disable)",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -845,7 +884,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "key_force",
-                "help": "Force the key locker time (Seconds, True - Until Reboot, False - Disable).",
+                "help": "force set the Key inhibitor time (seconds / true - until reboot / false - disable)",
                 "action": "store",
                 "metavar": "seconds",
                 "required": False,
@@ -858,7 +897,7 @@ ARGS = {
             "-l",
             {
                 "dest": "list",
-                "help": "List backup plans.",
+                "help": "list backup plans",
                 "action": "store_true",
                 "required": False,
             },
@@ -868,17 +907,26 @@ ARGS = {
             "-s",
             {
                 "dest": "start",
-                "help": "Start a backup.",
+                "help": "start a backup",
                 "action": "store_true",
                 "required": False,
             },
             "config",
         ),
         (
+            "-F",
+            {
+                "dest": "full",
+                "help": "force a full backup instead of the current state",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "-x",
             {
                 "dest": "stop",
-                "help": "Stop a backup.",
+                "help": "stop a backup",
                 "action": "store_true",
                 "required": False,
             },
@@ -888,7 +936,7 @@ ARGS = {
             "-p",
             {
                 "dest": "pause",
-                "help": "Pause a running backup.",
+                "help": "pause a running backup",
                 "action": "store_true",
                 "required": False,
             },
@@ -898,7 +946,7 @@ ARGS = {
             "-r",
             {
                 "dest": "resume",
-                "help": "Resume a paused backup.",
+                "help": "resume a paused backup",
                 "action": "store_true",
                 "required": False,
             },
@@ -908,17 +956,17 @@ ARGS = {
             "-f",
             {
                 "dest": "force",
-                "help": "Force a backup to start, even on battery.",
+                "help": "force a backup to start, even on battery",
                 "action": "store_true",
                 "required": False,
             },
             "config",
         ),
         (
-            "-c",
+            "-C",
             {
                 "dest": "clear",
-                "help": "Clear backup database cache.",
+                "help": "clear backup database cache",
                 "action": "store_true",
                 "required": False,
             },
@@ -929,7 +977,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "dir",
-                "help": "Directory to trigger a backup for.",
+                "help": "select the backup target path",
                 "action": "store",
                 "metavar": "dir",
                 "required": False,
@@ -939,97 +987,29 @@ ARGS = {
         (
             "path",
             {
-                "help": "Directory to trigger a backup for.",
+                "help": "backup target path",
                 "nargs": "?",
                 "action": "store",
                 "default": None,
-            },
-            "config",
-        ),
-    ],
-    "rotate": [
-        (
-            "-d",
-            {
-                "dest": "disable",
-                "help": "Disable rotation lock.",
-                "action": "store_true",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-e",
-            {
-                "dest": "enable",
-                "help": "Enable rotation lock.",
-                "action": "store_true",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-t",
-            {
-                "dest": "toggle",
-                "help": "Toggle rotation lock.",
-                "action": "store_true",
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "-s",
-            {
-                "type": str,
-                "dest": "set",
-                "help": "Set the rotation lock.",
-                "action": "store",
-                "metavar": "rotate",
-                "choices": BOOLEANS,
-                "required": False,
-            },
-            "config",
-        ),
-        (
-            "state",
-            {
-                "help": "Enable/Disable the rotation lock.",
-                "nargs": "?",
-                "action": "store",
-                "default": None,
-                "choices": BOOLEANS,
             },
             "config",
         ),
     ],
     "reload": [
         (
-            "-l",
-            {
-                "type": int,
-                "default": -1,
-                "dest": "level",
-                "help": "Set the log level to reload with (temporary, 0 [debug] - 4 [critical]).",
-                "action": "store",
-                "metavar": "level",
-                "required": False,
-            },
-        ),
-        (
             "-a",
             {
                 "dest": "all",
-                "help": "Reload all services (Not just userland)",
+                "help": "reload all system and user services",
                 "action": "store_true",
                 "required": False,
             },
         ),
         (
-            "-z",
+            "-f",
             {
-                "dest": "no_reload",
-                "help": "Do not reload the system (Only change log level).",
+                "dest": "force",
+                "help": "do not prompt for conrifmation",
                 "action": "store_true",
                 "required": False,
             },
@@ -1040,7 +1020,7 @@ ARGS = {
             "-i",
             {
                 "dest": "increase",
-                "help": "Increase the current brightness level by 25.",
+                "help": "increase the current Brightness level by 5%",
                 "action": "store_true",
                 "required": False,
             },
@@ -1049,7 +1029,7 @@ ARGS = {
             "-d",
             {
                 "dest": "decrease",
-                "help": "Decrease the current brightness level by 25.",
+                "help": "decrease the current Brightness level by 5%",
                 "action": "store_true",
                 "required": False,
             },
@@ -1059,7 +1039,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "brightness",
-                "help": "Set the current brightness level.",
+                "help": "set the current Brightness level",
                 "action": "store",
                 "metavar": "level",
                 "required": False,
@@ -1069,7 +1049,7 @@ ARGS = {
             "level",
             {
                 "nargs": "?",
-                "help": "Set the current brightness level.",
+                "help": "set the current Brightness level",
                 "action": "store",
                 "default": None,
             },
@@ -1078,13 +1058,13 @@ ARGS = {
 }
 DESCRIPTIONS = {
     "cpu": "Processor Management Module",
+    "log": "Logging Management Module",
     "blue": "Bluetooth Management Module",
     "wifi": "Wireless Management Module",
     "lock": "Lockscreen Management Module",
     "hydra": "Hydra Hypervisor Management Module",
     "locker": "Locker Management Module",
     "backup": "Backup Management Module",
-    "rotate": "Screen Rotation Management Module",
     "reload": "Configuration Reload Management Module",
     "brightness": "Display Brightness Management Module",
 }

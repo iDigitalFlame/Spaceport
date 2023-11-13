@@ -1,9 +1,24 @@
-#!/usr/bin/false
-# Power Supply Udev Rules
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## UDev Power Triggers
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-SUBSYSTEM=="power_supply", ATTR{online}=="0", ATTR{present}=="1", RUN+="/usr/lib/smd/libexec/smd-power-detached"
-SUBSYSTEM=="power_supply", ATTR{online}=="1", ATTR{present}=="1", RUN+="/usr/lib/smd/libexec/smd-power-attached"
+ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0", RUN+="/usr/lib/smd/libexec/smd-power-detached"
+ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="1", RUN+="/usr/lib/smd/libexec/smd-power-attached"
+
 SUBSYSTEM=="power_supply", ATTR{status}=="Discharging", ATTR{present}=="1", ATTR{capacity}=="[0-7]", RUN+="/usr/lib/smd/libexec/smd-power-low '%E{POWER_SUPPLY_NAME}'"

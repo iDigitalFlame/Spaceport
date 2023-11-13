@@ -1,11 +1,24 @@
 #!/usr/bin/false
-# Module: Brightness (System)
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
 #
-# Sets and changes the System Brightness.
-#
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,37 +34,40 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from lib.util import read, write
-from lib.constants import (
-    HOOK_BRIGHTNESS,
-    BRIGHTNESS_PATH,
-    BRIGHTNESS_PATH_MAX,
-    MESSAGE_TYPE_ACTION,
-)
+# Module: System/Brightness
+#   Sets and changes the System Brightness. Allows Brightness to be controlled
+#   from userspace.
+
+from lib.util import num
+from lib.util.file import read, write
+from lib.constants import MSG_ACTION, HOOK_BRIGHTNESS
+from lib.constants.config import BRIGHTNESS_PATH, BRIGHTNESS_PATH_MAX
 
 HOOKS_SERVER = {HOOK_BRIGHTNESS: "brightness"}
 
 
 def brightness(server, message):
-    if message.type != MESSAGE_TYPE_ACTION or message.level is None:
+    if message.type != MSG_ACTION or message.level is None:
         return
     try:
-        n = int(message.level)
-        m = int(read(BRIGHTNESS_PATH_MAX), 10)
-    except (OSError, ValueError) as err:
+        v = num(message.level, False)
+    except ValueError:
         return server.error(
-            "Error changing Brightness, received a non-integer value!", err=err
+            "[m/brightness]: Received an invalid level value (it must be a number)!"
         )
-    if n < 0:
-        return server.error("Client attempted to change Brightness to less than zero!")
-    elif n > m:
-        return server.error(
-            "Client attempted to change Brightness highter than the max level!"
-        )
-    server.debug(f'Setting Brightness level to "{n}".')
     try:
-        write(BRIGHTNESS_PATH, str(n))
+        x = num(read(BRIGHTNESS_PATH_MAX), False)
+    except (ValueError, OSError) as err:
+        return server.error(
+            "[m/brightness]: Cannot read or parse the max Brightness level!", err
+        )
+    if v > x:
+        return server.error(
+            f"[m/brightness]: Cannot set the Brightness level ({v}) to highter than the max level ({x})!"
+        )
+    server.debug(f'[m/brightness]: Setting Brightness level to "{v}".')
+    try:
+        write(BRIGHTNESS_PATH, f"{v}")
     except OSError as err:
-        server.error("Error setting the Brightness level!", err=err)
-    del n
-    del m
+        server.error("[m/brightness]: Cannot set the Brightness level!", err)
+    del v, x

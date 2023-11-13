@@ -1,9 +1,25 @@
 #!/usr/bin/dash
-# Cache Links Configuration
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Cache and Links Configuration
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,15 +40,15 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
-rm "/etc/ld.so.cache" 2> /dev/null
-rm "/etc/cups/printers.conf" 2> /dev/null
-rm -f "/etc/NetworkManager/system-connections" 2> /dev/null
+rm -f "/etc/ld.so.cache"
+rm -f "/etc/cups/printers.conf"
+rm -f "/etc/NetworkManager/system-connections"
 rmdir "/etc/NetworkManager/system-connections" 2> /dev/null
-rm "/var/lib/NetworkManager/system-connections/system-connections" 2> /dev/null
+rm -f "/var/lib/NetworkManager/system-connections/system-connections"
 
-ln -s "/var/cache/ld.so.cache" "/etc/ld.so.cache" 2> /dev/null
-ln -s "/var/cache/cups/printers.conf" "/etc/cups/printers.conf" 2> /dev/null
-ln -s "/var/lib/NetworkManager/system-connections" "/etc/NetworkManager/system-connections" 2> /dev/null
+ln -s "/var/cache/ld.so.cache" "/etc/ld.so.cache"
+ln -s "/var/cache/cups/printers.conf" "/etc/cups/printers.conf"
+ln -s "/var/lib/NetworkManager/system-connections" "/etc/NetworkManager/system-connections"
 
 chmod 0644 "/var/cache/ld.so.cache"
 chmod 0600 "/var/cache/cups/printers.conf"

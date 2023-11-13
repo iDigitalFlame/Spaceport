@@ -1,9 +1,25 @@
 #!/usr/bin/dash
-# SMB Connect Sudo Wrapper
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Samba Mount Sudo Wrapper
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,13 +40,13 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 if [ $# -ne 2 ]; then
-    echo "Invalid arguments!"
+    printf "%s <mount> <path>\n" "$0"
     exit 1
 fi
 
 input=$(cat -)
 if [ -z "$input" ]; then
-    echo "Invalid input!"
+    echo "No input was provided!"
     exit 1
 fi
 
@@ -38,11 +54,15 @@ user=$(echo "$input" | awk -F'\b' '{print $1}')
 domain=$(echo "$input" | awk -F'\b' '{print $2}')
 password=$(echo "$input" | awk -F'\b' '{print $3}')
 username=$(echo "$input" | awk -F'\b' '{print $4}')
+
+input=""
+unset input
+
 if [ -z "$user" ] || [ -z "$password" ] || [ -z "$username" ]; then
-    echo "Invalid input!"
+    echo "Inpu was invalid!"
     exit 1
 fi
-if [ ! -d "$2" ]; then
+if ! [ -d "$2" ]; then
     printf "Mount path \"%s\" does not exist or is not a directory!\n" "$2"
     exit 1
 fi
@@ -53,9 +73,14 @@ result=$?
 
 export PASSWD=""
 unset PASSWD
+
 user=""
 domain=""
 password=""
 username=""
+unset user
+unset domain
+unset password
+unset username
 
 exit $result

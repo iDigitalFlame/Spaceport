@@ -1,8 +1,24 @@
-# Sudo Configuration
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Sudoers Configuration
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,11 +34,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-Cmnd_Alias  SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/reboot, /usr/bin/poweroff
-Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/umount, /usr/bin/sync, /usr/lib/smd/sbin/smb, /usr/bin/netstat, /usr/bin/rfcomm
+Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/umount -t cifs, /usr/bin/sync, /usr/lib/smd/sbin/smb, /usr/bin/netstat
+Cmnd_Alias  SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
 
-Defaults    env_keep += "LANG LANGUAGE LINGUAS LC_* _XKB_CHARSET"
-Defaults    env_keep += "XDG_SESSION_COOKIE"
+Defaults    env_keep += "LANG LANGUAGE LC_* _XKB_CHARSET"
 Defaults    env_keep += "HOME"
 Defaults    env_keep += "LESSSECURE=1"
 Defaults    tty_tickets

@@ -1,9 +1,24 @@
-#!/usr/bin/false
-# SMD Startup Service Unit
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## SMD Daemon Unit
 #
-# System Management Daemon
-#
-# Copyright (C) 2016 - 2023 iDigitalFlame
+# Copyright (C) 2016 - 2024 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,15 +39,18 @@ Description             = System Management Daemon
 
 [Service]
 Type                    = simple
-ExecStart               = /usr/lib/smd/libexec/smd-daemon
+ExecStart               = /usr/lib/smd/libexec/smd-daemon -j
 KillSignal              = SIGINT
 PrivateTmp              = true
+MountFlags              = shared
 KeyringMode             = private
 ProtectHome             = read-only
 ProtectClock            = false
 PrivateUsers            = false
+ExecStartPre            = -/usr/bin/mkdir -p /opt/hydra/smd-backup /var/cache/smd
+PrivateMounts           = false
 ProtectSystem           = full
-ReadWritePaths          = /var/cache/smd /opt/hydra /home/smd
+ReadWritePaths          = /var/cache/smd /opt/hydra /mnt /var/run/mount
 PrivateDevices          = false
 NoNewPrivileges         = true
 LockPersonality         = true

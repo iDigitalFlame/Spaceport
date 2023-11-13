@@ -1,0 +1,441 @@
+#!/usr/bin/false
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+# file.py
+#   Python file-based utility functions.
+
+from hashlib import md5
+from grp import getgrgid
+from pwd import getpwuid
+from lib.util import nes
+from sys import _getframe
+from typing import NamedTuple
+from lib.constants import EMPTY
+from os import makedirs, stat, chmod, remove
+from json import loads, dumps, JSONDecodeError
+from os.path import (
+    isfile,
+    exists,
+    islink,
+    dirname,
+    relpath,
+    realpath,
+    expanduser,
+    expandvars,
+)
+
+
+class Stat(NamedTuple):
+    stat: object
+    uid: int
+    gid: int
+    isfile: bool
+    isdir: bool
+    islink: bool
+    ischardev: bool
+    isblockdev: bool
+    path: str
+
+    def no_dir(self, hide=False):
+        if not self.isdir:
+            return
+        if hide:
+            raise FileNotFoundError()
+        raise PermissionError(f'"{self.path}" cannot be a directory')
+
+    def no_link(self, hide=False):
+        if not self.islink:
+            return
+        if hide:
+            raise FileNotFoundError()
+        raise PermissionError(f'"{self.path}" cannot be a symlink')
+
+    def no_char_dev(self, hide=False):
+        if not self.ischardev:
+            return
+        if hide:
+            raise FileNotFoundError()
+        raise PermissionError(f'"{self.path}" cannot be a character device')
+
+    def no_block_dev(self, hide=False):
+        if not self.isblockdev:
+            return
+        if hide:
+            raise FileNotFoundError()
+        raise PermissionError(f'"{self.path}" cannot be a block device')
+
+    def check(self, mask=None, uid=None, gid=None, req=None, hide=False):
+        if self.stat is None:
+            if hide:
+                raise FileNotFoundError()
+            raise FileNotFoundError(f'"{self.path}" does not exist')
+        if isinstance(uid, int) and self.uid != uid:
+            if uid == 0:
+                n = "root"
+            else:
+                try:
+                    n = getpwuid(uid).pw_name
+                except KeyError:
+                    n = uid
+            if hide:
+                raise FileNotFoundError()
+            raise PermissionError(f'"{self.path}" owner is not "{n}"')
+        if isinstance(gid, int) and self.gid != gid:
+            if gid == 0:
+                n = "root"
+            else:
+                try:
+                    n = getgrgid(gid).gr_name
+                except KeyError:
+                    n = gid
+            if hide:
+                raise FileNotFoundError()
+            raise PermissionError(f'"{self.path}" group is not "{n}"')
+        if isinstance(mask, int) and (self.stat.st_mode & mask) != 0:
+            if hide:
+                raise FileNotFoundError()
+            raise PermissionError(
+                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the mask ({mask:0o})'
+            )
+        if isinstance(req, int) and (self.stat.st_mode & req) < req:
+            if hide:
+                raise FileNotFoundError()
+            raise PermissionError(
+                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the required permissions ({req:0o})'
+            )
+        return self
+
+    def no(self, file=None, dir=None, char=None, block=None, link=None, hide=False):
+        if file is not None:
+            if file and not self.isfile:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" must be a file')
+            if not file and self.isfile:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" cannot be a file')
+        if dir is not None:
+            if dir and not self.isdir:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" must be a dir')
+            if not dir and self.isdir:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" cannot be a dir')
+        if link is not None:
+            if link and not self.islink:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" must be a link')
+            if not link and self.islink:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" cannot be a link')
+        if char is not None:
+            if char and not self.ischardev:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" must be a character device')
+            if not char and self.ischardev:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" cannot be a character device')
+        if block is not None:
+            if block and not self.isblockdev:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" must be a block device')
+            if not block and self.isblockdev:
+                if hide:
+                    raise FileNotFoundError()
+                raise PermissionError(f'"{self.path}" cannot be a block device')
+        return self
+
+    def only(
+        self, file=False, dir=False, char=False, block=False, link=False, hide=False
+    ):
+        return self.no(file, dir, char, block, link, hide)
+
+
+def expand(path):
+    if not nes(path):
+        return None
+    try:
+        return expandvars(expanduser(path))
+    except TypeError:
+        return None
+    except ValueError:
+        return path
+
+
+def remove_file(path):
+    if not isinstance(path, str) or len(path) == 0 or not isfile(path):
+        return
+    try:
+        remove(path)
+    except OSError:
+        pass
+
+
+def import_file(path):
+    i = info(path, no_fail=True)
+    if not i.isfile:
+        return
+    try:
+        # NOTE(dij): Prevent loading insecure config files.
+        i.check(0o7133, 0, 0, req=0o0400)
+    except OSError:
+        return
+    finally:
+        del i
+    v = read_json(path, errors=False)
+    if isinstance(v, dict) and len(v) > 0:
+        g = _getframe(1).f_globals
+        for n, d in v.items():
+            if not nes(n):
+                continue
+            # NOTE(dij): Ignore names that do not start with [a-zA-Z]
+            if not (0x61 <= ord(n[0]) <= 0x7A or 0x41 <= ord(n[0]) <= 0x5A):
+                continue
+            # NOTE(dij): If errors occur here, we want to break with an exception
+            #            so we're not gonna catch them. AttributeErrors won't
+            #            happen, but anything like TypeErrors might but that's a
+            #            user issue.
+            g[n.upper()] = d
+        del g
+    del v
+
+
+def read_json(path, errors=True):
+    d = read(path, binary=False, errors=errors)
+    if not isinstance(d, str):
+        if errors:
+            raise OSError(f'file "{path}" was empty')
+        return None
+    if len(d) == 0:
+        return None
+    try:
+        j = loads(d)
+    except JSONDecodeError as err:
+        if errors:
+            raise OSError(f'file "{path}" is not properly formatted: {err}')
+        return None
+    finally:
+        del d
+    return j
+
+
+def ensure_dir(file, mode=0o0755):
+    try:
+        d = dirname(file)
+    except TypeError:
+        return
+    if exists(d):
+        return
+    try:
+        makedirs(d, exist_ok=True, mode=mode)
+    finally:
+        del d
+
+
+def clean(path, root, links=False):
+    if not nes(path):
+        raise ValueError('"path" must be a non-empty string')
+    if not nes(root):
+        raise ValueError('"root" must be a non-empty string')
+    if len(root) >= len(path):
+        raise ValueError(f'path "{path}" is not in "{root}"')
+    r = root
+    if r[-1] == "/":
+        r = r[:-1]
+    v, c = relpath(path, start=r), path[len(r) + 1 :]
+    del r
+    if len(v) != len(c) or c != v:
+        raise ValueError(f'path "{path}" is not in "{root}"')
+    p = f"{root}{v}" if root[-1] == "/" or v[-1] == "/" else f"{root}/{v}"
+    del v, c
+    if realpath(path) != p:
+        raise ValueError(f'path "{path}" is not in "{root}"')
+    if not links and islink(p):
+        raise ValueError(f'path "{path}" / "{p}" in "{root}" cannot be a link')
+    return p
+
+
+def read(path, binary=False, errors=True, strip=False):
+    if not isinstance(path, str) or len(path) == 0:
+        if errors:
+            raise ValueError('"path" must be a non-empty string!')
+        return None
+    if not isfile(path):
+        if errors:
+            raise OSError(f'file "{path}" does not exist or is not a file')
+        return None
+    try:
+        with open(path, "rb" if binary else "r") as f:
+            d = f.read()
+            if binary or not strip:
+                return d
+            v = d.strip()
+            del d
+            if len(v) <= 2:
+                return v
+            if v[-1] == "\n":
+                return v[0:-2] if v[-2] == "\r" else v[0:-1]
+            if v[-1] == "\r":
+                return v[0:-2] if v[-2] == "\n" else v[0:-1]
+            return v
+    except (OSError, UnicodeDecodeError) as err:
+        if errors:
+            raise err
+    return None
+
+
+def hash_file(path, block=4096, errors=True, hasher=md5):
+    if not callable(hasher):
+        if errors:
+            raise ValueError('"hasher" must be callable')
+        return None
+    if not isinstance(path, str):
+        if errors:
+            raise ValueError('"path" must be a string!')
+        return None
+    if not isfile(path):
+        if errors:
+            raise OSError(f'file "{path}" does not exist or is not a file')
+        return None
+    g = hasher()
+    try:
+        with open(path, "rb") as f:
+            while True:
+                b = f.read(block)
+                if not b:
+                    break
+                g.update(b)
+    except OSError as err:
+        if errors:
+            raise err
+        return None
+    else:
+        return g.hexdigest()
+    finally:
+        del g
+
+
+def info(path, sym=True, st=None, no_fail=False, hide=False):
+    if st is None:
+        try:
+            s = stat(path, follow_symlinks=sym)
+        except OSError as err:
+            if hide:
+                raise FileNotFoundError()
+            if no_fail:
+                return Stat(None, None, None, False, False, False, False, False, path)
+            raise err
+    else:
+        s = st
+    m = s.st_mode & 0o170000
+    return Stat(
+        s,
+        s.st_uid,
+        s.st_gid,
+        m == 0o100000,  # isfile
+        m == 0o040000,  # isdir
+        m == 0o120000,  # islink
+        m == 0o020000,  # ischardev
+        m == 0o060000,  # isblockdev
+        path,
+    )
+
+
+def perm_check(path, mask=None, uid=None, gid=None, sym=True, st=None):
+    info(path, sym=sym, st=st).check(mask, uid, gid)
+
+
+def write(path, data, binary=False, errors=True, append=False, perms=None):
+    if not isinstance(path, str) or len(path) == 0:
+        if errors:
+            raise ValueError('"path" must be a non-empty string')
+        return False
+    try:
+        ensure_dir(path)
+    except OSError as err:
+        if errors:
+            raise err
+        return False
+    m = ("ab" if binary else "a") if append else ("wb" if binary else "w")
+    try:
+        with open(path, m) as f:
+            if data is None:
+                f.write(bytes() if binary else EMPTY)
+            elif isinstance(data, (bytes, bytearray)):
+                f.write(data if binary else data.decode("UTF-8"))
+            elif isinstance(data, str):
+                f.write(data.encode("UTF-8") if binary else data)
+            else:
+                f.write(f"{data}".encode("UTF-8") if binary else f"{data}")
+            f.flush()
+        if isinstance(perms, int):
+            chmod(path, perms, follow_symlinks=True)
+    except (OSError, UnicodeEncodeError) as err:
+        if errors:
+            raise err
+        return False
+    finally:
+        del m
+    return True
+
+
+def write_json(path, obj, errors=True, indent=None, sort=False, perms=None):
+    if obj is None:
+        if errors:
+            raise ValueError('"obj" must not be None')
+        return False
+    try:
+        d = dumps(obj, indent=indent, sort_keys=sort)
+    except (TypeError, JSONDecodeError) as err:
+        if errors:
+            raise ValueError(f'cannot convert "obj" to JSON: {err}')
+        return False
+    try:
+        return write(path, d, binary=False, errors=errors, append=False, perms=perms)
+    except OSError as err:
+        if errors:
+            raise err
+    finally:
+        del d
+    return False
