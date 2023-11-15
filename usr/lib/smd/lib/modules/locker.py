@@ -222,11 +222,10 @@ def _connected_displays(server):
         server.error(
             f'[m/locker]: Cannot read from the default display path "{g[0]}"!', err
         )
-    else:
-        return len(v) > 0 and v[0] == 0x65
+        return True
     finally:
         del g
-    return True
+    return v[0] != 0x65
 
 
 def _notify_control(server, enable):
