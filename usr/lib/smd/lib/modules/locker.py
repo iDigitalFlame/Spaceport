@@ -727,6 +727,11 @@ class LockerClient(object):
                 return server.error(
                     "[m/locker]: Cannot start the Lockscreen idle process!", err
                 )
+            # Turn off the screen if everything passes.
+            try:
+                swaymsg(0, "output * power off")
+            except OSError:
+                pass
             return server.debug("[m/locker]: Enabled DPMS and started idle processes.")
         if self._dpms is None:
             return

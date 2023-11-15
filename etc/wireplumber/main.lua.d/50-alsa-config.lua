@@ -71,4 +71,82 @@ alsa_monitor.rules = {
         apply_properties = {
         },
     },
+    {
+        matches = {
+            {
+                { "node.name", "matches", "alsa_output.*" },
+                { "node.description", "equals", "USB Audio" },
+            },
+            {
+                { "node.name", "matches", "alsa_output.*" },
+                { "node.description", "matches", "USB Audio (*)" },
+            },
+            {
+                { "node.name", "matches", "alsa_output.*" },
+                { "node.description", "matches", "Built-in Audio (*)" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 800,
+        },
+    },
+    {
+        matches = {
+            {
+                { "node.name", "matches", "alsa_input.*" },
+                { "node.description", "equals", "USB Audio" },
+            },
+            {
+                { "node.name", "matches", "alsa_input.*" },
+                { "node.description", "matches", "USB Audio (*)" },
+            },
+            {
+                { "node.name", "matches", "alsa_input.*" },
+                { "node.description", "matches", "Built-in Audio (*)" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 1800,
+        },
+    },
+    {
+        matches = {
+            {
+                { "node.name", "equals", "alsa_input.pci-0000_00_1f.3.capture.0.0" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 1900,
+        },
+    },
+    {
+        matches = {
+            {
+                { "node.name", "equals", "alsa_output.pci-0000_00_1f.3.playback.0.0" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 900,
+        },
+    },
+    {
+        matches = {
+            {
+                { "node.name", "matches", "bluez_input.*" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 2100,
+        },
+    },
+    {
+        matches = {
+            {
+                { "node.name", "matches", "bluez_output.*" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 1100,
+        },
+    },
 }

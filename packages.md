@@ -190,7 +190,6 @@ wl-clipboard
 xdg-desktop-portal-wlr
 xdg-utils
 xfsprogs
-xorg-xlsclients
 xorg-xwayland
 xpad
 yay
