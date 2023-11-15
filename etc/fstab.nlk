@@ -1,3 +1,4 @@
+proc                                        /proc                       proc        rw,nosuid,noexec,nodev,hidepid=2,gid=proc                                                                                       0 0
 tmpfs                                       /tmp                        tmpfs       rw,nosuid,nodev,noatime                                                                                                         0 0
 tmpfs                                       /dev/shm                    tmpfs       rw,nosuid,noexec,nodev,noatime                                                                                                  0 0
 efivarfs                                    /sys/firmware/efi/efivars   efivarfs    ro,nosuid,noexec,nodev,noatime                                                                                                  0 0
