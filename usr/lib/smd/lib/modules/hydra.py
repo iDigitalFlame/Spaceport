@@ -44,11 +44,11 @@ from random import randint
 from ipaddress import IPv4Network
 from collections import namedtuple
 from pwd import getpwnam, getpwuid
-from os import chown, mkdir, chmod
 from signal import SIGCONT, SIGSTOP
 from lib.structs.storage import Storage
 from lib.structs.message import as_error
 from lib.util import nes, num, cancel_nul
+from os import chown, mkdir, chmod, remove
 from lib.util.exec import stop, nulexec, run
 from json import dumps, loads, JSONDecodeError
 from socket import socket, AF_UNIX, SOCK_STREAM
@@ -756,7 +756,7 @@ class VM(Storage):
             )
         return r
 
-    def _start(self, manager, server, uid):
+    def _start(self, server, manager, uid):
         if self._running():
             return self._process.pid
         if self._state != HYDRA_STATE_STOPPED:
@@ -764,7 +764,7 @@ class VM(Storage):
                 f'[m/hydra/VM({self.vmid})]: "_start" called on invalid state 0x{self._state:X}!'
             )
         self._state, self._proc = HYDRA_STATE_STOPPED, None
-        x = self._build(server, self, uid)
+        x = self._build(server, manager, uid)
         if nes(self.path()):
             self.save(perms=0o640)
             server.debug(f'[m/hydra/VM({self.vmid})]: Saved config to "{self.path()}".')
@@ -927,7 +927,10 @@ class VM(Storage):
         if self.get("memory.reserve", True):
             r = f"/dev/hugepages/{self.vmid}.ram"
             if exists(r):
-                raise Error(f'memory reserve file "{r}" already exists')
+                try:
+                    remove(r)
+                except OSError:
+                    raise Error(f'memory reserve file "{r}" already exists')
             server.debug(f"[m/hydra/VM({self.vmid})]: Reserving {n}MB of memory..")
             manager.pages(server, self.vmid, round(n / HYDRA_RESERVE_SIZE))
         else:
@@ -1271,7 +1274,7 @@ class VM(Storage):
             r = None
         if self._output is None:
             self._output = (e, r)
-        server.error(f"[m/hydra/VM({self.vmid})]: Stopping and cleaning up..")
+        server.info(f"[m/hydra/VM({self.vmid})]: Stopping and cleaning up..")
         stop(self._proc)
         if self._proc is not None:
             try:
@@ -1670,11 +1673,9 @@ class HydraServer(object):
             if not i:
                 return x._status()
             try:
-                self._vms[x.vmid] = x
-                if x._state != HYDRA_STATE_STOPPED:
-                    return x._status()
                 self.start(server)
-                x._start(self, server, message.uid())
+                x._start(server, self, message.uid())
+                self._vms[x.vmid] = x
             except Error as err:
                 # NOTE(dij): Remove VM as it failed on launch.
                 if x.vmid in self._vms and (
@@ -1789,7 +1790,7 @@ class HydraServer(object):
             return
         if remove:
             n = self._pages[vmid]
-            if isinstance(size, int):
+            if not isinstance(size, int):
                 size = n
             x = sum(self._pages.values()) - max(n, size)
             try:
@@ -1797,6 +1798,7 @@ class HydraServer(object):
             except OSError as err:
                 raise Error(f"cannot reserve {x} pages: {err}")
             if size >= n:
+                remove_file(f"/dev/hugepages/{vmid}.ram")
                 del self._pages[vmid]
             else:
                 self._pages[vmid] = n - size

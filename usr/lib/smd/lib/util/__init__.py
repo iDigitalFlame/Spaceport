@@ -102,14 +102,17 @@ def time_to_str(value, now=None):
         now = seconds()
     if value is None:
         return "Until Reboot"
-    n = round(value - now)
-    if n <= 0:
+    t = round(value - now)
+    if t <= 0:
         return "0s"
-    if n <= 60:
-        return f"{n}s"
-    if n > 60:
-        m = n // 60
-        s = n - (m * 60)
-        del n
+    if t < 60:
+        return f"{t}s"
+    h = round(t // 3600)
+    t -= h * 3600
+    m = round(t // 60)
+    s = round(t - (m * 60))
+    if h == 0:
         return f"{m}m" if s == 0 else f"{m}m {s}s"
-    return None
+    if m == 0:
+        return f"{h}hr" if s == 0 else f"{h}hr {s}s"
+    return f"{h}hr {m}m" if m > 0 and s == 0 else f"{h}hr {m}m {s}s"

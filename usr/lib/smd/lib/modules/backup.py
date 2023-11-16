@@ -127,14 +127,10 @@ def _time(delta):
     m = round(t // 60)
     s = round(t - (m * 60))
     if h == 0:
-        if s == 0:
-            return f"{m}m"
-        return f"{m}m {s}s"
+        return f"{m}m" if s == 0 else f"{m}m {s}s"
     if m == 0:
         return f"{h}hr" if s == 0 else f"{h}hr {s}s"
-    if m > 0 and s == 0:
-        return f"{h}hr {m}m"
-    return f"{h}hr {m}m {s}s"
+    return f"{h}hr {m}m" if m > 0 and s == 0 else f"{h}hr {m}m {s}s"
 
 
 def _apes(s, last=False):
