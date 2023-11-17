@@ -40,6 +40,7 @@ git-lfs
 gnome-keyring
 go
 grimshot
+gtk-vnc
 gtklock
 hunspell-en_us
 imagemagick

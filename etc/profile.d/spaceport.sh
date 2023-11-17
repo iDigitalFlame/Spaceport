@@ -51,6 +51,7 @@ export GTK2_RC_FILES="${HOME}/.config/gtk-2.0/gtkrc"
 export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
 
 # *Just Wayland Things*
+export XDG_CURRENT_DESKTOP=sway
 export QT_QPA_PLATFORM="wayland;xcb"
 export _JAVA_AWT_WM_NONREPARENTING="1"
 

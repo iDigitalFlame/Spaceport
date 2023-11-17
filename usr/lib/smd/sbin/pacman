@@ -42,7 +42,7 @@ if [ "$install" -eq 0 ]; then
     mount -o remount,rw /
 fi
 
-sg firewall-web -c "/usr/bin/pacman $args"
+sg firewall-web "/usr/bin/pacman $args"
 ret=$?
 
 if [ "$install" -eq 0 ] && [ -z "$SYSBATCH" ]; then
