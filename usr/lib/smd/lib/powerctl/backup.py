@@ -61,8 +61,6 @@ def config(args):
             p["dir"] = args.dir
         elif nes(args.path):
             p["dir"] = args.path
-        if "dir" in p and p["dir"][-1] != "/":
-            p["dir"] = f'{p["dir"]}/'
         p["full"] = args.full
     elif args.pause:
         p["type"], p["action"] = MSG_CONFIG, MSG_PRE
@@ -101,30 +99,57 @@ def default(args):
     except Exception as err:
         return print_error("Cannot retrive Backup Plans!", err)
     check_error(r, "Cannot retrive Backup Plans")
-    print(f'{"UUID":9}{"Status":18}{"Last Backup":25}{"Last Size":9} Path\n{"="*65}')
-    if not isinstance(r.plans, list) or len(r.plans) == 0:
-        return
-    for p in r.plans:
-        if len(p["uuid"]) < 8:
-            continue
-        t = EMPTY
-        if isinstance(p["last"], str) and len(p["last"]) > 0:
-            try:
-                f = datetime.fromisoformat(p["last"])
-                t = f.strftime("%m/%d/%y %H:%M:%S")
-                del f
-            except ValueError:
-                pass
-        v = EMPTY
-        if p.get("error", False):
-            v = "FAIL "
-        t = f"{v}{t}"
-        del v
-        s = p["size"]
-        if not nes(s):
-            s = ""
-        else:
-            s = s[:-2]
-        print(f'{p["uuid"][:8]:9}{p["status"]:<18}{t:<25}{s:>9} {p["path"]}')
-        del t, s
+    d = r.plans
     del r
+    if isinstance(d, list):
+        d.sort(key=lambda p: (p["path"], p["id"]))
+    _print(d, args.advanced)
+    del d
+
+
+def _print(plans, adv):
+    if not adv:
+        print(f'{"ID":11}{"Status":11}{"Last":15}{"Last Size":9} Path\n{"="*70}')
+    for i in plans:
+        x = i.get("id")
+        if not nes(x) or len(x) < 10:
+            continue
+        v = i["state"]
+        if adv:
+            print(f'{i["id"]} - {i["path"]}\n{"="*60}')
+            print(f'{"ID":<12}: {x}\n{"Path":<12}: {i["path"]}')
+            print(f'{"Description":<12}: {i["description"]}\n{"UUID":<12}: {i["uuid"]}')
+            if len(i["status"]) > 0:
+                print(f'{"Status":<12}: {i["status"]}', end="")
+                if v == "W":
+                    print("(Paused)")
+            elif v == "Q":
+                print(f'{"Status":<12}: Queued')
+            elif len(v) > 0:
+                print(f'{"Status":<12}: {v}')
+        else:
+            if len(v) == 0:
+                v = " "
+            print(f'{x:11}{"F" if i.get("error") else v} {i["status"]:<9}', end="")
+        del x, v
+        if nes(i["last"]) and nes(i["size"]):
+            try:
+                x = datetime.fromisoformat(i["last"]).strftime("%m/%d/%y %H:%M")
+            except ValueError:
+                x = EMPTY
+            v = i["size"]
+        else:
+            x, v = EMPTY, EMPTY
+        if adv:
+            if len(x) == 0 or len(v) == 0:
+                print()
+                continue
+            print(f'{"Last Run":<12}: {x}{"(Failed)" if i.get("error") else EMPTY}')
+            print(f'{"Last Size":<12}: {v}\n')
+        else:
+            print(f'{x:<15}{v:>9} {i["path"]}', end="")
+            if nes(i["description"]) and len(i["description"]) <= 32:
+                print(f' ({i["description"]})')
+            else:
+                print()
+        del x, v

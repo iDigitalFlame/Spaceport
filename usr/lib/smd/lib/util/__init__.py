@@ -46,6 +46,17 @@ def nes(v):
     return isinstance(v, str) and len(v) > 0
 
 
+def fnv32(v):
+    d, h = v.encode("UTF-8"), 0x811C9DC5
+    for i in d:
+        h *= 0x1000193
+        h = h & 0xFFFFFFFF
+        h ^= i
+        h = h & 0xFFFFFFFF
+    del d
+    return h
+
+
 def seconds():
     return round(time())
 
@@ -102,6 +113,8 @@ def time_to_str(value, now=None):
         now = seconds()
     if value is None:
         return "Until Reboot"
+    if isinstance(value, bool) and value:
+        return "Ability Disabled"
     t = round(value - now)
     if t <= 0:
         return "0s"

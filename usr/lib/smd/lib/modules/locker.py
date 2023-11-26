@@ -329,6 +329,24 @@ class Ability(object):
         except ValueError:
             self.hibernate = DEFAULT_LOCKER_HIBERNATE
 
+    def status(self, lockers):
+        r = dict()
+        if not self.lid:
+            r[LOCKER_TYPE_LID] = True
+        if not self.key:
+            r[LOCKER_TYPE_KEY] = True
+        if not self.can_lock():
+            r[LOCKER_TYPE_LOCK] = True
+        if not self.can_blank():
+            r[LOCKER_TYPE_BLANK] = True
+        if not self.can_suspend():
+            r[LOCKER_TYPE_SUSPEND] = True
+        if not self.can_hibernate():
+            r[LOCKER_TYPE_HIBERNATE] = True
+        for k, v in lockers.items():
+            r[k] = v.expire
+        return r
+
     @classmethod
     def load(cls, server, name):
         try:
@@ -656,6 +674,14 @@ class LockerClient(object):
         if message.trigger == TRIGGER_KEY and not self._ability.key:
             return server.debug(
                 "[m/locker]: Ignoring Key request as we lack the Key ability."
+            )
+        if (
+            self._backoff_blank is not None
+            and message.trigger == TRIGGER_LOCK
+            and not message.force
+        ):
+            return server.debug(
+                "[m/locker]: Ignoring Lockscreen request due to Lockscreen backoff!"
             )
         self._lock(server, message.force or message.trigger == TRIGGER_KEY)
 
@@ -998,10 +1024,7 @@ class LockerServer(object):
         if message.type == MSG_UPDATE or message.type == MSG_STATUS:
             if isinstance(message.locker, str) and message.locker in self._lockers:
                 return {"type": MSG_STATUS, "time": self._lockers[message.lower].expire}
-            return {
-                "type": MSG_STATUS,
-                "lockers": {n: v.expire for n, v in self._lockers.items()},
-            }
+            return {"type": MSG_STATUS, "lockers": self._ability.status(self._lockers)}
         if message.type != MSG_ACTION:
             return
         if nes(message.name):

@@ -108,7 +108,7 @@
         "NotificationsAllowedForUrls": [],
         "NotificationsBlockedForUrls": []
     },
-    "Disable3DAPIs": true,
+    "Disable3DAPIs": false,
     "InstantEnabled": false,
     "TranslateEnabled": false,
     "AllowOutdatedPlugins": false,

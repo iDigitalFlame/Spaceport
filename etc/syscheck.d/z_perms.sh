@@ -146,10 +146,10 @@ chmod 0400 /opt/secureboot/*
 # Backup Key Permissions
 chown root:root /etc/smd/*.key
 chown root:root /etc/smd/*.ssh
-chown root:root "/var/cache/smd/backup"
+chown root:root "/var/cache/smd/backup" 2> /dev/null
 chmod 0400 /etc/smd/*.key
 chmod 0400 /etc/smd/*.ssh
-chmod 0750 "/var/cache/smd/backup"
+chmod 0750 "/var/cache/smd/backup" 2> /dev/null
 
 # Remove Drun Permissions
 chmod 0400 /usr/share/applications/exo-* 2> /dev/null

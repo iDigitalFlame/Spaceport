@@ -18,6 +18,7 @@ chaotic-mirrorlist
 cifs-utils
 clang
 cmake
+corepdf
 cowsay
 cups
 dash
@@ -112,6 +113,7 @@ pkgconf
 pngcrush
 powershell-bin
 psmisc
+putty
 python
 python-beautifulsoup4
 python-black

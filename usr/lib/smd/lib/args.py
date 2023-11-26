@@ -904,6 +904,15 @@ ARGS = {
             "default",
         ),
         (
+            "-a",
+            {
+                "dest": "advanced",
+                "help": "display detailed backup plan information",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "-s",
             {
                 "dest": "start",
