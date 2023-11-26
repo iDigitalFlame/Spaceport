@@ -106,6 +106,7 @@ pacman
 pacman-contrib
 pam-u2f
 patch
+picocom
 pipewire-alsa
 pipewire-pulse
 pipewire-v4l2
@@ -113,7 +114,6 @@ pkgconf
 pngcrush
 powershell-bin
 psmisc
-putty
 python
 python-beautifulsoup4
 python-black
