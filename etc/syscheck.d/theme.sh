@@ -56,4 +56,4 @@ find "/usr/share/themes/MoonlightSky" -xdev -type f -name .directory -delete
 
 # Fix for Rofi not showing the icons for Codium
 rm -f "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"
-ln -s "/usr/share/icons/kora/apps/scalable/vscodium.svg" "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"
+ln -sT "/usr/share/icons/kora/apps/scalable/vscodium.svg" "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"

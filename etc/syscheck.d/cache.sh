@@ -46,9 +46,9 @@ rm -f "/etc/NetworkManager/system-connections"
 rmdir "/etc/NetworkManager/system-connections" 2> /dev/null
 rm -f "/var/lib/NetworkManager/system-connections/system-connections"
 
-ln -s "/var/cache/ld.so.cache" "/etc/ld.so.cache"
-ln -s "/var/cache/cups/printers.conf" "/etc/cups/printers.conf"
-ln -s "/var/lib/NetworkManager/system-connections" "/etc/NetworkManager/system-connections"
+ln -sT "/var/cache/ld.so.cache" "/etc/ld.so.cache"
+ln -sT "/var/cache/cups/printers.conf" "/etc/cups/printers.conf"
+ln -sT "/var/lib/NetworkManager/system-connections" "/etc/NetworkManager/system-connections"
 
 chmod 0644 "/var/cache/ld.so.cache"
 chmod 0600 "/var/cache/cups/printers.conf"

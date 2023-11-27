@@ -68,14 +68,14 @@ rm -f "${THEME_DIR}/icon-theme.cache"
 find "${THEME_DIR}/actions" -type l -name "go-*" -delete
 find "${THEME_DIR}/actions" -type f -name "go-*" -delete
 
-ln -s "/usr/share/icons/kora/apps" "${THEME_DIR}/apps"
-ln -s "/usr/share/icons/Vimix-cursors/cursors" "${THEME_DIR}/cursors" 2> /dev/null
-ln -s "/usr/share/themes/DarkSky/icons.theme" "${THEME_DIR}/index.theme"
+ln -sT "/usr/share/icons/kora/apps" "${THEME_DIR}/apps"
+ln -sT "/usr/share/icons/Vimix-cursors/cursors" "${THEME_DIR}/cursors" 2> /dev/null
+ln -sT "/usr/share/themes/DarkSky/icons.theme" "${THEME_DIR}/index.theme"
 
 for icon in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | awk '{print $11}'); do
     for d in "${THEME_DIR}"/actions/*; do
         if [ -d "${THEME_DIR}/actions/${d}" ]; then
-            ln -s "$icon" "${THEME_DIR}/actions/${d}/" 2> /dev/null
+            ln -sT "$icon" "${THEME_DIR}/actions/${d}/" 2> /dev/null
         fi
     done
 done
