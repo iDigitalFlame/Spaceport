@@ -218,6 +218,7 @@ chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/codium-uri-handler.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/rofi-theme-selector.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/jshell-java-openjdk.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/org.cubocore.CorePDF.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/pcmanfm-desktop-pref.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.gnome.FileRoller.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.telegram.desktop.desktop 2> /dev/null
