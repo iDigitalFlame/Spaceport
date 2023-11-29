@@ -216,6 +216,7 @@ chmod 0400 /usr/share/applications/libinput-gestures.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/java-java-openjdk.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/codium-uri-handler.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/com.ultimaker.cura.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/rofi-theme-selector.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/jshell-java-openjdk.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/org.cubocore.CorePDF.desktop 2> /dev/null

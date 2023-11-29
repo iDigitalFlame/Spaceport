@@ -1,4 +1,3 @@
-cura-modern-appimage
 dvm
 firefox-extension-foxyproxy
 firefox-extension-multi-account-containers

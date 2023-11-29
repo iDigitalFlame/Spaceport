@@ -21,6 +21,7 @@ cmake
 corepdf
 cowsay
 cups
+cura-bin
 dash
 dhcpcd
 dnsmasq
