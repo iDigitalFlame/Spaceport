@@ -337,15 +337,7 @@ class Background(object):
         o = self._proc
         try:
             self._proc = nulexec(
-                [
-                    "/usr/bin/swaybg",
-                    "--mode",
-                    "center",
-                    "--output",
-                    "*",
-                    "--image",
-                    file,
-                ]
+                ["/usr/bin/swaybg", "--mode", "fill", "--output", "*", "--image", file]
             )
         except OSError as err:
             return server.error(

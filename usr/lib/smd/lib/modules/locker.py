@@ -40,9 +40,9 @@
 #   the Server to enforce rules.
 
 from glob import glob
-from time import time
 from json import dumps
 from os import O_NONBLOCK
+from time import time, sleep
 from lib.sway import swaymsg
 from lib.structs import Message, as_error
 from signal import SIGCONT, SIGSTOP, SIGUSR1
@@ -753,9 +753,14 @@ class LockerClient(object):
                 return server.error(
                     "[m/locker]: Cannot start the Lockscreen idle process!", err
                 )
+            # NOTE(dij): There needs to be some sort or /delay/ here or else the
+            #            swayidle command will segfault, a 0.01 sec delay seems
+            #            good enough to not interrupt our ops.
+            sleep(0.01)
             # Turn off the screen if everything passes.
             try:
-                swaymsg(0, "output * power off")
+                # Tell swayidle that it should start the idle process immediately.
+                self._dpms.send_signal(SIGUSR1)
             except OSError:
                 pass
             return server.debug("[m/locker]: Enabled DPMS and started idle processes.")
