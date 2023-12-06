@@ -1406,7 +1406,7 @@ class Backup(object):
     def stop(self, server, force=False):
         if self._cancel.is_set():
             return
-        server.info(f"[m/backup/job/{self.id}] Stopping Backup Job {self}.")
+        server.info(f"[m/backup/job/{self.id}]: Stopping Backup Job {self}.")
         self._stop(server, force)
 
     def _check_space(self, server, file, extra=1.5):
