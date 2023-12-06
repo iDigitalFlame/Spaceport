@@ -67,6 +67,7 @@ DEFAULT_NOTIFY_THEME = "/usr/share/icons/hicolor/scalable/status"
 DEFAULT_NOTIFY_FULLPATH = False
 
 # Background Defaults
+DEFAULT_BACKGROUND_FIT = True
 DEFAULT_BACKGROUND_PATH = "${HOME}/Pictures/Backgrounds"
 DEFAULT_BACKGROUND_SWITCH = 600
 DEFAULT_BACKGROUND_LOCKSCREEN = "${HOME}/.cache/smd/lockscreen.png"

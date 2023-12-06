@@ -58,6 +58,7 @@ from lib.constants.config import (
     BACKGROUND_PATH_EXTENSIONS,
 )
 from lib.constants.defaults import (
+    DEFAULT_BACKGROUND_FIT,
     DEFAULT_BACKGROUND_PATH,
     DEFAULT_BACKGROUND_SWITCH,
     DEFAULT_BACKGROUND_LOCKSCREEN,
@@ -76,6 +77,7 @@ class Background(object):
     __slots__ = (
         "_dir",
         "_src",
+        "_fit",
         "_lock",
         "_rand",
         "_proc",
@@ -89,6 +91,7 @@ class Background(object):
     def __init__(self):
         self._dir = expand(BACKGROUND_PATH_CACHE)
         self._src = None
+        self._fit = False
         self._auto = None
         self._lock = False
         self._rand = Random()
@@ -131,6 +134,7 @@ class Background(object):
             server.warning(
                 f'[m/background]: Background source path "{self._src}" does not exist or is is not a directory!'
             )
+        self._fit = boolean(server.get("background.fit", DEFAULT_BACKGROUND_FIT, True))
 
     def reload(self, server):
         self._handle = cancel_nul(server, self._handle)
@@ -250,7 +254,7 @@ class Background(object):
             )
         a = list()
         for i in e:
-            if len(i) < 2:
+            if len(i) < 2 or not isfile(f"{self._src}/{i}"):
                 continue
             _, v = splitext(i.lower())
             if v in BACKGROUND_PATH_EXTENSIONS:
@@ -309,6 +313,7 @@ class Background(object):
                 nulexec(
                     [
                         f"{DIRECTORY_LIBEXEC}/smd-convert-picture",
+                        "fit" if self._fit else "center",
                         f"{self._size[0]}",
                         f"{self._size[1]}",
                         bg,
@@ -332,7 +337,15 @@ class Background(object):
         o = self._proc
         try:
             self._proc = nulexec(
-                ["/usr/bin/swaybg", "--mode", "fill", "--output", "*", "--image", file]
+                [
+                    "/usr/bin/swaybg",
+                    "--mode",
+                    "center",
+                    "--output",
+                    "*",
+                    "--image",
+                    file,
+                ]
             )
         except OSError as err:
             return server.error(

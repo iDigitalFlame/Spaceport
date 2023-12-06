@@ -47,9 +47,13 @@
 # Enable Strict Mode
 set -u
 
-if [ $# -ne 4 ]; then
-    echo "smd-convert-picture <width> <height> <source> <destination>"
+if [ $# -ne 5 ]; then
+    echo "smd-convert-picture <method> <width> <height> <source> <destination>"
     exit 1
 fi
 
-convert -quality 100 -resize "${1}x${2}!" -gravity center "$3" "$4"
+if [ "$1" = "fit" ]; then
+    convert -quality 100 -resize "${2}x${3}!" -gravity center "$4" "$5"
+else
+    cp -nPTx  --sparse=auto --update=none --no-preserve=all "$4" "$5"
+fi

@@ -338,7 +338,10 @@ def hash_file(path, block=4096, errors=True, hasher=md5):
         if errors:
             raise OSError(f'file "{path}" does not exist or is not a file')
         return None
-    g = hasher()
+    try:
+        g = hasher(usedforsecurity=False)
+    except TypeError:
+        g = hasher()
     try:
         with open(path, "rb") as f:
             while True:
