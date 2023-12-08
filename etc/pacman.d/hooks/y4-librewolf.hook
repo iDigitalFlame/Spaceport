@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## LibreWolf Config Diff Pacman Hook
+## LibreWolf Config Backup Pacman Hook
 #
 # Copyright (C) 2016 - 2024 iDigitalFlame
 #
@@ -41,6 +41,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
-Exec        = /usr/bin/dash -c "[ -e /usr/lib/librewolf/librewolf.cfg.pacnew ] && echo 'New <, Old >' && diff /usr/lib/librewolf/librewolf.cfg.pacnew /var/cache/librewolf.cfg.bak; exit 0"
-Description = Diff-ing new and old LibreWolf configs..
+When        = PreTransaction
+Exec        = /usr/bin/dash -c "[ -e /usr/lib/librewolf/librewolf.cfg.pacnew ] && mv /usr/lib/librewolf/librewolf.cfg.pacnew /var/cache/librewolf.cfg.bak || exit 0"
+Description = Backing up old LibreWolf config..

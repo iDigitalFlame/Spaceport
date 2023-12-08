@@ -11,11 +11,13 @@ plymouth-start.service
 rescue.service
 syslog.service
 systemd-boot-update.service
+systemd-bsod.service
 systemd-firstboot.service
 systemd-homed.service
 systemd-hwdb-update.service
 systemd-network-generator.service
 systemd-pstore.service
+systemd-quotacheck.service
 systemd-repart.service
 systemd-sysusers.service
 systemd-update-done.service
