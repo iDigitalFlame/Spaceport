@@ -111,9 +111,9 @@ def _load_user_config(path, config):
     if not exists(p):
         return None, d
     i = info(p)
-    if i.isfile():
+    if i.isfile:
         return p, d
-    if not i.isdir():
+    if not i.isdir:
         return None, d
     del i
     b = basename(p)

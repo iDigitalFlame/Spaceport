@@ -1045,9 +1045,16 @@ class VM(Storage):
                 #            If the target is a file not owned by the calling user
                 #            it must have the permissions of 0o0644 and will be
                 #            mounted as read only.
+                #
+                #            There is an exception if the device is an ISO/CD as
+                #            these are always marked as read only. So these files
+                #            can realistically have any permissions and owner, but
+                #            we'll at least expect 0o0640.
                 v.no(dir=False, link=False, char=False, hide=True)
                 if v.isfile:
-                    if v.uid == uid:
+                    if d["type"] == "cd" or d["type"] == "iso":
+                        v.check(0o7133, req=0o0640)
+                    elif v.uid == uid:
                         v.check(0o7117, gid=_hydra_user().pw_gid, req=0o0660)
                     else:
                         v.check(0o7133, req=0o0644, hide=True)
@@ -1103,7 +1110,7 @@ class VM(Storage):
             if isinstance(v, int):
                 if v < 0 or v in b:
                     server.warning(
-                        f'[m/hydra/VM({self.vmid})]: Removing drive "{n}" invalid "index" entry!'
+                        f'[m/hydra/VM({self.vmid})]: Removing drive "{n}" "index" value as its invalid!'
                     )
                     del d["index"]
                     v = max(b) + 1
@@ -1150,7 +1157,8 @@ class VM(Storage):
                 s += ",aio=native,cache.direct=on"
             else:
                 s += ",aio=threads,cache=writeback"
-            if d.get("readonly", False):
+            # NOTE(dij): CDs and ISOs are always read only.
+            if d.get("readonly", False) or d["type"] == "cd" or d["type"] == "iso":
                 s += ",readonly=on"
             if d.get("discard", False):
                 if d["type"] == "scsi":

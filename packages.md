@@ -37,6 +37,7 @@ firefox-ublock-origin
 freerdp
 gcc
 gdb
+ghostscript
 git
 git-lfs
 gnome-keyring
