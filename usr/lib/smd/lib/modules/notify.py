@@ -123,6 +123,11 @@ class Notifier(GObject.Object):
         self._dirs.clear()
         self._cache.clear()
         self.setup(server)
+        try:
+            Notify.uninit()
+            Notify.init(NAME_CLIENT)
+        except Exception as err:
+            server.error("[m/notify]: Cannot reload notification subsystem!", err)
 
     def shutdown(self, server):
         server.debug("[m/notify]: Un-registering notification client.")

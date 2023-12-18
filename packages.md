@@ -13,6 +13,7 @@ bluez
 bluez-utils
 btrfs-progs
 c-lolcat
+cdrtools
 chaotic-keyring
 chaotic-mirrorlist
 cifs-utils
