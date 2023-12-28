@@ -59,31 +59,15 @@ alsa_monitor.rules = {
             ["api.acp.auto-profile"] = false,
         },
     },
+    -- Outputs
     {
+        -- Match HDMI/PCI Outputs
+        -- They have the lowest priority
         matches = {
             {
-                { "node.name", "matches", "alsa_input.*" },
-            },
-            {
-                { "node.name", "matches", "alsa_output.*" },
-            },
-        },
-        apply_properties = {
-        },
-    },
-    {
-        matches = {
-            {
-                { "node.name", "matches", "alsa_output.*" },
-                { "node.description", "equals", "USB Audio" },
-            },
-            {
-                { "node.name", "matches", "alsa_output.*" },
-                { "node.description", "matches", "USB Audio (*)" },
-            },
-            {
-                { "node.name", "matches", "alsa_output.*" },
+                { "node.name", "matches", "alsa_output.pci-*" },
                 { "node.description", "matches", "Built-in Audio (*)" },
+                { "node.nick", "not-equals", "ALC3254 Analog" },
             },
         },
         apply_properties = {
@@ -91,38 +75,44 @@ alsa_monitor.rules = {
         },
     },
     {
+        -- Match Built-in Speakers
+        -- They have the second-lowest priority
         matches = {
             {
-                { "node.name", "matches", "alsa_input.*" },
+                { "node.name", "matches", "alsa_output.pci-*" },
+                { "node.nick", "equals", "ALC3254 Analog" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 850,
+            ["node.description"] = "Internal Speakers"
+        },
+    },
+    {
+        -- Match Built-in Headphone Jack(s) (Including Docks)
+        -- Set as the default device with the third-lowest priority
+        matches = {
+            {
+                { "node.name", "matches", "alsa_output.usb-Generic_USB_*" },
                 { "node.description", "equals", "USB Audio" },
             },
             {
-                { "node.name", "matches", "alsa_input.*" },
+                { "node.name", "matches", "alsa_output.usb-Generic_USB_*" },
                 { "node.description", "matches", "USB Audio (*)" },
             },
-            {
-                { "node.name", "matches", "alsa_input.*" },
-                { "node.description", "matches", "Built-in Audio (*)" },
-            },
         },
         apply_properties = {
-            ["priority.session"] = 1800,
+            ["priority.session"] = 875,
+            ["node.description"] = "Headphone Jack"
         },
     },
     {
+        -- Match USB Outputs
+        -- They have the second-highest priority
         matches = {
             {
-                { "node.name", "equals", "alsa_input.pci-0000_00_1f.3.capture.0.0" },
-            },
-        },
-        apply_properties = {
-            ["priority.session"] = 1900,
-        },
-    },
-    {
-        matches = {
-            {
-                { "node.name", "equals", "alsa_output.pci-0000_00_1f.3.playback.0.0" },
+                { "node.name", "matches", "alsa_output.usb-*" },
+                { "node.description", "not-equals", "Headphone Jack" },
             },
         },
         apply_properties = {
@@ -130,16 +120,8 @@ alsa_monitor.rules = {
         },
     },
     {
-        matches = {
-            {
-                { "node.name", "matches", "bluez_input.*" },
-            },
-        },
-        apply_properties = {
-            ["priority.session"] = 2100,
-        },
-    },
-    {
+        -- Match Bluetooth Outputs
+        -- They have the highest priority
         matches = {
             {
                 { "node.name", "matches", "bluez_output.*" },
@@ -149,4 +131,64 @@ alsa_monitor.rules = {
             ["priority.session"] = 1100,
         },
     },
+    -- Inputs
+    {
+        -- Match Built-in Microphone
+        -- This has the lowest priority and is disabled by default
+        matches = {
+            {
+                { "node.name", "matches", "alsa_input.pci-*" },
+                { "node.nick", "equals", "ALC3254 Analog" },
+            },
+        },
+        apply_properties = {
+            ["device.disabled"] = true,
+            ["priority.session"] = 1800,
+            ["node.description"] = "Internal Microphone"
+        },
+    },
+    {
+        -- Match Built-in Headphone Jack(s) (Including Docks)
+        -- Set as the default device with the second-lowest priority
+        matches = {
+            {
+                { "node.name", "matches", "alsa_input.usb-Generic_*" },
+                { "node.description", "equals", "USB Audio" },
+            },
+            {
+                { "node.name", "matches", "alsa_input.usb-Generic_*" },
+                { "node.description", "matches", "USB Audio (*)" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 1850,
+            ["node.description"] = "Headphone Jack"
+        },
+    },
+    {
+        -- Match USB Audio Inputs
+        -- They have the second-highest priority
+        matches = {
+            {
+                { "node.name", "matches", "alsa_input.usb-*" },
+                { "node.description", "not-equals", "Headphone Jack" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 1875,
+        },
+    },
+    {
+        -- Match Bluetooth Inputs
+        -- They have the highest priority
+        matches = {
+            {
+                { "node.name", "matches", "bluez_input.*" },
+            },
+        },
+        apply_properties = {
+            ["priority.session"] = 1900,
+        },
+    },
+
 }

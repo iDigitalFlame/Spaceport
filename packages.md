@@ -55,6 +55,7 @@ iptables-nft
 iputils
 iw
 jdk-openjdk
+jpegoptim
 jq
 keepassxc
 kitty
@@ -132,7 +133,6 @@ python-pip
 python-pycodestyle
 python-pygls
 python-requests
-python-virtualenv
 python-websocket-client
 qemu-audio-alsa
 qemu-audio-pipewire
