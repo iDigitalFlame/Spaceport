@@ -197,7 +197,7 @@ class Server(Service):
             del g
         self._dispatcher.start()
         p = epoll()
-        p.register(self._socket.fileno(), EPOLLIN | EPOLLHUP)
+        p.register(self._socket.fileno(), EPOLLIN | EPOLLHUP | EPOLLERR)
         try:
             while not self._running.is_set():
                 for f, e in p.poll(None):
@@ -255,6 +255,30 @@ class Server(Service):
     def is_server(self):
         return True
 
+    def _read(self, poll, file):
+        try:
+            m = self._clients[file].read()
+            self._dispatcher.add(file, m)
+            self.debug(
+                f"[conn]: Received Message type 0x{m.header():02X} from client "
+                f"PID({m.pid()})/UID({m.uid()})/FD({file})."
+            )
+            if LOG_PAYLOAD:
+                self.error(f"[dump]:  IN < {m}")
+            del m
+            return
+        except OSError as err:
+            if err.errno != 0x3E8:
+                return self.error(
+                    f"[conn]: Cannot read from client on FD({file})!", err
+                )
+        finally:
+            self._clients[file].setblocking(False)
+        self.debug(f"[conn]: Client on FD({file}) disconnected!")
+        poll.unregister(file)
+        self._clients[file].close()
+        del self._clients[file]
+
     def send(self, eid, message):
         if isinstance(message, Message):
             return self._send_one(eid, message)
@@ -285,7 +309,7 @@ class Server(Service):
         if file not in self._clients:
             return True
         if event & EPOLLIN:
-            self._read_client(poll, file)
+            self._read(poll, file)
         elif event & (EPOLLHUP | EPOLLERR):
             self.error(
                 f"[conn]: Client on socket FD({file}) has disconnected with errors!"
@@ -294,29 +318,6 @@ class Server(Service):
             self._clients[file].close()
             del self._clients[file]
         return True
-
-    def _read_client(self, poll, file):
-        try:
-            m = self._clients[file].read()
-            self._dispatcher.add(file, m)
-            self.debug(
-                f"[conn]: Received Message type 0x{m.header():02X} from client "
-                f"PID({m.pid()})/UID({m.uid()})/FD({file})."
-            )
-            if LOG_PAYLOAD:
-                self.error(f"[dump]:  IN < {m}")
-            del m
-            return
-        except OSError as err:
-            if err.errno != 0x3E8:
-                self._clients[file].setblocking(False)
-                return self.error(
-                    f"[conn]: Cannot read from client on FD({file})!", err
-                )
-        self.debug(f"[conn]: Client on FD({file}) disconnected!")
-        poll.unregister(file)
-        self._clients[file].close()
-        del self._clients[file]
 
     def _send_one(self, eid, message, flush=True):
         if eid is None or message.is_multicast():

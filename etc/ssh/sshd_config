@@ -67,4 +67,5 @@ PubkeyAuthentication            no
 PasswordAuthentication          no
 KerberosAuthentication          no
 HostbasedAuthentication         no
+KbdInteractiveAuthentication    no
 ChallengeResponseAuthentication no
