@@ -414,20 +414,24 @@ def _get_vm(args, name=None):
         f = load_vm(n, expand(CONFIG_CLIENT))
         if not nes(f):
             try:
-                return {"vmid": num(name, False)}
+                return {"vmid": num(n, False, False)}
             except ValueError:
                 pass
             return print_error(f'Cannot find the VM "{n}"!')
         return {"file": f}
     del n
+    try:
+        return {"vmid": num(name, False, False)}
+    except ValueError:
+        pass
     if args.command is not None:
         try:
-            return {"vmid": num(name, False)}
+            return {"vmid": num(args.command, False, False)}
         except ValueError:
             pass
     if args.vmid is not None:
         try:
-            return {"vmid": num(name, False)}
+            return {"vmid": num(args.vmid, False, False)}
         except ValueError as err:
             return print_error(
                 "Cannot use an invalid VMID (it must be a positive number)!", err

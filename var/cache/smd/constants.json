@@ -38,5 +38,5 @@
     "name": "spaceport",
     "log_ticks": false,
     "log_payload": false,
-    "log_level": "debug"
+    "log_level": "warning"
 }

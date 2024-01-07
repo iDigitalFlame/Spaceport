@@ -44,7 +44,6 @@ git-lfs
 gnome-keyring
 go
 grimshot
-gtk-vnc
 gtklock
 hunspell-en_us
 imagemagick
@@ -174,6 +173,7 @@ sysfsutils
 tcpdump
 telegram-desktop
 thunar
+tigervnc
 ttf-firacode-nerd
 ttf-hack-nerd
 ttf-roboto

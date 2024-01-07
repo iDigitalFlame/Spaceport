@@ -253,10 +253,10 @@ class VM(Storage):
         i.only(file=True).check(0o7137, uid, _hydra_user().pw_gid)
         del i
         Storage.__init__(self, path, load=True)
+        if not nes(self.get("vm.uuid")):
+            self.set("vm.uuid", str(uuid4()))
         if self.vmid is None:
-            if not nes(self.get("vm.uuid")):
-                self.set("vm.uuid", str(uuid4()))
-            self.vmid = max(hash(self.vm.uuid) % 512, 128)
+            self.vmid = max(hash(self.get("vm.uuid")) % 512, 256)
         elif not isinstance(self.vmid, int) or self.vmid <= 0:
             raise Error("vmid must be a positive non-zero number")
         self._usb = dict()
@@ -751,6 +751,7 @@ class VM(Storage):
         r += a + d
         del a, d, b
         if self.get("vm.debug", False):
+            server.error(f"[m/hydra/VM({self.vmid})]: Runtime command dump: [{r}]")
             server.error(
                 f'[m/hydra/VM({self.vmid})]: Runtime command dump: [{" ".join(r)}]'
             )
@@ -1030,82 +1031,76 @@ class VM(Storage):
                     raise Error(
                         f'drive "{n}" file "{p}" does not exist or is not a file: {err}'
                     )
-            try:
-                # NOTE(dij): Security Check
-                #            Can only be a file or block device. If the target is
-                #            a block device, it must be owned by root and the
-                #            calling user must be in the group on the device, if
-                #            not the drive is mounted as read only. The block
-                #            device permissions must be 0o0660.
-                #
-                #            If the target is a file and is owned by the user
-                #            it must have the Hydra group and the permissions of
-                #            0o660.
-                #
-                #            If the target is a file not owned by the calling user
-                #            it must have the permissions of 0o0644 and will be
-                #            mounted as read only.
-                #
-                #            There is an exception if the device is an ISO/CD as
-                #            these are always marked as read only. So these files
-                #            can realistically have any permissions and owner, but
-                #            we'll at least expect 0o0640.
-                v.no(dir=False, link=False, char=False, hide=True)
-                if v.isfile:
-                    if d["type"] == "cd" or d["type"] == "iso":
-                        v.check(0o7133, req=0o0640)
-                    elif v.uid == uid:
-                        v.check(0o7117, gid=_hydra_user().pw_gid, req=0o0660)
-                    else:
-                        v.check(0o7133, req=0o0644, hide=True)
-                        server.debug(
-                            f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as the user '
-                            f'does not have write permissions to "{p}".'
-                        )
-                        d["readonly"] = True
-                if v.isblockdev:
-                    if v.uid != 0:
-                        raise PermissionError(
-                            f'block device "{p}" must be owned by root'
-                        )
-                    v.check(0o7117, req=0o0660, hide=True)
+            # NOTE(dij): Security Check
+            #            Can only be a file or block device. If the target is
+            #            a block device, it must be owned by root and the
+            #            calling user must be in the group on the device, if
+            #            not the drive is mounted as read only. The block
+            #            device permissions must be 0o0660.
+            #
+            #            If the target is a file and is owned by the user
+            #            it must have the Hydra group and the permissions of
+            #            0o660.
+            #
+            #            If the target is a file not owned by the calling user
+            #            it must have the permissions of 0o0644 and will be
+            #            mounted as read only.
+            #
+            #            There is an exception if the device is an ISO/CD as
+            #            these are always marked as read only. So these files
+            #            can realistically have any permissions and owner, but
+            #            we'll at least expect 0o0640.
+            v.no(dir=False, link=False, char=False, hide=True)
+            if v.isfile:
+                if d["type"] == "cd" or d["type"] == "iso":
+                    v.check(0o7133, req=0o0640)
+                elif v.uid == uid:
+                    v.check(0o7117, gid=_hydra_user().pw_gid, req=0o0660)
+                else:
+                    v.check(0o7133, req=0o0644, hide=True)
+                    server.debug(
+                        f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as the user '
+                        f'does not have write permissions to "{p}".'
+                    )
+                    d["readonly"] = True
+            if v.isblockdev:
+                if v.uid != 0:
+                    raise PermissionError(f'block device "{p}" must be owned by root')
+                v.check(0o7117, req=0o0660, hide=True)
+                try:
+                    g = getgrgid(v.gid)
+                except KeyError:
+                    raise PermissionError(f'cannot find group "{v.gid}" for "{p}"')
+                if user not in g.gr_mem:
+                    server.debug(
+                        f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as user is not '
+                        f'in group "{g.gr_name}".'
+                    )
+                    d["readonly"] = True
+                if not d.get("readonly", False):
+                    # NOTE(dij): Don't care if we're mounting a shared disk as
+                    #            read only.
                     try:
-                        g = getgrgid(v.gid)
-                    except KeyError:
-                        raise PermissionError(f'cannot find group "{v.gid}" for "{p}"')
-                    if user not in g.gr_mem:
-                        server.debug(
-                            f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as user is not '
-                            f'in group "{g.gr_name}".'
-                        )
-                        d["readonly"] = True
-                    if not d.get("readonly", False):
-                        # NOTE(dij): Don't care if we're mounting a shared disk as
-                        #            read only.
-                        try:
-                            m = _parse_mounted()
-                            if p in m:
-                                raise Error(
-                                    f'drive "{n}" block dev "{p}" is currently mounted'
-                                )
-                            # NOTE(dij): Check submounts, meaning we should deter
-                            #            using a blockdev that has partitions of
-                            #            itself mounted.
-                            for i in m:
-                                if i.startswith(p):
-                                    raise Error(
-                                        f'drive "{n}" block dev "{p}" is currently sub-mounted'
-                                    )
-                            del m
-                        except OSError:
+                        m = _parse_mounted()
+                        if p in m:
                             raise Error(
-                                f'drive "{n}" block dev "{p}" cannot be checked for mount status'
+                                f'drive "{n}" block dev "{p}" is currently mounted'
                             )
-                    del g
-                del v
-            except OSError:
-                raise Error(f'drive "{n}" file "{p}" does not exist or is not a file')
-            del p
+                        # NOTE(dij): Check submounts, meaning we should deter
+                        #            using a blockdev that has partitions of
+                        #            itself mounted.
+                        for i in m:
+                            if i.startswith(p):
+                                raise Error(
+                                    f'drive "{n}" block dev "{p}" is currently sub-mounted'
+                                )
+                        del m
+                    except OSError:
+                        raise Error(
+                            f'drive "{n}" block dev "{p}" cannot be checked for mount status'
+                        )
+                del g
+            del p, v
             v = d.get("index")
             if isinstance(v, int):
                 if v < 0 or v in b:

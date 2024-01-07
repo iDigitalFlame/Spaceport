@@ -79,28 +79,6 @@ def boolean(value):
     return False
 
 
-def num(val, neg=True):
-    if val is None:
-        return 0
-    if isinstance(val, bool):
-        return 1 if val else 0
-    if isinstance(val, int):
-        if not neg and val < 0:
-            return abs(val)
-        return val
-    if isinstance(val, float):
-        if not neg and val < 0:
-            return abs(round(val))
-        return round(val)
-    if not isinstance(val, str):
-        raise ValueError("value is not an int or string")
-    if len(val) == 0:
-        return 0
-    if not neg:
-        return abs(int(val, 10))
-    return int(val, 10)
-
-
 def cancel_nul(server, event):
     if event is None:
         return None
@@ -129,3 +107,29 @@ def time_to_str(value, now=None):
     if m == 0:
         return f"{h}hr" if s == 0 else f"{h}hr {s}s"
     return f"{h}hr {m}m" if m > 0 and s == 0 else f"{h}hr {m}m {s}s"
+
+
+def num(val, neg=True, soft_fail=True):
+    if val is None:
+        if not soft_fail:
+            raise ValueError("value type is invalid")
+        return 0
+    if isinstance(val, bool):
+        return 1 if val else 0
+    if isinstance(val, int):
+        if not neg and val < 0:
+            return abs(val)
+        return val
+    if isinstance(val, float):
+        if not neg and val < 0:
+            return abs(round(val))
+        return round(val)
+    if not isinstance(val, str):
+        raise ValueError("value is not an int or string")
+    if len(val) == 0:
+        if not soft_fail:
+            raise ValueError("value cannot be empty")
+        return 0
+    if not neg:
+        return abs(int(val, 10))
+    return int(val, 10)
