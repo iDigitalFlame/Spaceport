@@ -700,35 +700,6 @@ def vm_stop(args, vm=None):
     return True
 
 
-def vm_restart(args, vm=None, reset=False):
-    vm = _get_check(args, vm)
-    vm["type"] = HYDRA_RESTART
-    vm["force"] = reset or args.reset
-    try:
-        r = send_message(
-            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
-        )
-    except OSError as err:
-        return print_error("Cannot hibernate the VM!", err)
-    check_error(r, "Cannot hibernate the VM")
-    del r, vm
-    return True
-
-
-def vm_hibernate(args, vm=None):
-    vm = _get_check(args, vm)
-    vm["type"] = HYDRA_HIBERNATE
-    try:
-        r = send_message(
-            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
-        )
-    except OSError as err:
-        return print_error("Cannot hibernate the VM!", err)
-    check_error(r, "Cannot hibernate the VM")
-    del r, vm
-    return True
-
-
 def vm_ping(args, vm=None):
     vm = _get_check(args, vm)
     vm["type"] = HYDRA_GA_PING
@@ -779,6 +750,20 @@ def vm_usb_clean(args, vm=None):
         return print_error("Cannot remove all USB devices!", err)
     check_error(r, "Cannot remove all USB devices")
     print(f"Removed all USB devices from {_vm(r.vmid, r.file)}.")
+    del r, vm
+    return True
+
+
+def vm_hibernate(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_HIBERNATE
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot hibernate the VM!", err)
+    check_error(r, "Cannot hibernate the VM")
     del r, vm
     return True
 
@@ -889,4 +874,19 @@ def vm_connect(args, vm=None, vnc=False):
     except OSError as err:
         return print_error("Cannot connect to the VM via Spice!", err)
     del r
+    return True
+
+
+def vm_restart(args, vm=None, reset=False):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_RESTART
+    vm["force"] = reset or args.reset
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot hibernate the VM!", err)
+    check_error(r, "Cannot hibernate the VM")
+    del r, vm
     return True
