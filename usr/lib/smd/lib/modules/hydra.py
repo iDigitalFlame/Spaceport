@@ -983,56 +983,6 @@ class VM(Storage):
             r = None
         return Restricted(x, e, n, r, f, t, k, d, o, u.pw_name, x.endswith("-x86_64"))
 
-    def _cmd(self, server, command, args=None, ga=False, timeout=1):
-        if not self._running():
-            # NOTE(dij): I don't see this path being called, but I'm
-            #            leaving this logic here to prevent any weird
-            #            shit happening.
-            return
-        if not nes(command) and not isinstance(command, dict):
-            raise Error('"command" must be a dict or string')
-        d = {"execute": command}
-        if isinstance(args, dict):
-            d["arguments"] = args
-        try:
-            p = dumps(d).encode("UTF-8")
-        except (TypeError, UnicodeDecodeError):
-            raise Error("invalid payload data")
-        f = f'{self._path}.{"qga" if ga else "sock"}'
-        server.debug(f'[m/hydra/VM({self.vmid})]: Sending "{d}" to "{f}".')
-        del d
-        s = socket(AF_UNIX, SOCK_STREAM)
-        s.settimeout(timeout)
-        try:
-            s.connect(f)
-            # NOTE(dij): Trigger initial server greeting
-            s.sendall(b"\r\n")
-            if not ga:
-                # NOTE(dij): Read initial server greeting
-                _command_response(s.recv(HYDRA_SOCK_BUF_SIZE))
-                # NOTE(dij): Capabilities negotiation response
-                s.sendall(_HYDRA_IPC)
-                r = _command_response(s.recv(HYDRA_SOCK_BUF_SIZE))
-                if r is None:
-                    raise Error("invalid hello response")
-                server.debug(f'[m/hydra/VM({self.vmid})]: Hello response "{r}".')
-                del r
-            # NOTE(dij): Now send our command
-            s.sendall(p)
-            s.sendall(b"\r\n")
-            r = _command_response(s.recv(HYDRA_SOCK_BUF_SIZE))
-            server.debug(
-                f'[m/hydra/VM({self.vmid})]: Command "{command}" response "{r}".'
-            )
-        finally:
-            s.close()
-            del s, f, p
-        if ga and not self._agent:
-            # NOTE(dij): If we received a response from the Guest Agent, flag it
-            #            so we know to use it again.
-            self._agent = True
-        return r
-
     def _build_drives(self, server, uid, user, bus, machine):
         if not isinstance(self.drives, dict):
             self.drives = dict()
@@ -1343,6 +1293,56 @@ class VM(Storage):
                 f"HYDRA: VM({self.vmid}) Error removing reserved memory!", err
             )
         self._state = HYDRA_STATE_STOPPED
+
+    def _cmd(self, server, command, args=None, ga=False, timeout=1):
+        if not self._running():
+            # NOTE(dij): I don't see this path being called, but I'm
+            #            leaving this logic here to prevent any weird
+            #            shit happening.
+            return
+        if not nes(command) and not isinstance(command, dict):
+            raise Error('"command" must be a dict or string')
+        d = {"execute": command}
+        if isinstance(args, dict):
+            d["arguments"] = args
+        try:
+            p = dumps(d).encode("UTF-8")
+        except (TypeError, UnicodeDecodeError):
+            raise Error("invalid payload data")
+        f = f'{self._path}.{"qga" if ga else "sock"}'
+        server.debug(f'[m/hydra/VM({self.vmid})]: Sending "{d}" to "{f}".')
+        del d
+        s = socket(AF_UNIX, SOCK_STREAM)
+        s.settimeout(timeout)
+        try:
+            s.connect(f)
+            # NOTE(dij): Trigger initial server greeting
+            s.sendall(b"\r\n")
+            if not ga:
+                # NOTE(dij): Read initial server greeting
+                _command_response(s.recv(HYDRA_SOCK_BUF_SIZE))
+                # NOTE(dij): Capabilities negotiation response
+                s.sendall(_HYDRA_IPC)
+                r = _command_response(s.recv(HYDRA_SOCK_BUF_SIZE))
+                if r is None:
+                    raise Error("invalid hello response")
+                server.debug(f'[m/hydra/VM({self.vmid})]: Hello response "{r}".')
+                del r
+            # NOTE(dij): Now send our command
+            s.sendall(p)
+            s.sendall(b"\r\n")
+            r = _command_response(s.recv(HYDRA_SOCK_BUF_SIZE))
+            server.debug(
+                f'[m/hydra/VM({self.vmid})]: Command "{command}" response "{r}".'
+            )
+        finally:
+            s.close()
+            del s, f, p
+        if ga and not self._agent:
+            # NOTE(dij): If we received a response from the Guest Agent, flag it
+            #            so we know to use it again.
+            self._agent = True
+        return r
 
     def _usb_add(self, server, manager, vendor, product, slow=False):
         if not nes(vendor) or not nes(product):
