@@ -46,7 +46,6 @@ from lib.shared.hydra import load_vm, get_devices
 from lib import print_error, send_message, check_error
 from lib.constants import (
     EMPTY,
-    HOOK_OK,
     HYDRA_TAP,
     HOOK_HYDRA,
     HYDRA_STOP,
@@ -55,8 +54,10 @@ from lib.constants import (
     HYDRA_SLEEP,
     HYDRA_START,
     HYDRA_STATUS,
+    HYDRA_RESTART,
     HYDRA_GA_PING,
     HYDRA_USB_ADD,
+    HYDRA_HIBERNATE,
     HYDRA_USB_QUERY,
     HYDRA_USB_CLEAN,
     HYDRA_USB_DELETE,
@@ -376,32 +377,6 @@ def _get_check(args, vm):
     return _get_vm(args)
 
 
-def _all(args, wake, stop):
-    p = {"all": True}
-    if not stop and not args.all_force:
-        p["type"] = HYDRA_WAKE if wake else HYDRA_SLEEP
-    else:
-        p["type"], p["force"] = HYDRA_STOP, True if args.all_force else False
-    try:
-        r = send_message(
-            args.socket, HOOK_HYDRA, (HOOK_HYDRA, "vms"), TIMEOUT_SEC_MESSAGE, p
-        )
-    except OSError as err:
-        return print_error('Cannot perform a "set all" operation!', err)
-    del p
-    check_error(r, 'Cannot perform a "set all" operation')
-    print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
-    if not isinstance(r.vms, list) or len(r.vms) == 0:
-        return True
-    for x in r.vms:
-        print(
-            f'{_vm(x["vmid"], x["path"]):20}{x["vmid"]:<8}'
-            f'{x["pid"] if x["pid"] is not None else EMPTY:<12}{x["status"].title():<12}'
-        )
-    del r
-    return True
-
-
 def _get_vm(args, name=None):
     if name == "all":
         return None
@@ -467,6 +442,32 @@ def _usb_prompt(name, matches):
         return print_error("USB selection aborted.")
 
 
+def _all(args, cmd, force=False):
+    p = {
+        "all": True,
+        "type": cmd,
+        "force": True if args.all_force or args.all_reset or force else False,
+    }
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, "vms"), TIMEOUT_SEC_MESSAGE, p
+        )
+    except OSError as err:
+        return print_error('Cannot perform a "set all" operation!', err)
+    del p
+    check_error(r, 'Cannot perform a "set all" operation')
+    print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
+    if not isinstance(r.vms, list) or len(r.vms) == 0:
+        return True
+    for x in r.vms:
+        print(
+            f'{_vm(x["vmid"], x.get("path")):20}{x["vmid"]:<8}'
+            f'{x["pid"] if x["pid"] is not None else EMPTY:<12}{x["status"].title():<12}'
+        )
+    del r
+    return True
+
+
 def user_directory(args):
     try:
         send_message(
@@ -519,7 +520,19 @@ def example(args, schema=False):
 
 
 def vm_all(args):
-    return _all(args, args.all_sleep, args.all_wake, args.all_stop)
+    if args.all_wake or args.wake:
+        return _all(args, HYDRA_WAKE)
+    if args.all_sleep or args.sleep:
+        return _all(args, HYDRA_SLEEP)
+    if args.all_reset or args.reset:
+        return _all(args, HYDRA_RESTART, True)
+    if args.all_restart or args.restart:
+        return _all(args, HYDRA_RESTART)
+    if args.all_hibernate or args.hibernate:
+        return _all(args, HYDRA_HIBERNATE)
+    if args.all_stop or args.stop or args.all_force:
+        return _all(args, HYDRA_STOP)
+    return print_error("invalid or unknown arguments combonation!")
 
 
 def default(args):
@@ -574,9 +587,21 @@ def tokenize(args):
         vm = _get_vm(args)
     if c == "start" or args.start:
         return vm_start(args, vm)
-    if c == "stop" or args.stop:
+    if c == "reboot" or c == "restart" or args.restart:
+        if vm is None or args.all_restart or args.args[0] == "all":
+            return _all(args, HYDRA_RESTART)
+        return vm_restart(args, vm)
+    if c == "reset" or args.reset:
+        if vm is None or args.all_reset or args.args[0] == "all":
+            return _all(args, HYDRA_RESTART, True)
+        return vm_restart(args, vm, True)
+    if c == "hibernate" or args.hibernate:
+        if vm is None or args.all_hibernate or args.args[0] == "all":
+            return _all(args, HYDRA_HIBERNATE)
+        return vm_hibernate(args, vm)
+    if c == "stop" or c == "shutdown" or args.stop:
         if vm is None or args.all_stop or args.all_force or args.args[0] == "all":
-            return _all(args, False, True)
+            return _all(args, HYDRA_STOP)
         return vm_stop(args, vm)
     if c == "tap" or args.tap:
         return vm_tap(args, vm)
@@ -588,13 +613,13 @@ def tokenize(args):
         return vm_ip(args, vm)
     if c == "ping" or args.ga_ping:
         return vm_ping(args, vm)
-    if c == "wake" or args.wake:
+    if c == "wake" or c == "resume" or args.wake:
         if vm is None or args.all_wake or args.args[0] == "all":
-            return _all(args, True, False)
+            return _all(args, HYDRA_WAKE)
         return vm_sleep(args, True, vm)
-    if c == "sleep" or args.sleep:
+    if c == "sleep" or c == "suspend" or args.sleep:
         if vm is None or args.all_sleep or args.args[0] == "all":
-            return _all(args, False, False)
+            return _all(args, HYDRA_SLEEP)
         return vm_sleep(args, False, vm)
     if c == "alias" or c == "name" or args.alias_add or args.alias_delete:
         o = args.args[1].lower() if len(args.args) >= 2 else None
@@ -652,7 +677,9 @@ def vm_tap(args, vm=None):
     vm = _get_check(args, vm)
     vm["type"], vm["force"], vm["timeout"] = HYDRA_TAP, args.stop_force, args.timeout
     try:
-        r = send_message(args.socket, HOOK_HYDRA, HOOK_OK, TIMEOUT_SEC_MESSAGE, vm)
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
     except OSError as err:
         return print_error("Cannot signal ACPI shutdown to the VM!", err)
     check_error(r, "Cannot signal ACPI shutdown to the VM")
@@ -669,6 +696,35 @@ def vm_stop(args, vm=None):
         return print_error("Cannot stop the VM!", err)
     check_error(r, "Cannot stop the VM")
     print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    del r, vm
+    return True
+
+
+def vm_restart(args, vm=None, reset=False):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_RESTART
+    vm["force"] = reset or args.reset
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot hibernate the VM!", err)
+    check_error(r, "Cannot hibernate the VM")
+    del r, vm
+    return True
+
+
+def vm_hibernate(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_HIBERNATE
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot hibernate the VM!", err)
+    check_error(r, "Cannot hibernate the VM")
     del r, vm
     return True
 

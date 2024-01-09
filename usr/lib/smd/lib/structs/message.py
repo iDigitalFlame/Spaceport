@@ -42,8 +42,8 @@ from os import getuid
 from lib.util import num, nes
 from struct import unpack, pack
 from traceback import format_exc
-from lib.constants import HOOK_ERROR
 from lib.structs.storage import Flex
+from lib.constants import HOOK_ERROR, HOOK_OK
 from json import loads, dumps, JSONDecodeError
 from socket import socket, AF_UNIX, SHUT_RDWR, SOCK_STREAM
 from lib.constants.config import HOOK_TRANSLATIONS, LOG_FRAME_LIMIT, TIMEOUT_SEC_MESSAGE
@@ -69,11 +69,14 @@ def as_exception(header, err):
     )
 
 
-def _wait_for(sock, wait, timeout):
-    t, k, h = timeout, None, wait
+def _wait_for(sock, wait, timeout, errors):
+    t, k, h, o = timeout, None, wait, False
     sock.settimeout(t)
     if (isinstance(wait, list) or isinstance(wait, tuple)) and len(wait) >= 2:
-        h, k = f"{wait[0]}", f"{wait[1]}"
+        if isinstance(wait[1], bool) and wait[1] and isinstance(wait[0], int):
+            h, k, o = wait[0], None, True
+        else:
+            h, k = f"{wait[0]}", f"{wait[1]}"
     if nes(h) and h in HOOK_TRANSLATIONS:
         h = HOOK_TRANSLATIONS[h]
     else:
@@ -85,6 +88,10 @@ def _wait_for(sock, wait, timeout):
         while True:
             try:
                 r = Message(stream=sock)
+                if o and r.header() == HOOK_OK:
+                    return r
+                if h is not None and r.header() == HOOK_ERROR and errors:
+                    return r
                 if h is None and k is None:
                     return r
                 if h is None and k is not None and k in r:
@@ -130,7 +137,7 @@ def send_message(sock, header, wait=None, timeout=None, payload=None, errors=Tru
     try:
         m.send(s)
         if wait is not None:
-            return _wait_for(s, wait, timeout)
+            return _wait_for(s, wait, timeout, errors)
     except OSError as err:
         if errors:
             raise err

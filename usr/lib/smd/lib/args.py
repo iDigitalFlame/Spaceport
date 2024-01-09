@@ -524,6 +524,66 @@ ARGS = {
             "vm_start",
         ),
         (
+            "-r",
+            {
+                "dest": "restart",
+                "help": "restart the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_restart",
+        ),
+        (
+            "-ra",
+            {
+                "dest": "all_restart",
+                "help": "restart all running VMs",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_all",
+        ),
+        (
+            "-R",
+            {
+                "dest": "reset",
+                "help": "force reset the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_restart",
+        ),
+        (
+            "-Ra",
+            {
+                "dest": "all_reset",
+                "help": "force reset all running VMs",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_all",
+        ),
+        (
+            "-q",
+            {
+                "dest": "hibernate",
+                "help": "hibernate (suspend to disk) the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_hibernate",
+        ),
+        (
+            "-qa",
+            {
+                "dest": "all_hibernate",
+                "help": "hibernate (suspend to disk) all running VMs",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_all",
+        ),
+        (
             "-ul",
             {
                 "dest": "usb_list",

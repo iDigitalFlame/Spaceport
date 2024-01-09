@@ -89,11 +89,13 @@ from lib.constants import (
     HYDRA_GA_IP,
     HYDRA_STATUS,
     HOOK_SUSPEND,
+    HYDRA_RESTART,
     HYDRA_GA_PING,
     HYDRA_USB_ADD,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
     HYDRA_USB_CLEAN,
+    HYDRA_HIBERNATE,
     HYDRA_USB_DELETE,
     HYDRA_STATE_DONE,
     HYDRA_STATE_FAILED,
@@ -360,6 +362,25 @@ class VM(Storage):
         else:
             s["ping"] = True
         return s
+
+    def _hibernate(self, server):
+        if self._state == HYDRA_STATE_STOPPED:
+            return
+        if self._state == HYDRA_STATE_WAITING:
+            raise Error("cannot hibernate while waiting")
+        if self._state != HYDRA_STATE_RUNNING:
+            raise Error("not able to hibernate")
+        if not self._agent:
+            server.info(
+                f"[m/hydra/VM({self.vmid})]: QEMU Guest Agent was not detected, trying anyway.."
+            )
+        server.debug(f"[m/hydra/VM({self.vmid})]: Sending Hibernate request to VM..")
+        try:
+            self._cmd(server, "guest-suspend-disk", ga=True, timeout=2)
+        except TimeoutError:
+            server.warning(
+                f"[m/hydra/VM({self.vmid})]: Hibernate request timed-out but may have still worked.."
+            )
 
     def _sleep(self, server, sleep):
         if sleep and self._state == HYDRA_STATE_SLEEPING:
@@ -692,12 +713,7 @@ class VM(Storage):
             r += ["-vga", "std"]
         del g, s
         if self.get("dev.sound", True):
-            r += [
-                "-device",
-                f"intel-hda,id=sound1,bus={b}.0,addr=0x0b",
-                "-device",
-                "hda-duplex,id=sound2",
-            ]
+            r += ["-device", f"intel-hda,id=sound1,bus={b}.0,addr=0x0b"]
         i = self.get("dev.input", "virtio")
         if i == "tablet":
             r += ["-device", "usb-tablet,id=tablet0,bus=usb-bus2.0,port=1"]
@@ -809,6 +825,34 @@ class VM(Storage):
             )
             server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
         return self._proc.pid
+
+    def _restart(self, server, reset=False):
+        if self._state == HYDRA_STATE_STOPPED:
+            return
+        if self._state == HYDRA_STATE_WAITING:
+            raise Error("cannot restart/reset while waiting")
+        if self._state != HYDRA_STATE_RUNNING:
+            raise Error("not able to restart/reset")
+        if reset:
+            server.debug(f"[m/hydra/VM({self.vmid})]: Forcefully resetting VM!")
+            try:
+                self._cmd(server, "system_reset", timeout=2)
+            except TimeoutError:
+                server.warning(
+                    f"[m/hydra/VM({self.vmid})]: Reset request timed-out but may have still worked.."
+                )
+            return
+        if not self._agent:
+            server.info(
+                f"[m/hydra/VM({self.vmid})]: QEMU Guest Agent was not detected, trying anyway.."
+            )
+        server.debug(f"[m/hydra/VM({self.vmid})]: Sending restart request to VM..")
+        try:
+            self._cmd(server, "guest-shutdown", {"mode": "reboot"}, True, timeout=2)
+        except TimeoutError:
+            server.warning(
+                f"[m/hydra/VM({self.vmid})]: Restart timed-out but may have still worked.."
+            )
 
     def _build_restriced(self, server, manager, uid):
         try:
@@ -939,7 +983,7 @@ class VM(Storage):
             r = None
         return Restricted(x, e, n, r, f, t, k, d, o, u.pw_name, x.endswith("-x86_64"))
 
-    def _cmd(self, server, command, args=None, ga=False):
+    def _cmd(self, server, command, args=None, ga=False, timeout=1):
         if not self._running():
             # NOTE(dij): I don't see this path being called, but I'm
             #            leaving this logic here to prevent any weird
@@ -958,7 +1002,7 @@ class VM(Storage):
         server.debug(f'[m/hydra/VM({self.vmid})]: Sending "{d}" to "{f}".')
         del d
         s = socket(AF_UNIX, SOCK_STREAM)
-        s.settimeout(1)
+        s.settimeout(timeout)
         try:
             s.connect(f)
             # NOTE(dij): Trigger initial server greeting
@@ -1644,9 +1688,13 @@ class HydraServer(object):
                     continue
                 try:
                     if message.type == HYDRA_STOP:
-                        i._stop(self, server, message.force)
+                        i._stop(server, self, message.force)
                     elif message.type == HYDRA_WAKE or message.type == HYDRA_SLEEP:
                         i._sleep(server, message.type == HYDRA_SLEEP)
+                    elif message.type == HYDRA_HIBERNATE:
+                        i._hibernate(server)
+                    elif message.type == HYDRA_RESTART:
+                        i._restart(server, message.force)
                 except Error as err:
                     if message.type == HYDRA_STOP:
                         server.error(
@@ -1656,9 +1704,17 @@ class HydraServer(object):
                         server.error(
                             f"[m/hydra/VM({i.vmid})]: Cannot resume the VM!", err
                         )
-                    else:
+                    elif message.type == HYDRA_SLEEP:
                         server.error(
                             f"[m/hydra/VM({i.vmid})]: Cannot suspend the VM!", err
+                        )
+                    elif message.type == HYDRA_HIBERNATE:
+                        server.error(
+                            f"[m/hydra/VM({i.vmid})]: Cannot hibernate the VM!", err
+                        )
+                    elif message.type == HYDRA_RESTART:
+                        server.error(
+                            f"[m/hydra/VM({i.vmid})]: Cannot restart/reset the VM!", err
                         )
             return {"vms": [vm._status() for vm in self._vms.values()]}
         try:
@@ -1718,6 +1774,22 @@ class HydraServer(object):
             except Error as err:
                 server.error(f'[m/hydra/VM({x.vmid})]: Cannot ACPI "tap" the VM!', err)
                 return as_error(f"cannot ACPI tap VM {x.vmid}: {err}")
+            return True
+        if message.type == HYDRA_RESTART:
+            try:
+                x._restart(server, message.force)
+            except Error as err:
+                server.error(
+                    f"[m/hydra/VM({x.vmid})]: Cannot restart/reset the VM!", err
+                )
+                return as_error(f"cannot restart/reset VM {x.vmid}: {err}")
+            return True
+        if message.type == HYDRA_HIBERNATE:
+            try:
+                x._hibernate(server)
+            except Error as err:
+                server.error(f"[m/hydra/VM({x.vmid})]: Cannot Hibernate the VM!", err)
+                return as_error(f"cannot Hibernate VM {x.vmid}: {err}")
             return True
         if message.type == HYDRA_USB_CLEAN:
             try:
