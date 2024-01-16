@@ -1424,7 +1424,7 @@ class Backup(object):
             return server.error(
                 f"[m/backup/job/{self.id}] Insufficient space on device, {_size(x)} needed {_size(r)} free!"
             )
-        server.error(
+        server.debug(
             f"[m/backup/job/{self.id}] Free space check {_size(x)} needed {_size(r)} free."
         )
         del r, x
