@@ -130,7 +130,9 @@ def _print(plans, adv):
         else:
             if len(v) == 0:
                 v = " "
-            print(f'{x:11}{"F" if i.get("error") else v} {i["status"]:<9}', end="")
+            elif v != "Q" and i.get("error"):
+                v = "F"
+            print(f'{x:11}{v} {i["status"]:<9}', end="")
         del x, v
         if nes(i["last"]) and nes(i["size"]):
             try:

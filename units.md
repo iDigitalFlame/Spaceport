@@ -16,5 +16,6 @@ systemd-timesyncd.service
 cups.socket
 pcscd.socket
 fstrim.timer
+logrotate.timer
 smd-backup.timer
 xfs_scrub_all.timer
