@@ -767,7 +767,6 @@ class VM(Storage):
         r += a + d
         del a, d, b
         if self.get("vm.debug", False):
-            server.error(f"[m/hydra/VM({self.vmid})]: Runtime command dump: [{r}]")
             server.error(
                 f'[m/hydra/VM({self.vmid})]: Runtime command dump: [{" ".join(r)}]'
             )

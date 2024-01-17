@@ -45,7 +45,7 @@ from uuid import uuid4, UUID
 from base64 import b64encode
 from typing import NamedTuple
 from datetime import datetime
-from lib.util.exec import nulexec, stop, split
+from lib.util.exec import nulexec, split
 from socket import socket, AF_INET, SOCK_STREAM
 from lib.structs import Message, Storage, as_error
 from signal import SIGSTOP, SIGCONT, SIGINT, SIGKILL
@@ -159,8 +159,8 @@ def _match_path_or_id(v, plan):
 
 
 def _kill_runaway(server, proc):
-    server.error(f"[m/backup]: Stopping runaway process PID {proc.pid}!")
-    stop(proc)
+    server.error(f"[m/backup]: Stopping runaway process PID {proc.pid()}!")
+    proc.stop()
 
 
 class Plan(object):
@@ -391,7 +391,7 @@ class Multi(object):
 
     def __init__(self, cmds, cwd=None, stop_error=True):
         if not isinstance(cmds, (list, tuple)) or len(cmds) == 0:
-            raise OSError("cmd list must be a non-empty list")
+            raise OSError("cmd list must be a non-empty list or tuple")
         self._cwd = cwd
         self._cmds = cmds
         self._break = stop_error
@@ -412,18 +412,17 @@ class Multi(object):
         if r is None:
             # Proc is still running..
             return None
-        if r is not None and len(self._cmds) == 0:
-            # We're empty! Say we're done.
-            return r
-        if self._break and isinstance(r, int) and r != 0:
-            self._cmds.clear()
+        if (r is not None and len(self._cmds) == 0) or (
+            self._break and isinstance(r, int) and r != 0
+        ):
+            # We're empty! Say we're done or if we hit a non-zero error while
+            # break is True.
             return r
         try:
             # Try next proc.
             self._proc = self._next()
         except OSError:
             # If we fail, bail!
-            self._cmds.clear()
             return r
         # We don't check the output of the new proc yet, so we don't break on
         # processes that exit immediately. We do this instead of looping, which

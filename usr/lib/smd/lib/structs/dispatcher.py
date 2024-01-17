@@ -258,7 +258,15 @@ class DispatchExecuter(Thread):
                 continue
             if i[0].poll() is None:
                 continue
-            stop(i)
+            # NOTE(dij): Call a "stop" function if it exists.
+            try:
+                f = getattr(i[0], "stop")
+                if callable(f):
+                    f()
+                del f
+            except (AttributeError, TypeError):
+                pass
+            stop(i[0])
             self._watch.remove(i)
             if not callable(i[1]):
                 continue

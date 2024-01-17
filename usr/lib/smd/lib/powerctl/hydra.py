@@ -338,9 +338,10 @@ def _vm(x, p):
             del i
         _CACHE["__loaded"] = True
         del d
-    n = _CACHE.get(p.lower())
-    if isinstance(n, str) and len(n) > 0:
-        return f"{n} ({x})"
+    if nes(p):
+        n = _CACHE.get(p.lower())
+        if isinstance(n, str) and len(n) > 0:
+            return f"{n} ({x})"
     return f"VM({x})"
 
 
