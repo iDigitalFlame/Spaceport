@@ -177,6 +177,7 @@ chmod 0400 /usr/share/applications/sudoku.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/blocks.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/lstopo.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/codium.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/vesktop.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/arduino.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/qvidcap.desktop 2> /dev/null
@@ -196,6 +197,7 @@ chmod 0400 /usr/share/applications/notesnook.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/cmake-gui.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/vncviewer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/nextcloud.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/electron28.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/galculator.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/lxshortcut.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/hwmixvolume.desktop 2> /dev/null

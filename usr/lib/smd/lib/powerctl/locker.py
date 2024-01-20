@@ -50,6 +50,7 @@ from lib.constants import (
     LOCKER_TYPE_KEY,
     LOCKER_TYPE_LOCK,
     LOCKER_TYPE_BLANK,
+    LOCKER_TYPE_BACKUP,
     LOCKER_TYPE_SUSPEND,
     LOCKER_TYPE_HIBERNATE,
 )
@@ -89,7 +90,10 @@ def default(args):
         n = seconds()
         print(f'{"Locker":15}{"Expires":8}\n{"="*32}')
         for i, s in r.lockers.items():
-            print(f"{LOCKER_TYPE_NAMES.get(i, i):15}{time_to_str(s, n):<8}")
+            if i == LOCKER_TYPE_BACKUP:
+                print(f"{LOCKER_TYPE_NAMES.get(i, i):15}After Backup Ends")
+            else:
+                print(f"{LOCKER_TYPE_NAMES.get(i, i):15}{time_to_str(s, n):<8}")
         del n
     else:
         return print("No Lockers are enabled.")

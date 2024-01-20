@@ -123,15 +123,18 @@ def _print(plans, adv):
                 print(f'{"Status":<12}: {i["status"]}', end="")
                 if v == "W":
                     print("(Paused)")
+                print()
             elif v == "Q":
                 print(f'{"Status":<12}: Queued')
             elif len(v) > 0:
                 print(f'{"Status":<12}: {v}')
+            elif i.get("error"):
+                print(f'{"Status":<12}: Error During Last Run')
         else:
-            if len(v) == 0:
-                v = " "
-            elif v != "Q" and i.get("error"):
+            if v != "Q" and v != "R" and i.get("error"):
                 v = "F"
+            if not nes(v):
+                v = " "
             print(f'{x:11}{v} {i["status"]:<9}', end="")
         del x, v
         if nes(i["last"]) and nes(i["size"]):

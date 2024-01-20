@@ -41,6 +41,7 @@ Description     = System Management Client Daemon
 
 [Service]
 Type            = simple
+UMask           = 0027
 ExecStart       = /usr/lib/smd/libexec/smd-client -f -w 1 -j
 KillSignal      = SIGINT
 ExecStartPre    = /usr/lib/smd/libexec/smd-wait-sway

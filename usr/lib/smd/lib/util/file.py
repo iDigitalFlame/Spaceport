@@ -37,6 +37,7 @@
 # file.py
 #   Python file-based utility functions.
 
+from io import StringIO
 from hashlib import md5
 from grp import getgrgid
 from pwd import getpwuid
@@ -44,8 +45,9 @@ from lib.util import nes
 from sys import _getframe
 from typing import NamedTuple
 from lib.constants import EMPTY
-from os import makedirs, stat, chmod, remove
+from string import ascii_letters, digits
 from json import loads, dumps, JSONDecodeError
+from os import environ, makedirs, stat, chmod, remove, fspath
 from os.path import (
     isfile,
     exists,
@@ -54,8 +56,9 @@ from os.path import (
     relpath,
     realpath,
     expanduser,
-    expandvars,
 )
+
+_VAR_CHARS = ascii_letters + digits + "_-"
 
 
 class Stat(NamedTuple):
@@ -192,17 +195,6 @@ class Stat(NamedTuple):
         return self.no(file, dir, char, block, link, hide)
 
 
-def expand(path):
-    if not nes(path):
-        return None
-    try:
-        return expandvars(expanduser(path))
-    except TypeError:
-        return None
-    except ValueError:
-        return path
-
-
 def remove_file(path):
     if not isinstance(path, str) or len(path) == 0 or not isfile(path):
         return
@@ -239,6 +231,17 @@ def import_file(path):
             g[n.upper()] = d
         del g
     del v
+
+
+def expand(path, env=None):
+    if not nes(path):
+        return None
+    try:
+        return _expand_custom(expanduser(path), env)
+    except TypeError:
+        return None
+    except ValueError:
+        return path
 
 
 def read_json(path, errors=True):
@@ -294,6 +297,85 @@ def clean(path, root, links=False):
     if not links and islink(p):
         raise ValueError(f'path "{path}" / "{p}" in "{root}" cannot be a link')
     return p
+
+
+def _expand_custom(path, env=None):
+    p = fspath(path)
+    if "$" not in p and "%" not in p:
+        return p
+    if not isinstance(env, dict) or len(env) == 0:
+        e = environ
+    else:
+        e = environ.copy()
+        e.update(env)
+    b, i = StringIO(), 0
+    while i < len(p):
+        c = p[i : i + 1]
+        if c == "'":
+            p = p[i + 1 :]
+            try:
+                i = p.index("'")
+                b.write(f"'{p[: i + 1]}")
+            except ValueError:
+                b.write(f"'{p}")
+                i = len(p) - 1
+        elif c == "%":
+            if p[i + 1 : i + 2] == "%":
+                b.write("%")
+                i += 1
+            else:
+                p = p[i + 1 :]
+                try:
+                    i = p.index("%")
+                except ValueError:
+                    b.write(f"%{p}")
+                    i = len(p) - 1
+                else:
+                    try:
+                        b.write(e[p[:i]])
+                    except KeyError:
+                        b.write(f"%{p[:i]}%")
+        elif c == "$":
+            if p[i + 1 : i + 2] == "$":
+                b.write("$")
+                i += 1
+            elif p[i + 1 : i + 2] == "{":
+                p = p[i + 2 :]
+                try:
+                    i = p.index("}")
+                except ValueError:
+                    b.write("${" + p)
+                    i = len(p) - 1
+                else:
+                    var = p[:i]
+                    try:
+                        b.write(e[p[:i]])
+                    except KeyError:
+                        b.write(f"${{{var}}}")
+            else:
+                t, i = StringIO(), i + 1
+                c = p[i : i + 1]
+                while c and c in _VAR_CHARS:
+                    t.write(c)
+                    i += 1
+                    c = p[i : i + 1]
+                r = t.getvalue()
+                t.close()
+                del t
+                try:
+                    b.write(e[r])
+                except KeyError:
+                    b.write(f"${r}")
+                del r
+                if c:
+                    i -= 1
+        else:
+            b.write(c)
+        i += 1
+    r = b.getvalue()
+    b.close()
+    del b, e
+    return r
 
 
 def read(path, binary=False, errors=True, strip=False):

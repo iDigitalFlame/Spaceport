@@ -270,7 +270,7 @@ def _load_powerctl(parser, directory):
 
 
 def print_error(message, error=None, quit=True, limit=LOG_FRAME_LIMIT):
-    print(f"{message}\n", file=stderr)
+    print(f"{message}", file=stderr)
     if error is not None:
         print(format_exc(limit=limit), file=stderr)
     if quit:

@@ -44,8 +44,10 @@ from shlex import split as shell_split, join
 from subprocess import Popen, SubprocessError, DEVNULL, PIPE
 
 
-def stop(proc):
-    if not isinstance(proc, Popen):
+def stop(proc, valid=True):
+    if not isinstance(proc, Popen) and valid:
+        return
+    if not valid and proc is None:
         return
     if proc.poll() is not None:
         return proc.wait()
@@ -68,7 +70,7 @@ def stop(proc):
     except (OSError, SubprocessError):
         pass
     try:
-        kill(proc.pid, SIGKILL)
+        kill(proc.pid() if callable(proc.pid) else proc.pid, SIGKILL)
     except OSError:
         pass
     try:
@@ -78,13 +80,13 @@ def stop(proc):
     return None
 
 
-def split(val, single=False):
+def split(val, single=False, env=None):
     if not isinstance(val, (str, list, tuple)):
         return None
     if len(val) == 0:
         return None if single else list()
     if isinstance(val, str):
-        r = shell_split(expand(val))
+        r = shell_split(expand(val, env))
         if single:
             return r
         return [r]
@@ -97,7 +99,7 @@ def split(val, single=False):
             for v in i:
                 if not isinstance(v, str) or len(v) == 0:
                     continue
-                r.append(expand(v))
+                r.append(expand(v, env))
             if single:
                 o.append(join(r))
             else:
@@ -107,9 +109,9 @@ def split(val, single=False):
         if not isinstance(i, str) or len(i) == 0:
             continue
         if single:
-            o.append(expand(i))
+            o.append(expand(i, env))
         else:
-            o.append(shell_split(expand(i)))
+            o.append(shell_split(expand(i, env)))
     if single and len(o) == 0:
         return None
     return o

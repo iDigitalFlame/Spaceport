@@ -61,6 +61,7 @@ from lib.constants import (
     LOCKER_TYPE_LOCK,
     LOCKER_TYPE_BLANK,
     HOOK_NOTIFICATION,
+    LOCKER_TYPE_BACKUP,
     LOCKER_TYPE_SUSPEND,
     LOCKER_TYPE_HIBERNATE,
 )
@@ -210,10 +211,11 @@ RADIO_EXEC = {
 # Backup Module Constants
 BACKUP_STATE = f"{DIRECTORY_CONFIG}/backup-state.json"
 BACKUP_HOSTS = "/etc/smd/backup-hosts.ssh"
-BACKUP_TIMEOUT = 7200
+BACKUP_TIMEOUT = 14400  # 4Hrs
 BACKUP_KEY_SIZE = 0xFF
 BACKUP_STATE_DIR = f"{DIRECTORY_CONFIG}/backup"
-BACKUP_WAIT_TIME = 86400
+BACKUP_READ_TIME = 300  # 5Min
+BACKUP_WAIT_TIME = 86400  # 24Hrs
 BACKUP_DEFAULT_DIR = "/opt/hydra/smd-backup"
 BACKUP_DEFAULT_PORT = 22
 BACKUP_BATTERY_PATH = "/sys/class/power_supply/AC/online"
@@ -236,6 +238,7 @@ LOCKER_TYPE_NAMES = {
     LOCKER_TYPE_LID: "Lid Close",
     LOCKER_TYPE_LOCK: "Lockscreen",
     LOCKER_TYPE_BLANK: "Screen Blank",
+    LOCKER_TYPE_BACKUP: "Active Backup",
     LOCKER_TYPE_SUSPEND: "Suspend",
     LOCKER_TYPE_HIBERNATE: "Hibernate",
 }

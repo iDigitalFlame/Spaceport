@@ -79,6 +79,7 @@ from lib.constants import (
     LOCKER_TYPE_LOCK,
     LOCKER_TYPE_BLANK,
     LOCKER_TIME_BLANK,
+    LOCKER_TYPE_BACKUP,
     LOCKER_TIME_BACKOFF,
     LOCKER_TYPE_SUSPEND,
     LOCKER_TYPE_HIBERNATE,
@@ -1190,6 +1191,10 @@ class LockerServer(object):
                 return server.debug(
                     "[m/locker]: Ignoring Hibernate request due to Hibernate Locker!"
                 )
+            if LOCKER_TYPE_BACKUP in self._lockers:
+                return server.debug(
+                    "[m/locker]: Ignoring Hibernate request due to Backup Locker!"
+                )
             try:
                 nulexec(LOCKER_EXEC_HIBERNATE, wait=True)
             except OSError as err:
@@ -1198,6 +1203,13 @@ class LockerServer(object):
         if LOCKER_TYPE_SUSPEND in self._lockers and not is_lid:
             return server.debug(
                 "[m/locker]: Ignoring Suspend request due to Suspend Locker!"
+            )
+        if LOCKER_TYPE_BACKUP in self._lockers and not is_lid:
+            # NOTE(dij): We still lock on lid closure as we want to ensure the
+            #            lockscreen is enabled. If the screen was already closed
+            #            this won't take effect.
+            return server.debug(
+                "[m/locker]: Ignoring Hibernate request due to Backup Locker!"
             )
         try:
             nulexec(LOCKER_EXEC_SUSPEND, wait=True)
@@ -1262,7 +1274,9 @@ class LockerServer(object):
                 f'[m/locker]: Added a Locker "{name}" with a timeout of "{e}" seconds.'
             )
         self._lockers[name] = Locker(server, self, name, e)
-        self._update = True
+        # NOTE(dij): We don't notify for Backup Lockers
+        if name != LOCKER_TYPE_BACKUP:
+            self._update = True
         del e
 
     def _locker_close(self, server, locker, notify=True, remove=True):
@@ -1270,6 +1284,7 @@ class LockerServer(object):
             self._lockers.pop(locker.name, None)
         server.debug(f'[m/locker]: Removed Locker "{locker.name}"!')
         locker.event, locker.expire = cancel_nul(server, locker.event), None
-        if not notify:
+        # NOTE(dij): We don't notify for Backup Lockers
+        if not notify or locker.name == LOCKER_TYPE_BACKUP:
             return
         self._update = True

@@ -39,10 +39,13 @@ Description             = System Management Daemon
 
 [Service]
 Type                    = simple
+UMask                   = 0027
 ExecStart               = /usr/lib/smd/libexec/smd-daemon -j
+ProcSubset              = all
 KillSignal              = SIGINT
 PrivateTmp              = true
 MountFlags              = shared
+ProtectProc             = default
 KeyringMode             = private
 ProtectHome             = read-only
 ProtectClock            = false
@@ -61,7 +64,9 @@ RestrictNamespaces      = true
 ProtectControlGroups    = true
 ProtectKernelModules    = true
 ProtectKernelTunables   = false
+MemoryDenyWriteExecute  = true
 RestrictAddressFamilies = AF_INET AF_INET6 AF_NETLINK AF_UNIX
+SystemCallArchitectures = native
 
 [Install]
 WantedBy                = multi-user.target

@@ -45,15 +45,15 @@ from uuid import uuid4, UUID
 from base64 import b64encode
 from typing import NamedTuple
 from datetime import datetime
-from lib.util.exec import nulexec, split
+from signal import SIGSTOP, SIGCONT, SIGUSR1
+from lib.util.exec import nulexec, split, stop
 from socket import socket, AF_INET, SOCK_STREAM
 from lib.structs import Message, Storage, as_error
-from signal import SIGSTOP, SIGCONT, SIGINT, SIGKILL
 from lib.util import num, nes, cancel_nul, boolean, fnv32
 from subprocess import DEVNULL, Popen, PIPE, SubprocessError
-from os import chmod, urandom, remove, makedirs, statvfs, environ, kill
 from os.path import isabs, isdir, exists, isfile, getsize, basename, getctime
 from lib.util.file import read, read_json, write_json, info, write, remove_file
+from os import chmod, urandom, remove, makedirs, statvfs, environ, set_blocking
 from lib.constants.files import BACKUP_RESTORE_SCRIPT, BACKUP_RESTORE_SCRIPT_NO_KEY
 from lib.constants.config import (
     BACKUP_STATE,
@@ -63,6 +63,7 @@ from lib.constants.config import (
     BACKUP_TIMEOUT,
     BACKUP_KEY_SIZE,
     BACKUP_STATE_DIR,
+    BACKUP_READ_TIME,
     BACKUP_WAIT_TIME,
     BACKUP_DEFAULT_DIR,
     BACKUP_BATTERY_PATH,
@@ -80,11 +81,13 @@ from lib.constants import (
     MSG_ACTION,
     MSG_CONFIG,
     HOOK_BACKUP,
+    HOOK_LOCKER,
     BACKUP_SIZES,
     HOOK_SUSPEND,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
     BACKUP_STATE_DONE,
+    LOCKER_TYPE_BACKUP,
     BACKUP_STATE_NAMES,
     BACKUP_STATE_ERROR,
     BACKUP_STATE_KEYGEN,
@@ -110,13 +113,13 @@ HOOKS_SERVER = {
 
 def _size(size):
     if size < 1024.0:
-        return f"{float(size):3.1f}B"
+        return f"{float(abs(size)):3.1f}B"
     s = size / 1024.0
     for i in BACKUP_SIZES:
         if abs(s) < 1024.0:
-            return f"{float(s):3.1f}{i}B"
+            return f"{float(abs(s)):3.1f}{i}B"
         s /= 1024.0
-    return f"{float(s):.1f}YB"
+    return f"{float(abs(s)):.1f}YB"
 
 
 def _time(delta):
@@ -134,16 +137,52 @@ def _time(delta):
     return f"{h}hr {m}m" if m > 0 and s == 0 else f"{h}hr {m}m {s}s"
 
 
-def _apes(s, last=False):
-    if not nes(s):
-        return ""
-    if last:
-        return s
-    return f"{s}\n"
-
-
 def _on_battery(force=False):
     return force or read(BACKUP_BATTERY_PATH, errors=False, strip=True) == "1"
+
+
+def _output_strip(v, add=None):
+    if isinstance(v, (bytes, bytearray)):
+        s = v.decode("UTF-8", "ignore")
+    elif not isinstance(v, str):
+        if nes(add):
+            return add
+        return ""
+    else:
+        s = v.strip()
+    if len(s) == 0:
+        if nes(add):
+            return add
+        return EMPTY
+    if NEWLINE not in s:
+        if ": Removing leading" in s:
+            if nes(add):
+                return nes
+            return EMPTY
+        if nes(add):
+            s += f";{add}"
+        return s
+    if s.count(NEWLINE) == 1 and s[-1] == NEWLINE:
+        if ": Removing leading" in s:
+            if nes(add):
+                return nes
+            return EMPTY
+        if nes(add):
+            return s[:-1] + f";{add}"
+        return s[:-1]
+    r = list()
+    for i in s.split(NEWLINE):
+        if ": Removing leading" in s:
+            continue
+        n = i.strip()
+        if len(n) > 0:
+            r.append(n)
+        del n
+    o = "; ".join(r)
+    del r, s
+    if nes(add):
+        o += f";{add}"
+    return o
 
 
 def _match_path_or_id(v, plan):
@@ -158,11 +197,6 @@ def _match_path_or_id(v, plan):
     return plan.path == v
 
 
-def _kill_runaway(server, proc):
-    server.error(f"[m/backup]: Stopping runaway process PID {proc.pid()}!")
-    proc.stop()
-
-
 class Plan(object):
     __slots__ = (
         "id",
@@ -172,11 +206,12 @@ class Plan(object):
         "uuid",
         "path",
         "wait",
+        "debug",
         "upload",
         "exclude",
         "cmd_pre",
-        "schedule",
         "cmd_post",
+        "schedule",
         "description",
     )
 
@@ -197,8 +232,7 @@ class Plan(object):
             raise ValueError(
                 'plan "wait" must be a positive number greater than or equal to zero'
             )
-        self.schedule = Schedule(data.get("schedule"))
-        self.key = data.get("public_key")
+        self.schedule, self.key = Schedule(data.get("schedule")), data.get("public_key")
         if nes(self.key):
             if not isabs(self.key):
                 raise ValueError('plan "public_key" must be a full path')
@@ -230,6 +264,7 @@ class Plan(object):
             self.keep = False
         elif not isinstance(self.keep, (bool, int)):
             self.keep = boolean(self.keep)
+        self.debug = boolean(data.get("debug"))
         self.description = data.get("description")
         self.cmd_pre, self.cmd_post = data.get("command_pre"), data.get("command_post")
 
@@ -293,12 +328,6 @@ class Queue(object):
     def is_empty(self):
         return len(self._entries) == 0
 
-    def _add(self, plan):
-        if plan.uuid in self._map:
-            return
-        self._map[plan.uuid] = True
-        self._entries.append(plan)
-
     def remove(self, path):
         if len(self._entries) == 0:
             return False
@@ -319,25 +348,14 @@ class Queue(object):
             return value in self._map
         return isinstance(value, Plan) and value.uuid in self._map
 
-    def add_plans(self, plans, path, current):
-        if len(plans.entries) == 0:
-            return list()
-        r = current is not None and current.running()
-        w, c = datetime.now().weekday(), 0
-        for i in plans.entries:
-            if r and i.id == current.id:
-                # NOTE(dij): Don't re-add the running backup.
-                continue
-            if _match_path_or_id(path, i):
-                self._add(i)
-                c += 1
-                continue
-            if not i.schedule.runnable(w):
-                continue
-            self._add(i)
-            c += 1
-        del w
-        return c, r
+    def _add(self, plan, first=False):
+        if plan.uuid in self._map:
+            return
+        self._map[plan.uuid] = True
+        if first:
+            self._entries.insert(0, plan)
+        else:
+            self._entries.append(plan)
 
     def next(self, server, state, path, force):
         d = read_json(state, errors=False)
@@ -357,8 +375,7 @@ class Queue(object):
                     x.upload.check()
             except (OSError, ValueError) as err:
                 server.warning(
-                    f"[m/backup]: Skipping Plan {x} ({x.path}) as check failed!",
-                    err,
+                    f"[m/backup]: Skipping Plan {x} ({x.path}) as check failed!", err
                 )
                 continue
             if _match_path_or_id(path, x):
@@ -385,16 +402,53 @@ class Queue(object):
         del n
         return (None, d)
 
+    def add_plans(self, server, plans, path, current):
+        if len(plans.entries) == 0:
+            return list()
+        r = current is not None and current.running()
+        w, c = datetime.now().weekday(), 0
+        for i in plans.entries:
+            server.debug(f'[m/backup/add_plans]: Evaluating Plan "{i.id}"..')
+            if r and i.id == current.id:
+                # NOTE(dij): Don't re-add the running backup.
+                server.debug(
+                    f'[m/backup/add_plans]: Skipping currently running Plan "{i.id}".'
+                )
+                continue
+            if _match_path_or_id(path, i):
+                # NOTE(dij): If we specify a matched entry, add it first!
+                #            This feels sorta hacky, but it's an easier way to
+                #            handle requested Plans then interrupting the call to
+                #            "next" as it does some checks.
+                self._add(i, True)
+                c += 1
+                server.debug(
+                    f'[m/backup/add_plans]: Adding Plan "{i.id}" that matched Path or ID "{path}".'
+                )
+                continue
+            if nes(path):
+                continue
+            if not i.schedule.runnable(w):
+                server.debug(
+                    f'[m/backup/add_plans]: Skipping non-runnable Plan "{i.id}".'
+                )
+                continue
+            self._add(i)
+            c += 1
+            server.debug(f'[m/backup/add_plans]: Adding runnable Plan "{i.id}".')
+        del w
+        server.debug(f"[m/backup/add_plans]: Added {c} Plans to queue.")
+        return c, r
+
 
 class Multi(object):
-    __slots__ = ("_cwd", "_cmds", "_proc", "_break")
+    __slots__ = ("_cmds", "_proc", "_break")
 
-    def __init__(self, cmds, cwd=None, stop_error=True):
+    def __init__(self, cmds, stop_error=True):
         if not isinstance(cmds, (list, tuple)) or len(cmds) == 0:
             raise OSError("cmd list must be a non-empty list or tuple")
-        self._cwd = cwd
-        self._cmds = cmds
         self._break = stop_error
+        self._cmds = cmds
         self._proc = self._next()
 
     def pid(self):
@@ -431,38 +485,10 @@ class Multi(object):
 
     def stop(self):
         self._cmds.clear()
-        if self._proc.poll() is not None:
-            return self._proc.wait()
-        try:
-            self._proc.send_signal(SIGINT)
-        except (OSError, SubprocessError):
-            pass
-        try:
-            self._proc.terminate()
-        except (OSError, SubprocessError):
-            pass
-        try:
-            self._proc.send_signal(SIGKILL)
-        except (OSError, SubprocessError):
-            pass
-        if self._proc.poll() is not None:
-            return self._proc.poll()
-        try:
-            self._proc.kill()
-        except (OSError, SubprocessError):
-            pass
-        try:
-            kill(self._proc.pid, SIGKILL)
-        except OSError:
-            pass
-        try:
-            self._proc.wait(timeout=1)
-        except (OSError, SubprocessError):
-            pass
-        return None
+        stop(self._proc)
 
     def _next(self):
-        v = nulexec(self._cmds.pop(0), cwd=self._cwd)
+        v = nulexec(self._cmds.pop(0))
         nulexec(
             ["/usr/bin/renice", "-n", "15", "--pid", f"{v.pid}"],
             wait=True,
@@ -474,6 +500,11 @@ class Multi(object):
             errors=False,
         )
         return v
+
+    def output(self):
+        if self._proc is None:
+            return (0, "", "")
+        return (self._proc.wait(), "", "")
 
     def terminate(self):
         self._cmds.clear()
@@ -510,9 +541,8 @@ class Plans(object):
                 self.updated = True
             self.entries.append(Plan(i))
         del p
-        u, self.dir = self.storage.get("upload"), self.storage.get(
-            "dir", BACKUP_DEFAULT_DIR
-        )
+        u = self.storage.get("upload")
+        self.dir = self.storage.get("dir", BACKUP_DEFAULT_DIR)
         if not nes(self.dir):
             self.dir = BACKUP_DEFAULT_DIR
         self.upload = Upload(u) if isinstance(u, dict) and len(u) > 0 else None
@@ -604,10 +634,10 @@ class Upload(object):
         self._host = data.get("host")
         if not nes(self._host):
             raise ValueError('upload "host" must be a non-empty string')
-        self._host, self._user = Upload._split_host_port(self._host, data.get("user"))
+        self._host, self._user = Upload._split_user(self._host, data.get("user"))
         if not nes(self._user):
             raise ValueError('upload "user"  must be a non-empty string')
-        self._host, self.port = Upload._split_host_port(
+        self._host, self.port = Upload._split_port(
             self._host, data.get("port", BACKUP_DEFAULT_PORT)
         )
         if not isinstance(self.port, int) or self.port <= 0 or self.port >= 0xFFFF:
@@ -618,15 +648,11 @@ class Upload(object):
             raise ValueError('upload "host" must be a non-empty string')
         data["host"], data["user"], data["port"] = self._host, self._user, self.port
         self.key = data.get("key")
-        if nes(self.key):
-            if not isabs(self.key):
-                raise ValueError('upload "key" must be a full path')
+        if nes(self.key) and not isabs(self.key):
+            raise ValueError('upload "key" must be a full path')
 
     def host(self):
         return f"{self._user}@{self._host}" if nes(self._user) else self._host
-
-    def __bool__(self):
-        return self.valid()
 
     def check(self):
         s = socket(AF_INET, SOCK_STREAM)
@@ -647,15 +673,18 @@ class Upload(object):
     def valid(self):
         return nes(self._host) and isinstance(self.port, int) and 0 < self.port < 0xFFFF
 
+    def __bool__(self):
+        return self.valid()
+
     @staticmethod
-    def _split_host_user(s, other):
+    def _split_user(s, other):
         i = s.find("@")
         if i <= 0 or i + 1 > len(s):
-            return (s[1:0], other)
+            return (s, other)
         return (s[0:i], s[i + 1 :])
 
     @staticmethod
-    def _split_host_port(s, other):
+    def _split_port(s, other):
         i, b = s.rfind(":"), s.rfind("]")
         if i <= 1 and b <= 1:
             return (s, other)
@@ -663,7 +692,7 @@ class Upload(object):
             return (s, other)
         if i > 1 and i > b:
             try:
-                return (s[0:i], num(s[i + 1 :]))
+                return (s[0:i], num(s[i + 1 :], False))
             except ValueError:
                 raise ValueError(f'host "{s}" is invalid')
         del i, b
@@ -679,13 +708,14 @@ class Backup(object):
         "_proc",
         "_last",
         "_path",
-        "_done",
         "_time",
         "_size",
+        "_debug",
         "_state",
         "_cancel",
         "_paused",
         "_upload",
+        "_reader",
         "_timeout",
         "_increment",
     )
@@ -697,15 +727,16 @@ class Backup(object):
         self._plan = plan
         self._proc = None
         self._last = None
-        self._done = False
         self._path = (
             f'{self._dir}/backup-{plan.id}-{datetime.now().strftime("%Y%m%d-%H%M")}'
         )
         self._time = None
         self._size = None
+        self._debug = plan.debug
         self._state = BACKUP_STATE_WAITING
         self._cancel = Event()
         self._paused = Event()
+        self._reader = None
         self._upload = plan.upload if plan.upload is not None else upload
         self._timeout = None
         self._increment = inc
@@ -732,6 +763,7 @@ class Backup(object):
         except OSError as err:
             raise OSError(f'cannot make directory "{BACKUP_STATE_DIR}": {err}')
         server.info(f"[m/backup/job/{self.id}] Starting Backup Job {self}..")
+        server.notify("Backup Status", f"Staring Backup {self}!", "yed")
         self._next(server)
 
     def resume(self, server):
@@ -766,7 +798,7 @@ class Backup(object):
             return self._upload.valid()
         if isinstance(self._plan.keep, bool):
             return not self._plan.keep
-        if self._plan.keep <= 0:
+        if not isinstance(self._plan.keep, int) or self._plan.keep <= 0:
             return self._upload.valid()
         server.debug(
             f'[m/backup/job/{self.id}]: Validating keep value of "{self._plan.keep}"..'
@@ -795,6 +827,51 @@ class Backup(object):
         del x, g
         return False
 
+    def _step_read(self, server):
+        server.debug(f"[m/backup/job/{self.id}]: Attempting to read process output..")
+        server.cancel(self._reader)
+        if (
+            self._proc is None
+            or self._cancel.is_set()
+            or self._proc.poll() is not None
+            or (
+                self._state != BACKUP_STATE_PACKING
+                and self._state != BACKUP_STATE_COMPRESS
+                and self._state != BACKUP_STATE_UPLOADING
+                and self._state != BACKUP_STATE_ENCRYPT_COMPRESS
+            )
+        ):
+            return
+        if self._paused.is_set():
+            self._reader = server.task(BACKUP_READ_TIME, self._step_read, (server,))
+            return server.debug(
+                f"[m/backup/job/{self.id}]: Skipping read for paused process."
+            )
+        if self._state != BACKUP_STATE_UPLOADING:
+            try:
+                if self._state == BACKUP_STATE_ENCRYPT_COMPRESS:
+                    self._proc.p1.send_signal(SIGUSR1)
+                else:
+                    self._proc.send_signal(SIGUSR1)
+            except OSError as err:
+                server.debug(
+                    f"[m/backup/job/{self.id}]: Cannot send a SIGUSR1 signal to the process!",
+                    err,
+                )
+        try:
+            o = _output_strip(
+                self._proc.read(8192, self._state != BACKUP_STATE_UPLOADING)
+            )
+        except OSError as err:
+            server.debug(f"[m/backup/job/{self.id}]: Cannot read process output!", err)
+        else:
+            if len(o) > 0:
+                server.info(
+                    f"[m/backup/job/{self.id}]: Current process output status: [{o}]"
+                )
+            del o
+        self._reader = server.task(BACKUP_READ_TIME, self._step_read, (server,))
+
     def _step_pack(self, server):
         if not self._update(server, BACKUP_STATE_PACKING):
             return
@@ -822,6 +899,7 @@ class Backup(object):
                     f"--directory={self._dir}",
                     basename(self._path),
                 ],
+                read=True,
             )
         except OSError as err:
             server.error(
@@ -845,19 +923,24 @@ class Backup(object):
                 c = 0
         else:
             c = 0
-        s[self._plan.uuid] = {
+        n = {
             "size": self._size,
             "last": datetime.now().isoformat(),
             "count": c + 1,
             "error": self._state == BACKUP_STATE_ERROR,
         }
+        s[self._plan.uuid] = n
         try:
             write_json(BACKUP_STATE, s, perms=0o640)
         except OSError as err:
             server.warning(
                 f"[m/backup/job/{self.id}]: Cannot save the Backup state file!", err
             )
-        del s, c
+        else:
+            server.debug(
+                f'[m/backup/job/{self.id}]: Saved the data "{n}" to the Backup state file!'
+            )
+        del s, c, n
         return self._state == BACKUP_STATE_DONE
 
     def _check_proc(self, server):
@@ -977,6 +1060,7 @@ class Backup(object):
                     f"{self._upload.host()}:",
                 ],
                 add=f,
+                read=True,
             )
         except OSError as err:
             server.error(
@@ -988,15 +1072,13 @@ class Backup(object):
             del o, f
 
     def _stop(self, server, force):
-        if self._done:
+        if self._cancel.is_set():
             return
-        self._done = True
-        self._paused.clear()
         self._cancel.set()
+        self._paused.clear()
         server.debug(f"[m/backup/job/{self.id}]: Cleaning up..")
         self._timeout = cancel_nul(server, self._timeout)
-        if self._proc is not None:
-            self._proc.stop()
+        stop(self._proc, False)
         try:
             rmtree(self._path, ignore_errors=True)
         except OSError as err:
@@ -1014,13 +1096,12 @@ class Backup(object):
         else:
             self._state = BACKUP_STATE_DONE
         # NOTE(dij): We run this after so we can unmount anything used.
-        self._start_post_cmd(server)
-        server.forward(
-            Message(
-                HOOK_BACKUP,
-                {"type": MSG_UPDATE, "uuid": self._plan.uuid, "state": self._state},
-            )
-        )
+        try:
+            self._start_post_cmd(server)
+        except Exception as err:
+            server.error(f"[m/backup/job/{self.id}]: Error during post-cmd!", err)
+        finally:
+            server.debug(f"[m/backup/job/{self.id}]: Stop completed.")
 
     def _step_ec(self, server, key):
         if not self._update(server, BACKUP_STATE_ENCRYPT_COMPRESS):
@@ -1062,6 +1143,8 @@ class Backup(object):
             for i in self._plan.exclude:
                 x.append(f"--exclude={i}")
         del s
+        if self._debug:
+            x += ["-v", "-v"]
         x += ["-f", "-", self._plan.path]
         e = environ.copy()
         e["SMD_ENC_KEY"] = key
@@ -1112,11 +1195,27 @@ class Backup(object):
         )
         self._proc.nice()
         server.watch(self._proc, self._next, (server,))
+        try:
+            set_blocking(self._proc.p1.stderr.fileno(), False)
+        except OSError as err:
+            server.warning(
+                f"[m/backup/job/{self.id}]: Cannot set non-blocking mode for PID {self._proc.pid()}!",
+                err,
+            )
+        else:
+            self._reader = server.task(BACKUP_READ_TIME, self._step_read, (server,))
 
     def _step_pre_cmd(self, server):
         if not self._update(server, BACKUP_STATE_PRE_CMD):
             return
-        c = split(self._plan.cmd_pre)
+        c = split(
+            self._plan.cmd_pre,
+            env={
+                "BACKUP_ID": self.id,
+                "BACKUP_DIR": self._dir,
+                "BACKUP_PATH": self._path,
+            },
+        )
         if c is None:
             server.warning(
                 f'[m/backup/job/{self.id}]: Ignoring pre-start command type "{type(self._plan.cmd_pre)}"!'
@@ -1204,9 +1303,11 @@ class Backup(object):
             for i in self._plan.exclude:
                 x.append(f"--exclude={i}")
         del s
+        if self._debug:
+            x += ["-v", "-v"]
         x += ["-f", f"{self._path}/data.pak", self._plan.path]
         try:
-            self._exec_and_watch(server, x)
+            self._exec_and_watch(server, x, read=True)
         except OSError as err:
             server.error(
                 f"[m/backup/job/{self.id}]: Cannot start the compress process!", err
@@ -1216,17 +1317,58 @@ class Backup(object):
             del x
 
     def _next(self, server, arg=None):
+        server.cancel(self._reader)
         server.cancel(self._timeout)
         if self._time is not None:
             n = datetime.now()
             self._time, d = n, (n - self._time)
             server.debug(f"[m/backup/job/{self.id}]: Execution took {_time(d)}.")
             del n, d
-        else:
+        server.debug(f"[m/backup/job/{self.id}]: State {self._state} entered.. ")
+        if self._cancel.is_set():
+            stop(self._proc, False)
+            server.forward(
+                Message(
+                    HOOK_LOCKER,
+                    {
+                        "type": MSG_ACTION,
+                        "name": LOCKER_TYPE_BACKUP,
+                        "time": False,
+                        "force": True,
+                    },
+                )
+            )
+            server.forward(
+                Message(
+                    HOOK_BACKUP,
+                    {
+                        "type": MSG_UPDATE,
+                        "uuid": self._plan.uuid,
+                        "state": self._state,
+                        "final": True,
+                    },
+                )
+            )
+            return server.debug(f"[m/backup/job/{self.id}]: Stop fully completed.")
+        if self._cancel.is_set():
+            return
+        if self._time is None:
             self._time = datetime.now()
-        self._timeout = server.task(BACKUP_TIMEOUT, self._stop, (server, True))
-        if self._state == BACKUP_STATE_WAITING and self._plan.cmd_pre is not None:
-            return self._step_pre_cmd(server)
+        self._timeout = server.task(BACKUP_TIMEOUT, self._step_timeout, (server, False))
+        if self._state == BACKUP_STATE_WAITING:
+            server.forward(
+                Message(
+                    HOOK_LOCKER,
+                    {
+                        "type": MSG_ACTION,
+                        "name": LOCKER_TYPE_BACKUP,
+                        "time": None,
+                        "force": True,
+                    },
+                )
+            )
+            if self._plan.cmd_pre is not None:
+                return self._step_pre_cmd(server)
         if self._state <= BACKUP_STATE_PRE_CMD:
             try:
                 makedirs(self._path, mode=0o0750, exist_ok=True)
@@ -1236,10 +1378,9 @@ class Backup(object):
                     err,
                 )
                 return self._stop(server, True)
-            return self._step_keygen(server)
         if self._proc is not None:
             r = self._check_proc(server)
-            self._proc.stop()
+            stop(self._proc)
             self._proc = None
         else:
             r = True
@@ -1248,6 +1389,8 @@ class Backup(object):
             return self._stop(server, True)
         del r
         server.debug(f"[m/backup/job/{self.id}]: Step completed, moving to next step!")
+        if self._state == BACKUP_STATE_WAITING:
+            return self._step_keygen(server)
         if self._state == BACKUP_STATE_PRE_CMD:
             return self._step_keygen(server)
         if self._state == BACKUP_STATE_NO_KEYGEN:
@@ -1283,11 +1426,6 @@ class Backup(object):
                     server.info(
                         f'[m/backup/job/{self.id}]: Backup to file "{arg}" ({self._size}) was successful!'
                     )
-            if self._plan.keep:
-                if isinstance(self._plan.keep, bool):
-                    pass
-                elif isinstance(self._plan.keep, int):
-                    pass
             if self._cleanup(server):
                 try:
                     remove(arg)
@@ -1300,52 +1438,60 @@ class Backup(object):
 
     def _start_post_cmd(self, server):
         if self._plan.cmd_post is None:
-            return
-        c = split(self._plan.cmd_post)
+            return self._next(server)
+        c = split(
+            self._plan.cmd_post,
+            env={
+                "BACKUP_ID": self.id,
+                "BACKUP_DIR": self._dir,
+                "BACKUP_PATH": self._path,
+            },
+        )
         if c is None:
-            return server.warning(
+            server.warning(
                 f'[m/backup/job/{self.id}]: Ignoring post-backup command type "{type(self._plan.cmd_pre)}"!'
             )
+            return self._next(server)
         if len(c) == 0:
-            return
+            return self._next(server)
+        # NOTE(dij): Add a final timeout just in-case.
+        self._timeout = server.task(BACKUP_TIMEOUT, self._step_timeout, (server, True))
         server.info(
             f'[m/backup/job/{self.id}]: Executing post-backup command set "{c}".'
         )
         try:
-            p = Multi(c, self._dir, False)
+            # NOTE(dij): Don't break on command errors so all commands in the "chain"
+            #            complete.
+            self._proc = Multi(c, stop_error=False)
         except OSError as err:
-            return server.error(
+            server.error(
                 f'[m/backup/job/{self.id}]: Cannot start the post-backup command "{c}"!',
                 err,
             )
+            return self._next(server)
         finally:
             del c
         server.debug(
-            f"[m/backup/job/{self.id}]: Post-backup command started, PID {p.pid()}."
+            f"[m/backup/job/{self.id}]: Post-backup command started, PID {self._proc.pid()}."
         )
-        # NOTE(dij): This weird dance here uses the async libs of the server to
-        #            first: Add a task that will trigger in "BACKUP_TIMEOUT" seconds
-        #            that will kill the process if it's still running.
-        #            Second: will cancel the event and prevent the process from
-        #            being killed if it exits before the timeout. (It cancels the
-        #            task event handle "e").
-        e = server.task(BACKUP_TIMEOUT, _kill_runaway, (server, p))
-        server.watch(p, server.cancel, (e,))
-        del e
+        # NOTE(dij): We're instead going to wait for the post-command to complete
+        #            as it might hold up resources and allows our suspend block to
+        #            keep alive as long it needs to do it's thing.
+        server.watch(self._proc, self._next, (server,))
 
     def _step_hash_part1(self, server):
         if not self._update(server, BACKUP_STATE_HASHING_P1):
             return
         server.debug(f"[m/backup/job/{self.id}]: Starting the [Hashing] step..")
         try:
-            self._exec_and_watch(
+            return self._exec_and_watch(
                 server, ["/bin/sha256sum", "--binary", f"{self._path}/data.pak"]
             )
         except OSError as err:
             server.error(
                 f"[m/backup/job/{self.id}]: Cannot start the hashing process!", err
             )
-            return self._update(server, BACKUP_STATE_ERROR)
+        return self._update(server, BACKUP_STATE_ERROR)
 
     def _step_hash_part2(self, server):
         if not self._update(server, BACKUP_STATE_HASHING_P2):
@@ -1408,6 +1554,17 @@ class Backup(object):
         server.info(f"[m/backup/job/{self.id}]: Stopping Backup Job {self}.")
         self._stop(server, force)
 
+    def _step_timeout(self, server, post):
+        if post:
+            server.error(
+                f"[m/backup/job/{self.id}]: Backup post-backup command timeout after {BACKUP_TIMEOUT} seconds!"
+            )
+            return self._next(server)
+        server.error(
+            f"[m/backup/job/{self.id}]: Backup timeout after {BACKUP_TIMEOUT} seconds!"
+        )
+        self._stop(server, True)
+
     def _check_space(self, server, file, extra=1.5):
         p = f"{self._path}/{file}"
         try:
@@ -1424,18 +1581,28 @@ class Backup(object):
                 f"[m/backup/job/{self.id}] Insufficient space on device, {_size(x)} needed {_size(r)} free!"
             )
         server.debug(
-            f"[m/backup/job/{self.id}] Free space check {_size(x)} needed {_size(r)} free."
+            f"[m/backup/job/{self.id}] Free space check {_size(x)} needed, {_size(r)} free."
         )
         del r, x
         return True
 
-    def _exec_and_watch(self, server, cmd, stdin=None, add=None):
+    def _exec_and_watch(self, server, cmd, stdin=None, add=None, read=False):
         server.debug(f'[m/backup/job/{self.id}]: Executing command "{" ".join(cmd)}".')
         self._proc = Single.new(cmd, stdin)
         server.debug(
             f"[m/backup/job/{self.id}]: Command started, PID {self._proc.pid()}."
         )
         self._proc.nice()
+        if read:
+            try:
+                self._proc.set_non_blocking()
+            except OSError as err:
+                server.warning(
+                    f"[m/backup/job/{self.id}]: Cannot set non-blocking mode for PID {self._proc.pid()}!",
+                    err,
+                )
+            else:
+                self._reader = server.task(BACKUP_READ_TIME, self._step_read, (server,))
         if add is None:
             return server.watch(self._proc, self._next, (server,))
         return server.watch(self._proc, self._next, (server, add))
@@ -1447,14 +1614,14 @@ class Schedule(object):
     def __init__(self, data):
         if not isinstance(data, dict):
             self._days, self._cycle, self._increment = None, None, None
-        else:
-            self._days = data.get("days")
-            if self._days is not None and not isinstance(self._days, list):
-                raise ValueError(
-                    f'schedule "days" value should be a list (not "{type(self._days)}")'
-                )
-            self._cycle = num(data.get("cycle", 0), False)
-            self._increment = boolean(data.get("increment"))
+            return
+        self._days = data.get("days")
+        if self._days is not None and not isinstance(self._days, list):
+            raise ValueError(
+                f'schedule "days" value should be a list (not "{type(self._days)}")'
+            )
+        self._cycle = num(data.get("cycle", 0), False)
+        self._increment = boolean(data.get("increment"))
 
     def is_full(self, count):
         if not isinstance(self._days, list) or not self._increment:
@@ -1533,64 +1700,28 @@ class Dual(NamedTuple):
         return self.p2.poll()
 
     def stop(self):
-        if self.poll() is not None:
-            return self.wait()
-        try:
-            self.send_signal(SIGINT)
-        except (OSError, SubprocessError):
-            pass
-        try:
-            self.terminate()
-        except (OSError, SubprocessError):
-            pass
-        try:
-            self.send_signal(SIGKILL)
-        except (OSError, SubprocessError):
-            pass
-        if self.poll() is not None:
-            return self.poll()
-        try:
-            self.kill()
-        except (OSError, SubprocessError):
-            pass
-        try:
-            kill(self.p1.pid, SIGKILL)
-        except OSError:
-            pass
-        try:
-            kill(self.p2.pid, SIGKILL)
-        except OSError:
-            pass
-        try:
-            self.wait(timeout=1)
-        except (OSError, SubprocessError):
-            pass
-        return None
+        stop(self.p1)
+        stop(self.p2)
 
     def output(self):
-        r = max(self.p1.wait(), self.p2.wait())
-        x, o, e = self.p1.stderr.read(), self.p2.stdout.read(), self.p2.stderr.read()
-        v = _apes(x) + _apes(o) + _apes(e, True)
-        del x, e
-        if len(v) == 0 or NEWLINE not in v:
-            return (r, o, v)
-        d = list()
-        for i in v.split(NEWLINE):
-            if i.startswith("Removing leading"):
-                continue
-            n = i.strip()
-            if len(v) > 0:
-                d.append(n)
-            del n
-        del v
-        v = ";".join(d)
-        if v[-1] == ";":
-            v = v[:-1]
-        return (r, o, v)
+        try:
+            set_blocking(self.p1.stderr.fileno(), True)
+        except OSError:
+            pass
+        return (
+            max(self.p1.wait(), self.p2.wait()),
+            _output_strip(self.p1.stderr.read(), _output_strip(self.p2.stdout.read())),
+            _output_strip(self.p2.stderr.read()),
+        )
 
     def terminate(self):
         self.p1.terminate()
         self.p2.terminate()
+
+    def read(self, count, _):
+        # NOTE(dij): We can't read stdout of the p1 process as it's being
+        #            piped.
+        return self.p1.stderr.read(count)
 
     def wait(self, timeout=None):
         self.p1.wait(timeout)
@@ -1626,60 +1757,32 @@ class Single(NamedTuple):
         return self.p1.poll()
 
     def stop(self):
-        if self.poll() is not None:
-            return self.wait()
-        try:
-            self.send_signal(SIGINT)
-        except (OSError, SubprocessError):
-            pass
-        try:
-            self.terminate()
-        except (OSError, SubprocessError):
-            pass
-        try:
-            self.send_signal(SIGKILL)
-        except (OSError, SubprocessError):
-            pass
-        if self.poll() is not None:
-            return self.poll()
-        try:
-            self.kill()
-        except (OSError, SubprocessError):
-            pass
-        try:
-            kill(self.p1.pid, SIGKILL)
-        except OSError:
-            pass
-        try:
-            self.wait(timeout=1)
-        except (OSError, SubprocessError):
-            pass
-        return None
+        stop(self.p1)
 
     def output(self):
-        r, o = self.p1.wait(), self.p1.stdout.read()
-        v = _apes(o) + _apes(self.p1.stderr.read(), True)
-        if len(v) == 0 or NEWLINE not in v:
-            return (r, o, v)
-        d = list()
-        for i in v.split(NEWLINE):
-            if i.startswith("Removing leading"):
-                continue
-            n = i.strip()
-            if len(v) > 0:
-                d.append(n)
-            del n
-        del v
-        v = ";".join(d)
-        if v[-1] == ";":
-            v = v[:-1]
-        return (r, o, v)
+        try:
+            set_blocking(self.p1.stdout.fileno(), True)
+            set_blocking(self.p1.stderr.fileno(), True)
+        except OSError:
+            pass
+        return (
+            self.p1.wait(),
+            _output_strip(self.p1.stdout.read()),
+            _output_strip(self.p1.stderr.read()),
+        )
 
     def terminate(self):
         self.p1.terminate()
 
+    def set_non_blocking(self):
+        set_blocking(self.p1.stdout.fileno(), False)
+        set_blocking(self.p1.stderr.fileno(), False)
+
     def wait(self, timeout=None):
         return self.p1.wait(timeout)
+
+    def read(self, count, stderr):
+        return self.p1.stderr.read(count) if stderr else self.p1.stdout.read(count)
 
     @classmethod
     def new(cls, cmd, stdin=None):
@@ -1761,13 +1864,11 @@ class BackupServer(object):
         if message.forward:
             if message.type != MSG_UPDATE or self._current is None:
                 return
-            if message.state == BACKUP_STATE_KEYGEN:
-                return server.notify(
-                    "Backup Status", f"Staring Backup {self._current}!", "yed"
-                )
             if message.state < BACKUP_STATE_ERROR:
                 return
             self._current.stop(server)
+            if not message.final:
+                return
             if self._current.save(server, BACKUP_STATE):
                 server.notify(
                     "Backup Status", f"Backup {self._current} completed!", "yed"
@@ -1855,7 +1956,7 @@ class BackupServer(object):
         except (OSError, ValueError) as err:
             server.error("[m/backup]: Cannot read the Backup config!", err)
             return as_error("Cannot load the Backup config!")
-        a, r = self._queue.add_plans(p, path, self._current)
+        a, r = self._queue.add_plans(server, p, path, self._current)
         if p.updated:
             p.save(server)
         if r:

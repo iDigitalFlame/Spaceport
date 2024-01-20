@@ -38,6 +38,8 @@
 Description = System Management Daemon Backup Timer
 
 [Timer]
+Persistent  = true
+WakeSystem  = true
 OnCalendar  = *-*-* 02:00:00
 AccuracySec = 15m
 

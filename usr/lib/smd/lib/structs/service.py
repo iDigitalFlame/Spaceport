@@ -48,6 +48,7 @@ from lib.structs.logger import Logger
 from lib.structs.storage import Storage
 from signal import signal, SIGALRM, SIGINT
 from os import getgid, getpid, getuid, kill
+from lib.constants.config import LOG_PAYLOAD
 from lib.structs.dispatcher import Dispatcher
 
 
@@ -114,6 +115,8 @@ class Service(object):
         self._log.debug(
             f"[service]: Forwarding message 0x{message.header():02X} to internal Hooks."
         )
+        if LOG_PAYLOAD:
+            self._log.error(f"[dump]: FWD > {message}")
         self._dispatcher.add(None, message)
 
     def set(self, name, value):
