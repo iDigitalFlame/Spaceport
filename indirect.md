@@ -1,3 +1,9 @@
+dirmngr@etc-pacman.d-gnupg.socket
+gpg-agent-browser@etc-pacman.d-gnupg.socket
+gpg-agent-extra@etc-pacman.d-gnupg.socket
+gpg-agent-ssh@etc-pacman.d-gnupg.socket
+gpg-agent@etc-pacman.d-gnupg.socket
+keyboxd@etc-pacman.d-gnupg.socket
 btrfs-scrub@-.timer
 btrfs-scrub@home.timer
 btrfs-scrub@var.timer

@@ -40,13 +40,18 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
+rm "/etc/.updated" 2> /dev/null
+rm "/etc/.pwd.lock" 2> /dev/null
+
 rm -f "/etc/ld.so.cache"
+rm -f "/etc/pacman.d/gnupg"
 rm -f "/etc/cups/printers.conf"
 rm -f "/etc/NetworkManager/system-connections"
 rmdir "/etc/NetworkManager/system-connections" 2> /dev/null
 rm -f "/var/lib/NetworkManager/system-connections/system-connections"
 
 ln -sT "/var/cache/ld.so.cache" "/etc/ld.so.cache"
+ln -sT "/var/db/pacman/gnupg" "/etc/pacman.d/gnupg"
 ln -sT "/var/cache/cups/printers.conf" "/etc/cups/printers.conf"
 ln -sT "/var/lib/NetworkManager/system-connections" "/etc/NetworkManager/system-connections"
 

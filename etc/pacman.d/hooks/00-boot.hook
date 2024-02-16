@@ -38,6 +38,8 @@
 Type        = Path
 Target      = usr/lib/modules/*/vmlinuz
 Target      = usr/lib/initcpio/*
+Target      = usr/lib/firmware/*
+Target      = usr/src/*/dkms.conf
 Operation   = Remove
 Operation   = Install
 Operation   = Upgrade

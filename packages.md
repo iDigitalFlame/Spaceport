@@ -31,7 +31,6 @@ efitools
 exfat-utils
 falkon
 firefox
-firefox-extension-bitwarden
 firefox-noscript
 firefox-tree-style-tab
 firefox-ublock-origin

@@ -1,4 +1,5 @@
 dvm
+firefox-extension-bitwarden-bin
 firefox-extension-foxyproxy
 firefox-extension-multi-account-containers
 firefox-extension-user-agent-switcher

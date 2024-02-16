@@ -612,8 +612,15 @@ class VM(Storage):
         else:
             s = f'type={self.get("bios.version", 1)}'
         o, c = self.get("cpu.options", list()), self.get("cpu.type", "host")
-        if x.intel:
-            c = f"{c},kvm=on,+kvm_pv_unhalt,+kvm_pv_eoi,hv_relaxed,hv_spinlocks=0x1FFF,hv_vapic,hv_time"
+        i = c == "host"
+        if x.intel and self.get("cpu.auto_options", True):
+            c = (
+                f"{c},kvm=on,migratable=no,pdpe1gb,+kvm_pv_unhalt,+kvm_pv_eoi,+kvmclock,hv_relaxed,hv_passthrough,"
+                "hv_frequencies,hv_synic,hv_reenlightenment,hv_vpindex,hv_spinlocks=0x1FFF,hv_vapic,hv_time,hv_stimer"
+            )
+        if i:
+            c = f"{c},l3-cache=on"
+        del i
         try:
             if isinstance(o, list) and len(o) > 0:
                 c = f'{c},{",".join(o)}'
