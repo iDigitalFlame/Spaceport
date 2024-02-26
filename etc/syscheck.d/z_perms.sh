@@ -36,7 +36,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    echo "[!] Only root can do this!"
+    echo "Error: root is required!"
     exit 1
 fi
 
@@ -77,6 +77,9 @@ chmod -R 0550 "${BASE_DIR}/etc/modules-load.d"
 chmod -R 0550 "${BASE_DIR}/etc/NetworkManager"
 
 # Remove Execute Permissions
+if [ -e "/var/cache/librewolf.cfg.bak" ]; then
+    chmod 0444 "/var/cache/librewolf.cfg.bak"
+fi
 find "${BASE_DIR}/etc/udev/" -xdev -type f -exec chmod 0444 {} \;
 find "${BASE_DIR}/etc/sysctl.d/" -xdev -type f -exec chmod 0440 {} \;
 find "${BASE_DIR}/etc/sysctl.d/" -xdev -type f -exec chmod 0440 {} \;

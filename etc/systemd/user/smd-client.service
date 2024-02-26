@@ -37,7 +37,7 @@
 [Unit]
 After           = sway.service graphical-session.target
 Requires        = graphical-session.target
-Description     = System Management Client Daemon
+Description     = System Management Client
 
 [Service]
 Type            = simple

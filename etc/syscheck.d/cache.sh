@@ -36,7 +36,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    echo "[!] Only root can do this!"
+    echo "Error: root is required!"
     exit 1
 fi
 
@@ -46,17 +46,20 @@ rm "/etc/.pwd.lock" 2> /dev/null
 rm -f "/etc/ld.so.cache"
 rm -f "/etc/pacman.d/gnupg"
 rm -f "/etc/cups/printers.conf"
-rm -f "/etc/NetworkManager/system-connections"
+rm -f "/etc/pacman.d/mirrorlist"
+rm -f "/etc/NetworkManager/system-connections" 2> /dev/null
 rmdir "/etc/NetworkManager/system-connections" 2> /dev/null
 rm -f "/var/lib/NetworkManager/system-connections/system-connections"
 
 ln -sT "/var/cache/ld.so.cache" "/etc/ld.so.cache"
 ln -sT "/var/db/pacman/gnupg" "/etc/pacman.d/gnupg"
+ln -sT "/var/cache/pacman/mirrorlist" "/etc/pacman.d/mirrorlist"
 ln -sT "/var/cache/cups/printers.conf" "/etc/cups/printers.conf"
 ln -sT "/var/lib/NetworkManager/system-connections" "/etc/NetworkManager/system-connections"
 
 chmod 0644 "/var/cache/ld.so.cache"
 chmod 0600 "/var/cache/cups/printers.conf"
+chmod 0444 "/var/cache/pacman/mirrorlist"
 chmod 0700 "/var/lib/NetworkManager/system-connections"
 chmod 0600 /var/lib/NetworkManager/system-connections/*
 

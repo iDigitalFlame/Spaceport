@@ -39,18 +39,18 @@ set -u
 
 . "/etc/sysconfig.conf" 2> /dev/null
 if [ -z "$SYSCONFIG" ]; then
-    echo "Could not find the System Configuration directory!"
+    echo "Error: system configuration directory not found!"
     exit 1
 fi
 if ! [ -d "$SYSCONFIG" ]; then
-    printf "System Configuration directory \"%s\" does not exist!\n" "$SYSCONFIG"
+    printf 'Error: system configuration directory "%s" does not exist!\n' "$SYSCONFIG"
     exit 1
 fi
 
 SYSCONFIG=${SYSCONFIG%/}
 
 if ! [ "$USER" = "root" ]; then
-    echo "Only root can do this!"
+    echo "Error: root is required!"
     exit 1
 fi
 
@@ -59,13 +59,14 @@ relink "$SYSCONFIG" /
 cp /etc/fstab "${SYSCONFIG}/etc/fstab.nlk"
 pacman -Qeqn 1> "${SYSCONFIG}/packages.md"
 pacman -Qeqm 1> "${SYSCONFIG}/packages-aur.md"
-systemctl list-unit-files | grep "masked" | awk '{print $1}' 1> "${SYSCONFIG}/masked.md"
-systemctl list-unit-files | awk '{print $1" "$2}' | grep "enabled" | grep -vE ".target|enabled-runtime" | awk '{print $1}' 1> "${SYSCONFIG}/units.md"
-systemctl list-units | grep "@." | grep -vE "dead|exited" | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." 1> "${SYSCONFIG}/indirect.md"
+systemctl list-unit-files | grep "masked" | awk '{print $1}' | sort 1> "${SYSCONFIG}/masked.md"
+systemctl list-unit-files | awk '{print $1" "$2}' | grep "enabled" | grep -vE ".target|enabled-runtime" | awk '{print $1}' | sort 1> "${SYSCONFIG}/units.md"
+systemctl list-units | grep "@." | grep -vE "dead|exited" | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." | sort 1> "${SYSCONFIG}/indirect.md"
 
 if [ -d "/etc/syscheck.d" ]; then
     for entry in /etc/syscheck.d/*.sh; do
         if [ -f "$entry" ]; then
+            printf 'Processing script "%s"..\n' "$entry"
             . "$entry"
         fi
     done

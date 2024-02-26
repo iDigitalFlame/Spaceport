@@ -38,7 +38,7 @@
 Wants           = default.target
 After           = default.target
 BindsTo         = graphical-session.target
-Description     = Sway Desktop Daemon
+Description     = Sway Desktop
 
 [Service]
 Type            = exec

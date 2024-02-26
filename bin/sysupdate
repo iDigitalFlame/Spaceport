@@ -35,10 +35,9 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    echo "Only root can do this!"
+    echo "Error: root is required!"
     exit 1
 fi
 
-pacman -Syu
-syslink
-exit 0
+env SYSUPDATE=1 pacman -Syu
+[ ${SYSBATCH:-0} -eq 0 ] && syslink

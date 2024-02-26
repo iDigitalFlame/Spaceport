@@ -36,7 +36,7 @@
 
 [Unit]
 Requires                = smd-daemon.service
-Description             = System Management Daemon Backup Service
+Description             = System Management Daemon Backup
 
 [Service]
 Type                    = oneshot

@@ -34,92 +34,125 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+DRY=0
 DEBUG=0
 
-if [ $# -ne 2 ]; then
-    echo "relink <config source> <config target> [debug]"
+if [ $# -lt 2 ]; then
+    echo "relink [--debug] [--dry] <config source> <config target>"
     exit 1
-fi
-
-if [ $# -eq 3 ]; then
-    DEBUG=1
 fi
 
 list() {
     if [ $# -ne 2 ]; then
         return 1
     fi
-    files_src=${2%/}
-    files_target=${1%/}
-    find "$files_target" -type f -print | while IFS= read -r file; do
-        file_name=$(printf "%s" "$file" | awk "{gsub(\"${files_target}\", \"\"); print \$1}")
-        if ! echo "$file_name" | grep -qE '.(nlk|nolink)$|^/.git(|ignore$|config$)|^/(LICENSE|license|.vscode)$|^/[a-zA-Z0-9_.-]+.(md|vscode|MD|code-workspace)$'; then
-            check "${files_src}${file_name}" "${files_target}${file_name}"
+    list_src=${2%/}
+    list_target=${1%/}
+    find "$list_target" -type f -not -wholename "$list_target"/.git/\* -print | while IFS= read -r list_file; do
+        list_name=$(printf "%s" "$list_file" | awk "{gsub(\"${list_target}\", \"\"); print \$0}")
+        if ! echo "$list_name" | grep -qE '.(nlk|nolink)$|^/.git(|ignore$|config$)|^/(LICENSE|license|.vscode)$|^/[a-zA-Z0-9_.-]+.(md|vscode|MD|code-workspace)$'; then
+            check "${list_src}${list_name}" "${list_target}${list_name}"
         fi
     done
     return 0
 }
-
 link() {
     if [ $# -ne 2 ]; then
         return 1
     fi
     rm -f "$1" 2> /dev/null
-    file_dir=$(dirname "$1")
-    if ! [ -d "$file_dir" ]; then
-        printf "Making \"%s\"..\n" "$file_dir"
-        if ! mkdir -p "$file_dir" 2> /dev/null; then
-            panic "Cannot create directory \"${file_dir}\"!"
-        fi
-        if [ "$USER" = "root" ]; then
-            chmod 0555 "$file_dir"
+    link_target="$(dirname "$1")"
+    if ! [ -d "$target" ]; then
+        if [ $DRY -eq 0 ]; then
+            printf 'Making "%s"..\n' "$link_target"
+            if ! mkdir -p "$link_target" 2> /dev/null; then
+                printf 'Cannot create directory "%s"!\n' "$link_target"
+                exit 1
+            fi
+            if [ "$UID" = "0" ]; then
+                chmod 0555 "$link_target"
+            else
+                chmod 0755 "$link_target"
+            fi
         else
-            chmod 0755 "$file_dir"
+            printf 'Would make "%s"..\n' "$link_target"
         fi
+    fi
+    if [ $DRY -ne 0 ]; then
+        printf 'Would link "%s" to "%s"!\n' "$1" "$2"
+        return 0
     fi
     if ! ln -s "$2" "$1"; then
-        panic "Could not link \"${1}\" to \"${2}\"!"
+        printf 'Could not link "%s" to "%s"!\n' "$1" "$2"
+        exit 1
     fi
-    printf "[+] Relinked \"%s\" to \"%s\".\n" "$1" "$2"
+    printf 'Relinked "%s" to "%s".\n' "$1" "$2"
     return 0
 }
-
 check() {
     if [ $# -ne 2 ]; then
         return 1
     fi
     if [ $DEBUG -eq 1 ]; then
-        printf "[+] Checking \"%s\"..\n" "$1"
+        printf 'Checking "%s"..\n' "$1"
     fi
     if ! [ -L "$1" ]; then
-        printf "File \"%s\" is invalid, updating!\n" "$1"
+        printf 'File "%s" is invalid, updating!\n' "$1"
         link "$1" "$2"
     else
         if ! [ "$(readlink "$1")" = "$2" ]; then
-            printf "File \"%s\" is invalid, updating!\n" "$1"
+            printf 'File "%s" is invalid, updating!\n' "$1"
             link "$1" "$2"
         else
             if [ $DEBUG -eq 1 ]; then
-                printf "File \"%s\" is valid!\n" "$1"
+                printf 'File "%s" is valid!\n' "$1"
             fi
         fi
     fi
     return 0
 }
-
 panic() {
     echo "[!] $1"
     exit 1
 }
 
-if ! [ -d "$1" ]; then
-    panic "Config source directory \"${1}\" does not exist!"
+if [ $# -gt 2 ]; then
+    case "$1" in
+        "--dry")
+        DRY=1
+        shift
+        ;;
+        "--debug")
+        DEBUG=1
+        shift
+        ;;
+        *)
+        ;;
+    esac
+    case "$1" in
+        "--dry")
+        DRY=1
+        shift
+        ;;
+        "--debug")
+        DEBUG=1
+        shift
+        ;;
+        *)
+        ;;
+    esac
 fi
-if ! [ -d "$2" ]; then
-    if ! mkdir -p "$2" 2> /dev/null; then
-        panic "Could not create target directory \"${2}\"!"
+
+if [ $DRY -eq 0 ]; then
+    if ! [ -d "$1" ]; then
+        printf 'Error: source directory "%s" does not exist!' "$1"
+    fi
+    if ! [ -d "$2" ]; then
+        if ! mkdir -p "$2" 2> /dev/null; then
+            printf 'Error: cannot create target directory "%s"!' "$2"
+            exit 1
+        fi
     fi
 fi
 
 list "$1" "$2"
-exit 0

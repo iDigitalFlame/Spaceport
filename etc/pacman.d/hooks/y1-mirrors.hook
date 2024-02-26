@@ -41,6 +41,6 @@ Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/dash -c "env XDG_CACHE_HOME=/var/cache/pacman reflector --protocol https --latest 50 --number 20 --sort rate --country 'United States' --save /etc/pacman.d/mirrorlist; rm -f /etc/pacman.d/mirrorlist.pacnew 2> /dev/null"
+Exec        = /usr/bin/dash -c "env XDG_CACHE_HOME=/var/cache/pacman reflector --protocol https --latest 50 --number 20 --sort rate --country 'United States' --save /var/cache/pacman/mirrorlist; rm -f /etc/pacman.d/mirrorlist.pacnew 2> /dev/null"
 Depends     = reflector
 Description = Updating pacman-mirrorlist with reflector and removing pacnew..

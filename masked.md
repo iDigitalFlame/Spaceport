@@ -1,10 +1,11 @@
-var-lib-machines.mount
 alsa-state.service
 connman.service
 dbus-org.bluez.service
 debug-shell.service
 display-manager.service
 emergency.service
+emergency.target
+first-boot-complete.target
 nslcd.service
 plymouth-quit-wait.service
 plymouth-start.service
@@ -15,12 +16,11 @@ systemd-bsod.service
 systemd-firstboot.service
 systemd-homed.service
 systemd-hwdb-update.service
+systemd-journald-audit.socket
 systemd-network-generator.service
 systemd-pstore.service
 systemd-quotacheck.service
 systemd-repart.service
 systemd-sysusers.service
 systemd-update-done.service
-systemd-journald-audit.socket
-emergency.target
-first-boot-complete.target
+var-lib-machines.mount
