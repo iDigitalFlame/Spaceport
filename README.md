@@ -14,11 +14,16 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - dash
 - dnsmasq
 - flatery-icon-theme-git
-- gnome-keyring-query
+- git
+- git-lfs
+- gnome-keyring
 - imagemagick
 - iproute2
+- iptables-nft
 - kora-icon-theme
+- logrotate
 - openssl
+- pacman-contrib
 - pipewire
 - pipewire-pulse
 - python
@@ -46,3 +51,11 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - vimix-cursors
 - waybar
 - wireplumber
+
+## Recommended Packages
+
+- blueman
+- bluez
+- NetworkManager
+- network-manager-applet
+- yay

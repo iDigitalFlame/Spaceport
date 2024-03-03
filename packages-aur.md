@@ -4,7 +4,6 @@ firefox-extension-multi-account-containers
 firefox-extension-user-agent-switcher
 firefox-temporary-containers
 flatery-icon-theme-git
-gnome-keyring-query
 kora-icon-theme
 osslsigncode
 wlay-git

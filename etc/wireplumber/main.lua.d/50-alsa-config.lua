@@ -190,5 +190,15 @@ alsa_monitor.rules = {
             ["priority.session"] = 1900,
         },
     },
-
+    {
+        -- Fix Razor Headsets to Appear as Headsets
+        matches = {
+            {
+                { "api.alsa.card.components", "equals", "USB1532:054e" },
+            },
+        },
+        apply_properties = {
+            ["api.alsa.card.id"] = "Headset",
+        },
+    },
 }
