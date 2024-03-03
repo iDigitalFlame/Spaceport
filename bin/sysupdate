@@ -39,5 +39,7 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
+set -e
+
 env SYSUPDATE=1 pacman -Syu
-[ ${SYSBATCH:-0} -eq 0 ] && syslink
+[ ${SYSBATCH:-0} -eq 0 ] && syslink || true
