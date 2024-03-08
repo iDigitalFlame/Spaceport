@@ -80,7 +80,7 @@ def config(args):
         r = send_message(args.socket, HOOK_BACKUP, HOOK_BACKUP, TIMEOUT_SEC_MESSAGE, p)
     except Exception as err:
         return print_error("Cannot configure Backup Plans!", err)
-    check_error(r)
+    check_error(r, exit_code=args.exit_code)
     m = r.result
     if nes(m):
         print(m)

@@ -1,0 +1,96 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf}{,*[^s][^h]} {
+    include <abstractions/chromium>
+    include <abstractions/user-downloads>
+
+    @{sysconfig}/usr/lib/firefox/defaults/pref/*.{js,cfg}              r,
+    @{sysconfig}/usr/lib/librewolf/defaults/pref/*.{js,cfg}            r,
+
+    @{etc_ro}/fstab                                                    r,
+    @{etc_ro}/mailcap                                                  r,
+    /usr/lib/{firefox,librewolf}/{,**}                                 r,
+
+    /sys/devices/pci*/**/drm/{,**}                                     r,
+    /sys/devices/system/**/meminfo                                     r,
+
+    owner @{PROC}/[0-9]*/task/[0-9]*/stat                              r,
+
+    owner @{run}/user/*/wayland-proxy-*                                rwk,
+    owner /dev/shm/wayland.mozilla.ipc.[0-9]*                          rw,
+    owner @{run}/shm/wayland.mozilla.ipc.[0-9]*                        rw,
+
+    owner @{HOME}/.cache/librewolf/**                                  rw,
+    owner @{HOME}/.config/librewolf/{,**}                              rw,
+    owner @{HOME}/.cache/mozilla/firefox/**                            rw,
+    owner @{HOME}/.cache/librewolf/**/*.sqlite                         k,
+    owner @{HOME}/.config/mozilla/firefox/{,**}                        rw,
+    owner @{HOME}/.cache/mozilla/firefox/**/*.sqlite                   k,
+    owner @{HOME}/.config/librewolf/**/*.{db,parentlock,sqlite}*       k,
+    owner @{HOME}/.config/mozilla/firefox/**/*.{db,parentlock,sqlite}* k,
+
+    /usr/bin/tr                                                        ixr,
+    /usr/bin/pwd                                                       ixr,
+    /usr/bin/which                                                     ixr,
+    /usr/lib/gio-launch-desktop                                        ixr,
+    /usr/lib/{firefox,librewolf}/**                                    ixr,
+    /usr/lib/{firefox,librewolf}/browser/extensions/**                 ixrm,
+
+    owner @{HOME}/.config/librewolf/**/extensions/**                   ixrm,
+    owner @{HOME}/.config/mozilla/firefox/**/extensions/**             ixrm,
+
+    deny /var/cache/fontconfig                                         w,
+
+    dbus (receive, send) bus=accessibility,
+    dbus (send) bus=session peer=(name=org.a11y.Bus),
+    dbus (bind) bus=session name=org.mozilla.firefox.*,
+    dbus (receive) bus=session interface=org.a11y.atspi**,
+    dbus (send) bus=system path=/org/freedesktop/RealtimeKit1,
+    dbus (receive) bus=system path=/org/freedesktop/NetworkManager,
+    dbus (send) bus=system path=/org/freedesktop/NetworkManager member=state,
+    dbus (send) bus=session interface=org.gtk.gio.DesktopAppInfo member=Launched,
+    dbus (send) bus=session path=/org/gnome/GConf/Server member=GetDefaultDatabase peer=(label=unconfined),
+    dbus (send, receive) bus=session path=/org/mozilla/firefox/Remote interface=org.mozilla.firefox member=OpenURL peer=(label=firefox),
+    dbus (send) bus=system path=/org/freedesktop/UPower interface=org.freedesktop.UPower member=EnumerateDevices peer=(label=unconfined),
+    dbus (send) bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=RequestName peer=(name=org.freedesktop.DBus),
+    dbus (send) bus=session path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={Inhibit,Uninhibit} peer=(label=unconfined),
+    dbus (send) bus=session path=/org/gnome/GConf/Database/* member={AddMatch,AddNotify,AllEntries,LookupExtended,RemoveNotify} peer=(label=unconfined),
+
+    include if exists <local/usr.bin.firefox>
+}

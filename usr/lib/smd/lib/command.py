@@ -92,6 +92,16 @@ def powerctl():
         required=False,
     )
     m.add_argument(
+        "--exit",
+        type=int,
+        dest="exit_code",
+        help="exit status to use on error",
+        action="store",
+        default=None,
+        metavar="status",
+        required=False,
+    )
+    m.add_argument(
         "--version",
         dest="version",
         help="show version information.",
@@ -168,17 +178,6 @@ def module_base(path):
         del v
         raise OSError(f'invalid path "{p}"')
     return p.replace("/", ".")
-
-
-def check_error(msg, message=None):
-    if msg is None:
-        return
-    e = msg.is_error()
-    if not nes(e):
-        return
-    if nes(message):
-        return print_error(f"{message}: {e}!")
-    return print_error(f"{e}!")
 
 
 def try_get_attr(obj, name, call):
@@ -269,10 +268,21 @@ def _load_powerctl(parser, directory):
     return e
 
 
-def print_error(message, error=None, quit=True, limit=LOG_FRAME_LIMIT):
+def check_error(msg, message=None, exit_code=None):
+    if msg is None:
+        return
+    e = msg.is_error()
+    if not nes(e):
+        return
+    if nes(message):
+        return print_error(f"{message}: {e}!", exit_code=exit_code)
+    return print_error(f"{e}!", exit_code=exit_code)
+
+
+def print_error(message, error=None, quit=True, limit=LOG_FRAME_LIMIT, exit_code=None):
     print(f"{message}", file=stderr)
     if error is not None:
         print(format_exc(limit=limit), file=stderr)
     if quit:
-        exit(1)
+        exit(exit_code if isinstance(exit_code, int) else 1)
     return False

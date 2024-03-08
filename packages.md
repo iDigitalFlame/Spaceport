@@ -1,3 +1,4 @@
+apparmor
 archlinuxcn-keyring
 archstrike-keyring
 archstrike-mirrorlist
@@ -126,8 +127,10 @@ python-gobject
 python-isort
 python-lsprotocol
 python-lxml
+python-notify2
 python-pillow
 python-pip
+python-psutil
 python-pycodestyle
 python-pygls
 python-requests

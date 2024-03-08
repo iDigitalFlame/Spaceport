@@ -1,0 +1,66 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AuditD Override
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+# NOTE(dij): For some reason we can't override this unit the standard way, so
+#            I'm just gonna overrite the entire file. I'm not sure why the
+#            audit-rules.service is so locked in and does not work with read
+#            only root. Why not autogenerate rules in a temp dir or something?
+
+[Unit]
+After                       = local-fs.target systemd-tmpfiles-setup.service
+Before                      = sysinit.target shutdown.target
+Conflicts                   = shutdown.target
+Description                 = Security Audit Logging Service
+Documentation               = man:auditd(8) https://github.com/linux-audit/audit-documentation
+RefuseManualStop            = yes
+DefaultDependencies         = no
+ConditionKernelCommandLine  = !audit=0
+ConditionKernelCommandLine  = !audit=off
+
+[Service]
+Type                        = forking
+Restart                     = on-failure
+PIDFile                     = /run/auditd.pid
+ExecStart                   = /usr/bin/auditd -l
+ExecStartPost               = -/usr/bin/auditctl -R /etc/audit/audit.rules
+LockPersonality             = true
+RestrictRealtime            = true
+ProtectKernelModules        = true
+MemoryDenyWriteExecute      = true
+RestartPreventExitStatus    = 2 4 6
+
+[Install]
+WantedBy                    = multi-user.target

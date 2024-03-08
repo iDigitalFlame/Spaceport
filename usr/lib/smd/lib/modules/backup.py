@@ -68,6 +68,7 @@ from lib.constants.config import (
     BACKUP_DEFAULT_DIR,
     BACKUP_BATTERY_PATH,
     BACKUP_DEFAULT_PORT,
+    BACKUP_BACKOFF_TIME,
 )
 from lib.constants import (
     EMPTY,
@@ -358,12 +359,6 @@ class Queue(object):
             self._entries.append(plan)
 
     def next(self, server, state, path, force):
-        d = read_json(state, errors=False)
-        if not isinstance(d, dict):
-            server.warning(
-                "[m/backup]: Cannot read/parse the Backup state file, using empty state!"
-            )
-            d = dict()
         n = datetime.now()
         while len(self._entries) > 0:
             x = self._pop()
@@ -379,34 +374,37 @@ class Queue(object):
                 )
                 continue
             if _match_path_or_id(path, x):
-                return (x, d)
-            if force or x.uuid not in d:
-                return (x, d)
-            t = d[x.uuid].get("last")
+                return x
+            if force or x.uuid not in state:
+                return x
+            t = state[x.uuid].get("last")
             if not nes(t):
-                return (x, d)
+                return x
             v = n - datetime.fromisoformat(t)
+            del t
             try:
                 if v.total_seconds() > x.wait:
-                    return (x, d)
+                    return x
+                if not state[x.uuid].get("error", False):
+                    server.debug(
+                        f"[m/backup]: Skipping Backup {x} as the last successful run was less than "
+                        f"{_time(v)} ago."
+                    )
+                    continue
             except ValueError:
                 pass
-            del t
-            if d[x.uuid].get("error", False):
-                return (x, d)
-            server.debug(
-                f"[m/backup]: Skipping Backup {x} as the last successful run was less than "
-                f"{_time(v)} ago."
-            )
-            del x, v
+            finally:
+                del v
+            return x
         del n
-        return (None, d)
+        return None
 
-    def add_plans(self, server, plans, path, current):
+    def add_plans(self, server, state, plans, path, current):
         if len(plans.entries) == 0:
             return list()
         r = current is not None and current.running()
-        w, c = datetime.now().weekday(), 0
+        n, c = datetime.now(), 0
+        w = n.weekday()
         for i in plans.entries:
             server.debug(f'[m/backup/add_plans]: Evaluating Plan "{i.id}"..')
             if r and i.id == current.id:
@@ -428,6 +426,20 @@ class Queue(object):
                 continue
             if nes(path):
                 continue
+            if i.uuid in state:
+                t = state[i.uuid].get("last")
+                if nes(t):
+                    try:
+                        if (
+                            n - datetime.fromisoformat(t)
+                        ).total_seconds() < BACKUP_BACKOFF_TIME:
+                            server.debug(
+                                f'[m/backup/add_plans]: Skipping recently attempted Plan "{i.id}".'
+                            )
+                            continue
+                    except ValueError:
+                        pass
+                del t
             if not i.schedule.runnable(w):
                 server.debug(
                     f'[m/backup/add_plans]: Skipping non-runnable Plan "{i.id}".'
@@ -1956,22 +1968,30 @@ class BackupServer(object):
         except (OSError, ValueError) as err:
             server.error("[m/backup]: Cannot read the Backup config!", err)
             return as_error("Cannot load the Backup config!")
-        a, r = self._queue.add_plans(server, p, path, self._current)
+        s = read_json(BACKUP_STATE, errors=False)
+        if not isinstance(s, dict):
+            server.warning(
+                "[m/backup]: Cannot read/parse the Backup state file, using empty state!"
+            )
+            s = dict()
+        a, r = self._queue.add_plans(server, s, p, path, self._current)
         if p.updated:
             p.save(server)
         if r:
             server.debug(
                 f"[m/backup]: Not starting a Backup as {self._current} is running."
             )
+            del s
             if a > 0:
                 return {"result": "Backup added to queue."}
             return {"result": "Backup is already in queue or running!"}
         del r, a
         if self._queue.is_empty():
+            del s
             server.debug("[m/backup]: Not starting a Backup as the queue is empty.")
             return {"result": "No Backups are scheduled or could be started!"}
         try:
-            n, s = self._queue.next(server, BACKUP_STATE, path, force)
+            n = self._queue.next(server, s, path, force)
         except OSError as err:
             server.error("[m/backup]: Cannot read the Backup state file!", err)
             return as_error("Cannot read the Backup state!")

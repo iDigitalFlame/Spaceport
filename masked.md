@@ -1,4 +1,5 @@
 alsa-state.service
+audit-rules.service
 connman.service
 dbus-org.bluez.service
 debug-shell.service
@@ -16,7 +17,6 @@ systemd-bsod.service
 systemd-firstboot.service
 systemd-homed.service
 systemd-hwdb-update.service
-systemd-journald-audit.socket
 systemd-network-generator.service
 systemd-pstore.service
 systemd-quotacheck.service

@@ -1,0 +1,84 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile keepassxc /usr/bin/keepassxc {
+    include <abstractions/mesa>
+    include <abstractions/dconf>
+    include <abstractions/gnome>
+    include <abstractions/openssl>
+    include <abstractions/p11-kit>
+    include <abstractions/xdg-open>
+    include <abstractions/nameservice>
+    include <abstractions/dbus-strict>
+    include <abstractions/user-data-ro>
+    include <abstractions/dbus-session-strict>
+    include <abstractions/dbus-accessibility-strict>
+
+    @{etc_ro}/                                       r,
+    @{etc_ro}/libva.conf                             r,
+    /usr/share/keepassxc/**                          r,
+    /usr/share/vulkan/icd.d/{,*}                     r,
+    /usr/share/qt{,*}/resources/**                   r,
+    /usr/share/qt{,*}/translations/*                 r,
+    /usr/share/glvnd/egl_vendor.d/{,*}               r,
+    /usr/share/qt{,*}/qtwebengine_dictionaries/{,**} r,
+
+    /dev/                                            r,
+    /sys/bus/                                        r,
+    /sys/class/                                      r,
+    /{dev,sys}/bus/usb/                              r,
+    @{run}/udev/data/**                              r,
+    /sys/devices/pci*/*/**                           r,
+    /{dev,sys}/bus/usb/devices/{,**}                 r,
+
+    @{PROC}/sys/dev/*/**                             r,
+
+    owner @{HOME}/*                                  rwk,
+    owner @{HOME}/Documents/**                       rwk,
+    owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**            rwk,
+    owner @{HOME}/.cache/qtshadercache-*/{,**}       rwkl,
+    owner @{HOME}/.config/QtProject.conf{,.*lock}    rwk,
+
+    owner /tmp/.mounts/*/**                          rwk,
+
+    deny /usr/bin/                                   r,
+    deny @{HOME}/.cache/keepassxc/keepassxc.ini      w,
+    deny @{HOME}/.config/keepassxc/keepassxc.ini     w,
+
+    include if exists <local/keepassxc>
+}

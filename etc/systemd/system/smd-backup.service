@@ -41,7 +41,7 @@ Description             = System Management Daemon Backup
 [Service]
 Type                    = oneshot
 Group                   = smd
-ExecStart               = /usr/lib/smd/bin/powerctl backup -s
+ExecStart               = /usr/lib/smd/bin/powerctl --exit=0 backup -s
 PrivateTmp              = true
 KeyringMode             = private
 ProtectHome             = true
@@ -50,6 +50,7 @@ PrivateUsers            = true
 ProtectSystem           = strict
 PrivateDevices          = true
 NoNewPrivileges         = true
+RemainAfterExit         = false
 LockPersonality         = true
 RestrictRealtime        = true
 RestrictSUIDSGID        = true

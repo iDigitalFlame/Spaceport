@@ -1,0 +1,97 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
+    include <abstractions/gnome>
+    include <abstractions/openssl>
+    include <abstractions/p11-kit>
+    include <abstractions/xdg-open>
+    include <abstractions/nameservice>
+    include <abstractions/notifications>
+
+    network inet                                         stream,
+    network inet6                                        stream,
+
+    @{etc_ro}/                                           r,
+    @{etc_ro}/arch-release                               r,
+
+    /sys/class/block/                                    r,
+    /sys/devices/pci*/**                                 r,
+    /sys/devices/system/node/                            r,
+    /sys/devices/virtual/block/{,**}                     r,
+    /sys/devices/pci*/**/{,class,config,irq}             r,
+    /sys/devices/pci*/**/{resource,revision,uevent}      r,
+    /sys/devices/pci*/**/{,subsystem_}{device,vendor}    r,
+
+    @{PROC}/                                             r,
+    @{PROC}/uptime                                       r,
+    @{PROC}/partitions                                   r,
+    @{PROC}/sys/dev/*/**                                 r,
+
+    owner @{PROC}/[0-9]*/stat                            r,
+    owner @{PROC}/[0-9]*/mountinfo                       r,
+    owner @{PROC}/[0-9]*/fdinfo/[0-9]*                   r,
+
+    @{HOME}/.local/apps/zohoworkdrive/{,**}              rm,
+
+    @{HOME}/.local/apps/agent.conf                       rw,
+    @{HOME}/.zohoworkdrive/logs/{,*}                     rw,
+    @{HOME}/.local/apps/zohoworkdrive/logs/{,*}          rw,
+    @{HOME}/.local/apps/zohoworkdrive/sync.*             rwk,
+    @{HOME}/.local/apps/zohoworkdrive/zlock              rwk,
+    @{HOME}/Documents/Zoho\ WorkDrive\ \(*\)             rwk,
+    @{HOME}/@{XDG_DESKTOP_DIR}/Zoho\ WorkDrive\ \(*\)    rwk,
+    @{HOME}/@{XDG_DOCUMENTS_DIR}/Zoho\ WorkDrive\ \(*\)  rwk,
+    @{HOME}/.local/apps/zohoworkdrive/config.dat{,-*}    rwk,
+    @{HOME}/.local/apps/zohoworkdrive/resources.db{,-*}  rwk,
+    @{HOME}/.local/apps/zohoworkdrive/office_doc_statsdb rwk,
+
+    /usr/bin/df                                          ix,
+    /usr/bin/ld                                          ix,
+    /usr/bin/gcc                                         ix,
+    /usr/bin/dash                                        ix,
+    /usr/bin/pmap                                        ix,
+    /usr/bin/uname                                       ix,
+    /usr/bin/ldconfig                                    ix,
+    /usr/bin/xdg-open                                    ix,
+
+    # NOTE(dij): This is here to allow for in-memory blob locking
+    /**                                                  rlk,
+
+    include if exists <local/local.apps.workdrived>
+}

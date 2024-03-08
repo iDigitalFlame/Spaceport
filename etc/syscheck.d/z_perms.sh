@@ -146,6 +146,14 @@ chown -R root:root "/opt/secureboot"
 chmod -R 0500 "/opt/secureboot"
 chmod 0400 /opt/secureboot/*
 
+# Secureboot Signer Permissions
+chown root:root "/etc/kernel/cmdline"
+chown root:root "/etc/initcpio/post/sign-image"
+chmod 0400 "/etc/kernel/cmdline"
+chmod 0550 "/etc/initcpio/post/sign-image"
+chmod 0400 "${BASE_DIR}/etc/kernel/cmdline"
+chmod 0550 "${BASE_DIR}/etc/initcpio/post/sign-image"
+
 # Backup Key Permissions
 chown root:root /etc/smd/*.key
 chown root:root /etc/smd/*.ssh

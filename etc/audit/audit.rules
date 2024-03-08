@@ -1,0 +1,53 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Audit Rules Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+-A exclude,always -F msgtype=BPF
+-A exclude,always -F msgtype=SYSCALL
+-A exclude,always -F msgtype=CRED_ACQ
+-A exclude,always -F msgtype=PROCTITLE
+-A exclude,always -F msgtype=CRED_DISP
+-A exclude,always -F exe=/usr/bin/sudo
+-A exclude,always -F msgtype=USER_ACCT
+-A exclude,always -F msgtype=CRED_REFR
+-A exclude,always -F msgtype=USER_START
+-A exclude,always -F msgtype=ANOM_ABEND
+-A exclude,always -F msgtype=DAEMON_END
+-A exclude,always -F msgtype=DAEMON_END
+-A exclude,always -F msgtype=SYSTEM_BOOT
+-A exclude,always -F msgtype=SERVICE_STOP
+-A exclude,always -F msgtype=CONFIG_CHANGE
+-A exclude,always -F msgtype=SERVICE_START
+-A exclude,always -F msgtype=SYSTEM_SHUTDOWN

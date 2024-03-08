@@ -36,7 +36,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    echo "[!] Only root can do this!"
+    echo "Error: root is required!"
     exit 1
 fi
 
@@ -54,6 +54,8 @@ find "/usr/share/themes/DarkSky" -xdev -type f -name .directory -delete
 find "/usr/share/icons/MoonlightSky" -xdev -type f -name .directory -delete
 find "/usr/share/themes/MoonlightSky" -xdev -type f -name .directory -delete
 
-# Fix for Rofi not showing the icons for Codium
 rm -f "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"
+rm -f "/usr/share/icons/kora/apps/scalable/gtk-dialog-warning.svg"
+
 ln -sT "/usr/share/icons/kora/apps/scalable/vscodium.svg" "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"
+ln -sT "/usr/share/icons/kora/apps/scalable/firewall-config.svg" "/usr/share/icons/kora/apps/scalable/gtk-dialog-warning.svg"

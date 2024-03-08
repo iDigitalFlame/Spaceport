@@ -196,9 +196,12 @@ alsa_monitor.rules = {
             {
                 { "api.alsa.card.components", "equals", "USB1532:054e" },
             },
+            {
+                {"api.alsa.card.name", "equals", "Razer Barracuda X"},
+            }
         },
         apply_properties = {
-            ["api.alsa.card.id"] = "Headset",
+            ["device.form_factor"] = "headphone",
         },
     },
 }

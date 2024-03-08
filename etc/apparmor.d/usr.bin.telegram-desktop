@@ -1,0 +1,89 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile telegram-desktop /usr/bin/telegram-desktop {
+    include <abstractions/mesa>
+    include <abstractions/audio>
+    include <abstractions/video>
+    include <abstractions/dconf>
+    include <abstractions/gnome>
+    include <abstractions/p11-kit>
+    include <abstractions/xdg-open>
+    include <abstractions/dbus-strict>
+    include <abstractions/nameservice>
+    include <abstractions/notifications>
+    include <abstractions/user-downloads>
+    include <abstractions/dbus-session-strict>
+    include <abstractions/dbus-accessibility-strict>
+    include <abstractions/dbus-network-manager-strict>
+
+    network inet                                              stream,
+    network inet6                                             stream,
+
+    @{etc_ro}/libva.conf                                      r,
+    /usr/share/vulkan/icd.d/{,**}                             r,
+    /usr/share/glvnd/egl_vendor.d/{,**}                       r,
+
+    /sys/bus/pci/devices/                                     r,
+    /sys/class/power_supply/                                  r,
+    /sys/devices/pci*/**/drm/{,**}                            r,
+    /sys/devices/pci*/**/{,class,config,irq}                  r,
+    /sys/devices/pci*/**/{resource,revision,uevent}           r,
+    /sys/devices/pci*/**/{,subsystem_}{device,vendor}         r,
+    /sys/devices/virtual/dmi/id/{board_name,chassis_type}     r,
+    /sys/devices/virtual/dmi/id/{product_name,product_family} r,
+
+    @{PROC}/sys/dev/*/**                                      r,
+
+    owner @{PROC}/[0-9]*/stat                                 r,
+
+    owner @{run}/user/*/dconf/user                            w,
+
+    owner @{PROC}/[0-9]*/comm                                 rw,
+    owner @{PROC}/[0-9]*/task/[0-9]*/comm                     rw,
+
+    owner @{HOME}/.cache/qtshadercache-*/{,**}                rwkl,
+    owner @{HOME}/.local/share/TelegramDesktop/**             rwkl,
+    owner @{HOME}/.config/QtProject.conf{,.*lock}             rwk,
+    owner @{HOME}/.local/share/TelegramDesktop/{,*}           rw,
+
+    /usr/bin/xdg-open                                         ux,
+    /usr/bin/telegram-desktop                                 ixr,
+
+    include if exists <local/usr.bin.telegram-desktop>
+}

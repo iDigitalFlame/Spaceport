@@ -36,8 +36,6 @@
 
 [Trigger]
 Type        = Package
-Target      = linux
-Target      = linux-*
 Target      = systemd
 Operation   = Install
 Operation   = Upgrade

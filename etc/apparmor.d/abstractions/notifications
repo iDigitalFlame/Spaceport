@@ -1,0 +1,49 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+abi <abi/3.0>,
+
+dbus (receive, send) bus=accessibility,
+dbus (send) bus=session peer=(name=org.a11y.Bus),
+dbus (receive) bus=session interface=org.a11y.atspi*,
+dbus (send) bus=session path=/org/freedesktop/Notifications member=Notify,
+dbus (receive) bus=session member="Notify" peer=(name="org.freedesktop.DBus"),
+dbus (send) bus=session path=/org/freedesktop/Notifications member=GetCapabilities,
+dbus (send) bus=session path=/org/freedesktop/Notifications member=CloseNotification,
+dbus (send) bus=session path=/org/freedesktop/Notifications member=GetServerInformation,
+dbus (receive) bus=session path=/org/freedesktop/Notifications member=NotificationClosed,
+
+deny dbus bus=session path=/com/canonical/[Uu]nity/[Dd]ebug**,

@@ -219,6 +219,7 @@ BACKUP_WAIT_TIME = 86400  # 24Hrs
 BACKUP_DEFAULT_DIR = "/opt/hydra/smd-backup"
 BACKUP_DEFAULT_PORT = 22
 BACKUP_BATTERY_PATH = "/sys/class/power_supply/AC/online"
+BACKUP_BACKOFF_TIME = 900  # 15Min
 
 BACKUP_EXCLUDE = [
     "/dev",

@@ -36,7 +36,7 @@
 #
 
 if ! [ "$USER" = "root" ]; then
-    echo "[!] Only root can do this!"
+    echo "Error: root is required!"
     exit 1
 fi
 

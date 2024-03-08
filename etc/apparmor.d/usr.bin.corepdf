@@ -1,0 +1,72 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile corepdf /usr/bin/corepdf {
+    include <abstractions/gui>
+    include <abstractions/mesa>
+    include <abstractions/nameservice>
+    include <abstractions/user-data-ro>
+
+    @{sysconfig}/usr/share/applications/{,*.desktop}  r,
+
+    /usr/share/icons/**                               r,
+    @{etc_ro}/libva.conf                              r,
+    /usr/share/mime/types                             r,
+    /usr/share/poppler/**                             r,
+    /usr/share/fonts/{,**}                            r,
+    /usr/share/texmf/{,**}                            r,
+    /usr/local/texlive/{,**}                          r,
+    /usr/share/hwdata/pnp.ids                         r,
+    /usr/share/mime/mime.cache                        r,
+    /usr/share/vulkan/icd.d/{,*}                      r,
+    /usr/share/glvnd/egl_vendor.d/{,*}                r,
+    /usr/share/mime/inode/directory.xml               r,
+    /usr/share/applications/{,*.desktop}              r,
+
+    /dev/tty                                          r,
+    /dev/disk/by-label/                               r,
+    /sys/devices/pci*/**/{,class,config,irq}          r,
+    /sys/devices/pci*/**/{resource,revision,uevent}   r,
+    /sys/devices/pci*/**/{,subsystem_}{device,vendor} r,
+
+    @{PROC}/sys/dev/*/**                              r,
+
+    owner @{PROC}/[0-9]*/mountinfo                    r,
+
+    include if exists <local/usr.bin.corepdf>
+}
