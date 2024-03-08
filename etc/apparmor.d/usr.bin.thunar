@@ -42,6 +42,7 @@ profile thunar /usr/bin/{T,t}hunar {
     include <abstractions/user-data>
 
     /{,**}                                                           r,
+    /usr/lib/tumbler-*/plugins/*                                     rm,
 
     owner @{run}/user/*/dconf/user                                   rw,
 
