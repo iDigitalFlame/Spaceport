@@ -39,6 +39,7 @@ include <tunables/global>
 profile slack /usr/lib/slack/slack {
     include <abstractions/video>
     include <abstractions/chromium>
+    include <abstractions/notifications>
     include <abstractions/user-downloads>
 
     @{etc_ro}/arch-release                 r,

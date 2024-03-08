@@ -38,6 +38,7 @@ include <tunables/global>
 
 profile notesnook /{usr/bin,opt/notesnook}/notesnook {
     include <abstractions/chromium>
+    include <abstractions/notifications>
     include <abstractions/user-downloads>
 
     @{etc_ro}/fstab                       r,

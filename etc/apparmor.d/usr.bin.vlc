@@ -59,8 +59,8 @@ profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
 
     @{HOME}/.config/vlc                               r,
 
-    deny @{HOME}/.config/vlc{,*}                      rw,
-    deny @{HOME}/.local/share/vlc                     rw,
+    deny @{HOME}/.config/vlc{,*}                      w,
+    deny @{HOME}/.local/share/vlc                     w,
 
     include if exists <local/vlc>
 }
