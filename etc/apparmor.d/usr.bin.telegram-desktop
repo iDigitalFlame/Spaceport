@@ -68,9 +68,11 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     /sys/devices/virtual/dmi/id/{board_name,chassis_type}     r,
     /sys/devices/virtual/dmi/id/{product_name,product_family} r,
 
+    @{PROC}/version                                           r,
     @{PROC}/sys/dev/*/**                                      r,
 
     owner @{PROC}/[0-9]*/stat                                 r,
+    owner @{PROC}/[0-9]*/cmdline                              r,
 
     owner @{run}/user/*/dconf/user                            w,
 
