@@ -46,6 +46,9 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     include <abstractions/nameservice>
     include <abstractions/user-downloads>
 
+    deny network inet,
+    deny network inet6,
+
     /dev/                                             r,
     @{etc_ro}/libva.conf                              r,
     /opt/ultimaker-cura/{,**}                         rm,

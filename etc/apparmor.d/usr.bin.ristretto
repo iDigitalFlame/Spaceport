@@ -41,6 +41,9 @@ profile ristretto /usr/bin/ristretto {
     include <abstractions/gnome>
     include <abstractions/user-data-ro>
 
+    deny network inet,
+    deny network inet6,
+
     /usr/share/file/misc/magic.mgc                                      r,
 
     owner @{run}/user/*/dconf/user                                      rwk,

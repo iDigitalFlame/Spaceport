@@ -42,6 +42,7 @@ include <abstractions/gnome>
 include <abstractions/p11-kit>
 include <abstractions/openssl>
 include <abstractions/xdg-open>
+include <abstractions/xdg-desktop>
 include <abstractions/cups-client>
 include <abstractions/dbus-strict>
 include <abstractions/nameservice>

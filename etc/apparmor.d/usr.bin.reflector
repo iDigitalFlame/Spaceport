@@ -36,22 +36,22 @@
 
 include <tunables/global>
 
-profile thunar /usr/bin/{T,t}hunar {
-    include <abstractions/gtk>
-    include <abstractions/dconf>
-    include <abstractions/user-data>
+profile reflector /usr/bin/reflector {
+    include <abstractions/base>
+    include <abstractions/python>
+    include <abstractions/openssl>
+    include <abstractions/nameservice>
 
-    deny network inet,
-    deny network inet6,
+    capability dac_override,
 
-    /{,**}                                                           r,
-    /usr/lib/tumbler-*/plugins/*                                     rm,
+    network inet                               stream,
+    network inet6                              stream,
 
-    owner @{run}/user/*/dconf/user                                   rw,
+    /usr/bin/{,reflector}                      r,
+    @{etc_ro}/pacman.d/{,*-}mirrorlist         r,
+    @{etc_ro}/xdg/reflector/reflector.conf     r,
 
-    /usr/lib/gio-launch-desktop                                      ux,
+    /var/cache/pacman/mirror{list,status.json} rw,
 
-    deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml w,
-
-    include if exists <local/usr.bin.thunar>
+    include if exists <local/usr.bin.reflector>
 }

@@ -40,6 +40,9 @@ profile mupdf /usr/bin/mupdf {
     include <abstractions/gui>
     include <abstractions/user-data-ro>
 
+    deny network inet,
+    deny network inet6,
+
     owner /tmp/*.pdf         r,
 
     /usr/bin/mupdf           r,

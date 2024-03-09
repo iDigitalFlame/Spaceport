@@ -41,6 +41,9 @@ profile xpad /usr/bin/xpad {
     include <abstractions/gnome>
     include <abstractions/user-data-ro>
 
+    deny network inet,
+    deny network inet6,
+
     /usr/share/gtksourceview-*/styles/{,**} r,
 
     owner @{run}/user/*/dconf/user          rwk,

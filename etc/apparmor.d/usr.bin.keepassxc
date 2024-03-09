@@ -49,6 +49,9 @@ profile keepassxc /usr/bin/keepassxc {
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
 
+    deny network inet,
+    deny network inet6,
+
     @{etc_ro}/                                       r,
     @{etc_ro}/libva.conf                             r,
     /usr/share/keepassxc/**                          r,

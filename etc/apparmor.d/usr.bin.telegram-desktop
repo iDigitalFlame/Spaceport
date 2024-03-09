@@ -44,6 +44,7 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     include <abstractions/gnome>
     include <abstractions/p11-kit>
     include <abstractions/xdg-open>
+    include <abstractions/xdg-desktop>
     include <abstractions/dbus-strict>
     include <abstractions/nameservice>
     include <abstractions/notifications>
@@ -86,6 +87,8 @@ profile telegram-desktop /usr/bin/telegram-desktop {
 
     /usr/bin/xdg-open                                         ux,
     /usr/bin/telegram-desktop                                 ixr,
+
+    deny @{HOME}/.config/#*                                   w,
 
     include if exists <local/usr.bin.telegram-desktop>
 }

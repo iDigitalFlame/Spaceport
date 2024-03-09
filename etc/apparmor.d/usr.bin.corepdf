@@ -42,6 +42,9 @@ profile corepdf /usr/bin/corepdf {
     include <abstractions/nameservice>
     include <abstractions/user-data-ro>
 
+    deny network inet,
+    deny network inet6,
+
     @{sysconfig}/usr/share/applications/{,*.desktop}  r,
 
     /usr/share/icons/**                               r,

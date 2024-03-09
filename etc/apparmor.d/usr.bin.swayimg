@@ -40,6 +40,9 @@ profile swayimg /usr/bin/swayimg {
     include <abstractions/gui>
     include <abstractions/user-data-ro>
 
+    deny network inet,
+    deny network inet6,
+
     owner /dev/shm/swayimg_* rwk,
 
     include if exists <local/usr.bin.swayimg>

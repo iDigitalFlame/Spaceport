@@ -53,6 +53,7 @@ profile slack /usr/lib/slack/slack {
     owner @{HOME}/.config/Slack/{,**}      rwkl,
 
     /usr/bin/dash                          ix,
+    /usr/bin/xdg-open                      ux,
     /usr/lib/slack/slack                   ix,
     /usr/lib/slack/chrome_crashpad_handler ix,
 
