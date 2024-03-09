@@ -41,9 +41,6 @@ profile xpad /usr/bin/xpad {
     include <abstractions/gnome>
     include <abstractions/user-data-ro>
 
-    deny network inet,
-    deny network inet6,
-
     /usr/share/gtksourceview-*/styles/{,**} r,
 
     owner @{run}/user/*/dconf/user          rwk,
@@ -52,4 +49,7 @@ profile xpad /usr/bin/xpad {
     deny @{HOME}/.config/xpad/default-style w,
 
     include if exists <local/usr.bin.xpad>
+
+    deny network inet,
+    deny network inet6,
 }

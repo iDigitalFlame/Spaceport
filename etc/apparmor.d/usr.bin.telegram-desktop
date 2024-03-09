@@ -57,6 +57,7 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     network inet6                                             stream,
 
     @{etc_ro}/libva.conf                                      r,
+    @{etc_ro}/vdpau_wrapper.cfg                               r,
     /usr/share/vulkan/icd.d/{,**}                             r,
     /usr/share/glvnd/egl_vendor.d/{,**}                       r,
 
@@ -85,7 +86,9 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     owner @{HOME}/.config/QtProject.conf{,.*lock}             rwk,
     owner @{HOME}/.local/share/TelegramDesktop/{,*}           rw,
 
+    # NOTE(dij): See note on the chromium profile.
     /usr/bin/xdg-open                                         ux,
+
     /usr/bin/telegram-desktop                                 ixr,
 
     deny @{HOME}/.config/#*                                   w,

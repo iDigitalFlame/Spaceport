@@ -68,9 +68,18 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf}{,*[^s][^h]} {
     /usr/bin/tr                                                        ixr,
     /usr/bin/pwd                                                       ixr,
     /usr/bin/which                                                     ixr,
+    /usr/bin/xdg-open                                                  ix,
     /usr/lib/gio-launch-desktop                                        ixr,
     /usr/lib/{firefox,librewolf}/**                                    ixr,
     /usr/lib/{firefox,librewolf}/browser/extensions/**                 ixrm,
+
+    # NOTE(dij): Firefox/LibreWolf can run trusted apps in unrestricted mode.
+    /usr/bin/vlc                                                       ux,
+    /usr/bin/leafpad                                                   ux,
+    /usr/bin/swayimg                                                   ux,
+    /usr/bin/ristretto                                                 ux,
+    /usr/bin/{t,T}hunar                                                ux,
+    /usr/bin/{core,mu}pdf                                              ux,
 
     owner @{HOME}/.config/librewolf/**/extensions/**                   ixrm,
     owner @{HOME}/.config/mozilla/firefox/**/extensions/**             ixrm,

@@ -49,10 +49,14 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook {
 
     @{PROC}/version                       r,
 
-    owner @{HOME}/                        r,
     owner @{HOME}/.config/Notesnook/{,**} rwkl,
 
+    # NOTE(dij): See note on the chromium profile.
+    /usr/bin/xdg-open                     ux,
+
     /opt/notesnook/notesnook              ix,
+
+    deny /home/                           r,
 
     include if exists <local/usr.bin.notesnook>
 }

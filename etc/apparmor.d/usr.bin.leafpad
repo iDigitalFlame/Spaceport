@@ -41,14 +41,14 @@ profile leafpad /usr/bin/leafpad {
     include <abstractions/user-data>
     include <abstractions/nameservice>
 
-    deny network inet,
-    deny network inet6,
-
     @{etc_ro}/fstab                    r,
 
     owner @{PROC}/[0-9]*/mountinfo     r,
 
     owner @{HOME}/.config/leafpad/{,*} r,
+
+    deny network inet,
+    deny network inet6,
 
     include if exists <local/usr.bin.leafpad>
 }

@@ -41,15 +41,15 @@ profile ristretto /usr/bin/ristretto {
     include <abstractions/gnome>
     include <abstractions/user-data-ro>
 
-    deny network inet,
-    deny network inet6,
-
     /usr/share/file/misc/magic.mgc                                      r,
 
     owner @{run}/user/*/dconf/user                                      rwk,
 
     deny @{HOME}/.config/ristretto/accels.scm                           w,
     deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml w,
+
+    deny network inet,
+    deny network inet6,
 
     include if exists <local/usr.bin.ristretto>
 }

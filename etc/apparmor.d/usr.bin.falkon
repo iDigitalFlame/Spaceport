@@ -60,7 +60,9 @@ profile falkon /usr/bin/falkon {
 
     owner /tmp/.usercache/*/falkon-*                      rwk,
 
-    /usr/bin/xdg-open                                     ix,
+    # NOTE(dij): See note on the chromium profile.
+    /usr/bin/xdg-open                                     ux,
+
     /usr/lib/qt{,*}/QtWebEngineProcess                    ix,
     /usr/lib/qt{,*}/libexec/QtWebEngineProcess            ix,
 

@@ -49,6 +49,14 @@ profile chromium /usr/bin/chrom{e,ium} {
 
     owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
 
+    # NOTE(dij): Unrestricted open permissions, chrome and it's based
+    #            applications (electron) cannot open files without unrestricted.
+    #            Since xdg-open does not allow for directly running a script or
+    #            executing a non-associated applications, we should be safe. Any
+    #            exploits that target the opening app should be covered by AppArmor
+    #            anyway.
+    /usr/bin/xdg-open                             ux,
+
     /usr/bin/chrom{e,ium}                         ix,
     /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
 

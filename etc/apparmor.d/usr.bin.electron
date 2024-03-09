@@ -47,7 +47,9 @@ profile electron /usr/lib/electron*/electron {
 
     owner @{HOME}/.config/vesktop/{,**}                       rwk,
 
+    # NOTE(dij): See note on the chromium profile.
     /usr/bin/xdg-open                                         ux,
+
     /usr/lib/electron*/electron                               ix,
     /usr/lib/electron*/chrome-sandbox                         ix,
 

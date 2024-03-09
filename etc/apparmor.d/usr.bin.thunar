@@ -41,17 +41,19 @@ profile thunar /usr/bin/{T,t}hunar {
     include <abstractions/dconf>
     include <abstractions/user-data>
 
-    deny network inet,
-    deny network inet6,
-
     /{,**}                                                           r,
     /usr/lib/tumbler-*/plugins/*                                     rm,
 
     owner @{run}/user/*/dconf/user                                   rw,
 
-    /usr/lib/gio-launch-desktop                                      ux,
+    # NOTE(dij): Thunar has unrestricted open permissions as it's needed to
+    #            open any file when using it to browse the filesystem.
+    /usr/bin/xdg-open                                                ux,
 
     deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml w,
+
+    deny network inet,
+    deny network inet6,
 
     include if exists <local/usr.bin.thunar>
 }

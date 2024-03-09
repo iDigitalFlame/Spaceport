@@ -52,6 +52,7 @@ profile slack /usr/lib/slack/slack {
     owner @{HOME}/                         r,
     owner @{HOME}/.config/Slack/{,**}      rwkl,
 
+    # NOTE(dij): Unrestricted open permissions, since it's an electron app.
     /usr/bin/dash                          ix,
     /usr/bin/xdg-open                      ux,
     /usr/lib/slack/slack                   ix,

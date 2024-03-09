@@ -90,10 +90,17 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     /usr/bin/pmap                                            ix,
     /usr/bin/uname                                           ix,
     /usr/bin/ldconfig                                        ix,
-    /usr/bin/xdg-open                                        ix,
+    /usr/bin/dbus-send                                       ix,
 
     # NOTE(dij): This is here to allow for in-memory blob locking
     /**                                                      rlk,
+
+    # NOTE(dij): WorkDrive doesn't need to open things.
+    deny /usr/bin/file                                       x,
+    deny /usr/bin/xprop                                      x,
+    deny /usr/bin/hostname                                   x,
+    deny /usr/bin/realpath                                   x,
+    deny /usr/bin/xdg-open                                   x,
 
     include if exists <local/local.apps.workdrived>
 }
