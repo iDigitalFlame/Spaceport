@@ -43,13 +43,13 @@ profile xpad /usr/bin/xpad {
 
     /usr/share/gtksourceview-*/styles/{,**} r,
 
-    owner @{run}/user/*/dconf/user          rwk,
     owner @{HOME}/.config/xpad/{,*}         rw,
+    owner @{run}/user/@{uid}/dconf/user     rw,
 
     deny @{HOME}/.config/xpad/default-style w,
 
-    include if exists <local/usr.bin.xpad>
-
     deny network inet,
     deny network inet6,
+
+    include if exists <local/usr.bin.xpad>
 }

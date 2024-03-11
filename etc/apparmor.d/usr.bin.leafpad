@@ -42,8 +42,9 @@ profile leafpad /usr/bin/leafpad {
     include <abstractions/nameservice>
 
     @{etc_ro}/fstab                    r,
+    /usr/bin/leafpad                   rm,
 
-    owner @{PROC}/[0-9]*/mountinfo     r,
+    owner @{PROC}/@{pid}/mountinfo     r,
 
     owner @{HOME}/.config/leafpad/{,*} r,
 

@@ -38,6 +38,7 @@ abi <abi/3.0>,
 
 include <abstractions/X>
 include <abstractions/base>
+include <abstractions/mime>
 include <abstractions/fonts>
 include <abstractions/wayland>
 
@@ -45,20 +46,15 @@ include <abstractions/wayland>
 @{sysconfig}/usr/share/icons/**                        r,
 @{sysconfig}/usr/share/themes/**                       r,
 @{sysconfig}/usr/share/cursors/**                      r,
-@{sysconfig}/usr/share/applications/mimeinfo.cache     r,
 
+@{etc_ro}/                                             r,
 /usr/share/icons/**                                    r,
 /usr/share/themes/**                                   r,
 /usr/share/cursors/**                                  r,
+/usr/share/fonts/{,**}                                 r,
 /usr/share/hunspell/{,**}                              r,
-/usr/share/applications/defaults.list                  r,
-/usr/share/applications/mimeapps.list                  r,
 
-owner @{HOME}/.config/gtk-2.0/{,*}                     r,
-owner @{HOME}/.config/gtk-{3,4}.0/{,*}                 r,
+owner @{HOME}/.config/gtk-{2,3,4}.0/{,*}               r,
 owner @{HOME}/.config/gtk-2.0/gtkfilechooser.ini*      r,
-owner @{HOME}/.local/share/applications/defaults.list  r,
-owner @{HOME}/.local/share/applications/mimeapps.list  r,
-owner @{HOME}/.local/share/applications/mimeinfo.cache r,
 
 deny @{HOME}/.xsession-errors                          rw,

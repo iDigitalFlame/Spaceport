@@ -36,8 +36,8 @@
 
 owner @{HOME}/.local/share/gnupg/options     r,
 owner @{HOME}/.local/share/gnupg/pubring.gpg r,
-owner @{HOME}/.local/share/gnupg/pubring.kbx r,
-owner @{HOME}/.local/share/gnupg/random_seed rw,
 owner @{HOME}/.local/share/gnupg/secring.gpg r,
+owner @{HOME}/.local/share/gnupg/pubring.kbx r,
 owner @{HOME}/.local/share/gnupg/so/*.x86_64 rm,
+owner @{HOME}/.local/share/gnupg/random_seed rw,
 owner @{HOME}/.local/share/gnupg/trustdb.gpg rw,

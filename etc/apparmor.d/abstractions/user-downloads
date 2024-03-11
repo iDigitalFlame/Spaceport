@@ -38,10 +38,11 @@ abi <abi/3.0>,
 
 include <abstractions/user-data-ro>
 
-deny @{HOME}/.*                     rw,
-deny @{HOME}/Downloads/.*           rw,
-deny @{HOME}/@{XDG_DOWNLOAD_DIR}/.* rw,
+deny @{HOME}/.*                           rw,
+deny @{HOME}/Downloads/.*                 rw,
+deny @{HOME}/@{XDG_DOWNLOAD_DIR}/.*       rw,
 
-@{HOME}/*                           rw,
-@{HOME}/Downloads/*                 rw,
-@{HOME}/@{XDG_DOWNLOAD_DIR}/*       rw,
+owner @{HOME}/*                           rw,
+owner @{HOME}/[^.]*/**                    rw, # Allow subdirectories of non dot-files
+owner @{HOME}/Downloads/*                 rw,
+owner @{HOME}/@{XDG_DOWNLOAD_DIR}/*       rw,

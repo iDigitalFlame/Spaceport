@@ -1,7 +1,6 @@
 apparmor.service
 auditd.service
 cups.path
-cups.service
 cups.socket
 fstrim.timer
 getty@.service

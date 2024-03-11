@@ -37,24 +37,25 @@
 include <tunables/global>
 
 profile qtws /usr/bin/qtws {
-    include <abstractions/mesa>
+    include <abstractions/qt>
     include <abstractions/chromium>
 
-    /usr/share/qt{,*}/resources/**                        r,
-    /usr/share/qt{,*}/qtwebengine_dictionaries/{,**}      r,
-    /usr/share/qt{,*}/translations/qtwebengine_locales/** r,
     /usr/share/qtws-apps/youtube-music/youtube-music.qtws r,
 
     owner @{HOME}/.cache/qtws/**                          rwkl,
     owner @{HOME}/.local/share/qtws/**                    rwk,
-    owner @{HOME}/.cache/qtshadercache-*/{,**}            rwkl,
+    owner @{HOME}/.config/user-dirs.dirs                  r,
     owner @{HOME}/.config/qtws_Youtube\ Music/*           rw,
+    owner @{HOME}/.private/.config/user-dirs.dirs         r,
+    owner @{HOME}/.dotfiles/.config/user-dirs.dirs        r,
 
     /usr/lib/qt{,*}/QtWebEngineProcess                    ix,
     /usr/lib/qt{,*}/libexec/QtWebEngineProcess            ix,
 
     # NOTE(dij): This is here to allow for in-memory blob locking
     /**                                                   lk,
+
+    deny /dev/tty                                         rw,
 
     include if exists <local/usr.bin.qtws>
 }

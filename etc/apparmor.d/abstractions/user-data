@@ -36,13 +36,10 @@
 
 abi <abi/3.0>,
 
-/mnt/{,**}                 rw,
-/media/{,**}               rw,
+include <abstractions/private-files>
 
 owner /tmp/*               rw,
 owner /mnt/{,**}           rw,
 owner /media/{,**}         rw,
 owner @{HOME}/{,**}        rw,
 owner /tmp/.mounts/*/{,**} rw,
-
-include <abstractions/private-files>

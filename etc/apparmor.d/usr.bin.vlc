@@ -37,7 +37,8 @@
 include <tunables/global>
 
 profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
-    include <abstractions/mesa>
+    include <abstractions/qt>
+    include <abstractions/dri>
     include <abstractions/dconf>
     include <abstractions/gnome>
     include <abstractions/openssl>
@@ -48,19 +49,16 @@ profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
 
-    /usr/lib/vlc/**                                   rm,
-    /usr/share/vlc/**                                 r,
+    /usr/lib/vlc/**               rm,
+    /usr/share/vlc/**             r,
 
-    /dev/sr*                                          r,
-    /dev/dvb/**                                       r,
-    /sys/devices/pci*/**/{,class,config,irq}          r,
-    /sys/devices/pci*/**/{resource,revision,uevent}   r,
-    /sys/devices/pci*/**/{,subsystem_}{device,vendor} r,
+    /dev/sr*                      r,
+    /dev/dvb/**                   r,
 
-    @{HOME}/.config/vlc                               r,
+    @{HOME}/.config/vlc           r,
 
-    deny @{HOME}/.config/vlc{,*}                      w,
-    deny @{HOME}/.local/share/vlc                     w,
+    deny @{HOME}/.config/vlc{,*}  w,
+    deny @{HOME}/.local/share/vlc w,
 
-    include if exists <local/vlc>
+    include if exists <local/usr.bin.vlc>
 }

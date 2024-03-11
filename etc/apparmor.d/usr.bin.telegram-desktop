@@ -37,12 +37,14 @@
 include <tunables/global>
 
 profile telegram-desktop /usr/bin/telegram-desktop {
-    include <abstractions/mesa>
+    include <abstractions/qt>
+    include <abstractions/dri>
     include <abstractions/audio>
     include <abstractions/video>
     include <abstractions/dconf>
     include <abstractions/gnome>
     include <abstractions/p11-kit>
+    include <abstractions/version>
     include <abstractions/xdg-open>
     include <abstractions/xdg-desktop>
     include <abstractions/dbus-strict>
@@ -53,45 +55,24 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     include <abstractions/dbus-accessibility-strict>
     include <abstractions/dbus-network-manager-strict>
 
-    network inet                                              stream,
-    network inet6                                             stream,
+    network inet                                    stream,
+    network inet6                                   stream,
 
-    @{etc_ro}/libva.conf                                      r,
-    @{etc_ro}/vdpau_wrapper.cfg                               r,
-    /usr/share/vulkan/icd.d/{,**}                             r,
-    /usr/share/glvnd/egl_vendor.d/{,**}                       r,
+    owner @{PROC}/@{pid}/stat                       r,
+    owner @{PROC}/@{pid}/cmdline                    r,
 
-    /sys/bus/pci/devices/                                     r,
-    /sys/class/power_supply/                                  r,
-    /sys/devices/pci*/**/drm/{,**}                            r,
-    /sys/devices/pci*/**/{,class,config,irq}                  r,
-    /sys/devices/pci*/**/{resource,revision,uevent}           r,
-    /sys/devices/pci*/**/{,subsystem_}{device,vendor}         r,
-    /sys/devices/virtual/dmi/id/{board_name,chassis_type}     r,
-    /sys/devices/virtual/dmi/id/{product_name,product_family} r,
+    owner @{run}/user/@{uid}/dconf/user             w,
 
-    @{PROC}/version                                           r,
-    @{PROC}/sys/dev/*/**                                      r,
+    owner @{PROC}/@{pid}/comm                       rw,
+    owner @{PROC}/@{pid}/task/@{tid}/comm           rw,
 
-    owner @{PROC}/[0-9]*/stat                                 r,
-    owner @{PROC}/[0-9]*/cmdline                              r,
+    owner @{HOME}/.local/share/TelegramDesktop/**   rwkl,
+    owner @{HOME}/.local/share/TelegramDesktop/{,*} rw,
 
-    owner @{run}/user/*/dconf/user                            w,
+    /usr/bin/xdg-open                               Px -> xdg-open,
+    /usr/bin/telegram-desktop                       ixr,
 
-    owner @{PROC}/[0-9]*/comm                                 rw,
-    owner @{PROC}/[0-9]*/task/[0-9]*/comm                     rw,
-
-    owner @{HOME}/.cache/qtshadercache-*/{,**}                rwkl,
-    owner @{HOME}/.local/share/TelegramDesktop/**             rwkl,
-    owner @{HOME}/.config/QtProject.conf{,.*lock}             rwk,
-    owner @{HOME}/.local/share/TelegramDesktop/{,*}           rw,
-
-    # NOTE(dij): See note on the chromium profile.
-    /usr/bin/xdg-open                                         ux,
-
-    /usr/bin/telegram-desktop                                 ixr,
-
-    deny @{HOME}/.config/#*                                   w,
+    deny @{sys}/class/power_supply/                 r,
 
     include if exists <local/usr.bin.telegram-desktop>
 }

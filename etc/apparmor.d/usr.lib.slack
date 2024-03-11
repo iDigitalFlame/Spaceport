@@ -36,27 +36,27 @@
 
 include <tunables/global>
 
-profile slack /usr/lib/slack/slack {
+profile slack /usr/{bin,lib}/slack{,/slack} {
     include <abstractions/video>
+    include <abstractions/version>
     include <abstractions/chromium>
     include <abstractions/notifications>
     include <abstractions/user-downloads>
 
-    @{etc_ro}/arch-release                 r,
     /usr/lib/slack/resources/**            rm,
-
-    /sys/devices/pci*/*/**                 r,
-
-    @{PROC}/version                        r,
 
     owner @{HOME}/                         r,
     owner @{HOME}/.config/Slack/{,**}      rwkl,
 
-    # NOTE(dij): Unrestricted open permissions, since it's an electron app.
-    /usr/bin/dash                          ix,
-    /usr/bin/xdg-open                      ux,
+    /usr/bin/xdg-open                      Px -> xdg-open,
     /usr/lib/slack/slack                   ix,
     /usr/lib/slack/chrome_crashpad_handler ix,
+
+    # No Slack, bad!
+    deny /usr/bin/zsh                      x,
+    deny /usr/bin/dash                     x,
+    deny /usr/bin/bash                     x,
+    deny /usr/bin/grep                     x,
 
     include if exists <local/usr.lib.slack>
 }

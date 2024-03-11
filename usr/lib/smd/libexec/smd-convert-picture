@@ -38,11 +38,11 @@
 #   Converts a picture to a cache file to be used for the Lockscreen.
 #
 # Usage:
-#  smd-convert-picture <width> <height> <source> <destination>
+#   smd-convert-picture <width> <height> <source> <destination>
 #
 # Exit Codes:
-#  0 - Conversion completed
-#  1 - Errors occcured
+#   0 - Conversion completed
+#   1 - Errors occcured
 
 # Enable Strict Mode
 set -u

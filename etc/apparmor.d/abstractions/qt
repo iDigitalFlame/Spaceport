@@ -34,19 +34,20 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+abi <abi/3.0>,
 
-profile swayimg /usr/bin/swayimg {
-    include <abstractions/gui>
-    include <abstractions/xdg-desktop>
-    include <abstractions/user-data-ro>
+include <abstractions/gui>
+include <abstractions/mesa>
+include <abstractions/vulkan>
 
-    /usr/bin/swayimg         rm,
+/usr/share/qt{,*}/resources/**                              r,
+/usr/share/qt{,*}/translations/**                           r,
+/usr/share/qt{,*}/qtwebengine_dictionaries/{,**}            r,
 
-    owner /dev/shm/swayimg_* rwk,
-
-    deny network inet,
-    deny network inet6,
-
-    include if exists <local/usr.bin.swayimg>
-}
+owner @{HOME}/.cache/#[0-9]*[0-9]                           rw,
+owner @{HOME}/.config/#[0-9]*[0-9]                          rw,
+owner @{HOME}/.config/QtProject.conf                        rwl -> @{HOME}/.config/#[0-9]*[0-9],
+owner @{HOME}/.config/QtProject.conf.lock                   rwk,
+owner @{HOME}/.cache/qtshadercache-*/{,**}                  rwkl,
+owner @{HOME}/.config/QtProject.conf.??????                 rwl -> @{HOME}/.config/#[0-9]*[0-9],
+owner @{HOME}/.cache/qt_compose_cache_{little,big}_endian_* rwl -> @{HOME}/.cache/#[0-9]*[0-9],

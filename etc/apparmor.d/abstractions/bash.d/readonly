@@ -34,4 +34,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{HOME}/.bash_history r,
+owner @{HOME}/.bash_history        r,
+owner @{HOME}/.config/zsh/history  r,
+owner @{HOME}/.config/bash/history r,
+
+deny @{HOME}/.bash_history         w,
+deny @{HOME}/.config/zsh/history   w,
+deny @{HOME}/.config/bash/history  w,

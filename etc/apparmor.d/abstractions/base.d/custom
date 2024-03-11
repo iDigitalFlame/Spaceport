@@ -34,14 +34,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{etc_ro}/timezone             r,
-@{etc_ro}/mime.types           r,
-@{etc_ro}/gnutls/config        r,
+@{etc_ro}/timezone              r,
+@{etc_ro}/gnutls/config         r,
 
-/var/cache/ld.so.cache         rm,
+/var/cache/ld.so.cache          rm,
 
-@{HOME}/.config/user-dirs.dirs r,
-
-deny /opt/secureboot/{,*}      rw,
+audit deny /opt/secureboot/{,*} rw,
 
 deny ptrace (readby, tracedby),

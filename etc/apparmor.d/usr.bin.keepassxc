@@ -37,48 +37,38 @@
 include <tunables/global>
 
 profile keepassxc /usr/bin/keepassxc {
-    include <abstractions/mesa>
+    include <abstractions/qt>
     include <abstractions/dconf>
     include <abstractions/gnome>
     include <abstractions/openssl>
     include <abstractions/p11-kit>
-    include <abstractions/xdg-open>
     include <abstractions/nameservice>
     include <abstractions/dbus-strict>
     include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
 
-    @{etc_ro}/                                       r,
-    @{etc_ro}/libva.conf                             r,
-    /usr/share/keepassxc/**                          r,
-    /usr/share/vulkan/icd.d/{,*}                     r,
-    /usr/share/qt{,*}/resources/**                   r,
-    /usr/share/qt{,*}/translations/*                 r,
-    /usr/share/glvnd/egl_vendor.d/{,*}               r,
-    /usr/share/qt{,*}/qtwebengine_dictionaries/{,**} r,
+    /usr/share/keepassxc/**                      r,
 
-    /dev/                                            r,
-    /sys/bus/                                        r,
-    /sys/class/                                      r,
-    /{dev,sys}/bus/usb/                              r,
-    @{run}/udev/data/**                              r,
-    /sys/devices/pci*/*/**                           r,
-    /{dev,sys}/bus/usb/devices/{,**}                 r,
+    /dev/                                        r,
+    @{sys}/bus/                                  r,
+    @{sys}/class/                                r,
+    @{run}/udev/data/**                          r,
+    /{dev,sys}/bus/usb/                          r,
+    @{sys}/devices/pci*/*/**                     r,
+    /{dev,sys}/bus/usb/devices/{,**}             r,
 
-    @{PROC}/sys/dev/*/**                             r,
 
-    owner @{HOME}/*                                  rwk,
-    owner @{HOME}/Documents/**                       rwk,
-    owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**            rwk,
-    owner @{HOME}/.cache/qtshadercache-*/{,**}       rwkl,
-    owner @{HOME}/.config/QtProject.conf{,.*lock}    rwk,
+    owner @{HOME}/*                              rwk,
+    owner @{HOME}/Documents/**                   rwk,
+    owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**        rwk,
 
-    owner /tmp/.mounts/*/**                          rwk,
+    owner /tmp/.mounts/*/**                      rwk,
 
-    deny /usr/bin/                                   r,
-    deny @{HOME}/.cache/keepassxc/keepassxc.ini      w,
-    deny @{HOME}/.config/keepassxc/keepassxc.ini     w,
+    deny /dev/tty                                rw,
+    deny /usr/bin/                               r,
+    deny @{HOME}/.cache/keepassxc/keepassxc.ini  w,
+    deny @{HOME}/.config/keepassxc/keepassxc.ini w,
 
     deny network inet,
     deny network inet6,

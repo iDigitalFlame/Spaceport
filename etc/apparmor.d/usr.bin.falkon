@@ -37,34 +37,28 @@
 include <tunables/global>
 
 profile falkon /usr/bin/falkon {
-    include <abstractions/mesa>
+    include <abstractions/qt>
     include <abstractions/chromium>
     include <abstractions/notifications>
     include <abstractions/user-downloads>
 
-    @{sysconfig}/usr/share/falkon/themes/{,**}            r,
+    @{sysconfig}/usr/share/falkon/themes/{,**} r,
 
-    /usr/share/falkon/themes/{,**}                        r,
-    /usr/share/qt{,*}/resources/**                        r,
-    /usr/lib/qt{,*}/plugins/falkon/                       r,
-    /usr/lib/qt{,*}/plugins/falkon/*.so                   rm,
-    /usr/share/qt{,*}/qtwebengine_dictionaries/{,**}      r,
-    /usr/share/qt{,*}/translations/qtwebengine_locales/** r,
+    /usr/share/falkon/themes/{,**}             r,
+    /usr/lib/qt{,*}/plugins/falkon/            r,
+    /usr/lib/qt{,*}/plugins/falkon/*.so        rm,
 
-    /sys/devices/virtual/tty/tty*/active                  r,
+    /sys/devices/virtual/tty/tty*/active       r,
 
-    owner @{HOME}/.cache/falkon/{,**}                     rwk,
-    owner @{HOME}/.local/share/falkon/{,**}               rw,
-    owner @{HOME}/.config/falkon/profiles/**              rwkl,
-    owner @{HOME}/.cache/qtshadercache-*/{,**}            rwkl,
+    owner @{HOME}/.cache/falkon/{,**}          rwk,
+    owner @{HOME}/.local/share/falkon/{,**}    rw,
+    owner @{HOME}/.config/falkon/profiles/**   rwkl,
 
-    owner /tmp/.usercache/*/falkon-*                      rwk,
+    owner /tmp/.usercache/*/falkon-*           rwk,
 
-    # NOTE(dij): See note on the chromium profile.
-    /usr/bin/xdg-open                                     ux,
-
-    /usr/lib/qt{,*}/QtWebEngineProcess                    ix,
-    /usr/lib/qt{,*}/libexec/QtWebEngineProcess            ix,
+    /usr/bin/xdg-open                          Px -> xdg-open,
+    /usr/lib/qt{,*}/QtWebEngineProcess         ix,
+    /usr/lib/qt{,*}/libexec/QtWebEngineProcess ix,
 
     include if exists <local/usr.bin.falkon>
 }

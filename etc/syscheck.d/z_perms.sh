@@ -208,7 +208,7 @@ chmod 0400 /usr/share/applications/notesnook.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/cmake-gui.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/vncviewer.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/nextcloud.desktop 2> /dev/null
-chmod 0400 /usr/share/applications/electron28.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/electron*.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/galculator.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/lxshortcut.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/hwmixvolume.desktop 2> /dev/null

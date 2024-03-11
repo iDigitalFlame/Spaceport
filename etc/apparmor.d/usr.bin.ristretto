@@ -41,9 +41,7 @@ profile ristretto /usr/bin/ristretto {
     include <abstractions/gnome>
     include <abstractions/user-data-ro>
 
-    /usr/share/file/misc/magic.mgc                                      r,
-
-    owner @{run}/user/*/dconf/user                                      rwk,
+    owner @{run}/user/@{uid}/dconf/user                                 rw,
 
     deny @{HOME}/.config/ristretto/accels.scm                           w,
     deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml w,

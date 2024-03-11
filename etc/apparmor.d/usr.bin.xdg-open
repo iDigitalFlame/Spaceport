@@ -1,0 +1,80 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+# NOTE(dij): Only used to transition to xdg-open and open stuff. Only allows
+#            launching most stuff we "own" (user files) and has a specific list
+#            of allowed items who also have their own profiles.
+profile xdg-open {
+    include <abstractions/base>
+    include <abstractions/mime>
+    include <abstractions/xdg-open>
+    include <abstractions/xdg-desktop>
+    include <abstractions/user-data-ro>
+
+    @{PROC}/version                                        r,
+
+    /usr/bin/env                                           ix,
+    /usr/bin/file                                          ix,
+    /usr/bin/gawk                                          ix,
+    /usr/bin/xprop                                         ix,
+    /usr/bin/uname                                         ix,
+    /usr/bin/printf                                        ix,
+    /usr/bin/basename                                      ix,
+    /usr/bin/realpath                                      ix,
+    /usr/bin/hostname                                      ix,
+    /usr/bin/dbus-send                                     ix,
+
+    /usr/bin/vlc                                           Px,
+    /usr/bin/leafpad                                       Px,
+    /usr/bin/swayimg                                       Px,
+    /usr/bin/ristretto                                     Px,
+    /usr/bin/{t,T}hunar                                    Px,
+    /usr/bin/{core,mu}pdf                                  Px,
+    /usr/bin/chrom{e,ium}                                  Px,
+    /usr/bin/telegram-desktop                              Px,
+    /usr/{bin,lib}/slack{,/slack}                          Px,
+    /usr/{bin/electron*,lib/electron*/electron}            Px,
+    /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura       Px,
+    /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
+
+    owner @{HOME}/.local/bin/**                            ux,
+    owner @{HOME}/.private/.local/bin/**                   ux,
+    owner @{HOME}/.dotfiles/.local/bin/**                  ux,
+
+    include if exists <local/usr.bin.xdg-open>
+}

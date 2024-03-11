@@ -37,36 +37,23 @@
 include <tunables/global>
 
 profile corepdf /usr/bin/corepdf {
+    include <abstractions/dri>
     include <abstractions/gui>
     include <abstractions/mesa>
+    include <abstractions/vulkan>
     include <abstractions/nameservice>
+    include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
-    @{sysconfig}/usr/share/applications/{,*.desktop}  r,
+    /usr/share/poppler/**          r,
+    /usr/share/texmf/{,**}         r,
+    /usr/local/texlive/{,**}       r,
+    /usr/share/hwdata/pnp.ids      r,
 
-    /usr/share/icons/**                               r,
-    @{etc_ro}/libva.conf                              r,
-    /usr/share/mime/types                             r,
-    /usr/share/poppler/**                             r,
-    /usr/share/fonts/{,**}                            r,
-    /usr/share/texmf/{,**}                            r,
-    /usr/local/texlive/{,**}                          r,
-    /usr/share/hwdata/pnp.ids                         r,
-    /usr/share/mime/mime.cache                        r,
-    /usr/share/vulkan/icd.d/{,*}                      r,
-    /usr/share/glvnd/egl_vendor.d/{,*}                r,
-    /usr/share/mime/inode/directory.xml               r,
-    /usr/share/applications/{,*.desktop}              r,
+    owner @{PROC}/@{pid}/mountinfo r,
 
-    /dev/tty                                          r,
-    /dev/disk/by-label/                               r,
-    /sys/devices/pci*/**/{,class,config,irq}          r,
-    /sys/devices/pci*/**/{resource,revision,uevent}   r,
-    /sys/devices/pci*/**/{,subsystem_}{device,vendor} r,
-
-    @{PROC}/sys/dev/*/**                              r,
-
-    owner @{PROC}/[0-9]*/mountinfo                    r,
+    deny /dev/tty                  r,
+    deny /dev/disk/by-label/       r,
 
     deny network inet,
     deny network inet6,

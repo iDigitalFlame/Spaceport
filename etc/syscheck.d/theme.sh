@@ -54,8 +54,5 @@ find "/usr/share/themes/DarkSky" -xdev -type f -name .directory -delete
 find "/usr/share/icons/MoonlightSky" -xdev -type f -name .directory -delete
 find "/usr/share/themes/MoonlightSky" -xdev -type f -name .directory -delete
 
-rm -f "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"
-rm -f "/usr/share/icons/kora/apps/scalable/gtk-dialog-warning.svg"
-
-ln -sT "/usr/share/icons/kora/apps/scalable/vscodium.svg" "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg"
-ln -sT "/usr/share/icons/kora/apps/scalable/firewall-config.svg" "/usr/share/icons/kora/apps/scalable/gtk-dialog-warning.svg"
+linkcheck "/usr/share/icons/kora/apps/scalable/codium-url-handler.svg" "/usr/share/icons/kora/apps/scalable/vscodium.svg"
+linkcheck "/usr/share/icons/kora/apps/scalable/gtk-dialog-warning.svg" "/usr/share/icons/kora/apps/scalable/firewall-config.svg"

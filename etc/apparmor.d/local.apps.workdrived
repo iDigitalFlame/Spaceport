@@ -37,70 +37,73 @@
 include <tunables/global>
 
 profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
+    include <abstractions/dri>
     include <abstractions/gnome>
     include <abstractions/openssl>
     include <abstractions/p11-kit>
-    include <abstractions/xdg-open>
+    include <abstractions/version>
     include <abstractions/nameservice>
     include <abstractions/notifications>
 
     network inet                                             stream,
     network inet6                                            stream,
 
-    @{etc_ro}/                                               r,
-    @{etc_ro}/arch-release                                   r,
+    @{sys}/class/block/                                            r,
+    @{sys}/devices/system/node/                                    r,
+    @{sys}/devices/virtual/block/                                  r,
+    @{sys}/devices/virtual/block/*/dev                             r,
 
-    /sys/class/block/                                        r,
-    /sys/devices/pci*/**                                     r,
-    /sys/devices/system/node/                                r,
-    /sys/devices/virtual/block/{,**}                         r,
-    /sys/devices/pci*/**/{,class,config,irq}                 r,
-    /sys/devices/pci*/**/{resource,revision,uevent}          r,
-    /sys/devices/pci*/**/{,subsystem_}{device,vendor}        r,
+    @{PROC}/                                                       r,
+    @{PROC}/uptime                                                 r,
+    @{PROC}/partitions                                             r,
 
-    @{PROC}/                                                 r,
-    @{PROC}/uptime                                           r,
-    @{PROC}/partitions                                       r,
-    @{PROC}/sys/dev/*/**                                     r,
+    owner @{PROC}/@{pid}/stat                                      r,
+    owner @{PROC}/@{pid}/mountinfo                                 r,
+    owner @{PROC}/@{pid}/fdinfo/@{tid}                             r,
 
-    owner @{PROC}/[0-9]*/stat                                r,
-    owner @{PROC}/[0-9]*/mountinfo                           r,
-    owner @{PROC}/[0-9]*/fdinfo/[0-9]*                       r,
+    @{HOME}/.local/apps/zohoworkdrive/{,**}                        rm,
 
-    @{HOME}/.local/apps/zohoworkdrive/{,**}                  rm,
-    @{HOME}/.local/apps/zohoworkdrive/backup/{,**}           rwk,
+    owner @{HOME}/.local/apps/agent.conf                           rw,
+    owner @{HOME}/.zohoworkdrive/logs/{,*}                         rw,
+    owner @{HOME}/.local/apps/zohoworkdrive/sync.*                 rwk,
+    owner @{HOME}/.local/apps/zohoworkdrive/zlock                  rwk,
+    owner @{HOME}/.local/apps/zohoworkdrive/logs/{,*}              rw,
+    owner @{HOME}/.local/apps/zohoworkdrive/backup/{,**}           rwk,
+    owner @{HOME}/.local/apps/zohoworkdrive/config.dat{,-*}        rwk,
+    owner @{HOME}/.local/apps/zohoworkdrive/resources.db{,-*}      rwk,
+    owner  @{HOME}/.local/apps/zohoworkdrive/office_doc_statsdb    rwk,
 
-    @{HOME}/.local/apps/agent.conf                           rw,
-    @{HOME}/.zohoworkdrive/logs/{,*}                         rw,
-    @{HOME}/.local/apps/zohoworkdrive/logs/{,*}              rw,
-    @{HOME}/.local/apps/zohoworkdrive/sync.*                 rwk,
-    @{HOME}/.local/apps/zohoworkdrive/zlock                  rwk,
-    @{HOME}/Documents/Zoho\ WorkDrive\ \(*\)/{,**}           rwk,
-    @{HOME}/Zoho\ WorkDrive\ \(*\)/{,**}                     rwk,
-    @{HOME}/@{XDG_DESKTOP_DIR}/Zoho\ WorkDrive\ \(*\){,**}   rwk,
-    @{HOME}/@{XDG_DOCUMENTS_DIR}/Zoho\ WorkDrive\ \(*\){,**} rwk,
-    @{HOME}/.local/apps/zohoworkdrive/config.dat{,-*}        rwk,
-    @{HOME}/.local/apps/zohoworkdrive/resources.db{,-*}      rwk,
-    @{HOME}/.local/apps/zohoworkdrive/office_doc_statsdb     rwk,
+    owner @{HOME}/Zoho\ WorkDrive\ \(*\)/{,**}                     rwk,
+    owner @{HOME}/Documents/Zoho\ WorkDrive\ \(*\)/{,**}           rwk,
+    owner @{HOME}/@{XDG_DESKTOP_DIR}/Zoho\ WorkDrive\ \(*\){,**}   rwk,
+    owner @{HOME}/@{XDG_DOCUMENTS_DIR}/Zoho\ WorkDrive\ \(*\){,**} rwk,
 
-    /usr/bin/df                                              ix,
-    /usr/bin/ld                                              ix,
-    /usr/bin/gcc                                             ix,
-    /usr/bin/dash                                            ix,
-    /usr/bin/pmap                                            ix,
-    /usr/bin/uname                                           ix,
-    /usr/bin/ldconfig                                        ix,
-    /usr/bin/dbus-send                                       ix,
+    # NOTE(dij): Did some debugging, apparently these are called to grab some
+    #            info about the process itself and the environment (mostly disk data).
+    #            This app ships with an entire Python backend with Qt, not sure
+    #            why they're just parsing the output of shell commands to get instead
+    #            of using syscalls.
+    #            The gcc and ld seem to be here to pre-compile some of the Python
+    #            code on the fly.
+    /usr/bin/df                                                    ix, # df -T
+    /usr/bin/ld                                                    ix,
+    /usr/bin/gcc                                                   ix,
+    /usr/bin/dash                                                  ix, # only needed for launching main
+    /usr/bin/ldconfig                                              ix, # ldconfig -p
+    /usr/bin/dbus-send                                             ix,
 
     # NOTE(dij): This is here to allow for in-memory blob locking
-    /**                                                      rlk,
+    /**                                                            rlk,
 
     # NOTE(dij): WorkDrive doesn't need to open things.
-    deny /usr/bin/file                                       x,
-    deny /usr/bin/xprop                                      x,
-    deny /usr/bin/hostname                                   x,
-    deny /usr/bin/realpath                                   x,
-    deny /usr/bin/xdg-open                                   x,
+    deny /usr/bin/file                                             x,
+    deny /usr/bin/pmap                                             x,
+    deny /usr/bin/tail                                             x,
+    deny /usr/bin/xprop                                            x,
+    deny /usr/bin/uname                                            x,
+    deny /usr/bin/hostname                                         x,
+    deny /usr/bin/realpath                                         x,
+    deny /usr/bin/xdg-open                                         x,
 
     include if exists <local/local.apps.workdrived>
 }

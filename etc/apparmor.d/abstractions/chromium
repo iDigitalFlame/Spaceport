@@ -36,16 +36,16 @@
 
 abi <abi/3.0>,
 
+include <abstractions/dri>
 include <abstractions/audio>
 include <abstractions/dconf>
 include <abstractions/gnome>
+include <abstractions/vulkan>
 include <abstractions/p11-kit>
 include <abstractions/openssl>
-include <abstractions/xdg-open>
-include <abstractions/xdg-desktop>
 include <abstractions/cups-client>
-include <abstractions/dbus-strict>
 include <abstractions/nameservice>
+include <abstractions/dbus-strict>
 include <abstractions/dbus-session-strict>
 include <abstractions/dbus-accessibility-strict>
 
@@ -53,63 +53,53 @@ capability sys_admin,
 capability sys_chroot,
 capability sys_ptrace,
 
-network inet                                                         stream,
-network inet6                                                        stream,
+network inet                                                           stream,
+network inet6                                                          stream,
 
-@{sysconfig}/etc/chromium/policies/managed/{,*}                      r,
+@{sysconfig}/etc/chromium/policies/managed/{,*}                        r,
 
-/dev/                                                                r,
-@{etc_ro}/                                                           r,
-@{etc_ro}/fstab                                                      r,
-@{etc_ro}/libva.conf                                                 r,
-/usr/share/vulkan/icd.d/{,*}                                         r,
-/usr/lib/chromium/extensions/                                        r,
-/usr/lib/chromium/extensions/*                                       rm,
-/usr/share/glvnd/egl_vendor.d/{,*}                                   r,
-@{etc_ro}/chromium/policies/managed/{,*}                             r,
+/dev/                                                                  r,
+@{etc_ro}/fstab                                                        r,
+/usr/lib/chromium/extensions/                                          r,
+/usr/lib/chromium/extensions/*                                         rm,
+@{etc_ro}/chromium/policies/managed/{,*}                               r,
 
-/sys/bus/pci/devices/                                                r,
-/sys/devices/system/cpu/present                                      r,
-/sys/devices/system/cpu/kernel_max                                   r,
-/sys/devices/virtual/tty/tty*/active                                 r,
-/sys/devices/pci*/**/{,class,config,irq}                             r,
-/sys/devices/system/cpu/cpu*/cache/index*/size                       r,
-/sys/devices/pci*/**/{resource,revision,uevent}                      r,
-/sys/devices/pci*/**/{,subsystem_}{device,vendor}                    r,
-/sys/devices/system/cpu/cpufreq/policy*/cpuinfo_max_freq             r,
-/sys/devices/virtual/dmi/id/{sys_vendor,product_name,product_family} r,
+@{sys}/devices/system/cpu/present                                      r,
+@{sys}/devices/system/cpu/kernel_max                                   r,
+@{sys}/devices/virtual/tty/tty*/active                                 r,
+@{sys}/devices/system/cpu/cpu[0-9]/cache/index*/size                   r,
+@{sys}/devices/system/cpu/cpufreq/policy*/cpuinfo_max_freq             r,
+@{sys}/devices/virtual/dmi/id/{sys_vendor,product_name,product_family} r,
 
-@{PROC}/                                                             r,
-@{PROC}/sys/dev/*/**                                                 r,
-@{PROC}/pressure/{,*}                                                r,
-@{PROC}/sys/vm/overcommit_memory                                     r,
-@{PROC}/sys/kernel/yama/ptrace_scope                                 r,
-@{PROC}/sys/fs/inotify/max_user_watches                              r,
+@{PROC}/                                                               r,
+@{PROC}/pressure/{,*}                                                  r,
+@{PROC}/sys/vm/overcommit_memory                                       r,
+@{PROC}/sys/kernel/yama/ptrace_scope                                   r,
+@{PROC}/sys/fs/inotify/max_user_watches                                r,
 
-owner @{PROC}/[0-9]*/stat                                            r,
-owner @{PROC}/[0-9]*/statm                                           r,
-owner @{PROC}/[0-9]*/cgroup                                          r,
-owner @{PROC}/[0-9]*/cmdline                                         r,
-owner @{PROC}/[0-9]*/mountinfo                                       r,
+owner @{PROC}/@{pid}/fd/                                               r,
+owner @{PROC}/@{pid}/stat                                              r,
+owner @{PROC}/@{pid}/statm                                             r,
+owner @{PROC}/@{pid}/cgroup                                            r,
+owner @{PROC}/@{pid}/cmdline                                           r,
+owner @{PROC}/@{pid}/mountinfo                                         r,
 
-owner @{PROC}/[0-9]*/uid_map                                         rw,
-owner @{PROC}/[0-9]*/gid_map                                         rw,
-owner @{PROC}/[0-9]*/setgroups                                       rw,
-owner @{PROC}/[0-9]*/clear_refs                                      w,
-owner @{PROC}/[0-9]*/oom_score_adj                                   w,
+owner @{PROC}/@{pid}/comm                                              rw,
+owner @{PROC}/@{pid}/uid_map                                           rw,
+owner @{PROC}/@{pid}/gid_map                                           rw,
+owner @{PROC}/@{pid}/setgroups                                         rw,
+owner @{PROC}/@{pid}/clear_refs                                        w,
+owner @{PROC}/@{pid}/oom_score_adj                                     w,
+owner @{PROC}/@{pid}/task/@{tid}/comm                                  rw,
 
-owner /tmp/{,*}.org.*                                                rwmk,
-owner /dev/shm/{,*}.org.*                                            rwmk,
-owner @{run}/shm/{,*}.org.*                                          rwmk,
-owner @{run}/user/*/dconf/user                                       rw,
+owner /tmp/{,*}.org.*                                                  rwmk,
+owner /dev/shm/{,*}.org.*                                              rwmk,
+owner @{run}/shm/{,*}.org.*                                            rwmk,
+owner @{run}/user/*/dconf/user                                         rw,
 
-owner @{HOME}/                                                       r,
-owner @{HOME}/.pki/nssdb/{,**}                                       rwk,
-owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
+owner @{HOME}/                                                         r,
+owner @{HOME}/.pki/nssdb/{,**}                                         rwk,
+owner @{HOME}/.local/lib/pki/nssdb/{,**}                               rwk,
 
-/usr/bin/xprop                                                       ix,
-/usr/bin/uname                                                       ix,
-/usr/bin/realpath                                                    ix,
-/usr/bin/basename                                                    ix,
-/usr/bin/dbus-send                                                   ix,
-/usr/bin/xdg-settings                                                ixr,
+/usr/bin/dbus-send                                                     ix,
+/usr/bin/xdg-settings                                                  ix,

@@ -36,25 +36,24 @@
 
 include <tunables/global>
 
-profile electron /usr/lib/electron*/electron {
+profile electron /usr/{bin/electron*,lib/electron*/electron} {
     include <abstractions/video>
     include <abstractions/chromium>
     include <abstractions/notifications>
     include <abstractions/user-downloads>
     include <abstractions/dbus-network-manager-strict>
 
-    /sys/devices/pci*/*/**                                    r,
+    owner @{HOME}/.config/vesktop/{,**}         rwk,
 
-    owner @{HOME}/.config/vesktop/{,**}                       rwk,
+    /usr/bin/xdg-open                           Px -> xdg-open,
 
-    # NOTE(dij): See note on the chromium profile.
-    /usr/bin/xdg-open                                         ux,
+    /usr/lib/electron*/chrome-sandbox           ix,
+    /usr/{bin/electron*,lib/electron*/electron} ixr,
 
-    /usr/lib/electron*/electron                               ix,
-    /usr/lib/electron*/chrome-sandbox                         ix,
+    deny /dev/tty                               rw,
 
-    ptrace (trace) peer=/usr/lib/electron*/electron,
     ptrace (trace) peer=/usr/lib/electron*/chrome-sandbox,
+    ptrace (trace) peer=/usr/{bin/electron*,lib/electron*/electron},
 
     include if exists <local/usr.bin.electron>
 }

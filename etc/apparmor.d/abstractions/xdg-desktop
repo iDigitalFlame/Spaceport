@@ -36,11 +36,13 @@
 
 abi <abi/3.0>,
 
-/usr/share/                          r,
-/usr/local/share/                    r,
+/usr/share/                                    r,
+/usr/local/share/                              r,
 
-owner @{HOME}/.cache/                r,
-owner @{HOME}/.local/                r,
-owner @{HOME}/.config/               r,
-owner @{HOME}/.local/share/          r,
-owner @{HOME}/.config/user-dirs.dirs r,
+owner @{HOME}/.cache/                          r,
+owner @{HOME}/.local/                          r,
+owner @{HOME}/.config/                         r,
+owner @{HOME}/.local/share/                    r,
+owner @{HOME}/.config/user-dirs.dirs           r,
+owner @{HOME}/.private/.config/user-dirs.dirs  r,
+owner @{HOME}/.dotfiles/.config/user-dirs.dirs r,

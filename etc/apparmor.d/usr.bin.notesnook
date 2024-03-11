@@ -37,23 +37,17 @@
 include <tunables/global>
 
 profile notesnook /{usr/bin,opt/notesnook}/notesnook {
+    include <abstractions/version>
     include <abstractions/chromium>
     include <abstractions/notifications>
     include <abstractions/user-downloads>
 
     @{etc_ro}/fstab                       r,
     /opt/notesnook/**                     rm,
-    @{etc_ro}/arch-release                r,
-
-    /sys/devices/pci*/*/**                r,
-
-    @{PROC}/version                       r,
 
     owner @{HOME}/.config/Notesnook/{,**} rwkl,
 
-    # NOTE(dij): See note on the chromium profile.
-    /usr/bin/xdg-open                     ux,
-
+    /usr/bin/xdg-open                     Px -> xdg-open,
     /opt/notesnook/notesnook              ix,
 
     deny /home/                           r,

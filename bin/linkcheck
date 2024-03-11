@@ -1,3 +1,4 @@
+#!/usr/bin/dash
 ################################
 ### iDigitalFlame  2016-2024 ###
 #                              #
@@ -16,7 +17,6 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2024 iDigitalFlame
 #
@@ -34,5 +34,23 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{sysconfig}/usr/share/applications/{,*.desktop}   r,
-@{sysconfig}/usr/share/applications/mimeinfo.cache r,
+# Enable Strict Mode
+set -u
+
+if [ $# -ne 2 ]; then
+    echo "linkcheck <link> <target>"
+    exit 1
+fi
+
+_target="$(readlink "$1" 2> /dev/null)"
+if [ $? -eq 0 ] && [ "$_target" = "$2" ]; then
+    exit 0
+fi
+
+rm -f "$1" 2> /dev/null
+if ! ln -sT "$2" "$1"; then
+    printf 'Creating link "%s" to "%s" failed!\n' "$1" "$2"
+    exit 1
+fi
+
+printf 'Link "%s" to "%s" created.\n' "$1" "$2"

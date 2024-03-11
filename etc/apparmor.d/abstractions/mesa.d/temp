@@ -34,6 +34,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+@{etc_ro}/vdpau_wrapper.cfg                                           r,
+
 owner @{HOME}/.cache/                                                 r,
 owner @{HOME}/.cache/mesa_shader_cache/                               rw,
 owner @{HOME}/.cache/mesa_shader_cache/index                          rw,

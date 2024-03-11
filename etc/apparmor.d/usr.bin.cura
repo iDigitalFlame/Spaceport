@@ -37,62 +37,59 @@
 include <tunables/global>
 
 profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
+    include <abstractions/dri>
     include <abstractions/gtk>
     include <abstractions/base>
     include <abstractions/mesa>
     include <abstractions/dconf>
+    include <abstractions/vulkan>
     include <abstractions/openssl>
     include <abstractions/ssl_certs>
     include <abstractions/nameservice>
+    include <abstractions/xdg-desktop>
     include <abstractions/user-downloads>
 
-    /dev/                                             r,
-    @{etc_ro}/libva.conf                              r,
-    /opt/ultimaker-cura/{,**}                         rm,
-    /usr/share/vulkan/icd.d/{,*}                      r,
-    /usr/share/glvnd/egl_vendor.d/{,*}                r,
+    /opt/ultimaker-cura/{,**}                   rm,
 
-    /dev/zero                                         rm,
-    /sys/devices/pnp*/**                              r,
-    /sys/devices/pci*/**                              r,
-    /sys/devices/pci*/**/{,class,config,irq}          r,
-    /sys/devices/pci*/**/{resource,revision,uevent}   r,
-    /sys/devices/pci*/**/{,subsystem_}{device,vendor} r,
+    /dev/                                       r,
+    /dev/zero                                   rm,
+    /sys/devices/pci*/**                        r,
+    /sys/devices/pnp*/**                        r,
 
-    /dev/tty*                                         rw,
+    /dev/tty*                                   rw,
 
-    owner @{PROC}/[0-9]*/fd/                          r,
-    owner @{PROC}/[0-9]*/cmdline                      r,
-    owner @{PROC}/[0-9]*/mountinfo                    r,
-    owner @{PROC}/[0-9]*/mounts                       r,
+    owner @{PROC}/@{pid}/fd/                    r,
+    owner @{PROC}/@{pid}/mounts                 r,
+    owner @{PROC}/@{pid}/cmdline                r,
+    owner @{PROC}/@{pid}/mountinfo              r,
 
-    owner @{run}/user/*/dconf/user                    rw,
+    owner @{run}/user/@{uid}/dconf/user         rw,
 
-    owner @{HOME}/.cache/cura/{,**}                   rwkl,
-    owner @{HOME}/.config/cura/{,**}                  rwk,
-    owner @{HOME}/.local/share/cura/{,**}             rw,
-    owner @{HOME}/.cache/qtshadercache-*/{,**}        rwkl,
+    owner @{HOME}/.cache/cura/{,**}             rwkl,
+    owner @{HOME}/.config/cura/{,**}            rwk,
+    owner @{HOME}/.local/share/cura/{,**}       rw,
+    owner @{HOME}/.cache/qtshadercache-*/{,**}  rwkl,
 
-    owner /tmp/*                                      rw,
+    owner /tmp/*                                rw,
 
-    /usr/bin/ld                                       ixr,
-    /usr/bin/gcc                                      ixr,
-    /usr/bin/bash                                     ix,
-    /usr/bin/cura                                     ixr,
-    /usr/bin/uname                                    ixr,
-    /usr/bin/ldconfig                                 ixr,
-    /usr/bin/UltiMaker-Cura                           ixr,
-    /opt/ultimaker-cura/AppRun                        ix,
-    /opt/ultimaker-cura/CuraEngine                    ix,
-    /opt/ultimaker-cura/UltiMaker-Cura                ix,
-    /usr/lib/gcc/x86_64-pc-linux-gnu/*/collect2       ix,
+    /usr/bin/ld                                 ixr,
+    /usr/bin/gcc                                ixr,
+    /usr/bin/bash                               ix,
+    /usr/bin/cura                               ixr,
+    /usr/bin/uname                              ixr,
+    /usr/bin/ldconfig                           ixr,
+    /usr/bin/UltiMaker-Cura                     ixr,
+    /opt/ultimaker-cura/AppRun                  ix,
+    /opt/ultimaker-cura/CuraEngine              ix,
+    /opt/ultimaker-cura/UltiMaker-Cura          ix,
+    /usr/lib/gcc/x86_64-pc-linux-gnu/*/collect2 ix,
 
     # NOTE(dij): This is here to allow for in-memory blob locking
-    /**                                               lk,
+    /**                                         lk,
 
-    deny /dev/pts/*                                   rw,
-    deny /usr/share/fonts/**                          w,
-    deny /var/lib/libuuid/clock.txt                   w,
+    deny /dev/pts/*                             rw,
+    deny /usr/share/fonts/**                    w,
+    deny /var/lib/libuuid/clock.txt             w,
 
     deny network inet,
     deny network inet6,
