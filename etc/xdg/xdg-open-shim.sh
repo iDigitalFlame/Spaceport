@@ -1,3 +1,4 @@
+#!/usr/bin/sh
 ################################
 ### iDigitalFlame  2016-2024 ###
 #                              #
@@ -16,7 +17,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## AppArmor Configuration
+## XDG Open Whitespace Fix Shim
 #
 # Copyright (C) 2016 - 2024 iDigitalFlame
 #
@@ -34,30 +35,33 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+get_key() {
+    local file="${1}"
+    local key="${2}"
+    local desktop_entry=""
 
-profile falkon /usr/bin/falkon {
-    include <abstractions/qt>
-    include <abstractions/chromium>
-    include <abstractions/notifications>
-    include <abstractions/user-downloads>
+    IFS_="${IFS}"
+    IFS=""
 
-    @{sysconfig}/usr/share/falkon/themes/{,**} r,
-
-    /usr/share/falkon/themes/{,**}             r,
-    /usr/lib/qt{,*}/plugins/falkon/            r,
-    /usr/lib/qt{,*}/plugins/falkon/*.so        rm,
-
-    /sys/devices/virtual/tty/tty*/active       r,
-
-    owner @{HOME}/.cache/falkon/{,**}          rwk,
-    owner @{HOME}/.local/share/falkon/{,**}    rw,
-    owner @{HOME}/.config/falkon/profiles/**   rwkl,
-
-    /usr/bin/xdg-open                          Px -> xdg-open,
-    /usr/bin/xdg-settings                      ixr,
-    /usr/lib/qt{,*}/QtWebEngineProcess         ix,
-    /usr/lib/qt{,*}/libexec/QtWebEngineProcess ix,
-
-    include if exists <local/usr.bin.falkon>
+    while read -r line
+    do
+        case "$line" in
+            "[Desktop Entry]")
+                desktop_entry="y"
+            ;;
+            # Reset match flag for other groups
+            "["*)
+                desktop_entry=""
+            ;;
+            # Match with spaces
+            "${key}"*"="*)
+                # Only match Desktop Entry group
+                if [ -n "${desktop_entry}" ]
+                then
+                    # Remove leading whitespaces
+                    echo "${line}" | cut -d= -f 2- | sed 's/^[[:space:]]*//'
+                fi
+        esac
+    done < "${file}"
+    IFS="${IFS_}"
 }

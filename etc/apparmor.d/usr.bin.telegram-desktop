@@ -69,6 +69,7 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     owner @{HOME}/.local/share/TelegramDesktop/{,*} rw,
 
     /usr/bin/xdg-open                               Px -> xdg-open,
+    /usr/bin/xdg-settings                           Px -> xdg-settings,
     /usr/bin/telegram-desktop                       ixr,
 
     deny /sys/class/power_supply/                   r,

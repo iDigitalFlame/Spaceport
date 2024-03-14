@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## AppArmor Configuration
+## XZ Broken Links Fix Pacman Hook
 #
 # Copyright (C) 2016 - 2024 iDigitalFlame
 #
@@ -34,30 +34,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+[Trigger]
+Type        = Package
+Target      = xdg-utils
+Operation   = Install
+Operation   = Upgrade
 
-profile falkon /usr/bin/falkon {
-    include <abstractions/qt>
-    include <abstractions/chromium>
-    include <abstractions/notifications>
-    include <abstractions/user-downloads>
-
-    @{sysconfig}/usr/share/falkon/themes/{,**} r,
-
-    /usr/share/falkon/themes/{,**}             r,
-    /usr/lib/qt{,*}/plugins/falkon/            r,
-    /usr/lib/qt{,*}/plugins/falkon/*.so        rm,
-
-    /sys/devices/virtual/tty/tty*/active       r,
-
-    owner @{HOME}/.cache/falkon/{,**}          rwk,
-    owner @{HOME}/.local/share/falkon/{,**}    rw,
-    owner @{HOME}/.config/falkon/profiles/**   rwkl,
-
-    /usr/bin/xdg-open                          Px -> xdg-open,
-    /usr/bin/xdg-settings                      ixr,
-    /usr/lib/qt{,*}/QtWebEngineProcess         ix,
-    /usr/lib/qt{,*}/libexec/QtWebEngineProcess ix,
-
-    include if exists <local/usr.bin.falkon>
-}
+[Action]
+When        = PostTransaction
+Exec        = /usr/bin/sed -i'' -e 's/DEBUG 2 "Selected DE $DE"/DEBUG 2 "Selected DE $DE"\n. "\/etc\/xdg\/xdg-open-shim.sh"/g' /usr/bin/xdg-open
+Description = Patching xdg-open..

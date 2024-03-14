@@ -50,6 +50,7 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
 
     /usr/bin/xdg-open                      Px -> xdg-open,
     /usr/lib/slack/slack                   ix,
+    /usr/bin/xdg-settings                  ixr,
     /usr/lib/slack/chrome_crashpad_handler ix,
 
     # No Slack, bad!

@@ -58,11 +58,13 @@ network inet6                                                        stream,
 
 @{sysconfig}/etc/chromium/policies/managed/{,*}                      r,
 
-/dev/                                                                r,
 /etc/fstab                                                           r,
+/usr/bin/xdg-settings                                                r,
 /usr/lib/chromium/extensions/                                        r,
 /usr/lib/chromium/extensions/*                                       rm,
 /etc/chromium/policies/managed/{,*}                                  r,
+
+/dev/                                                                r,
 
 /sys/devices/system/cpu/present                                      r,
 /sys/devices/system/cpu/kernel_max                                   r,
@@ -105,4 +107,3 @@ owner @{HOME}/.pki/nssdb/{,**}                                       rwk,
 owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
 
 /usr/bin/dbus-send                                                   ix,
-/usr/bin/xdg-settings                                                ixr,

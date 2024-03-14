@@ -49,6 +49,7 @@ profile chromium /usr/bin/chrom{e,ium} {
     owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
 
     /usr/bin/xdg-open                             Px -> xdg-open,
+    /usr/bin/xdg-settings                         Pxr -> xdg-settings,
     /usr/bin/chrom{e,ium}                         ix,
     /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
 

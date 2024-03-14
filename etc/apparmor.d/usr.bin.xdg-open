@@ -48,6 +48,8 @@ profile xdg-open {
 
     /proc/version                                          r,
 
+    @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
+
     /usr/bin/env                                           ix,
     /usr/bin/file                                          ix,
     /usr/bin/gawk                                          ix,
@@ -58,6 +60,7 @@ profile xdg-open {
     /usr/bin/realpath                                      ix,
     /usr/bin/hostname                                      ix,
     /usr/bin/dbus-send                                     ix,
+    /etc/xdg/xdg-open-shim.sh                              ixr,
 
     /usr/bin/vlc                                           Px,
     /usr/bin/leafpad                                       Px,
@@ -75,6 +78,9 @@ profile xdg-open {
     owner @{HOME}/.local/bin/**                            ux,
     owner @{HOME}/.private/.local/bin/**                   ux,
     owner @{HOME}/.dotfiles/.local/bin/**                  ux,
+
+    deny network                                           inet,
+    deny network                                           inet6,
 
     include if exists <local/usr.bin.xdg-open>
 }

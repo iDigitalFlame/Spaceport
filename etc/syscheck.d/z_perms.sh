@@ -106,8 +106,8 @@ chown root:proxy "/etc/squid"
 chown root:root "/usr/share/applications/mimeinfo.cache"
 
 # Group Helper Permissions
-chown root:root "${BASE_DIR}/bin/gh"
-chmod 4755 "${BASE_DIR}/bin/gh"
+chown root:root "${BASE_DIR}/bin/ghr"
+chmod 4755 "${BASE_DIR}/bin/ghr"
 
 # Theme Permissions
 chown -R root:root "/usr/share/icons/DarkSky"
