@@ -54,8 +54,8 @@ profile thunar /usr/bin/{T,t}hunar {
 
     deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml w,
 
-    deny network inet,
-    deny network inet6,
+    deny network                                                     inet,
+    deny network                                                     inet6,
 
     include if exists <local/usr.bin.thunar>
 }

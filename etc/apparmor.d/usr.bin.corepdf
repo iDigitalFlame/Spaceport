@@ -45,18 +45,20 @@ profile corepdf /usr/bin/corepdf {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
-    /usr/share/poppler/**          r,
-    /usr/share/texmf/{,**}         r,
-    /usr/local/texlive/{,**}       r,
-    /usr/share/hwdata/pnp.ids      r,
+    # Needed to open any files for reading.
+    /**                          r,
+    /usr/share/poppler/**        r,
+    /usr/share/texmf/{,**}       r,
+    /usr/local/texlive/{,**}     r,
+    /usr/share/hwdata/pnp.ids    r,
 
-    owner @{PROC}/@{pid}/mountinfo r,
+    owner /proc/@{pid}/mountinfo r,
 
-    deny /dev/tty                  r,
-    deny /dev/disk/by-label/       r,
+    deny /dev/tty                r,
+    deny /dev/disk/by-label/     r,
 
-    deny network inet,
-    deny network inet6,
+    deny network                 inet,
+    deny network                 inet6,
 
     include if exists <local/usr.bin.corepdf>
 }

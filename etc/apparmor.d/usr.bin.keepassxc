@@ -51,27 +51,28 @@ profile keepassxc /usr/bin/keepassxc {
     /usr/share/keepassxc/**                      r,
 
     /dev/                                        r,
-    @{sys}/bus/                                  r,
-    @{sys}/class/                                r,
-    @{run}/udev/data/**                          r,
     /{dev,sys}/bus/usb/                          r,
-    @{sys}/devices/pci*/*/**                     r,
     /{dev,sys}/bus/usb/devices/{,**}             r,
 
+    /sys/bus/                                    r,
+    /sys/class/                                  r,
+    /sys/devices/pci*/*/**                       r,
+
+    @{run}/udev/data/**                          r,
+
+    owner /tmp/.mounts/*/**                      rwk,
 
     owner @{HOME}/*                              rwk,
     owner @{HOME}/Documents/**                   rwk,
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**        rwk,
-
-    owner /tmp/.mounts/*/**                      rwk,
 
     deny /dev/tty                                rw,
     deny /usr/bin/                               r,
     deny @{HOME}/.cache/keepassxc/keepassxc.ini  w,
     deny @{HOME}/.config/keepassxc/keepassxc.ini w,
 
-    deny network inet,
-    deny network inet6,
+    deny network                                 inet,
+    deny network                                 inet6,
 
     include if exists <local/keepassxc>
 }

@@ -41,13 +41,16 @@ profile ristretto /usr/bin/ristretto {
     include <abstractions/gnome>
     include <abstractions/user-data-ro>
 
+    # Needed to open any files for reading.
+    /**                                                                 r,
+
     owner @{run}/user/@{uid}/dconf/user                                 rw,
 
     deny @{HOME}/.config/ristretto/accels.scm                           w,
     deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml w,
 
-    deny network inet,
-    deny network inet6,
+    deny network                                                        inet,
+    deny network                                                        inet6,
 
     include if exists <local/usr.bin.ristretto>
 }

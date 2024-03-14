@@ -55,7 +55,7 @@ profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
     /dev/sr*                      r,
     /dev/dvb/**                   r,
 
-    @{HOME}/.config/vlc           r,
+    owner @{HOME}/.config/vlc     r,
 
     deny @{HOME}/.config/vlc{,*}  w,
     deny @{HOME}/.local/share/vlc w,

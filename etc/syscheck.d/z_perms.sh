@@ -123,6 +123,17 @@ chmod -R 0755 "/usr/share/themes/MoonlightSky"
 find "/usr/share/icons/MoonlightSky" -xdev -type f -exec chmod 0644 {} \;
 find "/usr/share/themes/MoonlightSky" -xdev -type f -exec chmod 0644 {} \;
 
+# Fix Notesnook Icons
+linkcheck "/usr/share/icons/hicolor/16x16/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/16x16.png"
+linkcheck "/usr/share/icons/hicolor/24x24/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/24x24.png"
+linkcheck "/usr/share/icons/hicolor/32x32/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/32x32.png"
+linkcheck "/usr/share/icons/hicolor/64x64/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/64x64.png"
+linkcheck "/usr/share/icons/hicolor/48x48/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/48x48.png"
+linkcheck "/usr/share/icons/hicolor/128x128/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/128x128.png"
+linkcheck "/usr/share/icons/hicolor/256x256/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/256x256.png"
+linkcheck "/usr/share/icons/hicolor/512x512/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/512x512.png"
+linkcheck "/usr/share/icons/hicolor/1024x1024/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/1024x1024.png"
+
 # SMD Permissions
 chmod 0640 /var/cache/smd/*.json
 chmod -R 0555 "${BASE_DIR}/usr/lib/smd"
@@ -161,6 +172,9 @@ chown root:root "/var/cache/smd/backup" 2> /dev/null
 chmod 0400 /etc/smd/*.key
 chmod 0400 /etc/smd/*.ssh
 chmod 0750 "/var/cache/smd/backup" 2> /dev/null
+
+# Don't update the MIME database, ours is fine thx.
+linkcheck "/etc/pacman.d/hooks/update-desktop-database.hook" "/dev/null"
 
 # Remove Drun Permissions
 chmod 0400 /usr/share/applications/exo-* 2> /dev/null

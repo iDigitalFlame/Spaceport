@@ -41,14 +41,16 @@ profile mupdf /usr/bin/mupdf {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
-    owner /tmp/*.pdf         r,
-
+    # Needed to open any files for reading.
+    /**                      r,
     /usr/bin/mupdf           r,
     /usr/share/texmf/{,**}   r,
     /usr/local/texlive/{,**} r,
 
-    deny network inet,
-    deny network inet6,
+    owner /tmp/*.pdf         r,
+
+    deny network             inet,
+    deny network             inet6,
 
     include if exists <local/usr.bin.mupdf>
 }

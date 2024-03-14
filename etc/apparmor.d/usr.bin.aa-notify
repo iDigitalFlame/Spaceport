@@ -36,24 +36,27 @@
 
 include <tunables/global>
 
-profile chromium /usr/bin/chrom{e,ium} {
-    include <abstractions/video>
-    include <abstractions/chromium>
-    include <abstractions/user-downloads>
+profile aa-notify /usr/bin/aa-notify {
+    include <abstractions/base>
+    include <abstractions/python>
+    include <abstractions/nameservice>
+    include <abstractions/dbus-session-strict>
 
-    owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
+    /etc/inputrc               r,
+    /usr/bin/aa-notify         rm,
+    /usr/share/terminfo/**     r,
+    /etc/apparmor/*.conf       r,
+    /var/log/audit/audit.log   r,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**          rw,
-    owner @{HOME}/.config/chrom{e,ium}/**         rwlk,
-    owner @{HOME}/.config/chrom{e,ium}/{,**}      rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
+    @{run}/log/audit/audit.log r,
 
-    /usr/bin/xdg-open                             Px -> xdg-open,
-    /usr/bin/chrom{e,ium}                         ix,
-    /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
+    /proc/                     r,
 
-    ptrace (trace) peer=/usr/bin/chrom{e,ium},
-    ptrace (trace) peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
+    owner /proc/@{pid}/stat    r,
+    owner /proc/@{pid}/cmdline r,
 
-    include if exists <local/usr.bin.chromium>
+    deny network               inet,
+    deny network               inet6,
+
+    include if exists <local/usr.bin.aa-notify>
 }

@@ -36,24 +36,36 @@
 
 include <tunables/global>
 
-profile chromium /usr/bin/chrom{e,ium} {
-    include <abstractions/video>
-    include <abstractions/chromium>
-    include <abstractions/user-downloads>
+profile wpa-supplicant /usr/bin/wpa_supplicant {
+    include <abstractions/base>
+    include <abstractions/openssl>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
 
-    owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
+    capability chown,
+    capability mknod,
+    capability fsetid,
+    capability net_raw,
+    capability net_admin,
+    capability sys_module,
+    capability dac_override,
+    capability dac_read_search,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**          rw,
-    owner @{HOME}/.config/chrom{e,ium}/**         rwlk,
-    owner @{HOME}/.config/chrom{e,ium}/{,**}      rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
+    network                              inet    dgram,
+    network                              inet6   dgram,
+    network                              packet  dgram,
+    network                              packet  raw,
+    network                              netlink raw,
 
-    /usr/bin/xdg-open                             Px -> xdg-open,
-    /usr/bin/chrom{e,ium}                         ix,
-    /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
+    /usr/bin/wpa_supplicant              rm,
+    /etc/wpa_supplicant/{,*}             r,
+    /etc/libnl/{classid,pktloc}          r,
 
-    ptrace (trace) peer=/usr/bin/chrom{e,ium},
-    ptrace (trace) peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
+    /dev/rfkill                          rw,
 
-    include if exists <local/usr.bin.chromium>
+    /proc/sys/net/ipv{4,6}/conf/*/drop_* rw,
+
+    owner @{run}/wpa_supplicant/{,**}    rw,
+
+    include if exists <local/usr.bin.wpa-supplicant>
 }

@@ -58,13 +58,12 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     network inet                                    stream,
     network inet6                                   stream,
 
-    owner @{PROC}/@{pid}/stat                       r,
-    owner @{PROC}/@{pid}/cmdline                    r,
+    owner /proc/@{pid}/{cmdline,stat}               r,
 
     owner @{run}/user/@{uid}/dconf/user             w,
 
-    owner @{PROC}/@{pid}/comm                       rw,
-    owner @{PROC}/@{pid}/task/@{tid}/comm           rw,
+    owner /proc/@{pid}/comm                         rw,
+    owner /proc/@{pid}/task/@{tid}/comm             rw,
 
     owner @{HOME}/.local/share/TelegramDesktop/**   rwkl,
     owner @{HOME}/.local/share/TelegramDesktop/{,*} rw,
@@ -72,7 +71,8 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     /usr/bin/xdg-open                               Px -> xdg-open,
     /usr/bin/telegram-desktop                       ixr,
 
-    deny @{sys}/class/power_supply/                 r,
+    deny /sys/class/power_supply/                   r,
+    deny @{HOME}/.local/share/applications/         w,
 
     include if exists <local/usr.bin.telegram-desktop>
 }

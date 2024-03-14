@@ -54,8 +54,6 @@ profile falkon /usr/bin/falkon {
     owner @{HOME}/.local/share/falkon/{,**}    rw,
     owner @{HOME}/.config/falkon/profiles/**   rwkl,
 
-    owner /tmp/.usercache/*/falkon-*           rwk,
-
     /usr/bin/xdg-open                          Px -> xdg-open,
     /usr/lib/qt{,*}/QtWebEngineProcess         ix,
     /usr/lib/qt{,*}/libexec/QtWebEngineProcess ix,

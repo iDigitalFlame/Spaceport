@@ -36,24 +36,41 @@
 
 include <tunables/global>
 
-profile chromium /usr/bin/chrom{e,ium} {
-    include <abstractions/video>
-    include <abstractions/chromium>
-    include <abstractions/user-downloads>
+profile journalctl /usr/bin/journalctl  {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
+    include <abstractions/dbus-session-strict>
 
-    owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
+    capability mknod,
+    capability net_admin,
+    capability sys_resource,
+    capability dac_override,
+    capability dac_read_search,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**          rw,
-    owner @{HOME}/.config/chrom{e,ium}/**         rwlk,
-    owner @{HOME}/.config/chrom{e,ium}/{,**}      rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
+    /usr/bin/journalctl                           rm,
+    /{run,var}/log/journal/                       r,
+    /{run,var}/log/journal/*/                     r,
+    /{run,var}/log/journal/*/user-*.journal*      r,
+    /{run,var}/log/journal/*/system{,@*}.journal* r,
 
-    /usr/bin/xdg-open                             Px -> xdg-open,
-    /usr/bin/chrom{e,ium}                         ix,
-    /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
+    /proc/cmdline                                 r,
+    /proc/sys/fs/nr_open                          r,
+    /proc/sys/kernel/{osrelease,random/boot_id}   r,
 
-    ptrace (trace) peer=/usr/bin/chrom{e,ium},
-    ptrace (trace) peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
+    owner /proc/@{pid}/stat                       r,
+    owner /proc/@{pid}/cgroup                     r,
 
-    include if exists <local/usr.bin.chromium>
+    /var/lib/systemd/catalog/database             rw,
+    /var/lib/systemd/catalog/.#database*          rw,
+
+    /usr/bin/{less,more}                          Pxr -> more,
+
+    deny network                                  inet,
+    deny network                                  inet6,
+
+    signal (receive) set=(term) peer=unconfined,
+    signal (send)               peer=more,
+
+    include if exists <local/usr.bin.journalctl>
 }

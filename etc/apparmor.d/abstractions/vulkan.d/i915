@@ -34,4 +34,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{PROC}/sys/dev/i915/* r,
+/proc/sys/dev/i915/* r,

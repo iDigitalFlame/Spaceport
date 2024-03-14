@@ -42,5 +42,6 @@ include <abstractions/private-files>
 /media/{,**}               r,
 
 owner /tmp/*               r,
-owner @{HOME}/{,**}        r,
 owner /tmp/.mounts/*/{,**} r,
+
+owner @{HOME}/{,**}        r,

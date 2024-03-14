@@ -34,6 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{etc_ro}/pipewire/client{,-rt}.conf      r,
-@{etc_ro}/pipewire/client.conf.d/{,**}    r,
-@{etc_ro}/pipewire/client-rt.conf.d/{,**} r,
+/etc/pipewire/client{,-rt}.conf      r,
+/etc/pipewire/client.conf.d/{,**}    r,
+/etc/pipewire/client-rt.conf.d/{,**} r,

@@ -1,0 +1,118 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile cupsd /usr/bin/cupsd {
+    include <abstractions/base>
+    include <abstractions/python>
+    include <abstractions/openssl>
+    include <abstractions/nameservice>
+    include <abstractions/authentication>
+
+    capability kill,
+    capability chown,
+    capability fowner,
+    capability fsetid,
+    capability setuid,
+    capability setgid,
+    capability net_admin,
+    capability wake_alarm,
+    capability audit_write,
+    capability dac_override,
+    capability dac_read_search,
+    capability net_bind_service,
+
+    network                                   inet    stream,
+    network                                   inet6   stream,
+    network                                   netlink raw,
+
+    @{sysconfig}/etc/cups/{,**}               r,
+
+    /usr/bin/cupsd                            rm,
+    /etc/cups/{,**}                           r,
+    /etc/paper{size,specs}                    r,
+    /usr/share/cups/usb/{,**}                 r,
+    /usr/share/ghostscript/{,**}              r,
+    /usr/share/{cups,ppd,poppler}/{,**}       r,
+
+    /sys/bus/usb/devices/{,**}                r,
+    /sys/module/apparmor/parameters/enabled   r,
+
+    owner /proc/@{pid}/fd/                    r,
+    owner /proc/@{pid}/mounts                 r,
+
+    /var/cache/cups/                          rw,
+    /var/log/cups/{,*}                        rw,
+    /var/{cache,spool}/cups/{,**}             rwk,
+
+    /dev/tty                                  rw,
+    /dev/bus/usb/**                           rwk,
+
+    @{run}/cups/{,**}                         rw,
+    @{run}/systemd/notify                     w,
+    @{run}/dbus/system_bus_socket             rw,
+
+    owner /tmp/*_latest_print_info            w,
+
+    /usr/bin/python3*                         ixr,
+    /usr/bin/{,d,b}sh                         ixr,
+    /usr/bin/g{rep,s,sc}                      ixr,
+    /usr/bin/c{at,p,hmod}                     ixr,
+    /usr/bin/{mktemp,printenv}                ixr,
+    /usr/bin/{rm,sed,xz,touch}                ixr,
+    /usr/lib/cups/monitor/dbus                Pxr,
+    /usr/bin/{ippfind,hostname}               ixr,
+    /usr/lib/cups/{daemon,backend}/*          ixr,
+    /usr/lib/cups/{cgi-bin,driver}/*.cgi      ixr,
+    /usr/lib/cups/{filter,monitor,notifier}/* ixr,
+
+    signal (send) set=(term) peer=cups-notifier-dbus,
+
+    dbus receive bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member={DeviceAdded,DeviceRemoved} peer=(name=:*, label=colord),
+    dbus receive bus=system path=/Client*/ServiceBrowser* interface=org.freedesktop.Avahi.ServiceBrowser member={ItemNew,AllForNow,CacheExhausted} peer=(name=:*, label=avahi-daemon),
+
+    dbus send bus=system path=/ interface=org.freedesktop.DBus.Peer member=Ping peer=(name=org.freedesktop.Avahi, label=avahi-daemon),
+    dbus send bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member=GetDevices peer=(name=:*, label=colord),
+    dbus send bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member=CreateDevice peer=(name=:*, label=colord),
+    dbus send bus=system path=/org/freedesktop/ColorManager{,/**} interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=:*, label=colord),
+    dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-daemon),
+    dbus send bus=system path=/Client*/ServiceBrowser* interface=org.freedesktop.Avahi.ServiceBrowser member=Free peer=(name=org.freedesktop.Avahi, label=avahi-daemon),
+    dbus send bus=system path=/ interface=org.freedesktop.Avahi.Server member={GetAPIVersion,GetState,Service*New} peer=(name=org.freedesktop.Avahi, label=avahi-daemon),
+    dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-daemon),
+
+    include if exists <local/usr.bin.cupsd>
+}

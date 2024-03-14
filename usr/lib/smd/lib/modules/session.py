@@ -38,11 +38,11 @@
 #   Manages the User's startup and session processes. Handles "Trigger" actions
 #   for user-defined events that can execute ba program(s) in response.
 
-from os import kill
 from lib.sway import windows
 from lib.util import boolean
 from lib.util.file import expand
 from signal import SIGCONT, SIGSTOP
+from os import getpgid, killpg, kill
 from lib.constants.config import RADIO_TYPES
 from lib.util.exec import stop, nulexec, split
 from lib.constants import (
@@ -89,6 +89,22 @@ def _trigger(server, name):
     if len(c) == 0:
         return None
     return c
+
+
+def _signal_group(pid, sig):
+    try:
+        g = getpgid(pid)
+    except OSError:
+        g = None
+    if isinstance(g, int) and g > 0:
+        try:
+            killpg(g, sig)
+            return g
+        except OSError:
+            pass
+    del g
+    kill(pid, sig)
+    return -1
 
 
 def _can_freeze(ignore, window):
@@ -174,19 +190,27 @@ class Session(object):
                 continue
             if pre:
                 try:
-                    kill(i.pid, SIGSTOP)
+                    g = _signal_group(i.pid, SIGSTOP)
                 except OSError as err:
                     server.error(
                         f'[m/session]: Cannot freeze Window (pid="{i.pid}", app="{i.app}")"!',
                         err,
                     )
+                else:
+                    server.debug(
+                        f'[m/session]: Froze Window (pid="{i.pid}", pgid="{g}, app="{i.app}")".'
+                    )
                 continue
             try:
-                kill(i.pid, SIGCONT)
+                g = _signal_group(i.pid, SIGCONT)
             except OSError as err:
                 server.error(
-                    f'[m/session]: Cannot un-freeze Window (pid="{i.pid}", app="{i.app}")!',
+                    f'[m/session]: Cannot thaw Window (pid="{i.pid}", app="{i.app}")!',
                     err,
+                )
+            else:
+                server.debug(
+                    f'[m/session]: Thawed Window (pid="{i.pid}", pgid="{g}, app="{i.app}")".'
                 )
         del w
 

@@ -1,0 +1,83 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile top /usr/bin/top {
+    include <abstractions/base>
+    include <abstractions/wutmp>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
+
+    capability kill,
+    capability sys_nice,
+    capability sys_ptrace,
+    capability dac_read_search,
+
+    /usr/bin/top                              rm,
+    /usr/share/terminfo/**                    r,
+
+    /sys/devices/system/node/                 r,
+    /sys/devices/system/node/node*/cpumap     r,
+    /sys/devices/system/node/node*/meminfo    r,
+
+    @{run}/systemd/sessions/                  r,
+
+    /proc/                                    r,
+    /proc/tty/drivers                         r,
+    /proc/@{pid}/task/                        r,
+    /proc/@{pid}/stat{,m}                     r,
+    /proc/{uptime,loadavg}                    r,
+    /proc/@{pid}/c{group,mdline}              r,
+    /proc/@{pid}/{environ,wchan}              r,
+    /proc/@{pid}/task/@{tid}/wchan            r,
+    /proc/@{pid}/task/@{tid}/cgroup           r,
+    /proc/@{pid}/task/@{tid}/cmdline          r,
+    /proc/@{pid}/task/@{tid}/environ          r,
+    /proc/@{pid}/task/@{tid}/oom_score        r,
+    /proc/@{pid}/oom_{,score,score_}adj       r,
+    /proc/@{pid}/task/@{tid}/stat{,m,us}      r,
+    /proc/sys/kernel/{pid_max,osrelease}      r,
+    /proc/@{pid}/task/@{tid}/oom_{,score_}adj r,
+
+    deny @{HOME}/.config/procps{,/*}          rw,
+
+    signal (send),
+
+    ptrace (read),
+
+    include if exists <local/usr.bin.top>
+}

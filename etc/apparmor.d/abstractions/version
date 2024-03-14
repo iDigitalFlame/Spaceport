@@ -36,10 +36,9 @@
 
 abi <abi/3.0>,
 
-@{etc_ro}/                                                  r,
-@{etc_ro}/arch-release                                      r,
+/etc/{,arch-release}                                      r,
 
-@{sys}/devices/virtual/dmi/id/{board_name,chassis_type}     r,
-@{sys}/devices/virtual/dmi/id/{product_name,product_family} r,
+/sys/devices/virtual/dmi/id/{board_name,chassis_type}     r,
+/sys/devices/virtual/dmi/id/{product_name,product_family} r,
 
-@{PROC}/version                                             r,
+/proc/version                                             r,

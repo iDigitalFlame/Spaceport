@@ -43,16 +43,18 @@ profile firefox /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} {
     @{sysconfig}/usr/lib/firefox/defaults/pref/*.{js,cfg}              r,
     @{sysconfig}/usr/lib/librewolf/defaults/pref/*.{js,cfg}            r,
 
-    @{etc_ro}/fstab                                                    r,
-    @{etc_ro}/mailcap                                                  r,
+    /etc/fstab                                                         r,
+    /etc/mailcap                                                       r,
     /usr/lib/{firefox,librewolf}/{,**}                                 r,
 
-    @{sys}/devices/system/**/meminfo                                   r,
+    /sys/devices/pci*/**/                                              r,
+    /sys/devices/system/**/meminfo                                     r,
 
-    owner @{PROC}/@{pid}/task/@{tid}/stat                              r,
+    owner /proc/@{pid}/task/@{tid}/stat                                r,
+
+    owner /dev/shm/wayland.mozilla.ipc.[0-9]*                          rw,
 
     owner @{run}/user/*/wayland-proxy-*                                rwk,
-    owner /dev/shm/wayland.mozilla.ipc.[0-9]*                          rw,
     owner @{run}/shm/wayland.mozilla.ipc.[0-9]*                        rw,
 
     owner @{HOME}/.cache/librewolf/**                                  rw,
@@ -78,19 +80,21 @@ profile firefox /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} {
     deny /var/cache/fontconfig                                         w,
 
     dbus (receive, send) bus=accessibility,
-    dbus (send)          bus=session peer=(name=org.a11y.Bus),
-    dbus (bind)          bus=session name=org.mozilla.firefox.*,
-    dbus (receive)       bus=session interface=org.a11y.atspi**,
-    dbus (send)          bus=system path=/org/freedesktop/RealtimeKit1,
-    dbus (receive)       bus=system path=/org/freedesktop/NetworkManager,
-    dbus (send)          bus=system path=/org/freedesktop/NetworkManager member=state,
-    dbus (send)          bus=session interface=org.gtk.gio.DesktopAppInfo member=Launched,
-    dbus (send)          bus=session path=/org/gnome/GConf/Server member=GetDefaultDatabase peer=(label=unconfined),
-    dbus (send, receive) bus=session path=/org/mozilla/firefox/Remote interface=org.mozilla.firefox member=OpenURL peer=(label=firefox),
-    dbus (send)          bus=system path=/org/freedesktop/UPower interface=org.freedesktop.UPower member=EnumerateDevices peer=(label=unconfined),
-    dbus (send)          bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=RequestName peer=(name=org.freedesktop.DBus),
-    dbus (send)          bus=session path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={Inhibit,Uninhibit} peer=(label=unconfined),
-    dbus (send)          bus=session path=/org/gnome/GConf/Database/* member={AddMatch,AddNotify,AllEntries,LookupExtended,RemoveNotify} peer=(label=unconfined),
+    dbus (receive, send) bus=session path=/org/mozilla/firefox/Remote interface=org.mozilla.firefox member=OpenURL peer=(label=firefox),
+
+    dbus (receive) bus=session interface=org.a11y.atspi**,
+    dbus (receive) bus=system path=/org/freedesktop/NetworkManager,
+
+    dbus (send) bus=session peer=(name=org.a11y.Bus),
+    dbus (bind) bus=session name=org.mozilla.firefox.*,
+    dbus (send) bus=system  path=/org/freedesktop/RealtimeKit1,
+    dbus (send) bus=system  path=/org/freedesktop/NetworkManager member=state,
+    dbus (send) bus=session interface=org.gtk.gio.DesktopAppInfo member=Launched,
+    dbus (send) bus=session path=/org/gnome/GConf/Server member=GetDefaultDatabase peer=(label=unconfined),
+    dbus (send) bus=system  path=/org/freedesktop/UPower interface=org.freedesktop.UPower member=EnumerateDevices peer=(label=unconfined),
+    dbus (send) bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=RequestName peer=(name=org.freedesktop.DBus),
+    dbus (send) bus=session path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={Inhibit,Uninhibit} peer=(label=unconfined),
+    dbus (send) bus=session path=/org/gnome/GConf/Database/* member={AddMatch,AddNotify,AllEntries,LookupExtended,RemoveNotify} peer=(label=unconfined),
 
     include if exists <local/usr.lib.firefox>
 }

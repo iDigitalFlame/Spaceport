@@ -46,7 +46,7 @@ profile xdg-open {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
-    @{PROC}/version                                        r,
+    /proc/version                                          r,
 
     /usr/bin/env                                           ix,
     /usr/bin/file                                          ix,

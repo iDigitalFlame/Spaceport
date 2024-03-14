@@ -53,10 +53,15 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
     /usr/lib/slack/chrome_crashpad_handler ix,
 
     # No Slack, bad!
+    deny /usr/bin/cut                      x,
     deny /usr/bin/zsh                      x,
     deny /usr/bin/dash                     x,
     deny /usr/bin/bash                     x,
     deny /usr/bin/grep                     x,
+    deny /usr/bin/xprop                    x,
+    deny /usr/bin/uname                    x,
+    deny /usr/bin/basename                 x,
+    deny /usr/bin/realpath                 x,
 
     include if exists <local/usr.lib.slack>
 }

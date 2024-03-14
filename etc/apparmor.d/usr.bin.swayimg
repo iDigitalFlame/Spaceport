@@ -41,12 +41,14 @@ profile swayimg /usr/bin/swayimg {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
+    # Needed to open any files for reading.
+    /**                      r,
     /usr/bin/swayimg         rm,
 
     owner /dev/shm/swayimg_* rwk,
 
-    deny network inet,
-    deny network inet6,
+    deny network             inet,
+    deny network             inet6,
 
     include if exists <local/usr.bin.swayimg>
 }

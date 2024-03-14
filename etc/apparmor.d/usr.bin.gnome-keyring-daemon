@@ -1,0 +1,87 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/openssl>
+    include <abstractions/dbus-system>
+    include <abstractions/dbus-session-strict>
+
+    capability ipc_lock,
+
+    /usr/bin/gnome-keyring-daemon            rm,
+
+    owner /proc/@{pid}/fd/                   r,
+
+    owner @{run}/user/@{uid}/keyring/control r,
+
+    owner @{HOME}/.ssh/{,**}                 r,
+    owner @{HOME}/.local/lib/ssh/{,**}       r,
+
+    owner @{run}/user/@{uid}/keyring/{,*}    rw,
+
+    owner @{HOME}/.local/share/keyrings/     rw,
+    owner @{HOME}/.local/share/keyrings/*    rwl,
+
+    /usr/bin/ssh-add                         ixr,
+    /usr/bin/ssh-agent                       Pxr -> ssh-agent,
+
+    deny network                             inet,
+    deny network                             inet6,
+
+    signal (receive) set=(cont, term) peer=unconfined,
+    signal (send)    set=(term)       peer=ssh-agent,
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=xdg-desktop-portal),
+    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Settings member=SettingChanged peer=(name=:*, label=xdg-desktop-portal),
+    dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=:*, label=systemd-logind),
+    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.impl.portal.Settings member={Read,ReadAll} peer=(name=:*, label=xdg-desktop-portal),
+    dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member={PauseDevice,Unlock} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
+
+    dbus send bus=system  path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member=GetSession peer=(name=:*, label=systemd-logind),
+    dbus send bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=systemd-logind),
+    dbus send bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Settings member={Read,ReadAll} peer=(name=:*, label=xdg-desktop-portal),
+    dbus send bus=system  path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member=GetSession peer=(name=org.freedesktop.login1, label=systemd-logind),
+    dbus send bus=system  path=/org/freedesktop/login1/seat/* interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
+    dbus send bus=system  path=/org/freedesktop/login1{,session/*,seat/*} interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
+    dbus send bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll,Read} peer=(name="{:*,org.freedesktop.portal.Desktop}", label=xdg-desktop-portal),
+    dbus send bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member={ReleaseDevice,TakeControl,TakeDevice,SetBrightness,SetLockedHint,SetIdleHint} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
+
+    include if exists <local/usr.bin.gnome-keyring-daemon>
+}

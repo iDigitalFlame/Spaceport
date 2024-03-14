@@ -42,19 +42,20 @@ include <abstractions/mime>
 include <abstractions/fonts>
 include <abstractions/wayland>
 
-@{sysconfig}/etc/fonts/**                              r,
-@{sysconfig}/usr/share/icons/**                        r,
-@{sysconfig}/usr/share/themes/**                       r,
-@{sysconfig}/usr/share/cursors/**                      r,
+@{sysconfig}/etc/fonts/**                         r,
+@{sysconfig}/usr/share/icons/**                   r,
+@{sysconfig}/usr/share/themes/**                  r,
+@{sysconfig}/usr/share/cursors/**                 r,
 
-@{etc_ro}/                                             r,
-/usr/share/icons/**                                    r,
-/usr/share/themes/**                                   r,
-/usr/share/cursors/**                                  r,
-/usr/share/fonts/{,**}                                 r,
-/usr/share/hunspell/{,**}                              r,
+/etc/                                             r,
+/usr/share/icons/**                               r,
+/usr/share/themes/**                              r,
+/usr/share/cursors/**                             r,
+/usr/share/fonts/{,**}                            r,
+/usr/share/hunspell/{,**}                         r,
+/usr/share/gtk-{2,3,4}.0/{,*}                     r,
 
-owner @{HOME}/.config/gtk-{2,3,4}.0/{,*}               r,
-owner @{HOME}/.config/gtk-2.0/gtkfilechooser.ini*      r,
+owner @{HOME}/.config/gtk-{2,3,4}.0/{,*}          r,
+owner @{HOME}/.config/gtk-2.0/gtkfilechooser.ini* r,
 
-deny @{HOME}/.xsession-errors                          rw,
+deny @{HOME}/.xsession-errors                     rw,

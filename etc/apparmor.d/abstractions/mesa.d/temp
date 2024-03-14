@@ -34,7 +34,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{etc_ro}/vdpau_wrapper.cfg                                           r,
+/etc/vdpau_wrapper.cfg                                                r,
+
+owner /tmp/.usercache/*/mesa                                          rw,
+owner /tmp/.usercache/*/mesa/index                                    rw,
+owner /tmp/.usercache/*/mesa/[a-f0-9][a-f0-9]/                        rw,
+owner /tmp/.usercache/*/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*               rw,
+owner /tmp/.usercache/*/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp           rwk,
 
 owner @{HOME}/.cache/                                                 r,
 owner @{HOME}/.cache/mesa_shader_cache/                               rw,
@@ -42,9 +48,3 @@ owner @{HOME}/.cache/mesa_shader_cache/index                          rw,
 owner @{HOME}/.cache/mesa_shader_cache/[a-f0-9][a-f0-9]/              rw,
 owner @{HOME}/.cache/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*     rw,
 owner @{HOME}/.cache/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp rwk,
-
-owner /tmp/.usercache/*/mesa                                          rw,
-owner /tmp/.usercache/*/mesa/index                                    rw,
-owner /tmp/.usercache/*/mesa/[a-f0-9][a-f0-9]/                        rw,
-owner /tmp/.usercache/*/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*               rw,
-owner /tmp/.usercache/*/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp           rwk,

@@ -44,6 +44,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     include <abstractions/dconf>
     include <abstractions/vulkan>
     include <abstractions/openssl>
+    include <abstractions/user-tmp>
     include <abstractions/ssl_certs>
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
@@ -51,17 +52,18 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
 
     /opt/ultimaker-cura/{,**}                   rm,
 
-    /dev/                                       r,
-    /dev/zero                                   rm,
     /sys/devices/pci*/**                        r,
     /sys/devices/pnp*/**                        r,
 
-    /dev/tty*                                   rw,
+    /dev/                                       r,
+    /dev/zero                                   rm,
 
-    owner @{PROC}/@{pid}/fd/                    r,
-    owner @{PROC}/@{pid}/mounts                 r,
-    owner @{PROC}/@{pid}/cmdline                r,
-    owner @{PROC}/@{pid}/mountinfo              r,
+    owner /proc/@{pid}/fd/                      r,
+    owner /proc/@{pid}/mounts                   r,
+    owner /proc/@{pid}/cmdline                  r,
+    owner /proc/@{pid}/mountinfo                r,
+
+    /dev/tty*                                   rw,
 
     owner @{run}/user/@{uid}/dconf/user         rw,
 
@@ -69,8 +71,6 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     owner @{HOME}/.config/cura/{,**}            rwk,
     owner @{HOME}/.local/share/cura/{,**}       rw,
     owner @{HOME}/.cache/qtshadercache-*/{,**}  rwkl,
-
-    owner /tmp/*                                rw,
 
     /usr/bin/ld                                 ixr,
     /usr/bin/gcc                                ixr,
@@ -91,8 +91,8 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     deny /usr/share/fonts/**                    w,
     deny /var/lib/libuuid/clock.txt             w,
 
-    deny network inet,
-    deny network inet6,
+    deny network                                inet,
+    deny network                                inet6,
 
     include if exists <local/usr.bin.cura>
 }

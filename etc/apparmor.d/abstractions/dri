@@ -36,7 +36,7 @@
 
 abi <abi/3.0>,
 
-@{etc_ro}/libva.conf                                                                                               r,
+/etc/libva.conf                                                                                                  r,
 
-@{sys}/bus/pci/devices/                                                                                            r,
-@{sys}/devices/pci*/**/{class,config,device,irq,resource,revision,subsystem_device,subsystem_vendor,uevent,vendor} r,
+/sys/bus/pci/devices/                                                                                            r,
+/sys/devices/pci*/**/{class,config,device,irq,resource,revision,subsystem_device,subsystem_vendor,uevent,vendor} r,

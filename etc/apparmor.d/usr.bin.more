@@ -36,24 +36,29 @@
 
 include <tunables/global>
 
-profile chromium /usr/bin/chrom{e,ium} {
-    include <abstractions/video>
-    include <abstractions/chromium>
-    include <abstractions/user-downloads>
+profile more /usr/bin/{less,more} {
+    include <abstractions/base>
+    include <abstractions/consoles>
 
-    owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
+    capability dac_override,
+    capability dac_read_search,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**          rw,
-    owner @{HOME}/.config/chrom{e,ium}/**         rwlk,
-    owner @{HOME}/.config/chrom{e,ium}/{,**}      rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
+    @{sysconfig}/etc/sysless{,key} r,
 
-    /usr/bin/xdg-open                             Px -> xdg-open,
-    /usr/bin/chrom{e,ium}                         ix,
-    /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
+    /**                            r,
+    /etc/sysless{,key}             r,
+    /usr/bin/{less,more}           rm,
+    /usr/share/terminfo/{,**}      r,
 
-    ptrace (trace) peer=/usr/bin/chrom{e,ium},
-    ptrace (trace) peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
+    owner @{HOME}/                 r,
+    owner @{HOME}/.lesshs*         r,
 
-    include if exists <local/usr.bin.chromium>
+    signal (receive) set=(stop, cont, term, kill),
+
+    deny @{HOME}/.lesshs*          w,
+
+    deny network                   inet,
+    deny network                   inet6,
+
+    include if exists <local/usr.bin.more>
 }

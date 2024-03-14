@@ -34,11 +34,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{etc_ro}/timezone              r,
-@{etc_ro}/gnutls/config         r,
+/etc/timezone                   r,
+/etc/gnutls/config              r,
 
 /var/cache/ld.so.cache          rm,
 
 audit deny /opt/secureboot/{,*} rw,
 
 deny ptrace (readby, tracedby),
+
+signal (receive)   peer=unconfined set=(hup int quit kill segv pipe term cont stop),
+signal             peer=@{profile_name},
+
+deny signal (send) peer=unconfined,

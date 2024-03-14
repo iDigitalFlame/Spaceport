@@ -48,8 +48,8 @@ profile xpad /usr/bin/xpad {
 
     deny @{HOME}/.config/xpad/default-style w,
 
-    deny network inet,
-    deny network inet6,
+    deny network                            inet,
+    deny network                            inet6,
 
     include if exists <local/usr.bin.xpad>
 }

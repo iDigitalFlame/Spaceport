@@ -36,24 +36,39 @@
 
 include <tunables/global>
 
-profile chromium /usr/bin/chrom{e,ium} {
-    include <abstractions/video>
-    include <abstractions/chromium>
-    include <abstractions/user-downloads>
+profile ssh /usr/bin/ssh {
+    include <abstractions/base>
+    include <abstractions/openssl>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
+    include <abstractions/dbus-session-strict>
 
-    owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
+    network                              inet    stream,
+    network                              inet6   stream,
+    network                              netlink raw,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**          rw,
-    owner @{HOME}/.config/chrom{e,ium}/**         rwlk,
-    owner @{HOME}/.config/chrom{e,ium}/{,**}      rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
+    @{sysconfig}/etc/ssh/ssh_config      r,
 
-    /usr/bin/xdg-open                             Px -> xdg-open,
-    /usr/bin/chrom{e,ium}                         ix,
-    /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
+    /etc/ssh/ssh_config                  r,
+    /etc/ssh/ssh_config.d/{,*}           r,
 
-    ptrace (trace) peer=/usr/bin/chrom{e,ium},
-    ptrace (trace) peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
+    owner /proc/@{pid}/fd/               r,
+    owner /proc/@{pid}/loginuid          r,
 
-    include if exists <local/usr.bin.chromium>
+    owner @{HOME}/.ssh/{,*}              r,
+    owner @{HOME}/.local/ssh/{,*}        r,
+    owner @{HOME}/.local/lib/ssh/{,*}    r,
+
+    owner /tmp/ssh-*/{,agent.*}          rwkl,
+
+    owner @{run}/user/@{uid}/keyring/ssh rw,
+
+    owner @{HOME}/.ssh/known_hosts{,.*}  rwl,
+
+    /usr/bin/ssh                         ixrm,
+    /usr/bin/{,b,d,rb,z}sh               ixr,
+
+    signal (receive) set=(term) peer=gnome-keyring-daemon,
+
+    include if exists <local/usr.bin.ssh>
 }

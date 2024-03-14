@@ -39,29 +39,29 @@ include <tunables/global>
 profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     include <abstractions/dri>
     include <abstractions/gnome>
+    include <abstractions/vulkan>
     include <abstractions/openssl>
     include <abstractions/p11-kit>
     include <abstractions/version>
     include <abstractions/nameservice>
     include <abstractions/notifications>
 
-    network inet                                             stream,
-    network inet6                                            stream,
+    network                                                        inet  stream,
+    network                                                        inet6 stream,
 
-    @{sys}/class/block/                                            r,
-    @{sys}/devices/system/node/                                    r,
-    @{sys}/devices/virtual/block/                                  r,
-    @{sys}/devices/virtual/block/*/dev                             r,
+    /sys/class/block/                                              r,
+    /sys/devices/pci*/**/dev                                       r,
+    /sys/devices/system/node/                                      r,
+    /sys/devices/virtual/block/                                    r,
+    /sys/devices/virtual/block/*/dev                               r,
 
-    @{PROC}/                                                       r,
-    @{PROC}/uptime                                                 r,
-    @{PROC}/partitions                                             r,
+    /proc/{,partitions,uptime}                                     r,
 
-    owner @{PROC}/@{pid}/stat                                      r,
-    owner @{PROC}/@{pid}/mountinfo                                 r,
-    owner @{PROC}/@{pid}/fdinfo/@{tid}                             r,
+    owner /proc/@{pid}/fd/                                         r,
+    owner /proc/@{pid}/fdinfo/@{tid}                               r,
+    owner /proc/@{pid}/{mountinfo,stat}                            r,
 
-    @{HOME}/.local/apps/zohoworkdrive/{,**}                        rm,
+    owner @{HOME}/.local/apps/zohoworkdrive/{,**}                  rm,
 
     owner @{HOME}/.local/apps/agent.conf                           rw,
     owner @{HOME}/.zohoworkdrive/logs/{,*}                         rw,
@@ -71,7 +71,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     owner @{HOME}/.local/apps/zohoworkdrive/backup/{,**}           rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/config.dat{,-*}        rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/resources.db{,-*}      rwk,
-    owner  @{HOME}/.local/apps/zohoworkdrive/office_doc_statsdb    rwk,
+    owner @{HOME}/.local/apps/zohoworkdrive/office_doc_statsdb     rwk,
 
     owner @{HOME}/Zoho\ WorkDrive\ \(*\)/{,**}                     rwk,
     owner @{HOME}/Documents/Zoho\ WorkDrive\ \(*\)/{,**}           rwk,
@@ -93,9 +93,10 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     /usr/bin/dbus-send                                             ix,
 
     # NOTE(dij): This is here to allow for in-memory blob locking
-    /**                                                            rlk,
+    /**                                                            lk,
 
     # NOTE(dij): WorkDrive doesn't need to open things.
+    deny /usr/bin/cut                                              x,
     deny /usr/bin/file                                             x,
     deny /usr/bin/pmap                                             x,
     deny /usr/bin/tail                                             x,
