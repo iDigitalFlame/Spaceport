@@ -34,4 +34,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{run}/hydra/dns.conf r,
+capability dac_read_search,
+
+/var/cache/smd/hydra/dhcp.leases rwk,
+
+@{run}/smd/hydra/dns.conf        r,

@@ -1,0 +1,107 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile smbd /usr/{bin,sbin}/smbd flags=(attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/samba>
+    include <abstractions/wutmp>
+    include <abstractions/openssl>
+    include <abstractions/consoles>
+    include <abstractions/user-tmp>
+    include <abstractions/cups-client>
+    include <abstractions/nameservice>
+    include <abstractions/authentication>
+
+    capability lease,
+    capability fowner,
+    capability setgid,
+    capability setuid,
+    capability sys_admin,
+    capability audit_write,
+    capability dac_override,
+    capability sys_resource,
+    capability sys_tty_config,
+    capability dac_read_search,
+    capability net_bind_service,
+
+    /etc/mtab                                     r,
+    /etc/samba/*                                  rk,
+    /etc/netgroup                                 r,
+    /etc/printcap                                 r,
+    /usr/share/samba/**                           r,
+    /usr/{bin,sbin}/smbd                          rm,
+    /var/lib/nscd/netgroup                        r,
+    /usr/lib*/samba/vfs/*.so                      rm,
+    /usr/lib*/samba/pdb/*.so                      rm,
+    /usr/lib*/samba/auth/*.so                     rm,
+    /usr/lib*/samba/gensec/*.so                   rm,
+    /usr/lib*/samba/charset/*.so                  rm,
+    /var/lib/sss/pubconf/kdcinfo.*                r,
+    /usr/lib/@{multiarch}/samba/**/               r,
+    /usr/lib*/samba/{lowcase,upcase,valid}.dat    r,
+    /usr/lib/@{multiarch}/samba/*.so{,.[0-9]*}    rm,
+    /usr/lib/@{multiarch}/samba/**/*.so{,.[0-9]*} rm,
+
+    /proc/@{pid}/mounts                           r,
+    /proc/sys/kernel/core_pattern                 r,
+
+    @{run}/samba/**                               rk,
+    @{run}/smd/hydra/smb.conf                     r,
+
+    /var/lib/samba/**                             rwk,
+    /var/spool/samba/**                           rw,
+    /var/cache/samba/**                           rwk,
+    /var/lib/samba/usershares/{,**}               rwkl,
+    /var/{cache,lib}/samba/printing/printers.tdb  rwm,
+
+    @{run}/{,samba/}smbd.pid                      rwk,
+    @{run}/samba/ncalrpc/{,**}                    rw,
+    @{run}/dbus/system_bus_socket                 rw,
+
+    @{HOME}/**                                    rwkl,
+
+    /usr/{bin,sbin}/smbldap-useradd               Px,
+    /usr/lib*/samba/{,samba/}samba-bgqd           Px -> samba-bgqd,
+    /usr/lib*/samba/{,samba/}samba-dcerpcd        Px -> samba-dcerpcd,
+
+    signal send set=term peer=samba-bgqd,
+
+    include if exists <samba/smbd-shares>
+    include if exists <local/usr.sbin.smbd>
+    include if exists <local/usr.sbin.smbd-shares>
+}

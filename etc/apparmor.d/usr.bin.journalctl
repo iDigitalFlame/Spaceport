@@ -44,6 +44,7 @@ profile journalctl /usr/bin/journalctl  {
 
     capability mknod,
     capability net_admin,
+    capability sys_ptrace,
     capability sys_resource,
     capability dac_override,
     capability dac_read_search,
@@ -71,6 +72,8 @@ profile journalctl /usr/bin/journalctl  {
 
     signal (receive) set=(term) peer=unconfined,
     signal (send)               peer=more,
+
+    ptrace (read),
 
     include if exists <local/usr.bin.journalctl>
 }
