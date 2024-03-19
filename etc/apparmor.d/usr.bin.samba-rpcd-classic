@@ -16,9 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Hydra Samba Demon Unit
-## Split from smd-daemon.service to allow write privileges for Hydra while
-## limiting the primary daemon access. Only to be started on-demand by Hydra.
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2024 iDigitalFlame
 #
@@ -36,30 +34,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After                   = home.mount network.target smd-daemon.service
-Requires                = home.mount network.target smd-daemon.service
-Description             = Hydra SMB Daemon
+include <tunables/global>
 
-[Service]
-Type                    = notify
-PIDFile                 = /run/hydra/smbd.pid
-ExecStart               = /usr/bin/smbd --foreground --no-process-group --configfile=/var/run/smd/hydra/smb.conf
-ExecReload              = /usr/bin/kill -HUP $MAINPID
-PrivateTmp              = true
-KeyringMode             = private
-ProtectClock            = false
-PrivateUsers            = false
-ProtectSystem           = full
-ReadWritePaths          = /home
-PrivateDevices          = false
-NoNewPrivileges         = false # False for AppArmor Profiles
-LockPersonality         = true
-RestrictRealtime        = true
-RestrictSUIDSGID        = true
-ProtectKernelLogs       = true
-RestrictNamespaces      = true
-ProtectControlGroups    = true
-ProtectKernelModules    = true
-ProtectKernelTunables   = false
-RestrictAddressFamilies = AF_INET AF_NETLINK AF_UNIX
+profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(attach_disconnected) {
+    include <abstractions/wutmp>
+    include <abstractions/samba-rpcd>
+
+    /usr/lib*/samba/{,samba/}rpcd_classic rm,
+
+    @{run}/smd/hydra/smb.conf             r,
+
+    /dev/urandom                          rw,
+
+    include if exists <local/samba-rpcd-classic>
+}

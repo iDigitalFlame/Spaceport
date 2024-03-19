@@ -93,9 +93,9 @@ profile smbd /usr/{bin,sbin}/smbd flags=(attach_disconnected) {
     @{run}/samba/ncalrpc/{,**}                    rw,
     @{run}/dbus/system_bus_socket                 rw,
 
-    @{HOME}/**                                    rwkl,
+    /home/*/**                                    rwkl,
+    /home/{,*,*/}                                 r,
 
-    /usr/{bin,sbin}/smbldap-useradd               Px,
     /usr/lib*/samba/{,samba/}samba-bgqd           Px -> samba-bgqd,
     /usr/lib*/samba/{,samba/}samba-dcerpcd        Px -> samba-dcerpcd,
 

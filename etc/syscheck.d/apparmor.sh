@@ -50,6 +50,7 @@ chmod 400 "/etc/audit/audit.rules"
 chmod 400 "/etc/audit/auditd.conf"
 
 ln -sT "/etc/apparmor.d/php-fpm" "/etc/apparmor.d/disable/php-fpm" 2> /dev/null
+ln -sT "/etc/apparmor.d/bin.ping" "/etc/apparmor.d/disable/bin.ping" 2> /dev/null
 ln -sT "/etc/apparmor.d/samba-bgqd" "/etc/apparmor.d/disable/samba-bgqd" 2> /dev/null
 ln -sT "/etc/apparmor.d/samba-rpcd" "/etc/apparmor.d/disable/samba-rpcd" 2> /dev/null
 ln -sT "/etc/apparmor.d/lsb_release" "/etc/apparmor.d/disable/lsb_release" 2> /dev/null
@@ -57,6 +58,7 @@ ln -sT "/etc/apparmor.d/usr.sbin.nmbd" "/etc/apparmor.d/disable/usr.sbin.nmbd" 2
 ln -sT "/etc/apparmor.d/usr.sbin.nscd" "/etc/apparmor.d/disable/usr.sbin.nscd" 2> /dev/null
 ln -sT "/etc/apparmor.d/samba-dcerpcd" "/etc/apparmor.d/disable/samba-dcerpcd" 2> /dev/null
 ln -sT "/etc/apparmor.d/usr.sbin.ntpd" "/etc/apparmor.d/disable/usr.sbin.ntpd" 2> /dev/null
+ln -sT "/etc/apparmor.d/usr.sbin.smbd" "/etc/apparmor.d/disable/usr.sbin.smbd" 2> /dev/null
 ln -sT "/etc/apparmor.d/usr.sbin.mdnsd" "/etc/apparmor.d/disable/usr.sbin.mdnsd" 2> /dev/null
 ln -sT "/etc/apparmor.d/usr.sbin.identd" "/etc/apparmor.d/disable/usr.sbin.identd" 2> /dev/null
 ln -sT "/etc/apparmor.d/nvidia_modprobe" "/etc/apparmor.d/disable/nvidia_modprobe" 2> /dev/null

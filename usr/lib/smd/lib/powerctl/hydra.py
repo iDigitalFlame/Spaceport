@@ -37,10 +37,10 @@
 # PowerCTL Module: Hydra
 #   Command line user module to configure and control Hydra VMs.
 
-from os import fork
 from time import sleep
+from os import fork, execl
+from os.path import basename
 from lib.util import nes, num
-from lib.util.exec import nulexec
 from lib.util.file import read_json, expand
 from lib.shared.hydra import load_vm, get_devices
 from lib import print_error, send_message, check_error
@@ -556,9 +556,10 @@ def vm_list(args):
         print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
         return
+    r.vms.sort(key=lambda x: x["vmid"])
     for x in r.vms:
         if args.dmenu:
-            print(f'{_vm(x["vmid"], x["file"])},{x["status"].title()},{x["vmid"]}')
+            print(f'{x["vmid"]}|{x["status"].title()}|{_vm(x["vmid"], x["file"])}')
             continue
         print(
             f'{_vm(x["vmid"], x["file"]):20}{x["vmid"]:<8}'
@@ -842,35 +843,29 @@ def vm_connect(args, vm=None, vnc=False):
         return print_error("Cannot start the VM!", err)
     check_error(r, "Cannot start the VM")
     del vm
-    if fork() != 0:
+    if not args.no_fork and fork() != 0:
         return True
     if r.status == "waiting":
         sleep(2)
     if args.connect_vnc or vnc:
         try:
-            nulexec(
-                [
-                    HYDRA_EXEC_VNC,
-                    "FullscreenSystemKeys=0",
-                    "Shared=1",
-                    f"{HYDRA_DIR}/{r.vmid}.vnc",
-                ],
-                wait=True,
-                timeout=None,
+            execl(
+                HYDRA_EXEC_VNC,
+                basename(HYDRA_EXEC_VNC),
+                "FullscreenSystemKeys=0",
+                "Shared=1",
+                f"{HYDRA_DIR}/{r.vmid}.vnc",
             )
         except OSError as err:
             return print_error("Cannot connect to the VM via VNC!", err)
         del r
         return True
     try:
-        nulexec(
-            [
-                HYDRA_EXEC_SPICE,
-                f"--title=VM{r.vmid}",
-                f"--uri=spice+unix:///var/run/smd/hydra/{r.vmid}.spice",
-            ],
-            wait=True,
-            timeout=None,
+        execl(
+            HYDRA_EXEC_SPICE,
+            basename(HYDRA_EXEC_SPICE),
+            f"--title=VM{r.vmid}",
+            f"--uri=spice+unix:///var/run/smd/hydra/{r.vmid}.spice",
         )
     except OSError as err:
         return print_error("Cannot connect to the VM via Spice!", err)

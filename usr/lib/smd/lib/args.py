@@ -697,6 +697,15 @@ ARGS = {
             "vm_connect",
         ),
         (
+            "--no-fork",
+            {
+                "dest": "no_fork",
+                "help": "do not fork when connecting to a VM",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "-w",
             {
                 "dest": "wake",

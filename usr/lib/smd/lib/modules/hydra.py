@@ -781,6 +781,11 @@ class VM(Storage):
 
     def _start(self, server, manager, uid):
         if self._running():
+            if self._state == HYDRA_STATE_SLEEPING:
+                server.debug(
+                    f"[m/hydra/VM({self.vmid})]: Waking suspended VM due to start command."
+                )
+                return self._sleep(server, False)
             return self._process.pid
         if self._state != HYDRA_STATE_STOPPED:
             server.warning(
@@ -830,6 +835,12 @@ class VM(Storage):
                 f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}!"
             )
             server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
+        try:
+            # NOTE(dij): Last chance effort, as some get caught in this quasi-state.
+            chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
+            chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
+        except OSError:
+            pass
         return self._proc.pid
 
     def _restart(self, server, reset=False):
@@ -1225,6 +1236,8 @@ class VM(Storage):
         if not force and self._running():
             if self._event is not None:
                 raise Error("soft shutdown already in progress")
+            if self._state == HYDRA_STATE_SLEEPING:
+                raise Error("cannot ACPI shutdown while suspended")
             try:
                 t = num(timeout, False)
             except ValueError:
@@ -1308,6 +1321,10 @@ class VM(Storage):
             return
         if not nes(command) and not isinstance(command, dict):
             raise Error('"command" must be a dict or string')
+        if ga and self._state == HYDRA_STATE_SLEEPING:
+            server.warning(
+                f"[m/hydra/VM({self.vmid})]: Sending a GA command to a sleeping VM might not work!"
+            )
         d = {"execute": command}
         if isinstance(args, dict):
             d["arguments"] = args
@@ -1736,6 +1753,9 @@ class HydraServer(object):
             return x._status()
         if message.type == HYDRA_START:
             if not i:
+                if x._state == HYDRA_STATE_SLEEPING:
+                    # Wake VM if we're attempting to start a sleeping VM.
+                    x._start(server, self, message.uid())
                 return x._status()
             try:
                 self.start(server)
