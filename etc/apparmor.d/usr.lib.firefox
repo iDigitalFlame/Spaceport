@@ -77,7 +77,7 @@ profile firefox /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} {
     owner @{HOME}/.config/librewolf/**/extensions/**                   ixrm,
     owner @{HOME}/.config/mozilla/firefox/**/extensions/**             ixrm,
 
-    deny /var/cache/fontconfig                                         w,
+    deny /var/cache/fontconfig{,/}                                     w,
 
     dbus (receive, send) bus=accessibility,
     dbus (receive, send) bus=session path=/org/mozilla/firefox/Remote interface=org.mozilla.firefox member=OpenURL peer=(label=firefox),

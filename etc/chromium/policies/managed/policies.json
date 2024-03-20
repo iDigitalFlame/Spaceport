@@ -51,7 +51,7 @@
     "BlockThirdPartyCookies": false,
     "BookmarkBarEnabled": false,
     "BrowserAddPersonEnabled": false,
-    "BrowserGuestModeEnforced": true,
+    "BrowserGuestModeEnforced": false,
     "BrowserLabsEnabled": false,
     "BrowserSignin": false,
     "ClearBrowsingDataOnExitList": [

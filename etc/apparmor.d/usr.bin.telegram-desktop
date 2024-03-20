@@ -73,7 +73,7 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     /usr/bin/telegram-desktop                       ixr,
 
     deny /sys/class/power_supply/                   r,
-    deny @{HOME}/.local/share/applications/         w,
+    deny @{HOME}/.local/share/applications/**       w,
 
     include if exists <local/usr.bin.telegram-desktop>
 }
