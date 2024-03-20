@@ -59,11 +59,13 @@ class Service(object):
         self._log = Logger(
             name,
             10,
-            log.replace("{uid}", f"{getuid()}")
-            .replace("{pid}", f"{getpid()}")
-            .replace("{name}", name)
-            if nes(log)
-            else None,
+            (
+                log.replace("{uid}", f"{getuid()}")
+                .replace("{pid}", f"{getpid()}")
+                .replace("{name}", name)
+                if nes(log)
+                else None
+            ),
             journal,
         )
         self._read_only = ro
@@ -76,7 +78,9 @@ class Service(object):
 
     def save(self):
         if self._read_only:
-            return
+            return self._log.debug(
+                f'[service]: Not saving configuration to "{self.config.path()}" as "read_only" is True.'
+            )
         self._log.debug(f'[service]: Saving configuration to "{self.config.path()}"..')
         try:
             self.config.save(perms=0o0640)

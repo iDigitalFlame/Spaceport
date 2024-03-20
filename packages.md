@@ -14,6 +14,8 @@ bluez
 bluez-utils
 btrfs-progs
 c-lolcat
+ca-certificates
+ca-certificates-mozilla
 cdrtools
 chaotic-keyring
 chaotic-mirrorlist

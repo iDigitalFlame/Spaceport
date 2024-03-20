@@ -287,14 +287,18 @@ class Session(object):
             if message.radio == "wireless":
                 return self._trigger(
                     server,
-                    "wireless_enable"
-                    if message.get("enabled", True)
-                    else "wireless_disable",
+                    (
+                        "wireless_enable"
+                        if message.get("enabled", True)
+                        else "wireless_disable"
+                    ),
                 )
             elif message.radio == "bluetooth":
                 return self._trigger(
                     server,
-                    "bluetooth_enable"
-                    if message.get("enabled", True)
-                    else "bluetooth_disable",
+                    (
+                        "bluetooth_enable"
+                        if message.get("enabled", True)
+                        else "bluetooth_disable"
+                    ),
                 )

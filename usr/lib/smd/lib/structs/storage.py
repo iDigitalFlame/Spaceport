@@ -231,7 +231,7 @@ class Storage(Flex):
         return self._file
 
     def is_read_only(self):
-        return self._data.pop("_ro", False)
+        return self._data.get("_ro", False)
 
     def load(self, path=None, errors=True):
         super(__class__, self).load(path if nes(path) else self._file, errors)

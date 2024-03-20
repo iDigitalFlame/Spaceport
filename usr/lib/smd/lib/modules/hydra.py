@@ -1051,7 +1051,9 @@ class VM(Storage):
             #
             #            If the target is a file and is owned by the user
             #            it must have the Hydra group and the permissions of
-            #            0o660.
+            #            0o660. Unless the "readonly" value is True, in which
+            #            the drive will be checked to see if the user has at least
+            #            read permissions and the file is not executable.
             #
             #            If the target is a file not owned by the calling user
             #            it must have the permissions of 0o0644 and will be
@@ -1066,7 +1068,10 @@ class VM(Storage):
                 if d["type"] == "cd" or d["type"] == "iso":
                     v.check(0o7133, req=0o0640)
                 elif v.uid == uid:
-                    v.check(0o7117, gid=_hydra_user().pw_gid, req=0o0660)
+                    if d.get("readonly", False):
+                        v.check(0o7133, req=0o0440)
+                    else:
+                        v.check(0o7117, gid=_hydra_user().pw_gid, req=0o0660)
                 else:
                     v.check(0o7133, req=0o0644, hide=True)
                     server.debug(
@@ -1746,7 +1751,8 @@ class HydraServer(object):
             server.error("[m/hydra]: Cannot load the VM!", err)
             return as_error(f"cannot load VM: {err}")
         if message.user:
-            message.vmid, message.file = x.vmid, x.path()
+            message.set("vmid", x.vmid)
+            message.set("file", x.path())
             del x, i
             return message.multicast()
         if message.type == HYDRA_STATUS:

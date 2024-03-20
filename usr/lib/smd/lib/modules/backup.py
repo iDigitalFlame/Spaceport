@@ -1549,9 +1549,11 @@ class Backup(object):
         try:
             write(
                 f"{self._path}/extract.sh",
-                BACKUP_RESTORE_SCRIPT_NO_KEY
-                if self._key is None
-                else BACKUP_RESTORE_SCRIPT,
+                (
+                    BACKUP_RESTORE_SCRIPT_NO_KEY
+                    if self._key is None
+                    else BACKUP_RESTORE_SCRIPT
+                ),
             )
         except OSError as err:
             server.error(
