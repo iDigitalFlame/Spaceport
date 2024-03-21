@@ -52,6 +52,8 @@ profile ssh /usr/bin/ssh {
     /etc/ssh/ssh_config                  r,
     /etc/ssh/ssh_config.d/{,*}           r,
 
+    owner /etc/smd/*                     r,
+
     owner /proc/@{pid}/fd/               r,
     owner /proc/@{pid}/loginuid          r,
 
@@ -66,7 +68,7 @@ profile ssh /usr/bin/ssh {
     owner @{HOME}/.ssh/known_hosts{,.*}  rwl,
 
     /usr/bin/ssh                         ixrm,
-    /usr/bin/{,b,d,rb,z}sh               ixr,
+    /usr/bin/{,ba,da,rba,z}sh            ixr,
 
     signal (receive) set=(term) peer=gnome-keyring-daemon,
 

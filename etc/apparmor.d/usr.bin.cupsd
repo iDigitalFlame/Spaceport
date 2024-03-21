@@ -94,7 +94,7 @@ profile cupsd /usr/bin/cupsd {
     /usr/bin/c{at,p,hmod}                     ixr,
     /usr/bin/{mktemp,printenv}                ixr,
     /usr/bin/{rm,sed,xz,touch}                ixr,
-    /usr/lib/cups/monitor/dbus                Pxr,
+    /usr/lib/cups/monitor/dbus                Pxr -> cups-notifier-dbus,
     /usr/bin/{ippfind,hostname}               ixr,
     /usr/lib/cups/{daemon,backend}/*          ixr,
     /usr/lib/cups/{cgi-bin,driver}/*.cgi      ixr,

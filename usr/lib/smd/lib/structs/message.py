@@ -150,14 +150,14 @@ def send_message(sock, header, wait=None, timeout=None, payload=None, errors=Tru
 
 
 class Message(Flex):
-    __slots__ = ("_pid", "_uid", "_header", "_multicast")
+    __slots__ = ("_pid", "_uid", "_header", "_forward", "_multicast")
 
     def __init__(self, header=None, payload=None, stream=None, pid=None, uid=None):
         if not isinstance(stream, socket) and not isinstance(header, int):
             raise ValueError('"header" must be an integer')
         Flex.__init__(self)
-        self._pid, self._uid = pid, uid
         self._header, self._multicast = header, False
+        self._pid, self._uid, self._forward = pid, uid, False
         if payload is not None:
             self.update(payload)
         if isinstance(stream, socket):
@@ -180,6 +180,9 @@ class Message(Flex):
     def is_error(self):
         v = self.get("error", None)
         return v if nes(v) else False
+
+    def is_forward(self):
+        return self._forward
 
     def recv(self, stream):
         if not isinstance(stream, socket):
@@ -242,6 +245,9 @@ class Message(Flex):
             )
         except OSError:
             return False
+
+    def set_forward(self, forward=True):
+        self._forward = forward
 
     def multicast(self, multicast=True):
         self._multicast = multicast

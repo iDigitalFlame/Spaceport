@@ -1875,7 +1875,7 @@ class BackupServer(object):
     def control(self, server, message):
         if message.type == MSG_STATUS:
             return self._status(server)
-        if message.forward:
+        if message.is_forward():
             if message.type != MSG_UPDATE or self._current is None:
                 return
             if message.state < BACKUP_STATE_ERROR:

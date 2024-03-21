@@ -61,6 +61,7 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     owner /proc/@{pid}/{cmdline,stat}               r,
 
     owner @{run}/user/@{uid}/dconf/user             w,
+    owner @{run}/user/@{uid}/*-wayland.lock         rwk,
 
     owner /proc/@{pid}/comm                         rw,
     owner /proc/@{pid}/task/@{tid}/comm             rw,

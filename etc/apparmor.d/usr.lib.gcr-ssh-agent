@@ -41,6 +41,8 @@ profile gcr-ssh-agent /usr/lib/gcr-ssh-agent {
 
     /usr/lib/gcr-ssh-agent            rm,
 
+    owner @{HOME}/.ssh{,/,/*}         r,
+
     owner @{run}/user/@{uid}/gcr{,/*} rw,
 
     /usr/bin/ssh-agent                Pxr -> ssh-agent,

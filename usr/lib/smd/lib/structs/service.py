@@ -115,7 +115,7 @@ class Service(object):
     def forward(self, message):
         if message is None:
             return
-        message["forward"] = True
+        message.set_forward()
         self._log.debug(
             f"[service]: Forwarding message 0x{message.header():02X} to internal Hooks."
         )

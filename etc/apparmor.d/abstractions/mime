@@ -40,7 +40,7 @@ abi <abi/3.0>,
 @{sysconfig}/usr/share/applications/mimeinfo.cache                         r,
 @{sysconfig}/usr/share/applications/{defaults,mimeapps}.list               r,
 
-/etc//mime.types                                                           r,
+/etc/mime.types                                                            r,
 /usr/share/mime/types                                                      r,
 /usr/share/mime/mime.cache                                                 r,
 /usr/share/file/misc/magic.mgc                                             r,

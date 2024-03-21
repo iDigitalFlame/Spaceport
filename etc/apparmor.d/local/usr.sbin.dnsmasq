@@ -36,6 +36,6 @@
 
 capability dac_read_search,
 
-/var/cache/smd/hydra/dhcp.leases rwk,
-
 @{run}/smd/hydra/dns.conf        r,
+
+/var/cache/smd/hydra/dhcp.leases rwk,

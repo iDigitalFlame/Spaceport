@@ -36,7 +36,7 @@
 
 include <tunables/global>
 
-profile firefox /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} {
+profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} {
     include <abstractions/chromium>
     include <abstractions/user-downloads>
 

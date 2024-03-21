@@ -55,14 +55,11 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
 
     # No Slack, bad!
     deny /usr/bin/cut                      x,
-    deny /usr/bin/zsh                      x,
-    deny /usr/bin/dash                     x,
-    deny /usr/bin/bash                     x,
     deny /usr/bin/grep                     x,
     deny /usr/bin/xprop                    x,
-    deny /usr/bin/uname                    x,
-    deny /usr/bin/basename                 x,
     deny /usr/bin/realpath                 x,
+    deny /usr/bin/{u,base}name             x,
+    deny /usr/bin/{,ba,da,z}sh             x,
 
     include if exists <local/usr.lib.slack>
 }
