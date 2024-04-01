@@ -37,6 +37,7 @@
 include <tunables/global>
 
 profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
+    include <abstractions/qt>
     include <abstractions/dri>
     include <abstractions/gtk>
     include <abstractions/base>
@@ -49,7 +50,9 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
     include <abstractions/user-downloads>
+    include <abstractions/freedesktop.org>
 
+    /etc/fstab                                  r,
     /opt/ultimaker-cura/{,**}                   rm,
 
     /sys/devices/pci*/**                        r,
@@ -71,6 +74,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     owner @{HOME}/.config/cura/{,**}            rwk,
     owner @{HOME}/.local/share/cura/{,**}       rw,
     owner @{HOME}/.cache/qtshadercache-*/{,**}  rwkl,
+    owner @{HOME}/.cache/Ultimaker\ B.V./{,**}  rwkl,
 
     /usr/bin/ld                                 ixr,
     /usr/bin/gcc                                ixr,
@@ -89,6 +93,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
 
     deny /dev/pts/*                             rw,
     deny /usr/share/fonts/**                    w,
+    deny /var/cache/fontconfig{,/}              w,
     deny /var/lib/libuuid/clock.txt             w,
 
     deny network                                inet,

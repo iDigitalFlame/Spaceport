@@ -34,6 +34,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-owner @{HOME}/.recently-used.xbel{,*} r,
+owner @{HOME}/.recently-used.xbel{,*}                r,
 
-deny @{HOME}/.recently-used.xbel{,*}  w,
+owner @{HOME}/.local/share/recently-used.xbel        w,
+owner @{HOME}/.local/share/recently-used.xbel.?????? w,
+
+deny @{HOME}/.recently-used.xbel{,*}                 w,

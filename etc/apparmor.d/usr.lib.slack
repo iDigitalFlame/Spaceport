@@ -43,23 +43,26 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
     include <abstractions/notifications>
     include <abstractions/user-downloads>
 
-    /usr/lib/slack/resources/**            rm,
+    /usr/lib/slack/resources/**                                                                                    rm,
 
-    owner @{HOME}/                         r,
-    owner @{HOME}/.config/Slack/{,**}      rwkl,
+    owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/sway.service/memory.{high,max} r,
 
-    /usr/bin/xdg-open                      Px -> xdg-open,
-    /usr/lib/slack/slack                   ix,
-    /usr/bin/xdg-settings                  ixr,
-    /usr/lib/slack/chrome_crashpad_handler ix,
+    owner @{HOME}/                                                                                                 r,
+    owner @{HOME}/.config/Slack/{,**}                                                                              rwkl,
+
+    /usr/bin/xdg-open                                                                                              Px -> xdg-open,
+    /usr/lib/slack/slack                                                                                           ix,
+    /usr/bin/xdg-settings                                                                                          ixr,
+    /usr/lib/slack/chrome_crashpad_handler                                                                         ix,
 
     # No Slack, bad!
-    deny /usr/bin/cut                      x,
-    deny /usr/bin/grep                     x,
-    deny /usr/bin/xprop                    x,
-    deny /usr/bin/realpath                 x,
-    deny /usr/bin/{u,base}name             x,
-    deny /usr/bin/{,ba,da,z}sh             x,
+    deny /usr/bin/cut                                                                                              xr,
+    deny /usr/bin/ldd                                                                                              xr,
+    deny /usr/bin/grep                                                                                             xr,
+    deny /usr/bin/xprop                                                                                            xr,
+    deny /usr/bin/realpath                                                                                         xr,
+    deny /usr/bin/{u,base}name                                                                                     xr,
+    deny /usr/bin/{,ba,da,z}sh                                                                                     xr,
 
     include if exists <local/usr.lib.slack>
 }

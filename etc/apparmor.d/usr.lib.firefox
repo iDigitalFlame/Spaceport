@@ -43,6 +43,7 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} {
     @{sysconfig}/usr/lib/firefox/defaults/pref/*.{js,cfg}              r,
     @{sysconfig}/usr/lib/librewolf/defaults/pref/*.{js,cfg}            r,
 
+    /                                                                  r,
     /etc/fstab                                                         r,
     /etc/mailcap                                                       r,
     /usr/lib/{firefox,librewolf}/{,**}                                 r,
