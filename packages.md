@@ -37,7 +37,7 @@ firefox
 firefox-noscript
 firefox-tree-style-tab
 firefox-ublock-origin
-freerdp
+freerdp2
 gcc
 gdb
 ghostscript
