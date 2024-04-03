@@ -65,9 +65,7 @@ def powerctl():
         b = basename(_getframe(1).f_code.co_filename).lower()
     except (AttributeError, ValueError):
         b = None
-    x = ArgumentParser(
-        description="SMD Manager", prog="powerctl"
-    )  # , usage="%(prog)s [options]")
+    x = ArgumentParser(description="SMD Manager", prog="powerctl")
     try:
         e = _load_powerctl(x, DIRECTORY_POWERCTL)
     except Exception as err:
