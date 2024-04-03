@@ -71,7 +71,7 @@ def pase_locker(entries, locker, arg, force):
     if arg is None and force is None:
         return
     v = force if force is not None else arg
-    if boolean(v):
+    if boolean(v, False):
         return entries.append(
             {"name": locker, "time": None, "force": force is not None}
         )

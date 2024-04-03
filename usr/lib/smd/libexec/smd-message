@@ -71,7 +71,7 @@ def _main(args):
         del h
     if not isinstance(args.header, int):
         try:
-            args.header = abs(int(args.header))
+            args.header = abs(int(args.header, 10))
         except ValueError as err:
             return print_error("Header must be a valid number!", err)
     try:

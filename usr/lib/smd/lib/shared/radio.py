@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# Shared Module Dependencies: Wireless
+# Shared Module Dependencies: Radio
 #   Used to keep links un-borken for non-default configurations of directories
 
 from lib.util import boolean

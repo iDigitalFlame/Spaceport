@@ -43,8 +43,21 @@
 ## Base Constants
 EMPTY = str()
 NEWLINE = "\n"
-VERSION = "SMD-7_Tank_v2"
-BOOLEANS = ["0", "1", "f", "false", "no", "off", "on", "t", "true", "yes"]
+VERSION = "SMD-7.2_Tank_v2"
+BOOLEANS = [
+    "0",
+    "1",
+    "disable",
+    "enable",
+    "f",
+    "false",
+    "no",
+    "off",
+    "on",
+    "t",
+    "true",
+    "yes",
+]
 
 ## User Constants Configuration.
 # Can be used to modify the values in the "constants.config" package.

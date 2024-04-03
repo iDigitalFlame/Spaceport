@@ -39,11 +39,11 @@
 #   for user-defined events that can execute ba program(s) in response.
 
 from lib.sway import windows
-from lib.util import boolean
 from lib.util.file import expand
+from lib.util import boolean, a2z
 from signal import SIGCONT, SIGSTOP
 from os import getpgid, killpg, kill
-from lib.constants.config import RADIO_TYPES
+from lib.constants.config import RADIO_NAMES
 from lib.util.exec import stop, nulexec, split
 from lib.constants import (
     MSG_PRE,
@@ -152,10 +152,11 @@ class Session(object):
         self._profiles["suspend_post"] = _trigger(server, "suspend_post")
         self._profiles["hibernate_pre"] = _trigger(server, "hibernate_pre")
         self._profiles["hibernate_post"] = _trigger(server, "hibernate_post")
-        self._profiles["wireless_enable"] = _trigger(server, "wireless.enable")
-        self._profiles["wireless_disable"] = _trigger(server, "wireless.disable")
-        self._profiles["bluetooth_enable"] = _trigger(server, "bluetooth.enable")
-        self._profiles["bluetooth_disable"] = _trigger(server, "bluetooth.disable")
+        for i in RADIO_NAMES:
+            if not a2z(i):
+                continue
+            self._profiles[f"{i}_enable"] = _trigger(server, f"{i}.enable")
+            self._profiles[f"{i}_disable"] = _trigger(server, f"{i}.disable")
         s = server.get("session.startups", DEFAULT_SESSION_STARTUPS, True)
         if not isinstance(s, list) or len(s) == 0:
             return
@@ -279,26 +280,11 @@ class Session(object):
             return self._trigger(
                 server, "hibernate_pre" if message.type == MSG_PRE else "hibernate_post"
             )
-        if (
-            message.header() == HOOK_RADIO
-            and message.type == MSG_ACTION
-            and message.radio in RADIO_TYPES
-        ):
-            if message.radio == "wireless":
-                return self._trigger(
-                    server,
-                    (
-                        "wireless_enable"
-                        if message.get("enabled", True)
-                        else "wireless_disable"
-                    ),
-                )
-            elif message.radio == "bluetooth":
-                return self._trigger(
-                    server,
-                    (
-                        "bluetooth_enable"
-                        if message.get("enabled", True)
-                        else "bluetooth_disable"
-                    ),
-                )
+        if message.header() != HOOK_RADIO or message.type != MSG_ACTION:
+            return
+        if not a2z(message.radio):
+            return server.warning("[m/session]: Ignoring invalid Radio name!")
+        self._trigger(
+            server,
+            f'{message.radio}_{"enable" if message.get("enabled", True) else "disable"}',
+        )

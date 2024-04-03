@@ -65,7 +65,9 @@ def powerctl():
         b = basename(_getframe(1).f_code.co_filename).lower()
     except (AttributeError, ValueError):
         b = None
-    x = ArgumentParser(description="SMD Manager", usage="%(prog)s [options]")
+    x = ArgumentParser(
+        description="SMD Manager", prog="powerctl"
+    )  # , usage="%(prog)s [options]")
     try:
         e = _load_powerctl(x, DIRECTORY_POWERCTL)
     except Exception as err:
@@ -75,7 +77,6 @@ def powerctl():
             b = b[:-3]
         if b in e:
             m = e[b]
-            m.usage = f"{b} [options]"
         else:
             m = x
     else:
@@ -234,7 +235,7 @@ def _load_powerctl(parser, directory):
             raise ValueError(
                 f'error loading module "{directory}/{m}": missing "default" function'
             )
-        w, r = dict(), s.add_parser(n, description=d)
+        w, r = dict(), s.add_parser(n, prog=n, description=d)
         try:
             if isinstance(a, list) and len(a) > 0:
                 for v in a:

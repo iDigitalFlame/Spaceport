@@ -191,10 +191,6 @@ NOTIFY_EXTENSIONS = [".png", ".svg", ".jpg", ".gif", ".ico"]
 RADIO_PATH_WIFI = "/sys/class/net"
 RADIO_PATH_BLUE = "/sys/class/bluetooth/*/rfkill*/state"
 
-RADIO_TYPES = [
-    "bluetooth",
-    "wireless",
-]
 RADIO_EXEC = {
     "bluetooth_disable": [
         "/usr/bin/systemctl stop bluetooth.service",
@@ -204,9 +200,13 @@ RADIO_EXEC = {
         "/usr/bin/rfkill unblock bluetooth",
         "/usr/bin/systemctl start bluetooth.service",
     ],
-    "wireless_disable": ["/usr/bin/rfkill block wifi"],
-    "wireless_enable": ["/usr/bin/rfkill unblock wifi"],
+    "wireless_disable": "/usr/bin/rfkill block wifi",
+    "wireless_enable": "/usr/bin/rfkill unblock wifi",
 }
+RADIO_NAMES = [
+    "bluetooth",
+    "wireless",
+]
 
 # Backup Module Constants
 BACKUP_STATE = f"{DIRECTORY_CONFIG}/backup-state.json"

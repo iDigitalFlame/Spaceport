@@ -42,6 +42,15 @@
 from time import time
 
 
+def a2z(v):
+    if not nes(v):
+        return False
+    for i in v:
+        if not (0x61 <= ord(i) <= 0x7A):
+            return False
+    return True
+
+
 def nes(v):
     return isinstance(v, str) and len(v) > 0
 
@@ -59,24 +68,6 @@ def fnv32(v):
 
 def seconds():
     return round(time())
-
-
-def boolean(value):
-    if value is None:
-        return False
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, int) or isinstance(value, float):
-        return value > 0
-    if isinstance(value, str):
-        if len(value) == 0:
-            return False
-        v = value.lower().strip()
-        try:
-            return v[0] == "t" or v[0] == "y" or v[0] == "e" or v == "1" or v == "on"
-        finally:
-            del v
-    return False
 
 
 def cancel_nul(server, event):
@@ -107,6 +98,24 @@ def time_to_str(value, now=None):
     if m == 0:
         return f"{h}hr" if s == 0 else f"{h}hr {s}s"
     return f"{h}hr {m}m" if m > 0 and s == 0 else f"{h}hr {m}m {s}s"
+
+
+def boolean(value, int_check=True):
+    if value is None:
+        return False
+    if (int_check or isinstance(value, bool)) and isinstance(value, bool):
+        return value
+    if int_check and (isinstance(value, int) or isinstance(value, float)):
+        return value > 0
+    if isinstance(value, str):
+        if len(value) == 0:
+            return False
+        v = value.lower().strip()
+        try:
+            return v[0] == "t" or v[0] == "y" or v[0] == "e" or v == "1" or v == "on"
+        finally:
+            del v
+    return False
 
 
 def num(val, neg=True, soft_fail=True):

@@ -43,7 +43,7 @@ from lib import print_error
 from lib.util.file import read
 from os.path import dirname, isfile
 from lib.constants.config import RADIO_PATH_WIFI
-from lib.shared.wireless import set_command, set_config
+from lib.shared.radio import set_command, set_config
 
 
 def default(_):

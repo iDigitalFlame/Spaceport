@@ -331,7 +331,7 @@ ARGS = {
         (
             "-t",
             {
-                "type": int,
+                "type": str,
                 "dest": "suspend",
                 "help": "set the Suspend timeout (in seconds), zero to disable",
                 "action": "store",
@@ -342,7 +342,7 @@ ARGS = {
         (
             "-kt",
             {
-                "type": int,
+                "type": str,
                 "dest": "suspend_force",
                 "help": "force set the Suspend timeout (in seconds), zero to disable",
                 "action": "store",
@@ -353,7 +353,7 @@ ARGS = {
         (
             "-z",
             {
-                "type": int,
+                "type": str,
                 "dest": "hibernate",
                 "action": "store",
                 "metavar": "seconds",
@@ -364,7 +364,7 @@ ARGS = {
         (
             "-kz",
             {
-                "type": int,
+                "type": str,
                 "dest": "hibernate_force",
                 "help": "force set the Hibernate timeout (in seconds), zero to disable.",
                 "action": "store",
