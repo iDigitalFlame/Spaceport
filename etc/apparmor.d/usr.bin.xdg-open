@@ -60,7 +60,7 @@ profile xdg-open {
     /etc/xdg/xdg-open-shim.sh                              ixr,
     /usr/bin/{u,base,host}name                             ix,
 
-    /usr/bin/vlc                                           Px,
+    /usr/bin/vlc                                           Px -> vlc,
     /usr/bin/leafpad                                       Px,
     /usr/bin/swayimg                                       Px,
     /usr/bin/ristretto                                     Px,

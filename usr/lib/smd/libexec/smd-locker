@@ -1,4 +1,4 @@
-#!/usr/bin/dash
+#!/usr/bin/python3
 ################################
 ### iDigitalFlame  2016-2024 ###
 #                              #
@@ -35,27 +35,67 @@
 #
 
 # smd-locker
-#   Script used by swaylock to inform SMD about Blank and Lock events.
+#   Script used by swaylock to inform SMD about Blank, Power and Lock events.
 #
 # Usage:
-#   smd-locker [type]
+#   smd-locker [-s socket] [command]
 #
 #   Discouraged for general usage. The only paramater used may be specified to
 #   indicate that this is not a Lockscreen Trigger.
 
-if [ $# -eq 0 ]; then
-    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 0}'
-    exit 0
-fi
+import sys
 
-case "$1" in
-    "blank")
-    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 1}'
-    ;;
-    "suspend")
-    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 2}'
-    ;;
-    *)
-    /usr/lib/smd/libexec/smd-message -u lock -p '{"trigger": 0}'
-    ;;
-esac
+sys.path.insert(0, "/usr/lib/smd")
+
+from argparse import ArgumentParser
+from lib.sway import swaymsg, displays
+from lib.constants.config import SOCKET
+from lib import print_error, send_message
+from lib.constants import HOOK_LOCK, MSG_PRE, MSG_POST, MSG_STATUS
+
+
+def _main(args):
+    if args.command != "power":
+        a = MSG_PRE
+        if args.command == "blank":
+            a = MSG_POST
+        elif args.command == "suspend":
+            a = MSG_STATUS
+        try:
+            return send_message(args.socket, HOOK_LOCK, payload={"trigger": a})
+        finally:
+            del a
+    for i in displays():
+        if not i.active or i.power:
+            continue
+        try:
+            swaymsg(0, f"output {i.name} power on")
+        except Exception as err:
+            print_error(f'Cannot set Display "{i.name}" power state!', err, quit=False)
+
+
+if __name__ == "__main__":
+    p = ArgumentParser(description="System Management Daemon Locker Controller")
+    p.add_argument(
+        "command",
+        type=str,
+        help="command type to execute",
+        nargs="?",
+        action="store",
+        default="lock",
+        choices=["blank", "lock", "power", "suspend"],
+        metavar="command",
+    )
+    p.add_argument(
+        "-s",
+        type=str,
+        dest="socket",
+        help="socket to use for messages",
+        action="store",
+        default=SOCKET,
+        required=False,
+    )
+    try:
+        _main(p.parse_args())
+    except Exception as err:
+        print_error("Error during runtime!", err)

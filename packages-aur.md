@@ -1,4 +1,4 @@
-firefox-extension-bitwarden-bin
+firefox-extension-canvasblocker-bin
 firefox-extension-foxyproxy
 firefox-extension-multi-account-containers
 firefox-extension-user-agent-switcher

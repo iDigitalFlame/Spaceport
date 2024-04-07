@@ -77,6 +77,8 @@ profile smbd /usr/{bin,sbin}/smbd flags=(attach_disconnected) {
     /usr/lib/@{multiarch}/samba/*.so{,.[0-9]*}    rm,
     /usr/lib/@{multiarch}/samba/**/*.so{,.[0-9]*} rm,
 
+    /dev/cores/{,**}                              rw,
+
     /proc/@{pid}/mounts                           r,
     /proc/sys/kernel/core_pattern                 r,
 

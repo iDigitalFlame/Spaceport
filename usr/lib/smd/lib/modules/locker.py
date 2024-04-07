@@ -503,7 +503,7 @@ class LockerClient(object):
                 f"{self._ability.blank}",
                 f"{LOCKER_EXEC_LOCK} blank",
                 "resume",
-                'swaymsg "output * power on"',
+                f"{LOCKER_EXEC_LOCK} power",
             ]
         if self._ability.can_lock():
             x += ["timeout", f"{self._ability.lock}", f"{LOCKER_EXEC_LOCK}"]
