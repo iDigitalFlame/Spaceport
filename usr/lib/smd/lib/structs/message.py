@@ -38,7 +38,6 @@
 #   The Message class is a subclass of the "Storage" class that is designed specifically
 #   to be passed between client and server in binary format quickly.
 
-from os import getuid
 from lib.util import num, nes
 from struct import unpack, pack
 from traceback import format_exc
@@ -181,9 +180,6 @@ class Message(Flex):
         v = self.get("error", None)
         return v if nes(v) else False
 
-    def is_forward(self):
-        return self._forward
-
     def recv(self, stream):
         if not isinstance(stream, socket):
             raise OSError('"stream" must be a socket')
@@ -238,17 +234,29 @@ class Message(Flex):
     def is_multicast(self):
         return self._multicast
 
-    def is_same_client(self):
+    def is_same_client(self, uid):
+        if not isinstance(uid, int) or uid < 0:
+            return False
         try:
-            return (
-                isinstance(self._uid, int) and self._uid >= 0 and self._uid == getuid()
-            )
+            return isinstance(self._uid, int) and self._uid >= 0 and self._uid == uid
         except OSError:
             return False
-
-    def set_forward(self, forward=True):
-        self._forward = forward
 
     def multicast(self, multicast=True):
         self._multicast = multicast
         return self
+
+    def is_forward(self, uid=None, pid=None):
+        if not self._forward:
+            return False
+        if not isinstance(uid, int) and not isinstance(pid, int):
+            return True
+        if isinstance(uid, int) and isinstance(pid, int):
+            return self._uid == uid and self._pid == pid
+        if isinstance(uid, int):
+            return self._uid == uid
+        return self._pid == pid
+
+    def set_forward(self, pid=None, uid=None, forward=True):
+        self._forward = forward
+        self._uid, self._pid = uid, pid

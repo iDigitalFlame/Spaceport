@@ -48,31 +48,36 @@ profile keepassxc /usr/bin/keepassxc {
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
 
-    /usr/share/keepassxc/**                      r,
+    /usr/share/keepassxc/**                                    r,
 
-    /dev/                                        r,
-    /{dev,sys}/bus/usb/{,**}                     r,
-    /{dev,sys}/bus/usb/devices/{,**}             r,
+    /dev/                                                      r,
 
-    /sys/bus/                                    r,
-    /sys/class/                                  r,
-    /sys/devices/pci*/*/**                       r,
+    /sys/bus/                                                  r,
+    /sys/class/                                                r,
+    /sys/devices/pci*/*/**                                     r,
 
-    @{run}/udev/data/**                          r,
+    @{run}/udev/data/**                                        r,
 
-    owner /tmp/.mounts/*/**                      rwkl,
+    /{dev,sys}/bus/usb/{,**}                                   rw,
+    /{dev,sys}/bus/usb/devices/{,**}                           rw,
 
-    owner @{HOME}/*                              rwkl,
-    owner @{HOME}/Documents/**                   rwkl,
-    owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**        rwkl,
+    owner /tmp/.mounts/*/**                                    rwkl,
 
-    deny /dev/tty                                rw,
-    deny /usr/bin/                               r,
-    deny @{HOME}/.cache/keepassxc/keepassxc.ini  w,
-    deny @{HOME}/.config/keepassxc/keepassxc.ini w,
+    owner @{HOME}/{#*,*.kdbx,*.kdbx.*}                         rwkl,
+    owner @{HOME}/.cache/keepassxc/keepassxc.ini               rkl,
+    owner @{HOME}/.config/keepassxc/keepassxc.ini              rkl,
+    owner @{HOME}/Documents/**/{#*,*.kdbx,*.kdbx.*}            rwkl,
+    owner @{HOME}/.cache/keepassxc/keepassxc.ini.lock          rwkl,
+    owner @{HOME}/.config/keepassxc/keepassxc.ini.lock         rwkl,
+    owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**/{#*,*.kdbx,*.kdbx.*} rwkl,
 
-    deny network                                 inet,
-    deny network                                 inet6,
+    deny /dev/tty                                              rw,
+    deny /usr/bin/                                             r,
+    deny @{HOME}/.cache/keepassxc/keepassxc.ini                w,
+    deny @{HOME}/.config/keepassxc/keepassxc.ini               w,
+
+    deny network                                               inet,
+    deny network                                               inet6,
 
     include if exists <local/keepassxc>
 }

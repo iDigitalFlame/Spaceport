@@ -1034,10 +1034,8 @@ class LockerServer(object):
         if message.type != MSG_ACTION:
             return
         if nes(message.name):
-            if message.name == LOCKER_TYPE_BACKUP and (
-                not message.is_forward() or message.uid() != 0
-            ):
-                server.warning("[m/locker]: CLient attempted to set the Backup locker!")
+            if message.name == LOCKER_TYPE_BACKUP and not message.is_forward(uid=0):
+                server.warning("[m/locker]: Client attempted to set the Backup locker!")
                 return as_error("Cannot add the Backup locker")
             try:
                 return self._locker_add(
@@ -1048,7 +1046,7 @@ class LockerServer(object):
         if not isinstance(message.list, list):
             return as_error("Invaid Locker structure")
         if LOCKER_TYPE_BACKUP in message.list:
-            server.warning("[m/locker]: CLient attempted to set the Backup locker!")
+            server.warning("[m/locker]: Client attempted to set the Backup locker!")
             return as_error("Cannot add the Backup locker")
         for i in message.list:
             if "name" not in i:

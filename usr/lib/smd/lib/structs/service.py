@@ -53,15 +53,16 @@ from lib.structs.dispatcher import Dispatcher
 
 
 class Service(object):
-    __slots__ = ("config", "_log", "_read_only", "_dispatcher")
+    __slots__ = ("config", "_log", "_pid", "_uid", "_read_only", "_dispatcher")
 
     def __init__(self, name, modules, config, level, log, ro=False, journal=False):
+        self._uid, self._pid = getuid(), getpid()
         self._log = Logger(
             name,
             10,
             (
-                log.replace("{uid}", f"{getuid()}")
-                .replace("{pid}", f"{getpid()}")
+                log.replace("{uid}", f"{self._uid}")
+                .replace("{pid}", f"{self._pid}")
                 .replace("{name}", name)
                 if nes(log)
                 else None
@@ -96,7 +97,7 @@ class Service(object):
         )
         try:
             # NOTE(dij): Allow SGID here.
-            perm_check(self.config.path(), 0o4137, getuid(), getgid())
+            perm_check(self.config.path(), 0o4137, self._uid, getgid())
             self.config.load()
             if self.config.is_read_only() and not self._read_only:
                 self._read_only = True
@@ -115,7 +116,7 @@ class Service(object):
     def forward(self, message):
         if message is None:
             return
-        message.set_forward()
+        message.set_forward(self._pid, self._uid)
         self._log.debug(
             f"[service]: Forwarding message 0x{message.header():02X} to internal Hooks."
         )
@@ -137,7 +138,7 @@ class Service(object):
             f"[service]: Received a Thread error {args.exc_type} ({args.exc_value})!",
             err=args.exc_value,
         )
-        kill(getpid(), SIGINT)
+        kill(self._pid, SIGINT)
 
     def info(self, message, err=None):
         self._log.info(message, err)

@@ -43,7 +43,7 @@ from threading import Event
 from os.path import exists, dirname
 from lib.util.file import ensure_dir
 from lib.structs import Service, Message
-from os import getpid, remove, chmod, chown, stat
+from os import remove, chmod, chown, stat
 from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
 from lib.constants import VERSION, HOOK_SHUTDOWN, HOOK_NOTIFICATION
 from socket import (
@@ -143,13 +143,12 @@ class Conn(object):
 
 
 class Server(Service):
-    __slots__ = ("_pid", "_path", "_socket", "_clients", "_running", "_complete")
+    __slots__ = ("_path", "_socket", "_clients", "_running", "_complete")
 
     def __init__(self, config, sock, level, log, read_only, journal):
         Service.__init__(
             self, NAME_SERVER, DIRECTORY_MODULES, config, level, log, read_only, journal
         )
-        self._pid = getpid()
         self._path = sock
         self._socket = None
         self._clients = dict()
