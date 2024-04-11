@@ -100,7 +100,7 @@ profile cupsd /usr/bin/cupsd {
     /usr/lib/cups/{cgi-bin,driver}/*.cgi      ixr,
     /usr/lib/cups/{filter,monitor,notifier}/* ixr,
 
-    signal (send) set=(term) peer=cups-notifier-dbus,
+    signal send set=(term) peer=cups-notifier-dbus,
 
     dbus receive bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member={DeviceAdded,DeviceRemoved} peer=(name=:*, label=colord),
     dbus receive bus=system path=/Client*/ServiceBrowser* interface=org.freedesktop.Avahi.ServiceBrowser member={ItemNew,AllForNow,CacheExhausted} peer=(name=:*, label=avahi-daemon),

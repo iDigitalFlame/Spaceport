@@ -1,0 +1,145 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile wireplumber /usr/bin/wireplumber {
+    include <abstractions/base>
+    include <abstractions/audio>
+    include <abstractions/video>
+    include <abstractions/nameservice>
+    include <abstractions/dbus-system>
+    include <abstractions/dbus-session-strict>
+
+    network netlink raw,
+    network bluetooth raw,
+    network bluetooth seqpacket,
+    network bluetooth stream,
+
+    @{sysconfig}/etc/wireplumber/**                     r,
+
+    /etc/asound.conf                                    r,
+    /usr/share/alsa/**                                  r,
+    /etc/wireplumber/**                                 r,
+    /usr/bin/wireplumber                                rm,
+    /usr/share/alsa/{,**}                               r,
+    /etc/pulse/client.conf                              r,
+    /etc/alsa/conf.d/{,**}                              r,
+    /usr/share/sounds/{,**}                             r,
+    /etc/pipewire/client.conf                           r,
+    /usr/share/openal/hrtf/{,**}                        r,
+    /usr/share/spa-*/bluez*/{,*}                        r,
+    /usr/share/wireplumber/{,**}                        r,
+    /etc/pulse/client.conf.d/{,**}                      r,
+    /etc/pipewire/client.conf.d/{,**}                   r,
+    /usr/share/alsa-card-profile/{,**}                  r,
+    /usr/share/pipewire/client{,-rt}.conf               r,
+
+    /dev/                                               r,
+    /dev/bus/usb/                                       r,
+    /dev/s{hm,nd}/                                      r,
+
+    /sys/bus/                                           r,
+    /sys/class/                                         r,
+    /sys/bus/usb/                                       r,
+    /sys/class/sound/                                   r,
+    /sys/class/usbmisc/                                 r,
+    /sys/bus/media/devices/                             r,
+    /sys/devices/system/node/                           r,
+    /sys/bus/usb/devices/{,**}                          r,
+    /sys/devices/**/sound/**/uevent                     r,
+    /sys/devices/**/device:*/**/path                    r,
+    /sys/devices/**/sound/**/pcm_class                  r,
+    /sys/devices/system/node/node*/meminfo              r,
+    /sys/devices/virtual/dmi/id/product_name            r,
+    /sys/devices/virtual/dmi/id/{bios,sys}_vendor       r,
+    /sys/devices/**/video4linux/video*/uevent           r,
+
+    @{run}/systemd/users/{*,*/}                         r,
+    @{run}/udev/data/{c*,+sound:card*,+usb:*}           r,
+
+    owner @{HOME}/.config/wireplumber/*                 r,
+    owner @{HOME}/.config/pulse/client.conf             r,
+    owner @{HOME}/.config/pulse/client.conf.d/{,*.conf} r,
+
+    /dev/dsp*                                           rw,
+    /dev/smpte*                                         rw,
+    /dev/media*                                         rw,
+    /dev/bus/usb/*/*                                    rwk,
+    /dev/s{nd,ound}/*                                   rw,
+    /dev/mi{di*,xer*}                                   rw,
+    /dev/dm{fm*,midi*}                                  rw,
+    /dev/sequencer{,2}                                  rw,
+    /dev/r{adio*,midi*}                                 rw,
+    /dev/p{atmgr*,hone*}                                rw,
+    /dev/mpu401{data,stat}                              rw,
+    /dev/a{dsp*,dmmidi*,load*,midi*,udio*}              rw,
+
+    /sys/devices/**/usb*/{,**}                          rw,
+
+    /proc/asound/**                                     rw,
+
+    owner /dev/shm/pulse-shm-*                          rw,
+
+    owner /proc/@{pid}/task/@{tid}/comm                 rw,
+
+    owner @{run}/user/@{uid}/pipewire-*                 rw,
+    owner @{run}/user/@{uid}/pulse/{,native}            rw,
+
+    owner @{HOME}/.config/pulse/                        rw,
+    owner @{HOME}/.config/pulse/cookie                  rwk,
+    owner @{HOME}/.config/event-sound-cache.tdb.*       rwk,
+    owner @{HOME}/.local/s{hare,tate}/wireplumber/{,*}  rwkl,
+
+    deny @{HOME}/.local/share/wireplumber/scripts{,/*}  rwx,
+
+    dbus bind bus=session name=org.freedesktop.ReserveDevice1.Audio0,
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+    dbus receive bus=system path=/org/freedesktop/UPower/devices/* interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=:*, label=upowerd),
+
+    dbus send bus=system path=/org/freedesktop/UPower{,/**} interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=upowerd),
+    dbus send bus=system path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member=Get peer=(name=org.freedesktop.RealtimeKit1),
+    dbus send bus=system path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=rtkit-daemon),
+    dbus send bus=system path=/org/freedesktop/UPower/devices/* interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=upowerd),
+    dbus send bus=system path=/org/freedesktop/UPower interface=org.freedesktop.UPower member=EnumerateDevices peer=(name="{:*,org.freedesktop.UPower}", label=upowerd),
+    dbus send bus=system path=/org/freedesktop/UPower interface=org.freedesktop.DBus.Properties member=GetDisplayDevice peer=(name=org.freedesktop.UPower, label=upowerd),
+    dbus send bus=system path=/org/freedesktop/UPower{,/**} interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=org.freedesktop.UPower, label=upowerd),
+    dbus send bus=system path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member={MakeThreadRealtime,MakeThreadHighPriority} peer=(name=:*, label=rtkit-daemon),
+    dbus send bus=system path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member={MakeThreadRealtime,MakeThreadHighPriority} peer=(name=org.freedesktop.RealtimeKit1),
+
+    include if exists <local/usr.bin.wireplumber>
+}

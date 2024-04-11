@@ -38,14 +38,14 @@ abi <abi/3.0>,
 
 dbus (receive, send) bus=accessibility,
 
-dbus (receive) bus=session interface=org.a11y.atspi*,
-dbus (receive) bus=session member="Notify" peer=(name="org.freedesktop.DBus"),
-dbus (receive) bus=session path=/org/freedesktop/Notifications member=NotificationClosed,
+dbus receive bus=session interface=org.a11y.atspi*,
+dbus receive bus=session member="Notify" peer=(name="org.freedesktop.DBus"),
+dbus receive bus=session path=/org/freedesktop/Notifications member=NotificationClosed,
 
-dbus (send) bus=session peer=(name=org.a11y.Bus),
-dbus (send) bus=session path=/org/freedesktop/Notifications member=Notify,
-dbus (send) bus=session path=/org/freedesktop/Notifications member=GetCapabilities,
-dbus (send) bus=session path=/org/freedesktop/Notifications member=CloseNotification,
-dbus (send) bus=session path=/org/freedesktop/Notifications member=GetServerInformation,
+dbus send bus=session peer=(name=org.a11y.Bus),
+dbus send bus=session path=/org/freedesktop/Notifications member=Notify,
+dbus send bus=session path=/org/freedesktop/Notifications member=GetCapabilities,
+dbus send bus=session path=/org/freedesktop/Notifications member=CloseNotification,
+dbus send bus=session path=/org/freedesktop/Notifications member=GetServerInformation,
 
 deny dbus bus=session path=/com/canonical/[Uu]nity/[Dd]ebug**,

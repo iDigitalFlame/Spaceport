@@ -64,8 +64,8 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconn
     deny network                             inet,
     deny network                             inet6,
 
-    signal (receive) set=(cont, term) peer=unconfined,
-    signal (send)    set=(term)       peer=ssh-agent,
+    signal receive set=(cont, term) peer=unconfined,
+    signal send    set=(term)       peer=ssh-agent,
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
     dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=xdg-desktop-portal),

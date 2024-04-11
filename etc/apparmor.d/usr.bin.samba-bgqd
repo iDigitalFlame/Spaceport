@@ -49,7 +49,7 @@ profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(attach_disconnecte
 
     @{run}/smd/hydra/smb.conf           r,
 
-    owner @{PROC}/@{pid}/fd/            r,
+    owner /proc/@{pid}/fd/              r,
 
     /var/cache/samba/printing/*.tdb     rwk,
 

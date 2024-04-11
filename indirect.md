@@ -1,7 +1,6 @@
 btrfs-scrub@home.timer
 btrfs-scrub@-.timer
 btrfs-scrub@var.timer
-dirmngr@etc-pacman.d-gnupg.service
 dirmngr@etc-pacman.d-gnupg.socket
 gpg-agent-browser@etc-pacman.d-gnupg.socket
 gpg-agent@etc-pacman.d-gnupg.socket
