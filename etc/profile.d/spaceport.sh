@@ -54,6 +54,7 @@ export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
 export XDG_CURRENT_DESKTOP=sway
 export QT_QPA_PLATFORM="wayland;xcb"
 export _JAVA_AWT_WM_NONREPARENTING="1"
+export ELECTRON_OZONE_PLATFORM_HINT="wayland"
 
 # XDG User items export
 export XDG_DESKTOP_DIR="${HOME}"
