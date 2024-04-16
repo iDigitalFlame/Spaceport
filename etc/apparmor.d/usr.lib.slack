@@ -63,6 +63,7 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
     deny /usr/bin/realpath                                                                                         xr,
     deny /usr/bin/{u,base}name                                                                                     xr,
     deny /usr/bin/{,ba,da,z}sh                                                                                     xr,
+    deny /var/cache/fontconfig{,/}                                                                                 w,
 
     include if exists <local/usr.lib.slack>
 }

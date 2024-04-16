@@ -47,6 +47,8 @@ profile thunar /usr/bin/{T,t}hunar {
 
     owner @{run}/user/@{uid}/dconf/user                              rw,
 
+    owner @{HOME}/**                                                 l,
+
     # NOTE(dij): Thunar has unrestricted open permissions as it's needed to
     #            open any file when using it to browse the filesystem.
     /usr/lib/gio-launch-desktop                                      ux,

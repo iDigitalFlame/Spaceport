@@ -52,6 +52,7 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook {
     /opt/notesnook/notesnook              ix,
 
     deny /home/                           r,
+    deny /dev/pts/*                       rw,
 
     include if exists <local/usr.bin.notesnook>
 }
