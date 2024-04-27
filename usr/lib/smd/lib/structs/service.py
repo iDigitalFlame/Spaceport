@@ -71,7 +71,7 @@ class Service(object):
         )
         self._read_only = ro
         self._log.info(f'[service]: "{name}" starting up..')
-        self._log.set_level(level)
+        self._log.set_level(level, False)
         self._dispatcher = Dispatcher(self, modules)
         self.config = Storage(config)
         signal(SIGALRM, self._watchdog)

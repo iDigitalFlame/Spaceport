@@ -99,36 +99,6 @@ class Logger(object):
         except OSError as err:
             raise OSError(f'cannot create log file "{file}": {err}')
 
-    def set_level(self, log_level):
-        if log_level is None:
-            return self.error("[log]: Log level cannot be None!")
-        if isinstance(log_level, int):
-            if log_level not in LOG_INDEX:
-                return self.error(f'[log]: Log level "{log_level}" is invalid!')
-            n = log_level
-        elif isinstance(log_level, str):
-            if len(log_level) == 0:
-                return self.error("[log]: Log level name cannot be empty!")
-            n = LOG_LEVELS.get(log_level.lower())
-            if n is None:
-                return self.error(f'[log]: Log level "{log_level}" is invalid!')
-        else:
-            return self.error(
-                f'[log]: Log level must a level number or name (is "{type(log_level)}")!'
-            )
-        if n == self._log.level:
-            return
-        p = LOG_LEVELS_REVERSE.get(self._log.level, LOG_LEVEL)
-        k = LOG_LEVELS_REVERSE.get(n, LOG_LEVEL)
-        try:
-            self._log.setLevel(n)
-            for h in self._log.handlers:
-                h.setLevel(n)
-            self.info(f'[log]: Log level was changed from "{p}" to "{k}"!')
-        except ValueError as err:
-            self.error(f'[log]: Cannot set Log level to "{k}"!', err)
-        del p, n, k
-
     def info(self, message, err=None):
         if err is not None:
             return self._log.info(
@@ -156,3 +126,34 @@ class Logger(object):
                 f"{message} ({err})\n{format_exc(limit=LOG_FRAME_LIMIT)}"
             )
         self._log.warning(message)
+
+    def set_level(self, log_level, notify=True):
+        if log_level is None:
+            return self.error("[log]: Log level cannot be None!")
+        if isinstance(log_level, int):
+            if log_level not in LOG_INDEX:
+                return self.error(f'[log]: Log level "{log_level}" is invalid!')
+            n = log_level
+        elif isinstance(log_level, str):
+            if len(log_level) == 0:
+                return self.error("[log]: Log level name cannot be empty!")
+            n = LOG_LEVELS.get(log_level.lower())
+            if n is None:
+                return self.error(f'[log]: Log level "{log_level}" is invalid!')
+        else:
+            return self.error(
+                f'[log]: Log level must a level number or name (is "{type(log_level)}")!'
+            )
+        if n == self._log.level:
+            return
+        p = LOG_LEVELS_REVERSE.get(self._log.level, LOG_LEVEL)
+        k = LOG_LEVELS_REVERSE.get(n, LOG_LEVEL)
+        try:
+            self._log.setLevel(n)
+            for h in self._log.handlers:
+                h.setLevel(n)
+            if notify:
+                self.info(f'[log]: Log level was changed from "{p}" to "{k}"!')
+        except ValueError as err:
+            self.error(f'[log]: Cannot set Log level to "{k}"!', err)
+        del p, n, k

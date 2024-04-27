@@ -144,14 +144,14 @@ class Session(object):
                     self._ignore.append(expand(i).lower())
             del e
         self._profiles["display"] = _trigger(server, "display")
-        self._profiles["power_ac"] = _trigger(server, "power_ac")
-        self._profiles["power_battery"] = _trigger(server, "power_battery")
-        self._profiles["lock_pre"] = _trigger(server, "lock_pre")
-        self._profiles["lock_post"] = _trigger(server, "lock_post")
-        self._profiles["suspend_pre"] = _trigger(server, "suspend_pre")
-        self._profiles["suspend_post"] = _trigger(server, "suspend_post")
-        self._profiles["hibernate_pre"] = _trigger(server, "hibernate_pre")
-        self._profiles["hibernate_post"] = _trigger(server, "hibernate_post")
+        self._profiles["power_ac"] = _trigger(server, "power.ac")
+        self._profiles["power_battery"] = _trigger(server, "power.battery")
+        self._profiles["lock_pre"] = _trigger(server, "lock.pre")
+        self._profiles["lock_post"] = _trigger(server, "lock.post")
+        self._profiles["suspend_pre"] = _trigger(server, "suspend.pre")
+        self._profiles["suspend_post"] = _trigger(server, "suspend.post")
+        self._profiles["hibernate_pre"] = _trigger(server, "hibernate.pre")
+        self._profiles["hibernate_post"] = _trigger(server, "hibernate.post")
         for i in RADIO_NAMES:
             if not a2z(i):
                 continue
