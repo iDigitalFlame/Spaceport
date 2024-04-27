@@ -111,7 +111,7 @@ def powerctl():
     a = m.parse_args()
     if a.version:
         print(
-            f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2023\n\n"
+            f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2024\n\n"
             f"System: {NAME} ({NAME_SERVER} / {NAME_CLIENT})"
         )
         exit(0)
