@@ -38,4 +38,4 @@
 #   Script used by systemd after the system resumes from suspend to inform SMD to
 #   start the post-suspend process. Can only be called by systemd.
 
-/usr/lib/smd/libexec/smd-message -u suspend -e 0 -p '{"type": 1}'
+exec /usr/lib/smd/libexec/smd-message -u suspend -e 0 -p '{"type": 1}'

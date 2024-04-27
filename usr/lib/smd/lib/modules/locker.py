@@ -707,7 +707,7 @@ class LockerClient(object):
         if self._locked():
             return
         if not self._ability.can_lock() and not force:
-            return server.info(
+            return server.debug(
                 "[m/locker]: Ignoring non-force Lockscreen request as we lack the Lockscreen ability!"
             )
         if LOCKER_TYPE_LOCK in self._lockers and not force:
@@ -1075,7 +1075,7 @@ class LockerServer(object):
             return
         if message.trigger == TRIGGER_BLANK:
             if not self._ability.can_blank():
-                return server.info(
+                return server.debug(
                     "[m/locker]: Ignoring Blank request as the client lacks the Blank ability."
                 )
             if LOCKER_TYPE_BLANK in self._lockers:
@@ -1101,7 +1101,7 @@ class LockerServer(object):
                 )
         elif message.trigger == TRIGGER_LOCK:
             if not self._ability.can_lock():
-                return server.info(
+                return server.debug(
                     "[m/locker]: Ignoring non-force Lockscreen request as the client lacks the Lockscreen ability."
                 )
             if LOCKER_TYPE_LOCK in self._lockers and not message.force:
@@ -1190,7 +1190,7 @@ class LockerServer(object):
                 return server.debug(
                     "[m/locker]: Ignoring Suspend request as the client lacks the Suspend and Hibernate abilities."
                 )
-            server.info(
+            server.debug(
                 "[m/locker]: Changing Suspend request to Hibernate as the client lacks the Suspend ability."
             )
             if LOCKER_TYPE_HIBERNATE in self._lockers:

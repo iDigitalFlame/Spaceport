@@ -371,7 +371,7 @@ class VM(Storage):
         if self._state != HYDRA_STATE_RUNNING:
             raise Error("not able to hibernate")
         if not self._agent:
-            server.info(
+            server.debug(
                 f"[m/hydra/VM({self.vmid})]: QEMU Guest Agent was not detected, trying anyway.."
             )
         server.debug(f"[m/hydra/VM({self.vmid})]: Sending Hibernate request to VM..")
@@ -860,7 +860,7 @@ class VM(Storage):
                 )
             return
         if not self._agent:
-            server.info(
+            server.debug(
                 f"[m/hydra/VM({self.vmid})]: QEMU Guest Agent was not detected, trying anyway.."
             )
         server.debug(f"[m/hydra/VM({self.vmid})]: Sending restart request to VM..")

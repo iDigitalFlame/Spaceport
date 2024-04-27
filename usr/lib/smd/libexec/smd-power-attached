@@ -38,4 +38,4 @@
 #   Script used by udev to inform SMD that a power adapter was attached. Can only
 #   be called by udev.
 
-/usr/lib/smd/libexec/smd-message -u power -e 0 -p '{"type": 1}'
+exec /usr/lib/smd/libexec/smd-message -u power -e 0 -p '{"type": 1}'

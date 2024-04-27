@@ -40,8 +40,8 @@ profile more /usr/bin/{less,more} {
     include <abstractions/base>
     include <abstractions/consoles>
 
-    capability dac_override,
-    capability dac_read_search,
+    capability                     dac_override,
+    capability                     dac_read_search,
 
     @{sysconfig}/etc/sysless{,key} r,
 

@@ -49,9 +49,9 @@ include <abstractions/dbus-strict>
 include <abstractions/dbus-session-strict>
 include <abstractions/dbus-accessibility-strict>
 
-capability sys_admin,
-capability sys_chroot,
-capability sys_ptrace,
+capability                                                           sys_admin,
+capability                                                           sys_chroot,
+capability                                                           sys_ptrace,
 
 network inet                                                         stream,
 network inet6                                                        stream,

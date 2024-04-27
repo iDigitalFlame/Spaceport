@@ -38,4 +38,4 @@
 #   Script used by udev to inform SMD that a video adapter was attached/detached.
 #   Can only be called by udev as root.
 
-/usr/lib/smd/libexec/smd-message -u monitor -e 0
+exec /usr/lib/smd/libexec/smd-message -u monitor -e 0

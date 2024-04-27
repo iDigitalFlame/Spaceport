@@ -1,3 +1,4 @@
+cropgui
 firefox-extension-canvasblocker-bin
 firefox-extension-foxyproxy
 firefox-extension-multi-account-containers

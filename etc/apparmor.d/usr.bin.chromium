@@ -53,8 +53,8 @@ profile chromium /usr/bin/chrom{e,ium} {
     /usr/bin/chrom{e,ium}                         ix,
     /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
 
-    ptrace (trace) peer=/usr/bin/chrom{e,ium},
-    ptrace (trace) peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
+    ptrace trace peer=/usr/bin/chrom{e,ium},
+    ptrace trace peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
 
     include if exists <local/usr.bin.chromium>
 }

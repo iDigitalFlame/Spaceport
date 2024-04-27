@@ -42,7 +42,7 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconn
     include <abstractions/dbus-system>
     include <abstractions/dbus-session-strict>
 
-    capability ipc_lock,
+    capability                               ipc_lock,
 
     /usr/bin/gnome-keyring-daemon            rm,
 

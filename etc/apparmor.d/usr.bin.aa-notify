@@ -42,21 +42,31 @@ profile aa-notify /usr/bin/aa-notify {
     include <abstractions/nameservice>
     include <abstractions/dbus-session-strict>
 
-    /etc/inputrc               r,
-    /usr/bin/aa-notify         rm,
-    /usr/share/terminfo/**     r,
-    /etc/apparmor/*.conf       r,
-    /var/log/audit/audit.log   r,
 
-    @{run}/log/audit/audit.log r,
+    @{sysconfig}/etc/apparmor/notify.conf r,
 
-    /proc/                     r,
+    /usr/bin/                             r,
+    /etc/inputrc                          r,
+    /usr/bin/aa-notify                    r,
+    /usr/share/terminfo/**                r,
+    /etc/apparmor/*.conf                  r,
+    /var/log/audit/audit.log              r,
 
-    owner /proc/@{pid}/stat    r,
-    owner /proc/@{pid}/cmdline r,
+    @{run}/log/audit/audit.log            r,
 
-    deny network               inet,
-    deny network               inet6,
+    /proc/                                r,
+
+    owner /proc/@{pid}/stat               r,
+    owner /proc/@{pid}/cmdline            r,
+
+    owner /{,var/}tmp/*                   rw,
+
+    deny network                          inet,
+    deny network                          inet6,
+
+    deny capability                       sys_ptrace,
+
+    deny ptrace,
 
     include if exists <local/usr.bin.aa-notify>
 }

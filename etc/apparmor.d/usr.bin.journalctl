@@ -42,12 +42,12 @@ profile journalctl /usr/bin/journalctl  {
     include <abstractions/nameservice>
     include <abstractions/dbus-session-strict>
 
-    capability mknod,
-    capability net_admin,
-    capability sys_ptrace,
-    capability sys_resource,
-    capability dac_override,
-    capability dac_read_search,
+    capability                                    mknod,
+    capability                                    net_admin,
+    capability                                    sys_ptrace,
+    capability                                    sys_resource,
+    capability                                    dac_override,
+    capability                                    dac_read_search,
 
     /usr/bin/journalctl                           rm,
     /{run,var}/log/journal/                       r,
@@ -56,6 +56,7 @@ profile journalctl /usr/bin/journalctl  {
     /{run,var}/log/journal/*/system{,@*}.journal* r,
 
     /proc/cmdline                                 r,
+    /proc/1/environ                               r,
     /proc/sys/fs/nr_open                          r,
     /proc/sys/kernel/{osrelease,random/boot_id}   r,
 
@@ -71,9 +72,9 @@ profile journalctl /usr/bin/journalctl  {
     deny network                                  inet6,
 
     signal (receive) set=(term) peer=unconfined,
-    signal (send)               peer=more,
+    signal send                 peer=more,
 
-    ptrace (read),
+    ptrace read,
 
     include if exists <local/usr.bin.journalctl>
 }

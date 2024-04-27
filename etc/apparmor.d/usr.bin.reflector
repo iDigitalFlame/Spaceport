@@ -42,7 +42,7 @@ profile reflector /usr/bin/reflector {
     include <abstractions/openssl>
     include <abstractions/nameservice>
 
-    capability dac_override,
+    capability                                 dac_override,
 
     network inet                               stream,
     network inet6                              stream,

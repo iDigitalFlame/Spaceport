@@ -183,7 +183,7 @@ def _load_module_hooks(service, hooks, module, func):
             hooks[h].append(o)
         del o
     del v, e
-    service.info(f'[loader/m]: Module "{module.__name__}" loaded.')
+    service.debug(f'[loader/m]: Module "{module.__name__}" loaded.')
 
 
 def _load_hook_obj(service, loaded, hook, cls, name):

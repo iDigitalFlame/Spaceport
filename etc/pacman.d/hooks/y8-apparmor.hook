@@ -1,4 +1,3 @@
-#!/usr/bin/dash
 ################################
 ### iDigitalFlame  2016-2024 ###
 #                              #
@@ -17,6 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
+## XZ Broken Links Fix Pacman Hook
 #
 # Copyright (C) 2016 - 2024 iDigitalFlame
 #
@@ -34,8 +34,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# smd-suspend-pre
-#   Script used by systemd before the system suspends to inform SMD to start the
-#   pre-suspend process. Can only be called by systemd.
+[Trigger]
+Type        = Package
+Target      = apparmor
+Operation   = Install
+Operation   = Upgrade
 
-exec /usr/lib/smd/libexec/smd-message -u suspend -w ok -t 5 -e 0 -p '{"type": 0}' 1> /dev/null
+[Action]
+When        = PostTransaction
+Exec        = /usr/bin/sed -i'' 's/newpid = os.fork()/newpid = 0/g' /usr/bin/aa-notify
+Description = Patching aa-notify..

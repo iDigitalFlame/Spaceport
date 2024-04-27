@@ -38,4 +38,4 @@
 #   Script used by udev to inform SMD that the battery power is low or near empty.
 #   Can only be called by udev.
 
-/usr/lib/smd/libexec/smd-message -u notify -e 0 -p "{\"title\": \"Battery is Low\", \"body\": \"Battery $1 power level is low!\", \"icon\": \"battery\"}"
+exec /usr/lib/smd/libexec/smd-message -u notify -e 0 -p "{\"title\": \"Battery is Low\", \"body\": \"Battery $1 power level is low!\", \"icon\": \"battery\"}"

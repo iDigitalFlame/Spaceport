@@ -38,4 +38,4 @@
 #   Script used by systemd before the system hibernates to inform SMD to start the
 #   pre-hibernate process. Can only be called by systemd.
 
-/usr/lib/smd/libexec/smd-message -u hibernate -w ok -t 5 -e 0 -p '{"type": 0}'
+exec /usr/lib/smd/libexec/smd-message -u hibernate -w ok -t 5 -e 0 -p '{"type": 0}' 1> /dev/null

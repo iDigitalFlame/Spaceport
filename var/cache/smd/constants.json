@@ -36,7 +36,7 @@
         "along with this program.  If not, see <https://www.gnu.org/licenses/>."
     ],
     "name": "spaceport",
+    "log_level": "info",
     "log_ticks": false,
-    "log_payload": false,
-    "log_level": "warning"
+    "log_payload": false
 }

@@ -42,10 +42,10 @@ profile top /usr/bin/top {
     include <abstractions/consoles>
     include <abstractions/nameservice>
 
-    capability kill,
-    capability sys_nice,
-    capability sys_ptrace,
-    capability dac_read_search,
+    capability                                kill,
+    capability                                sys_nice,
+    capability                                sys_ptrace,
+    capability                                dac_read_search,
 
     /usr/bin/top                              rm,
     /usr/share/terminfo/**                    r,
@@ -75,9 +75,9 @@ profile top /usr/bin/top {
 
     deny @{HOME}/.config/procps{,/*}          rw,
 
-    signal (send),
+    signal send,
 
-    ptrace (read),
+    ptrace read,
 
     include if exists <local/usr.bin.top>
 }

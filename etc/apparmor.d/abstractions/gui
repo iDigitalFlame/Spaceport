@@ -48,10 +48,11 @@ include <abstractions/wayland>
 @{sysconfig}/usr/share/cursors/**                 r,
 
 /etc/                                             r,
-/usr/share/icons/**                               r,
-/usr/share/themes/**                              r,
-/usr/share/cursors/**                             r,
+/usr/share/icons/{,**}                            r,
 /usr/share/fonts/{,**}                            r,
+/usr/share/themes/{,**}                           r,
+/usr/share/pixmaps/{,**}                          r,
+/usr/share/cursors/{,**}                          r,
 /usr/share/hunspell/{,**}                         r,
 /usr/share/gtk-{2,3,4}.0/{,*}                     r,
 

@@ -38,4 +38,4 @@
 #   Script used by udev to inform SMD that a security key was removed. Can only
 #   be called by UDev.
 
-/usr/lib/smd/libexec/smd-message -u lock -e 0 -p '{"trigger": 3}'
+exec /usr/lib/smd/libexec/smd-message -u lock -e 0 -p '{"trigger": 3}'

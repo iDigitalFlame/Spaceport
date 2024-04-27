@@ -44,10 +44,10 @@ profile wireplumber /usr/bin/wireplumber {
     include <abstractions/dbus-system>
     include <abstractions/dbus-session-strict>
 
-    network netlink raw,
-    network bluetooth raw,
-    network bluetooth seqpacket,
-    network bluetooth stream,
+    network                                             netlink   raw,
+    network                                             bluetooth raw,
+    network                                             bluetooth seqpacket,
+    network                                             bluetooth stream,
 
     @{sysconfig}/etc/wireplumber/**                     r,
 

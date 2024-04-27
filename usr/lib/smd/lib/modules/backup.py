@@ -878,7 +878,7 @@ class Backup(object):
             server.debug(f"[m/backup/job/{self.id}]: Cannot read process output!", err)
         else:
             if len(o) > 0:
-                server.info(
+                server.debug(
                     f"[m/backup/job/{self.id}]: Current process output status: [{o}]"
                 )
             del o
@@ -986,7 +986,7 @@ class Backup(object):
         if not self._update(server, BACKUP_STATE_KEYGEN):
             return
         if not nes(self._key):
-            self.server.info(
+            self.server.warning(
                 f"[m/backup/job/{self.id}]: Skipping encryption step with no keyfile! "
                 "BACKUPS WILL NOT BE ENCRYPTED!"
             )
@@ -1235,7 +1235,9 @@ class Backup(object):
             return self._next(server)
         if len(c) == 0:
             return self._next(server)
-        server.info(f'[m/backup/job/{self.id}]: Executing pre-start command set "{c}".')
+        server.debug(
+            f'[m/backup/job/{self.id}]: Executing pre-start command set "{c}".'
+        )
         try:
             self._proc = Multi(c)
         except OSError as err:
@@ -1468,7 +1470,7 @@ class Backup(object):
             return self._next(server)
         # NOTE(dij): Add a final timeout just in-case.
         self._timeout = server.task(BACKUP_TIMEOUT, self._step_timeout, (server, True))
-        server.info(
+        server.debug(
             f'[m/backup/job/{self.id}]: Executing post-backup command set "{c}".'
         )
         try:
@@ -1864,7 +1866,7 @@ class BackupServer(object):
         elif message.type == MSG_POST and self._current.paused():
             if not _on_battery():
                 return server.info(
-                    "[m/backup]: Not resuming Backup as AC power is not connected."
+                    "[m/backup]: Not starting a Backup on battery power."
                 )
             if not self._current.resume(server):
                 return
@@ -1899,8 +1901,10 @@ class BackupServer(object):
             server.debug("[m/backup]: Backup completed, checking queue for next Plan..")
             self._select(server)
             if self._current is None:
-                return {"result": "No Backups are scheduled or could be started!"}
-            return {"result": f"Started Backup {self._current}!"}
+                return server.debug(
+                    "[m/backup]: No Backups are scheduled or could be started!"
+                )
+            return server.debug(f"[m/backup]: Starting Backup {self._current}!")
         if self._current is None or not self._current.running():
             if message.type == MSG_USER:
                 server.debug("[m/backup]: Clearing the Backup state and cache files..")

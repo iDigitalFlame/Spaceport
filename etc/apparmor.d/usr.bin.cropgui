@@ -1,4 +1,3 @@
-#!/usr/bin/dash
 ################################
 ### iDigitalFlame  2016-2024 ###
 #                              #
@@ -17,6 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2024 iDigitalFlame
 #
@@ -34,8 +34,36 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# smd-suspend-pre
-#   Script used by systemd before the system suspends to inform SMD to start the
-#   pre-suspend process. Can only be called by systemd.
+include <tunables/global>
 
-exec /usr/lib/smd/libexec/smd-message -u suspend -w ok -t 5 -e 0 -p '{"type": 0}' 1> /dev/null
+profile cropgui /usr/bin/cropgui {
+    include <abstractions/gtk>
+    include <abstractions/gui>
+    include <abstractions/base>
+    include <abstractions/perl>
+    include <abstractions/dconf>
+    include <abstractions/python>
+    include <abstractions/nameservice>
+    include <abstractions/user-downloads>
+    include <abstractions/freedesktop.org>
+
+    /usr/bin/                                     r,
+    /etc/fstab                                    r,
+    /etc/inputrc                                  r,
+    /usr/bin/cropgui                              r,
+    /usr/share/glib-2.0/schemas/gschemas.compiled r,
+
+    owner /proc/@{pid}/mount{s,info}              r,
+
+    owner @{run}/user/@{uid}/dconf/user           rw,
+
+    /usr/bin/nice                                 ix,
+    /usr/bin/jpegtran                             ix,
+    /usr/bin/c{p,onvert}                          ix,
+    /usr/bin/vendor_perl/exiftool                 ixr,
+
+    deny network                                  inet,
+    deny network                                  inet6,
+
+    include if exists <local/usr.bin.cropgui>
+}
