@@ -48,8 +48,8 @@ profile aa-notify /usr/bin/aa-notify {
     /usr/bin/                             r,
     /etc/inputrc                          r,
     /usr/bin/aa-notify                    r,
-    /usr/share/terminfo/**                r,
     /etc/apparmor/*.conf                  r,
+    /usr/share/terminfo/**                r,
     /var/log/audit/audit.log              r,
 
     @{run}/log/audit/audit.log            r,
