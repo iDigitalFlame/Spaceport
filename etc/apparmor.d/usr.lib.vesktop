@@ -34,31 +34,31 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-abi <abi/3.0>,
+include <tunables/global>
 
-include <abstractions/X>
-include <abstractions/base>
-include <abstractions/mime>
-include <abstractions/fonts>
-include <abstractions/wayland>
+profile vesktop /usr/{bin,lib/vesktop}/vesktop {
+    include <abstractions/video>
+    include <abstractions/chromium>
+    include <abstractions/notifications>
+    include <abstractions/user-downloads>
+    include <abstractions/dbus-network-manager-strict>
 
-@{sysconfig}/etc/fonts/**                          r,
-@{sysconfig}/usr/share/icons/**                    r,
-@{sysconfig}/usr/share/themes/**                   r,
-@{sysconfig}/usr/share/cursors/**                  r,
+    owner @{HOME}/.config/vesktop/{,**} rwk,
 
-/etc/                                              r,
-/usr/share/icons/{,**}                             r,
-/usr/share/fonts/{,**}                             r,
-/usr/share/themes/{,**}                            r,
-/usr/share/pixmaps/{,**}                           r,
-/usr/share/cursors/{,**}                           r,
-/usr/share/hunspell/{,**}                          r,
-/usr/share/gtk-{2,3,4}.0/{,*}                      r,
+    /usr/bin/vesktop                    r,
+    /usr/lib/vesktop/{,**}              r,
 
-owner @{HOME}/.config/theme/**                     r,
-owner @{HOME}/.config/gtk-{2,3,4}.0/{,*}           r,
-owner @{HOME}/.dotfiles/.config/theme/**           r,
-owner @{HOME}/.dotfiles/.config/gtk-{2,3,4}.0/{,*} r,
+    /usr/bin/xdg-open                   Px -> xdg-open,
+    /usr/bin/xdg-settings               ixr,
 
-deny @{HOME}/.xsession-errors                      rw,
+    /usr/lib/vesktop/vesktop            ixr,
+    /usr/lib/vesktop/chrome-sandbox     ix,
+
+    deny /dev/tty                       rw,
+    deny /dev/pts/*                     rw,
+
+    ptrace trace peer=/usr/{bin,lib/vesktop}/vesktop,
+    ptrace trace peer=/usr/lib/vesktop/chrome-sandbox,
+
+    include if exists <local/usr.lib.vesktop>
+}

@@ -42,7 +42,6 @@ profile aa-notify /usr/bin/aa-notify {
     include <abstractions/nameservice>
     include <abstractions/dbus-session-strict>
 
-
     @{sysconfig}/etc/apparmor/notify.conf r,
 
     /usr/bin/                             r,

@@ -56,5 +56,5 @@ profile electron /usr/{bin/electron*,lib/electron*/electron} {
     ptrace trace peer=/usr/lib/electron*/chrome-sandbox,
     ptrace trace peer=/usr/{bin/electron*,lib/electron*/electron},
 
-    include if exists <local/usr.bin.electron>
+    include if exists <local/usr.lib.electron>
 }

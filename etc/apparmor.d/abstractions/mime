@@ -48,6 +48,8 @@ abi <abi/3.0>,
 /usr/share/applications/{,*.desktop}                                       r,
 /usr/share/applications/{defaults,mimeapps}.list                           r,
 
+owner @{HOME}.local/share/mime/{,**}                                       r,
+
 owner @{HOME}/.local/share/applications/{,*.desktop}                       r,
 owner @{HOME}/.private/.local/share/applications/{,*.desktop}              r,
 owner @{HOME}/.dotfiles/.local/share/applications/{,*.desktop}             r,
