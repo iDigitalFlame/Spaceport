@@ -133,6 +133,13 @@ HOOKS_SERVER = {
     HOOK_HIBERNATE: "LockerServer.hibernate",
 }
 
+# NOTE(dij): Point to note here is that the SMD Locker does NOT integrate with
+#            the systemd-logind inhibitor. This is intentional as we don't stop the
+#            system from sleeping/hibernating, but trigger those events instead.
+#
+#            As long as IdleAction=ignore in logind.conf, I don't think an issue
+#            will ever arise, but good to note just in case.
+
 
 def _on_power():
     s = None

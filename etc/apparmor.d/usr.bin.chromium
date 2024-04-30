@@ -53,6 +53,7 @@ profile chromium /usr/bin/chrom{e,ium} {
     /usr/bin/chrom{e,ium}                         ix,
     /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
 
+    ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/bin/chrom{e,ium},
     ptrace trace peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
 

@@ -57,6 +57,7 @@ profile vesktop /usr/{bin,lib/vesktop}/vesktop {
     deny /dev/tty                       rw,
     deny /dev/pts/*                     rw,
 
+    ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/{bin,lib/vesktop}/vesktop,
     ptrace trace peer=/usr/lib/vesktop/chrome-sandbox,
 

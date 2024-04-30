@@ -33,6 +33,7 @@ dosfstools
 efitools
 exfat-utils
 falkon
+ffmpegthumbnailer
 firefox
 firefox-noscript
 firefox-tree-style-tab
