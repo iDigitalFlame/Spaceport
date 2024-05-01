@@ -45,6 +45,7 @@ Defaults    log_allowed
 Defaults    log_denied
 Defaults    sudoedit_checkdir
 Defaults    insults
+Defaults    use_pty
 Defaults    !setenv
 Defaults    !log_host
 Defaults    !fqdn
