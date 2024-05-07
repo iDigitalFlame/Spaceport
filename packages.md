@@ -163,7 +163,7 @@ samba
 sbsigntools
 screen
 seahorse
-slack-desktop
+slack-electron
 spice-gtk
 sqlmap
 squid
