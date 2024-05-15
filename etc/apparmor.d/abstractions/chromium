@@ -75,6 +75,7 @@ network inet6                                                        stream,
 /sys/devices/virtual/dmi/id/{sys_vendor,product_name,product_family} r,
 
 /proc/                                                               r,
+/proc/tty/drivers                                                    r,
 /proc/pressure/{,*}                                                  r,
 /proc/sys/vm/overcommit_memory                                       r,
 /proc/sys/kernel/yama/ptrace_scope                                   r,

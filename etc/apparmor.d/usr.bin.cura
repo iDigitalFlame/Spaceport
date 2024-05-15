@@ -93,7 +93,6 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
 
     deny /dev/pts/*                             rw,
     deny /usr/share/fonts/**                    w,
-    deny /var/cache/fontconfig{,/}              w,
     deny /var/lib/libuuid/clock.txt             w,
 
     deny network                                inet,

@@ -78,8 +78,6 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} {
     owner @{HOME}/.config/librewolf/**/extensions/**                   ixrm,
     owner @{HOME}/.config/mozilla/firefox/**/extensions/**             ixrm,
 
-    deny /var/cache/fontconfig{,/}                                     w,
-
     dbus bind bus=session name=org.mozilla.firefox.*,
 
     dbus (receive, send) bus=accessibility,

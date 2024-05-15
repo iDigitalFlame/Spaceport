@@ -54,6 +54,7 @@ include <abstractions/wayland>
 /usr/share/pixmaps/{,**}                           r,
 /usr/share/cursors/{,**}                           r,
 /usr/share/hunspell/{,**}                          r,
+/var/cache/fontconfig/{,**}                        r,
 /usr/share/gtk-{2,3,4}.0/{,*}                      r,
 
 owner @{HOME}/.config/theme/**                     r,
@@ -62,3 +63,4 @@ owner @{HOME}/.dotfiles/.config/theme/**           r,
 owner @{HOME}/.dotfiles/.config/gtk-{2,3,4}.0/{,*} r,
 
 deny @{HOME}/.xsession-errors                      rw,
+deny /var/cache/fontconfig/{,**}                   w,
