@@ -42,38 +42,44 @@ profile xdg-settings /usr/bin/xdg-settings {
     include <abstractions/consoles>
     include <abstractions/dbus-session-strict>
 
-    /usr/bin/xdg-settings                r,
-    /usr/share/terminfo/**               r,
-    /usr/share/icons/*/cursors/crosshair r,
+    /usr/bin/xdg-settings                         r,
+    /usr/share/terminfo/**                        r,
+    /usr/share/icons/*/cursors/crosshair          r,
 
-    /proc/version                        r,
+    /proc/version                                 r,
 
-    owner /proc/@{pid}/fd/               r,
+    owner /proc/@{pid}/fd/                        r,
 
-    owner @{run}/user/@{uid}/            r,
+    owner @{run}/user/@{uid}/                     r,
 
-    /usr/bin/tr                          ix,
-    /usr/bin/gio                         ix,
-    /usr/bin/env                         ix,
-    /usr/bin/head                        ix,
-    /usr/bin/file                        ix,
-    /usr/bin/xprop                       ix,
-    /usr/bin/printf                      ix,
-    /usr/bin/c{a,u}t                     ix,
-    /usr/bin/{,e}grep                    ix,
-    /usr/bin/mimetype                    ix,
-    /usr/bin/xdg-mime                    ixr,
-    /usr/bin/{,g,m}awk                   ix,
-    /usr/bin/s{ed,ort}                   ix,
-    /usr/bin/w{c,hich}                   ix,
-    /usr/bin/dbus-send                   ix,
-    /usr/bin/m{v,ktemp}                  ix,
-    /usr/bin/{,da,ba}sh                  ixr,
-    /usr/bin/{u,base}name                ix,
-    /usr/bin/rea{dlink,lpath}            ix,
+    @{sysconfig}/bin/ghr                          ix,
 
-    deny network                         inet,
-    deny network                         inet6,
+    /usr/bin/tr                                   ix,
+    /usr/bin/gio                                  ix,
+    /usr/bin/env                                  ix,
+    /usr/bin/ghr                                  ix,
+    /usr/bin/head                                 ix,
+    /usr/bin/file                                 ix,
+    /usr/bin/xprop                                ix,
+    /usr/bin/printf                               ix,
+    /usr/bin/c{a,u}t                              ix,
+    /usr/bin/{,e}grep                             ix,
+    /usr/bin/mimetype                             ix,
+    /usr/bin/xdg-mime                             ixr,
+    /usr/bin/{,g,m}awk                            ix,
+    /usr/bin/s{ed,ort}                            ix,
+    /usr/bin/w{c,hich}                            ix,
+    /usr/bin/dbus-send                            ix,
+    /usr/bin/m{v,ktemp}                           ix,
+    /usr/bin/{,da,ba}sh                           ixr,
+    /usr/bin/{u,base}name                         ix,
+    /usr/bin/rea{dlink,lpath}                     ix,
+
+    owner @{HOME}/.config/mimeapps.list           r,
+    owner @{HOME}/.dotfiles/.config/mimeapps.list r,
+
+    deny network                                  inet,
+    deny network                                  inet6,
 
     include if exists <local/usr.bin.xdg-settings>
 }

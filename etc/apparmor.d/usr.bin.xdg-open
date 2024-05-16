@@ -39,7 +39,7 @@ include <tunables/global>
 # NOTE(dij): Only used to transition to xdg-open and open stuff. Only allows
 #            launching most stuff we "own" (user files) and has a specific list
 #            of allowed items who also have their own profiles.
-profile xdg-open {
+profile xdg-open /usr/bin/xdg-open {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/xdg-open>
@@ -48,6 +48,7 @@ profile xdg-open {
 
     /proc/version                                          r,
 
+    @{sysconfig}/bin/ghr                                   Px,
     @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
 
     /usr/bin/env                                           ix,
@@ -60,6 +61,7 @@ profile xdg-open {
     /etc/xdg/xdg-open-shim.sh                              ixr,
     /usr/bin/{u,base,host}name                             ix,
 
+    /usr/bin/ghr                                           Px -> ghr,
     /usr/bin/vlc                                           Px -> vlc,
     /usr/bin/leafpad                                       Px,
     /usr/bin/swayimg                                       Px,
@@ -73,9 +75,12 @@ profile xdg-open {
     /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura       Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
 
-    owner @{HOME}/.local/bin/**                            ux,
-    owner @{HOME}/.private/.local/bin/**                   ux,
-    owner @{HOME}/.dotfiles/.local/bin/**                  ux,
+    owner @{HOME}/.config/mimeapps.list                    r,
+    owner @{HOME}/.dotfiles/.config/mimeapps.list          r,
+
+    owner @{HOME}/.local/bin/**                            PUx,
+    owner @{HOME}/.private/.local/bin/**                   PUx,
+    owner @{HOME}/.dotfiles/.local/bin/**                  PUx,
 
     deny network                                           inet,
     deny network                                           inet6,

@@ -55,7 +55,7 @@ profile thunar /usr/bin/{T,t}hunar {
     # NOTE(dij): Thunar has unrestricted open permissions as it's needed to
     #            open any file when using it to browse the filesystem.
     /usr/lib/gio-launch-desktop                                      ux,
-    /usr/bin/xdg-{open,settings}                                     ux,
+    /usr/bin/xdg-{open,settings}                                     PUx,
 
     deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml w,
 
