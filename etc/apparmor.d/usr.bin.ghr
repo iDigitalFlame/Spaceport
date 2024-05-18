@@ -44,6 +44,7 @@ profile ghr /{opt/spaceport,usr}/bin/ghr {
     capability                      setuid,
     capability                      setgid,
 
+    /usr/bin/**                     PUxr,
     /opt/notesnook/**               PUxrm,
     /usr/lib{,32,64}/**             PUxrm,
     /opt/vscodium-bin/**            PUxrm,

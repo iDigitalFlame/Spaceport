@@ -42,8 +42,9 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook {
     include <abstractions/notifications>
     include <abstractions/user-downloads>
 
+    /{,opt/}                              r,
     /etc/fstab                            r,
-    /opt/notesnook/**                     rm,
+    /opt/notesnook/{,**}                  rm,
 
     owner @{HOME}/.config/Notesnook/{,**} rwkl,
 
