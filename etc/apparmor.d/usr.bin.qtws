@@ -40,6 +40,7 @@ profile qtws /usr/bin/qtws {
     include <abstractions/qt>
     include <abstractions/chromium>
 
+    /usr/bin/qtws                                         rm,
     /usr/share/qtws-apps/youtube-music/youtube-music.qtws r,
 
     owner @{HOME}/.cache/qtws/**                          rwkl,

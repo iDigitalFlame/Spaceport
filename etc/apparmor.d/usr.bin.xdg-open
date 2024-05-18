@@ -69,6 +69,7 @@ profile xdg-open /usr/bin/xdg-open {
     /usr/bin/{t,T}hunar                                    Px,
     /usr/bin/{core,mu}pdf                                  Px,
     /usr/bin/chrom{e,ium}                                  Px,
+    /opt/notesnook/notesnook                               Px,
     /usr/bin/telegram-desktop                              Px,
     /usr/{bin,lib}/slack{,/slack}                          Px,
     /usr/{bin/electron*,lib/electron*/electron}            Px,

@@ -44,7 +44,10 @@ profile ghr /{opt/spaceport,usr}/bin/ghr {
     capability                      setuid,
     capability                      setgid,
 
+    /opt/notesnook/**               PUxrm,
     /usr/lib{,32,64}/**             PUxrm,
+    /opt/vscodium-bin/**            PUxrm,
+    /opt/ultimaker-cura/**          PUxrm,
     /{usr,opt/spaceport}/bin/**     PUxr,
 
     # GHR is SUID so it's not an owner.
