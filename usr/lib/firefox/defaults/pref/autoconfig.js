@@ -37,3 +37,6 @@
 
 pref("general.config.obscure_value", 0);
 pref("general.config.filename", "firefox.cfg");
+
+// Add additional values for Firefox, as it's not the standard browser.
+pref("autoadmin.global_config_url", "file:///usr/lib/firefox/defaults/pref/firefox-additional.cfg");

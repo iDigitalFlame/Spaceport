@@ -49,7 +49,7 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook {
     owner @{HOME}/.config/Notesnook/{,**} rwkl,
 
     /usr/bin/xdg-open                     Px -> xdg-open,
-    /usr/bin/xdg-settings                 ixr,
+    /usr/bin/xdg-settings                 Pxr -> xdg-settings,
     /opt/notesnook/notesnook              ix,
 
     deny /home/                           r,

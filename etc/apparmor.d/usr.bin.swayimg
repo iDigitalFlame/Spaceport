@@ -47,8 +47,7 @@ profile swayimg /usr/bin/swayimg {
 
     owner /dev/shm/swayimg_* rwk,
 
-    deny network             inet,
-    deny network             inet6,
+    deny network,
 
     include if exists <local/usr.bin.swayimg>
 }

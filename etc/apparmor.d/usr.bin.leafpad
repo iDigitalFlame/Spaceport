@@ -50,8 +50,7 @@ profile leafpad /usr/bin/leafpad {
 
     deny @{HOME}/.config/leafpad/{,*}  w,
 
-    deny network                       inet,
-    deny network                       inet6,
+    deny network,
 
     include if exists <local/usr.bin.leafpad>
 }

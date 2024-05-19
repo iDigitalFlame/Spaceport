@@ -49,7 +49,7 @@ profile vesktop /usr/{bin,lib/vesktop}/vesktop {
     /usr/lib/vesktop/{,**}              r,
 
     /usr/bin/xdg-open                   Px -> xdg-open,
-    /usr/bin/xdg-settings               ixr,
+    /usr/bin/xdg-settings               Pxr -> xdg-settings,
 
     /usr/lib/vesktop/vesktop            ixr,
     /usr/lib/vesktop/chrome-sandbox     ix,

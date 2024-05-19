@@ -75,6 +75,8 @@ profile top /usr/bin/top {
 
     deny @{HOME}/.config/procps{,/*}          rw,
 
+    deny network,
+
     signal send,
 
     ptrace read,

@@ -49,8 +49,7 @@ profile ristretto /usr/bin/ristretto {
     deny @{HOME}/.config/ristretto/accels.scm                           w,
     deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml w,
 
-    deny network                                                        inet,
-    deny network                                                        inet6,
+    deny network,
 
     include if exists <local/usr.bin.ristretto>
 }

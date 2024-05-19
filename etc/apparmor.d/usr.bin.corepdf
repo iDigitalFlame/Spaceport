@@ -57,8 +57,7 @@ profile corepdf /usr/bin/corepdf {
     deny /dev/tty                r,
     deny /dev/disk/by-label/     r,
 
-    deny network                 inet,
-    deny network                 inet6,
+    deny network,
 
     include if exists <local/usr.bin.corepdf>
 }

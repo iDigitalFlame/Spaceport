@@ -57,8 +57,7 @@ profile more /usr/bin/{less,more} {
 
     deny @{HOME}/.lesshs*          w,
 
-    deny network                   inet,
-    deny network                   inet6,
+    deny network,
 
     include if exists <local/usr.bin.more>
 }

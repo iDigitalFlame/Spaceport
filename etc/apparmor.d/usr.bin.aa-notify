@@ -60,8 +60,7 @@ profile aa-notify /usr/bin/aa-notify {
 
     owner /{,var/}tmp/*                   rw,
 
-    deny network                          inet,
-    deny network                          inet6,
+    deny network,
 
     deny capability                       sys_ptrace,
 

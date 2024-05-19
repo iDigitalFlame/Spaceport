@@ -90,6 +90,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     /usr/bin/gcc                                                   ix,
     /usr/bin/dash                                                  ix, # only needed for launching main
     /usr/bin/ldconfig                                              ix, # ldconfig -p
+    /usr/bin/xdg-open                                              Px -> xdg-open,
     /usr/bin/dbus-send                                             ix,
 
     # NOTE(dij): This is here to allow for in-memory blob locking
@@ -103,7 +104,6 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     deny /usr/bin/tail                                             x,
     deny /usr/bin/xprop                                            x,
     deny /usr/bin/realpath                                         x,
-    deny /usr/bin/xdg-open                                         x,
     deny /usr/bin/{u,host}name                                     x,
 
     include if exists <local/local.apps.workdrived>

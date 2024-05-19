@@ -53,7 +53,7 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
 
     /usr/bin/xdg-open                                                                                              Px -> xdg-open,
     /usr/bin/electron*                                                                                             ixr,
-    /usr/bin/xdg-settings                                                                                          ixr,
+    /usr/bin/xdg-settings                                                                                          Pxr -> xdg-settings,
     /usr/lib/electron*/electron                                                                                    ixr,
     /usr/lib/electron*/chrome_crashpad_handler                                                                     ix,
 
