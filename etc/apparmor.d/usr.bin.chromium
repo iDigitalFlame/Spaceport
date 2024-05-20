@@ -36,7 +36,7 @@
 
 include <tunables/global>
 
-profile chromium /usr/bin/chrom{e,ium} {
+profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} {
     include <abstractions/video>
     include <abstractions/chromium>
     include <abstractions/user-downloads>
