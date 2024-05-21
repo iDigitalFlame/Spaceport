@@ -48,8 +48,8 @@ profile vesktop /usr/{bin,lib/vesktop}/vesktop {
     /usr/bin/vesktop                    r,
     /usr/lib/vesktop/{,**}              r,
 
-    /usr/bin/xdg-open                   Px -> xdg-open,
-    /usr/bin/xdg-settings               Pxr -> xdg-settings,
+    /usr/bin/xdg-open                   px -> xdg-open,
+    /usr/bin/xdg-settings               pxr -> xdg-settings,
 
     /usr/lib/vesktop/vesktop            ixr,
     /usr/lib/vesktop/chrome-sandbox     ix,
