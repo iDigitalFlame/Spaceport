@@ -41,24 +41,26 @@ profile ghr /{opt/spaceport,usr}/bin/ghr {
     include <abstractions/consoles>
     include <abstractions/nameservice>
 
-    capability                      setuid,
-    capability                      setgid,
-    capability                      dac_override,
-    capability                      dac_read_search,
+    capability                       setuid,
+    capability                       setgid,
+    capability                       dac_override,
+    capability                       dac_read_search,
 
     # We can't scrub these as this can cause the apps to fail to load any
     # non-standard libraries.
-    /usr/bin/**                     puxr,
-    /opt/notesnook/**               puxrm,
-    /usr/lib{,32,64}/**             puxrm,
-    /opt/vscodium-bin/**            puxrm,
-    /opt/ultimaker-cura/**          puxrm,
-    /{usr,opt/spaceport}/bin/**     puxr,
+    /usr/bin/**                      puxr,
+    /opt/notesnook/**                puxrm,
+    /usr/lib{,32,64}/**              puxrm,
+    /opt/vscodium-bin/**             puxrm,
+    /opt/ultimaker-cura/**           puxrm,
+    /{usr,opt/spaceport}/bin/**      puxr,
 
     # GHR is SUID so it's not an owner.
-    @{HOME}/.local/{apps,bin}/**    PUx,
-    @{HOME}/.private/.local/bin/**  PUx,
-    @{HOME}/.dotfiles/.local/bin/** PUx,
+    @{HOME}/.config/rust/**          PUx,
+    @{HOME}/Documents/Utilities/**   PUx,
+    @{HOME}/.private/.local/bin/**   PUx,
+    @{HOME}/.dotfiles/.local/bin/**  PUx,
+    @{HOME}/.local/{apps,bin,lib}/** PUx,
 
     deny network,
 
