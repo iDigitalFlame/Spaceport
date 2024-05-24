@@ -834,7 +834,7 @@ class Backup(object):
                 )
         del k
         server.debug(
-            f"[m/backup/job/{self.id}]: Removed {len(x)} old backup files, keeping {(len(g)-len(x))-1}."
+            f"[m/backup/job/{self.id}]: Removed {len(x)} old backup files, keeping {(len(g) - len(x)) - 1}."
         )
         del x, g
         return False
