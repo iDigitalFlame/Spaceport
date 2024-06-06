@@ -588,7 +588,7 @@ class VM(Storage):
                 "-netdev",
                 f"type=tap,id={n},ifname={d},script=no,downscript=no,vhost=on",
                 "-device",
-                f'{x},mac={a["mac"]},netdev={n},bus={bus}.0,addr={hex(0x14+len(self._adapters))},id={n}-dev',
+                f'{x},mac={a["mac"]},netdev={n},bus={bus}.0,addr={hex(0x14 + len(self._adapters))},id={n}-dev',
             ]
             del d, x
             self.network[n] = a
