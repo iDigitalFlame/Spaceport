@@ -51,6 +51,8 @@ profile cropgui /usr/bin/cropgui {
     /etc/fstab                                    r,
     /etc/inputrc                                  r,
     /usr/bin/cropgui                              r,
+    /etc/ImageMagick-7/{log,policy}.xml           r,
+    /usr/share/ImageMagick-7/{english,locale}.xml r,
     /usr/share/glib-2.0/schemas/gschemas.compiled r,
 
     owner /proc/@{pid}/mount{s,info}              r,
@@ -58,6 +60,7 @@ profile cropgui /usr/bin/cropgui {
     owner @{run}/user/@{uid}/dconf/user           rw,
 
     /usr/bin/nice                                 ix,
+    /usr/bin/magick                               ix,
     /usr/bin/jpegtran                             ix,
     /usr/bin/c{p,onvert}                          ix,
     /usr/bin/vendor_perl/exiftool                 ixr,

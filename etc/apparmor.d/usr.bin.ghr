@@ -62,6 +62,8 @@ profile ghr /{opt/spaceport,usr}/bin/ghr {
     @{HOME}/.dotfiles/.local/bin/**  PUx,
     @{HOME}/.local/{apps,bin,lib}/** PUx,
 
+    deny /dev/dri/**                 rw,
+
     deny network,
 
     include if exists <local/usr.bin.ghr>
