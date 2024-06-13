@@ -36,28 +36,14 @@
 
 include <tunables/global>
 
-profile falkon /usr/bin/falkon {
-    include <abstractions/qt>
-    include <abstractions/chromium>
-    include <abstractions/user-home>
-    include <abstractions/notifications>
+profile arduino-ctags /usr/bin/arduino-ctags {
+    include <abstractions/base>
 
-    @{sysconfig}/usr/share/falkon/themes/{,**} r,
+    /usr/bin/arduino-ctags                       mr,
 
-    /usr/share/falkon/themes/{,**}             r,
-    /usr/lib/qt{,*}/plugins/falkon/            r,
-    /usr/lib/qt{,*}/plugins/falkon/*.so        rm,
+    owner /{tmp,var/run}/arduino_build_*/**      r,
 
-    /sys/devices/virtual/tty/tty*/active       r,
+    owner  /{tmp,var/run}/tags.*                 rw,
 
-    owner @{HOME}/.cache/falkon/{,**}          rwk,
-    owner @{HOME}/.local/share/falkon/{,**}    rw,
-    owner @{HOME}/.config/falkon/profiles/**   rwkl,
-
-    /usr/bin/xdg-open                          Px -> xdg-open,
-    /usr/bin/xdg-settings                      ixr,
-    /usr/lib/qt{,*}/QtWebEngineProcess         ix,
-    /usr/lib/qt{,*}/libexec/QtWebEngineProcess ix,
-
-    include if exists <local/usr.bin.falkon>
+    include if exists <local/usr.bin.arduino-ctags>
 }

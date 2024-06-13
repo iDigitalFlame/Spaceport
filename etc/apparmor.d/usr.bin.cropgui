@@ -43,8 +43,8 @@ profile cropgui /usr/bin/cropgui {
     include <abstractions/perl>
     include <abstractions/dconf>
     include <abstractions/python>
+    include <abstractions/user-home>
     include <abstractions/nameservice>
-    include <abstractions/user-downloads>
     include <abstractions/freedesktop.org>
 
     /usr/bin/                                     r,

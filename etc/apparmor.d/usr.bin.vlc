@@ -44,9 +44,9 @@ profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
     include <abstractions/gnome>
     include <abstractions/openssl>
     include <abstractions/p11-kit>
+    include <abstractions/user-home>
     include <abstractions/nameservice>
     include <abstractions/dbus-strict>
-    include <abstractions/user-downloads>
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
 

@@ -46,11 +46,11 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     include <abstractions/p11-kit>
     include <abstractions/version>
     include <abstractions/xdg-open>
+    include <abstractions/user-home>
     include <abstractions/xdg-desktop>
     include <abstractions/dbus-strict>
     include <abstractions/nameservice>
     include <abstractions/notifications>
-    include <abstractions/user-downloads>
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
     include <abstractions/dbus-network-manager-strict>

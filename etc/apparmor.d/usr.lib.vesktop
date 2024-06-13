@@ -39,8 +39,8 @@ include <tunables/global>
 profile vesktop /usr/{bin,lib/vesktop}/vesktop {
     include <abstractions/video>
     include <abstractions/chromium>
+    include <abstractions/user-home>
     include <abstractions/notifications>
-    include <abstractions/user-downloads>
     include <abstractions/dbus-network-manager-strict>
 
     owner @{HOME}/.config/vesktop/{,**} rwk,

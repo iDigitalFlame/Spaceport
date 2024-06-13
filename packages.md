@@ -2,7 +2,6 @@ apparmor
 archlinuxcn-keyring
 archstrike-keyring
 archstrike-mirrorlist
-arduino
 arduino-avr-core
 autoconf
 automake

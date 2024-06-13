@@ -1,3 +1,4 @@
+arduino
 cropgui
 firefox-extension-canvasblocker-bin
 firefox-extension-foxyproxy

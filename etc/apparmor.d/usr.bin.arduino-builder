@@ -1,0 +1,74 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/global>
+
+profile arduino-builder /usr/bin/arduino-builder {
+    include <abstractions/base>
+    include <abstractions/user-data-ro>
+
+    /tmp/                                                     r,
+    /usr/bin/                                                 r,
+    /usr/avr/lib/**                                           r,
+    /usr/avr/include/**                                       r,
+    /usr/bin/arduino-builder                                  rm,
+    /usr/share/arduino/{,**}                                  r,
+    /usr/share/doc/arduino/{,**}                              r,
+    /usr/share/arduino-builder/{,**}                          r,
+
+    /sys/kernel/mm/transparent_hugepage/hpage_pmd_size        r,
+
+    owner /{tmp,var/run}/cc*                                  rw,
+    owner /{tmp,var/run}/untitled[0-9]*.tmp/{,**}             rw,
+    owner /{tmp,var/run}/arduino_{build,cache}_[0-9]*/{,**}   rw,
+    owner /{tmp,var/run}/arduino_modified_sketch_[0-9]*/{,**} rw,
+
+    /usr/bin/avr-g++                                          rix,
+    /usr/bin/avrdude                                          rix,
+    /usr/bin/avr-size                                         rix,
+    /usr/lib/avr/bin/ld                                       rix,
+    /usr/bin/arduino-ctags                                    rPx,
+    /usr/bin/avr-gcc{,-ar}                                    rix,
+    /usr/lib/avr/bin/a{s,r}                                   rix,
+    /usr/lib/avr/bin/objcopy                                  rix,
+    /usr/lib/gcc/avr/*/collect2                               rix,
+    /usr/lib/gcc/avr/*/cc1{,plus}                             rix,
+    /usr/lib/llvm-[0-9]*/bin/clang                            rix,
+    /usr/bin/avr-{as,ar,ld,objcopy}                           rix,
+    /usr/lib/gcc/avr/*/lto{1,-wrapper}                        rix,
+
+    include if exists <local/usr.bin.arduino-builder>
+}

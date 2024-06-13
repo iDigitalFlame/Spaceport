@@ -47,9 +47,9 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     include <abstractions/openssl>
     include <abstractions/user-tmp>
     include <abstractions/ssl_certs>
+    include <abstractions/user-home>
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
-    include <abstractions/user-downloads>
     include <abstractions/freedesktop.org>
 
     /etc/fstab                                  r,

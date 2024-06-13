@@ -40,8 +40,8 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
     include <abstractions/video>
     include <abstractions/version>
     include <abstractions/chromium>
+    include <abstractions/user-home>
     include <abstractions/notifications>
-    include <abstractions/user-downloads>
 
     /usr/bin/slack                                                                                                 r,
     /usr/lib/slack/resources/**                                                                                    rm,

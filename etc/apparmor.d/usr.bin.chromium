@@ -39,7 +39,7 @@ include <tunables/global>
 profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} {
     include <abstractions/video>
     include <abstractions/chromium>
-    include <abstractions/user-downloads>
+    include <abstractions/user-home>
 
     owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
 
