@@ -70,5 +70,7 @@ profile arduino-builder /usr/bin/arduino-builder {
     /usr/bin/avr-{as,ar,ld,objcopy}                           rix,
     /usr/lib/gcc/avr/*/lto{1,-wrapper}                        rix,
 
+    owner @{HOME}/.arduino*/packages/arduino/tools/**         rix,
+
     include if exists <local/usr.bin.arduino-builder>
 }

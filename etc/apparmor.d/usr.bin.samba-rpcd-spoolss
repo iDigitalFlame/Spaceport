@@ -41,10 +41,10 @@ profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss flags=(attach_d
 
     /usr/lib*/samba/{,samba/}rpcd_spoolss rm,
 
-    /dev/urandom                          rw,
-
     @{run}/smd/hydra/smb.conf             r,
     @{run}/{,samba/}samba-bgqd.pid        rk,
+
+    /dev/urandom                          rw,
 
     /var/cache/samba/printing/            w,
     /var/cache/samba/printing/*.tdb       rwk,

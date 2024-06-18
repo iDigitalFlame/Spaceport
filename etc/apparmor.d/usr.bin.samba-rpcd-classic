@@ -45,6 +45,7 @@ profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(attach_d
     @{run}/smd/hydra/smb.conf             r,
 
     /dev/urandom                          rw,
+    /dev/cores/rpcd_classic/{,**}         rw,
 
     include if exists <local/samba-rpcd-classic>
 }

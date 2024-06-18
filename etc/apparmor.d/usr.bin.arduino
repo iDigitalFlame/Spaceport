@@ -88,6 +88,7 @@ profile arduino /usr/{bin,share/arduino}/arduino {
     /sys/kernel/mm/transparent_hugepage/{,shmem_}enabled      r,
     /sys/devices/**/usb*/**/{manufacturer,serial,product}     r,
 
+    /proc/cgroups                                             r,
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
 
@@ -100,6 +101,7 @@ profile arduino /usr/{bin,share/arduino}/arduino {
     /sys/devices/**/usb*/{,**}                                rw,
 
     owner @{HOME}/                                            r,
+    owner @{HOME}/.config/java/jssc/linux/*.so                rm,
 
     owner /proc/@{pid}/fd/                                    r,
     owner /proc/@{pid}/stat                                   r,
@@ -151,8 +153,11 @@ profile arduino /usr/{bin,share/arduino}/arduino {
     /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         rix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       rix,
 
+    owner @{HOME}/.arduino*/packages/arduino/tools/**         rix,
+
     deny /usr/share/arduino/**                                w,
     deny @{HOME}/.arduino15/preferences.txt                   w,
+    deny @{HOME}/.dotfiles/.arduino15/preferences.txt         w,
 
     ptrace (read) peer=arduino-builder,
 

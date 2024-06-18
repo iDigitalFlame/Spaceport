@@ -4,7 +4,6 @@ btrfs-scrub@var.timer
 dirmngr@etc-pacman.d-gnupg.service
 dirmngr@etc-pacman.d-gnupg.socket
 gpg-agent-browser@etc-pacman.d-gnupg.socket
-gpg-agent@etc-pacman.d-gnupg.service
 gpg-agent@etc-pacman.d-gnupg.socket
 gpg-agent-extra@etc-pacman.d-gnupg.socket
 gpg-agent-ssh@etc-pacman.d-gnupg.socket

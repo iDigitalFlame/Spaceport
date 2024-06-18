@@ -45,7 +45,9 @@ profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd flags=(attach_disco
 
     @{run}/smd/hydra/smb.conf                                 r,
 
-    @{HOME}/**                                                r,
+    @{HOME}/{,**}                                             r,
+
+    /dev/cores/samba-dcerpcd/{,**}                            rw,
 
     @{run}/samba/ncalrpc/                                     rw,
     @{run}/samba/ncalrpc/**                                   rw,
@@ -55,6 +57,8 @@ profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd flags=(attach_disco
     /usr/lib*/samba/{,samba/}rpcd_spoolss                     Px -> samba-rpcd-spoolss,
     /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper}           Px -> samba-rpcd,
     /usr/lib*/samba/{,samba/}rpcd_{rpcecho,fsrvp,lsad,winreg} Px -> samba-rpcd,
+
+    deny @{HOME}/{,**}                                        wkl,
 
     include if exists <local/samba-dcerpcd>
 }

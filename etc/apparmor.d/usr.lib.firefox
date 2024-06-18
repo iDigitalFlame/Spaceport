@@ -50,7 +50,7 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} {
 
     /sys/devices/pci*/**/                                              r,
     /sys/devices/system/**/meminfo                                     r,
-    /sys/devices/system/cpu/cpu0/topology/{core_cpus,thread_siblings}  r,
+    /sys/devices/system/cpu/cpu*/topology/{core_cpus,thread_siblings}  r,
 
     owner /proc/@{pid}/task/@{tid}/stat                                r,
 

@@ -39,10 +39,13 @@ include <tunables/global>
 profile samba-rpcd /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper,rpcecho,fsrvp,lsad,winreg} flags=(attach_disconnected) {
     include <abstractions/samba-rpcd>
 
+
     /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper}           rm,
     /usr/lib*/samba/{,samba/}rpcd_{rpcecho,fsrvp,lsad,winreg} rm,
 
     @{run}/smd/hydra/smb.conf                                 r,
+
+    /dev/cores/rpcd_winreg/{,**}                              rw,
 
     @{run}/samba/ncalrpc/np/winreg                            rw,
 

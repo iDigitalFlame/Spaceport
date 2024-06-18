@@ -71,6 +71,8 @@ profile keepassxc /usr/bin/keepassxc {
     owner @{HOME}/.config/keepassxc/keepassxc.ini.lock         rwkl,
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**/{#*,*.kdbx,*.kdbx.*} rwkl,
 
+    /usr/bin/wl-copy                                           ix,
+
     deny /dev/tty                                              rw,
     deny /usr/bin/                                             r,
     deny @{HOME}/.cache/keepassxc/keepassxc.ini                w,
