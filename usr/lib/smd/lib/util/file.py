@@ -41,9 +41,9 @@ from io import StringIO
 from hashlib import md5
 from grp import getgrgid
 from pwd import getpwuid
-from shutil import copyfile
 from lib.util import nes
 from sys import _getframe
+from shutil import copyfile
 from typing import NamedTuple
 from lib.constants import EMPTY
 from string import ascii_letters, digits

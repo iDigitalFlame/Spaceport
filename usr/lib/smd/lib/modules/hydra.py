@@ -631,7 +631,6 @@ class VM(Storage):
         d = self._build_drives(server, uid, x.user, b, t)
         a = self._build_adapters(server, b)
         n = self.get("cpu.sockets", 1)
-        # Init here so we can add BIOS stuff.
         r = [x.bin, "-runas", HYDRA_USER, "-smbios"] + self._build_bios(server, x, uid)
         r += [
             "-enable-kvm",
