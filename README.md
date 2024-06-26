@@ -13,6 +13,7 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 
 - dash
 - dnsmasq
+- edk2-ovmf
 - flatery-icon-theme-git
 - git
 - git-lfs
@@ -51,13 +52,12 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - vimix-cursors
 - waybar
 - wireplumber
-- edk2-ovmf
 
 ## Recommended Packages
 
 - blueman
 - bluez
+- libsecret
 - NetworkManager
 - network-manager-applet
 - yay
-- libsecret
