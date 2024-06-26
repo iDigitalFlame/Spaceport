@@ -109,14 +109,14 @@ def default(args):
 
 def _print(plans, adv):
     if not adv:
-        print(f'{"ID":11}{"Status":11}{"Last":15}{"Last Size":9} Path\n{"="*70}')
+        print(f'{"ID":11}{"Status":11}{"Last":15}{"Last Size":9} Path\n{"=" * 70}')
     for i in plans:
         x = i.get("id")
         if not nes(x) or len(x) < 10:
             continue
         v = i["state"]
         if adv:
-            print(f'{i["id"]} - {i["path"]}\n{"="*60}')
+            print(f'{i["id"]} - {i["path"]}\n{"=" * 60}')
             print(f'{"ID":<12}: {x}\n{"Path":<12}: {i["path"]}')
             print(f'{"Description":<12}: {i["description"]}\n{"UUID":<12}: {i["uuid"]}')
             if len(i["status"]) > 0:

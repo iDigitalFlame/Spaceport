@@ -43,7 +43,7 @@
 ## Base Constants
 EMPTY = str()
 NEWLINE = "\n"
-VERSION = "SMD-7.4_Tank_v2"
+VERSION = "SMD-7.6_Tank_v2"
 BOOLEANS = [
     "0",
     "1",
@@ -174,6 +174,7 @@ LOCKER_TYPE_KEY = "key"
 LOCKER_TYPE_LOCK = "lock"
 LOCKER_TYPE_BLANK = "blank"
 LOCKER_TYPE_BACKUP = "backup"
+LOCKER_TYPE_FREEZE = "freeze"
 LOCKER_TYPE_SUSPEND = "suspend"
 LOCKER_TYPE_HIBERNATE = "hibernate"
 

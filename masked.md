@@ -11,6 +11,7 @@ nslcd.service
 plymouth-quit-wait.service
 plymouth-start.service
 rescue.service
+ssh-access.target
 syslog.service
 systemd-boot-update.service
 systemd-bsod.service
@@ -21,6 +22,7 @@ systemd-network-generator.service
 systemd-pstore.service
 systemd-quotacheck.service
 systemd-repart.service
+systemd-suspend-then-hibernate.service
 systemd-sysusers.service
 systemd-update-done.service
 var-lib-machines.mount

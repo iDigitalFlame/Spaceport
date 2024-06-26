@@ -62,6 +62,7 @@ from lib.constants import (
     LOCKER_TYPE_BLANK,
     HOOK_NOTIFICATION,
     LOCKER_TYPE_BACKUP,
+    LOCKER_TYPE_FREEZE,
     LOCKER_TYPE_SUSPEND,
     LOCKER_TYPE_HIBERNATE,
 )
@@ -108,7 +109,7 @@ LOG_FRAME_LIMIT = 15
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 LOG_FORMAT_JOURNAL = "[%(levelname)s]: %(message)s"
 
-LOG_PATH_SERVER = f"{DIRECTORY_TEMP}/{NAME}-server.log"
+LOG_PATH_SERVER = f"/var/run/log/smd-{NAME}.log"
 LOG_PATH_CLIENT = "/var/run/user/{uid}/smd-client-{pid}.log"
 
 HOOK_TRANSLATIONS = {
@@ -149,6 +150,11 @@ HYDRA_EXEC_SPICE = "/usr/bin/spicy"
 
 HYDRA_FILE_SMB = f"{HYDRA_DIR}/smb.conf"
 HYDRA_FILE_DNS = f"{HYDRA_DIR}/dns.conf"
+HYDRA_FILE_UEFI = ["/usr/share/edk2/ia32/OVMF.fd", "/usr/share/edk2/x64/OVMF.fd"]
+HYDRA_FILE_UEFI_VARS = [
+    "/usr/share/edk2/ia32/OVMF_VARS.fd",
+    "/usr/share/edk2/x64/OVMF_VARS.fd",
+]
 
 HYDRA_RESERVE = "/proc/sys/vm/nr_hugepages"
 HYDRA_RESERVE_SIZE = 2
@@ -240,6 +246,7 @@ LOCKER_TYPE_NAMES = {
     LOCKER_TYPE_LOCK: "Lockscreen",
     LOCKER_TYPE_BLANK: "Screen Blank",
     LOCKER_TYPE_BACKUP: "Active Backup",
+    LOCKER_TYPE_FREEZE: "No App Freeze",
     LOCKER_TYPE_SUSPEND: "Suspend",
     LOCKER_TYPE_HIBERNATE: "Hibernate",
 }
@@ -254,6 +261,7 @@ LOCKER_EXEC_DND_ON = ["/usr/bin/swaync-client", "--skip-wait", "--dnd-on"]
 LOCKER_EXEC_DND_OFF = ["/usr/bin/swaync-client", "--skip-wait", "--dnd-off"]
 LOCKER_EXEC_SUSPEND = ["/usr/bin/systemctl", "suspend"]
 LOCKER_EXEC_HIBERNATE = ["/usr/bin/systemctl", "hibernate"]
+LOCKER_EXEC_LOCK_KEYRING = ["/usr/bin/secret-tool", "lock"]
 
 # Screen Constants
 DISPLAY_BUILTIN = "eDP-1"

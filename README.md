@@ -51,6 +51,7 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - vimix-cursors
 - waybar
 - wireplumber
+- edk2-ovmf
 
 ## Recommended Packages
 
@@ -59,3 +60,4 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - NetworkManager
 - network-manager-applet
 - yay
+- libsecret

@@ -53,7 +53,8 @@ PrivateUsers            = false
 ProtectSystem           = full
 ReadWritePaths          = /home
 PrivateDevices          = false
-NoNewPrivileges         = false # False for AppArmor Profiles
+# False for AppArmor Profiles
+NoNewPrivileges         = false
 LockPersonality         = true
 RestrictRealtime        = true
 RestrictSUIDSGID        = true

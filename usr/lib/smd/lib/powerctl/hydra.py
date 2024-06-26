@@ -419,7 +419,7 @@ def _usb_prompt(name, matches):
     print(f'Multiple devices match "{name}", please select from the list:')
     try:
         while True:
-            print(f'{"#":>4} {"Device ID":12}{"Description":20}\n{"="*50}')
+            print(f'{"#":>4} {"Device ID":12}{"Description":20}\n{"=" * 50}')
             for x in range(0, len(matches)):
                 v = f"{matches[x].vendor}:{matches[x].product}"
                 print(f"{x:4} {v:<12}{matches[x].name:<20}")
@@ -457,7 +457,7 @@ def _all(args, cmd, force=False):
         return print_error('Cannot perform a "set all" operation!', err)
     del p
     check_error(r, 'Cannot perform a "set all" operation')
-    print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
+    print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 50}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
         return True
     for x in r.vms:
@@ -553,7 +553,7 @@ def vm_list(args):
         return print_error("Cannot retrive the VM list!", err)
     check_error(r, "Cannot retrive the VM list!")
     if not args.dmenu:
-        print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"="*50}')
+        print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 50}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
         return
     r.vms.sort(key=lambda x: x["vmid"])
@@ -663,7 +663,7 @@ def vm_ip(args, vm=None):
         return print_error("Cannot retrive the IP from the VM!", err)
     check_error(r, "Cannot retrive the IP from the VM")
     print(
-        f'{_vm(r.vmid, r.file)} - {r.status.title()}\n\n{"Interface":16}IP Address\n{"="*32}'
+        f'{_vm(r.vmid, r.file)} - {r.status.title()}\n\n{"Interface":16}IP Address\n{"=" * 32}'
     )
     a = r.get("ips")
     del r

@@ -41,13 +41,14 @@ from io import StringIO
 from hashlib import md5
 from grp import getgrgid
 from pwd import getpwuid
+from shutil import copyfile
 from lib.util import nes
 from sys import _getframe
 from typing import NamedTuple
 from lib.constants import EMPTY
 from string import ascii_letters, digits
 from json import loads, dumps, JSONDecodeError
-from os import environ, makedirs, stat, chmod, remove, fspath
+from os import chown, environ, makedirs, stat, chmod, remove, fspath
 from os.path import (
     isfile,
     exists,
@@ -102,8 +103,6 @@ class Stat(NamedTuple):
 
     def check(self, mask=None, uid=None, gid=None, req=None, hide=False):
         if self.stat is None:
-            if hide:
-                raise FileNotFoundError()
             raise FileNotFoundError(f'"{self.path}" does not exist')
         if isinstance(uid, int) and self.uid != uid:
             if uid == 0:
@@ -114,7 +113,7 @@ class Stat(NamedTuple):
                 except KeyError:
                     n = uid
             if hide:
-                raise FileNotFoundError()
+                raise FileNotFoundError(f'"{self.path}" does not exist')
             raise PermissionError(f'"{self.path}" owner is not "{n}"')
         if isinstance(gid, int) and self.gid != gid:
             if gid == 0:
@@ -125,69 +124,84 @@ class Stat(NamedTuple):
                 except KeyError:
                     n = gid
             if hide:
-                raise FileNotFoundError()
+                raise FileNotFoundError(f'"{self.path}" does not exist')
             raise PermissionError(f'"{self.path}" group is not "{n}"')
         if isinstance(mask, int) and (self.stat.st_mode & mask) != 0:
             if hide:
-                raise FileNotFoundError()
+                raise FileNotFoundError(f'"{self.path}" does not exist')
             raise PermissionError(
                 f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the mask ({mask:0o})'
             )
         if isinstance(req, int) and (self.stat.st_mode & req) < req:
             if hide:
-                raise FileNotFoundError()
+                raise FileNotFoundError(f'"{self.path}" does not exist')
             raise PermissionError(
                 f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the required permissions ({req:0o})'
             )
         return self
 
+    def check_if(self, cond, mask=None, uid=None, gid=None, req=None, hide=False):
+        if not cond:
+            return self
+        return self.check(mask, uid, gid, req, hide)
+
     def no(self, file=None, dir=None, char=None, block=None, link=None, hide=False):
         if file is not None:
             if file and not self.isfile:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" must be a file')
             if not file and self.isfile:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" cannot be a file')
         if dir is not None:
             if dir and not self.isdir:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" must be a dir')
             if not dir and self.isdir:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" cannot be a dir')
         if link is not None:
             if link and not self.islink:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" must be a link')
             if not link and self.islink:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" cannot be a link')
         if char is not None:
             if char and not self.ischardev:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" must be a character device')
             if not char and self.ischardev:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" cannot be a character device')
         if block is not None:
             if block and not self.isblockdev:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" must be a block device')
             if not block and self.isblockdev:
                 if hide:
-                    raise FileNotFoundError()
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" cannot be a block device')
         return self
+
+    def check_if_owner(
+        self, owner_uid, mask=None, uid=None, gid=None, req=None, hide=False
+    ):
+        return self.check_if(owner_uid == self.uid, mask, uid, gid, req, hide)
+
+    def check_if_not_owner(
+        self, owner_uid, mask=None, uid=None, gid=None, req=None, hide=False
+    ):
+        return self.check_if(owner_uid != self.uid, mask, uid, gid, req, hide)
 
     def only(
         self, file=False, dir=False, char=False, block=False, link=False, hide=False
@@ -465,6 +479,27 @@ def info(path, sym=True, st=None, no_fail=False, hide=False):
         m == 0o060000,  # isblockdev
         path,
     )
+
+
+def copy(src, dst, uid=None, gid=None, perms=None, errors=True):
+    if not isinstance(src, str) or len(src) == 0:
+        if errors:
+            raise ValueError('"src" must be a non-empty string!')
+        return False
+    if not isinstance(dst, str) or len(dst) == 0:
+        if errors:
+            raise ValueError('"dst" must be a non-empty string!')
+        return False
+    try:
+        copyfile(src, dst, follow_symlinks=False)
+        if isinstance(uid, int) and isinstance(gid, int):
+            chown(dst, uid, gid, follow_symlinks=True)
+        if isinstance(perms, int):
+            chmod(dst, perms, follow_symlinks=True)
+    except OSError as err:
+        if errors:
+            raise err
+        return False
 
 
 def perm_check(path, mask=None, uid=None, gid=None, sym=True, st=None):

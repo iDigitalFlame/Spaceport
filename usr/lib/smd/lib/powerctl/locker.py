@@ -51,9 +51,33 @@ from lib.constants import (
     LOCKER_TYPE_LOCK,
     LOCKER_TYPE_BLANK,
     LOCKER_TYPE_BACKUP,
+    LOCKER_TYPE_FREEZE,
     LOCKER_TYPE_SUSPEND,
     LOCKER_TYPE_HIBERNATE,
 )
+
+
+def clear(args):
+    if not args.clear:  # Sanity Check
+        return
+    p = {
+        "type": MSG_ACTION,
+        "list": [
+            {"name": LOCKER_TYPE_LID, "time": False, "force": True},
+            {"name": LOCKER_TYPE_KEY, "time": False, "force": True},
+            {"name": LOCKER_TYPE_LOCK, "time": False, "force": True},
+            {"name": LOCKER_TYPE_BLANK, "time": False, "force": True},
+            {"name": LOCKER_TYPE_FREEZE, "time": False, "force": True},
+            {"name": LOCKER_TYPE_SUSPEND, "time": False, "force": True},
+            {"name": LOCKER_TYPE_HIBERNATE, "time": False, "force": True},
+        ],
+    }
+    try:
+        send_message(args.socket, HOOK_LOCKER, payload=p)
+    except Exception as err:
+        return print_error("Cannot update Lockers!", err)
+    finally:
+        del p
 
 
 def config(args):
@@ -61,6 +85,7 @@ def config(args):
     pase_locker(v, LOCKER_TYPE_LID, args.lid, args.lid_force)
     pase_locker(v, LOCKER_TYPE_KEY, args.key, args.key_force)
     pase_locker(v, LOCKER_TYPE_BLANK, args.blank, args.blank_force)
+    pase_locker(v, LOCKER_TYPE_FREEZE, args.freeze, args.freeze_force)
     pase_locker(v, LOCKER_TYPE_SUSPEND, args.suspend, args.suspend_force)
     pase_locker(v, LOCKER_TYPE_LOCK, args.lockscreen, args.lockscreen_force)
     pase_locker(v, LOCKER_TYPE_HIBERNATE, args.hibernate, args.hibernate_force)
@@ -88,7 +113,7 @@ def default(args):
     check_error(r, "Cannot retrive Lockers")
     if isinstance(r.lockers, dict) and len(r.lockers) > 0:
         n = seconds()
-        print(f'{"Locker":15}{"Expires":8}\n{"="*32}')
+        print(f'{"Locker":15}{"Expires":8}\n{"=" * 32}')
         for i, s in r.lockers.items():
             if i == LOCKER_TYPE_BACKUP:
                 print(f"{LOCKER_TYPE_NAMES.get(i, i):15}After Backup Ends")

@@ -98,6 +98,7 @@ from lib.constants.config import (
     LOCKER_PATH_WAKEALARM,
     LOCKER_EXEC_HIBERNATE,
     DISPLAY_PATH_CONNECTED,
+    LOCKER_EXEC_LOCK_KEYRING,
 )
 from lib.constants.defaults import (
     DEFAULT_LOCKER_LID,
@@ -733,7 +734,23 @@ class LockerClient(object):
         self._lock_dpms(server, True)
         self._wake_check(server)
         self._backoff_blank = cancel_nul(server, self._backoff_blank)
-        server.send(None, Message(HOOK_LOCK, {"type": MSG_PRE}))
+        if not self._ability.key and not _on_power():
+            # NOTE(dij): We're gonna lock the keyring ONLY if the device is:
+            #            - On Battery Power
+            #            - Yubikey lock is ENABLED
+            #
+            #            The reasoning behind this is to not lock the keyring when
+            #            docked and the Yubikey removal locks the systems as in
+            #            most cases this is when a password would be used instead
+            #            to unlock the Lockscreen, which would ALSO unlock the
+            #            keyring too, preventing any disruptions.
+            #
+            #            Probally the most frictionless method.
+            nulexec(LOCKER_EXEC_LOCK_KEYRING, wait=True, errors=False)
+            server.debug("[m/locker]: Locking user keyring due to Key and Power state!")
+        server.send(
+            None, Message(HOOK_LOCK, {"type": MSG_PRE, "lockers": self._lockers})
+        )
 
     def _lock_dpms(self, server, enable):
         if enable:

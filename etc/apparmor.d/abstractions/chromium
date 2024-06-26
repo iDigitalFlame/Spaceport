@@ -66,6 +66,7 @@ network inet6                                                        stream,
 
 /dev/                                                                r,
 
+/sys/{bus,class}/                                                    r,
 /sys/devices/system/cpu/present                                      r,
 /sys/devices/system/cpu/kernel_max                                   r,
 /sys/devices/virtual/tty/tty*/active                                 r,

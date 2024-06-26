@@ -135,7 +135,7 @@ def default(args):
         return print_error("Cannot retrive CPU information!", err)
     if not args.advanced:
         print(
-            f'{"CPU":6}{"Current":11}{"Minimum":11}{"Maximum":11}{"Governor":12}{"Power Gov":12}\n{"="*63}'
+            f'{"CPU":6}{"Current":11}{"Minimum":11}{"Maximum":11}{"Governor":12}{"Power Gov":12}\n{"=" * 63}'
         )
     for n, v in sorted(x["cpus"].items()):
         _print(n, v, args.advanced)
@@ -158,7 +158,7 @@ def _print(name, cpu, advanced):
             f'{freq_to_str(cpu["scale_max"]):<11}{cpu["governor"]:<12}{cpu["performance"]:<12}'
         )
     print(
-        f'{name.upper()}:\t\t{freq_to_str(cpu["current"])}\n{"="*36}\nFreq Range:\t'
+        f'{name.upper()}:\t\t{freq_to_str(cpu["current"])}\n{"=" * 36}\nFreq Range:\t'
         f'{freq_to_str(cpu["min"])} - {freq_to_str(cpu["max"])}\nGovernor:\t'
         f'{cpu["governor"]}\nGov Min Freq:\t{freq_to_str(cpu["scale_min"])}\nGov Max Freq:\t'
         f'{freq_to_str(cpu["scale_max"])}\nGovernors:\t{", ".join(cpu["governor_list"])}\n'

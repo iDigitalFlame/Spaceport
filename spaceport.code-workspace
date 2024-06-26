@@ -82,6 +82,7 @@
             "uhci",
             "unblank",
             "unhalt",
+            "uring",
             "vapic",
             "vendorid",
             "vhost",

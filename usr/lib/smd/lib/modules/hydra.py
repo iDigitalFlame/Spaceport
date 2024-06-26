@@ -54,8 +54,8 @@ from json import dumps, loads, JSONDecodeError
 from socket import socket, AF_UNIX, SOCK_STREAM
 from lib.shared.hydra import load_vm, get_devices
 from os.path import isdir, isfile, exists, isabs, dirname
-from lib.util.file import read, write, remove_file, expand, info
 from lib.constants.files import HYDRA_CONFIG_DNS, HYDRA_CONFIG_SMB
+from lib.util.file import read, write, remove_file, expand, info, copy
 from lib.constants.config import (
     NAME,
     HYDRA_DIR,
@@ -69,12 +69,14 @@ from lib.constants.config import (
     HYDRA_DIR_DHCP,
     HYDRA_EXEC_SMB,
     HYDRA_WAIT_TIME,
+    HYDRA_FILE_UEFI,
     HYDRA_PATH_MOUNTS,
     HYDRA_DIR_DEVICES,
     HYDRA_BRIDGE_NAME,
     HYDRA_RESERVE_SIZE,
     HYDRA_SOCK_BUF_SIZE,
     HYDRA_BRIDGE_NETWORK,
+    HYDRA_FILE_UEFI_VARS,
 )
 from lib.constants import (
     MSG_PRE,
@@ -130,6 +132,7 @@ Restricted = namedtuple(
         "memory",
         "reserve",
         "bios",
+        "bios_vars",
         "tpm",
         "kernel",
         "initrd",
@@ -363,6 +366,14 @@ class VM(Storage):
             s["ping"] = True
         return s
 
+    def _socket_perms_set(self):
+        try:
+            chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
+            chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
+        except OSError:
+            return False
+        return True
+
     def _hibernate(self, server):
         if self._state == HYDRA_STATE_STOPPED:
             return
@@ -512,17 +523,13 @@ class VM(Storage):
                 "virt-viewer",
             )
             return
-        try:
-            chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
-            chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
-        except OSError:
-            pass
-        else:
-            self._state = HYDRA_STATE_RUNNING
-            server.debug(
-                f"[m/hydra/VM({self.vmid})]: Socket became active, bootstrap complete!"
-            )
-            server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
+        if not self._socket_perms_set():
+            return
+        self._state = HYDRA_STATE_RUNNING
+        server.debug(
+            f"[m/hydra/VM({self.vmid})]: Socket became active, bootstrap complete!"
+        )
+        server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
 
     def _usb_clean(self, server, manager):
         if self._running:
@@ -604,13 +611,6 @@ class VM(Storage):
                 b = self.set("dev.bus", "pcie")
             else:
                 b = self.set("dev.bus", "pci")
-        if self.get("bios.version", 1) == 0:
-            if self.get("bios.uefi", False):
-                s = "type=0,uefi=on"
-            else:
-                s = "type=0"
-        else:
-            s = f'type={self.get("bios.version", 1)}'
         o, c = self.get("cpu.options", list()), self.get("cpu.type", "host")
         i = c == "host"
         if x.intel and self.get("cpu.auto_options", True):
@@ -631,18 +631,15 @@ class VM(Storage):
         d = self._build_drives(server, uid, x.user, b, t)
         a = self._build_adapters(server, b)
         n = self.get("cpu.sockets", 1)
-        r = [
-            x.bin,
-            "-runas",
-            HYDRA_USER,
-            "-smbios",
-            s,
+        # Init here so we can add BIOS stuff.
+        r = [x.bin, "-runas", HYDRA_USER, "-smbios"] + self._build_bios(server, x, uid)
+        r += [
             "-enable-kvm",
             "-nographic",
             "-no-user-config",
             "-nodefaults",
             "-boot",
-            "order=cdn,menu=off,splash-time=0",
+            "order=cdn,menu=on,splash-time=0,reboot-timeout=1000,strict=on",
             "-rtc",
             "base=localtime,clock=host",
             "-machine",
@@ -693,7 +690,7 @@ class VM(Storage):
         if x.bios is not None:
             r += ["-bios", x.bios]
         if x.tpm is not None:
-            r += ["-tpmdev", f"passthrough,id=tpm0,path={x.tpm}"]
+            r += ["-tpmdev", f"passthrough,id=tpm0,path={x.tpm},version=v2.0"]
         if x.extra is not None:
             r += x.extra
         if "q35" in t and self.get("dev.iommu", True):
@@ -707,7 +704,7 @@ class VM(Storage):
             r += ["-append", v]
         if x.dtb is not None:
             r += ["-dtb", x.dtb]
-        del x, s, t, o, c, n, v
+        del x, t, o, c, n, v
         s = self.get("dev.osk")
         if nes(s):
             # NOTE(dij): Support MacOS with an OSK. This allows MacOS to not need
@@ -821,26 +818,19 @@ class VM(Storage):
             self._state = HYDRA_STATE_WAITING
             server.debug(f"[m/hydra/VM({self.vmid})]: Waiting for process.")
             return 0
-        try:
-            chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
-            chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
-        except OSError:
-            server.info(
-                f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}, but waiting for sockets!"
-            )
-            self._state = HYDRA_STATE_WAITING
-        else:
+        if self._socket_perms_set():
             self._state = HYDRA_STATE_RUNNING
             server.info(
                 f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}!"
             )
             server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
-        try:
-            # NOTE(dij): Last chance effort, as some get caught in this quasi-state.
-            chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
-            chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
-        except OSError:
-            pass
+        else:
+            self._state = HYDRA_STATE_WAITING
+            server.info(
+                f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}, but waiting for sockets!"
+            )
+        # NOTE(dij): Last chance effort, as some get caught in this quasi-state.
+        self._socket_perms_set()
         return self._proc.pid
 
     def _restart(self, server, reset=False):
@@ -870,6 +860,40 @@ class VM(Storage):
             server.warning(
                 f"[m/hydra/VM({self.vmid})]: Restart timed-out but may have still worked.."
             )
+
+    def _build_bios(self, server, info, uid):
+        if not self.get("bios.uefi"):
+            return ["type=1"]
+        if nes(info.bios):
+            f = info.bios
+        else:
+            f = HYDRA_FILE_UEFI[int(info.intel)]
+        if nes(info.bios_vars):
+            v = info.bios_vars
+        else:
+            v = f"{dirname(self.path())}/uefi_vars.fd"
+            server.debug(
+                f'[m/hydra/VM({self.vmid})]: Copying the default UEFI variables to "{v}".'
+            )
+            try:
+                copy(
+                    f,
+                    HYDRA_FILE_UEFI_VARS[int(info.intel)],
+                    uid,
+                    _hydra_user().pw_gid,
+                    0o0640,
+                )
+            except OSError as err:
+                raise Error(f'Cannot create VM specific UEFI vars file "{v}": {err}')
+            else:
+                self.bios["vars"] = v
+        return [
+            f'type=1,uuid={self.get("vm.uuid")}',
+            "-drive",
+            f"if=pflash,id=efi0-bios,bus=0,format=raw,unit=0,readonly=on,file={f}",
+            "-drive",
+            f"if=pflash,id=efi0-user,bus=0,format=raw,unit=1,file={v}",
+        ]
 
     def _build_restriced(self, server, manager, uid):
         try:
@@ -921,7 +945,18 @@ class VM(Storage):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0640
             #            permissions.
-            info(f, False, hide=True).check(0o7137, uid, hide=True).only(file=True)
+            info(f, False, hide=True).check_if_owner(
+                0o7137, uid, hide=True
+            ).check_if_not_owner(uid, 0o7133, req=0o0644, hide=True).only(file=True)
+        else:
+            # NOTE(dij): Set to None to remove anything else.
+            f = None
+        q = expand(self.get("bios.vars"))
+        if nes(q):
+            # NOTE(dij): Security Check
+            #            Can only be a file owned by the calling user that has 0o0640
+            #            permissions.
+            info(q, False, hide=True).check(0o7137, uid, hide=True).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
             f = None
@@ -998,7 +1033,9 @@ class VM(Storage):
         else:
             # NOTE(dij): Set to None to remove anything else.
             r = None
-        return Restricted(x, e, n, r, f, t, k, d, o, u.pw_name, x.endswith("-x86_64"))
+        return Restricted(
+            x, e, n, r, f, q, t, k, d, o, u.pw_name, x.endswith("-x86_64")
+        )
 
     def _build_drives(self, server, uid, user, bus, machine):
         if not isinstance(self.drives, dict):
@@ -1068,13 +1105,15 @@ class VM(Storage):
                 if d["type"] == "cd" or d["type"] == "iso":
                     v.check(0o7133, req=0o0640)
                 elif v.uid == uid:
-                    if d.get("readonly", False):
-                        v.check(0o7133, req=0o0440)
-                    else:
-                        v.check(0o7117, gid=_hydra_user().pw_gid, req=0o0660)
+                    v.check_if(d.get("readonly", False), 0o7133, req=0o0440).check_if(
+                        not d.get("readonly", False),
+                        0o7117,
+                        gid=_hydra_user().pw_gid,
+                        req=0o0660,
+                    )
                 else:
                     v.check(0o7133, req=0o0644, hide=True)
-                    server.debug(
+                    server.info(
                         f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as the user '
                         f'does not have write permissions to "{p}".'
                     )
@@ -1088,7 +1127,7 @@ class VM(Storage):
                 except KeyError:
                     raise PermissionError(f'cannot find group "{v.gid}" for "{p}"')
                 if user not in g.gr_mem:
-                    server.debug(
+                    server.info(
                         f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as user is not '
                         f'in group "{g.gr_name}".'
                     )
@@ -1163,11 +1202,11 @@ class VM(Storage):
             # NOTE(dij): Determine how we handle the drive based on the type and
             #            driver.
             if not d.get("direct", True):
-                s += ",aio=threads"
+                s += ",aio=io_uring"
             elif d["format"] == "raw" and d["type"] == "virtio":
                 s += ",aio=native,cache.direct=on"
             else:
-                s += ",aio=threads,cache=writeback"
+                s += ",aio=io_uring,cache=writeback"
             # NOTE(dij): CDs and ISOs are always read only.
             if d.get("readonly", False) or d["type"] == "cd" or d["type"] == "iso":
                 s += ",readonly=on"
@@ -1762,6 +1801,10 @@ class HydraServer(object):
                 if x._state == HYDRA_STATE_SLEEPING:
                     # Wake VM if we're attempting to start a sleeping VM.
                     x._start(server, self, message.uid())
+                # NOTE(dij): Ensure that the sockets never fail to get set as
+                #            readable. This will trigger when clients try to view
+                #            the VM's screen
+                x._socket_perms_set()
                 return x._status()
             try:
                 self.start(server)

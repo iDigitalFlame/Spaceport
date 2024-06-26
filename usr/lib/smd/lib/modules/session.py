@@ -57,6 +57,7 @@ from lib.constants import (
     HOOK_DISPLAY,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
+    LOCKER_TYPE_FREEZE,
 )
 from lib.constants.defaults import (
     DEFAULT_SESSION_IGNORE,
@@ -217,7 +218,15 @@ class Session(object):
 
     def lock(self, server, message):
         if message.type == MSG_PRE:
-            self._freeze(server, True)
+            if (
+                not isinstance(message.lockers, list)
+                or LOCKER_TYPE_FREEZE not in message.lockers
+            ):
+                self._freeze(server, True)
+            else:
+                server.debug(
+                    "[m/session]: Ignoring freeze request due to the Freeze locker!"
+                )
             self._trigger(server, "lock_pre")
         elif message.type == MSG_POST:
             self._freeze(server, False)
