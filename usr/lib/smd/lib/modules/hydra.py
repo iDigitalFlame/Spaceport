@@ -876,8 +876,8 @@ class VM(Storage):
             )
             try:
                 copy(
-                    f,
                     HYDRA_FILE_UEFI_VARS[int(info.intel)],
+                    v,
                     uid,
                     _hydra_user().pw_gid,
                     0o0640,
