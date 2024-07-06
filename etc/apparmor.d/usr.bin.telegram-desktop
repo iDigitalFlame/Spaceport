@@ -58,6 +58,7 @@ profile telegram-desktop /usr/bin/telegram-desktop {
     network inet                                    stream,
     network inet6                                   stream,
 
+    /sys/devices/virtual/dmi/id/bios_vendor         r,
     /sys/kernel/mm/transparent_hugepage/enabled     r,
 
     owner /proc/@{pid}/{cmdline,stat}               r,
