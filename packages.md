@@ -187,7 +187,6 @@ ungoogled-chromium
 unzip
 upx
 usbutils
-vesktop
 vimix-cursors
 vlc
 vscodium-bin
