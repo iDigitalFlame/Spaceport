@@ -43,9 +43,11 @@ profile electron /usr/{bin/electron*,lib/electron*/electron} {
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
+    /sys/devices/virtual/dmi/id/bios_vendor     r,
+
     owner @{HOME}/.config/vesktop/{,**}         rwk,
 
-    /usr/bin/xdg-open                           Px -> xdg-open,
+    /usr/bin/xdg-open                           px -> xdg-open,
     /usr/bin/xdg-settings                       Pxr -> xdg-settings,
     /usr/lib/electron*/chrome-sandbox           ix,
     /usr/{bin/electron*,lib/electron*/electron} ixr,
