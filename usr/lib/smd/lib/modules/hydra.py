@@ -676,8 +676,6 @@ class VM(Storage):
             "-device",
             f"qemu-xhci,multifunction=on,streams=on,id=usb-bus3,bus={b}.0,addr=0x12",
             "-device",
-            "virtio-mouse-pci",
-            "-device",
             f"usb-ehci,multifunction=on,id=usb-bus2,bus={b}.0,addr=0x0d",
             "-device",
             f"piix3-usb-uhci,multifunction=on,id=usb-bus1,bus={b}.0,addr=0x0e",
@@ -783,7 +781,6 @@ class VM(Storage):
             r += [
                 "-device",
                 f"virtio-tablet-pci,id=tablet0,bus={b}.0,addr=0x0a",
-                "-device",
             ]
         del i
         if self.get("vm.spice", True):
