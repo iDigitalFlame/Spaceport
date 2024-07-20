@@ -664,7 +664,7 @@ class VM(Storage):
             "-chardev",
             f"socket,id=qga0,path={self._path}.qga,server=on,wait=off",
             "-device",
-            f"virtio-serial,id=qga0,bus={b}.0,addr=0x9",
+            f"virtio-serial-pci,id=qga0,bus={b}.0,addr=0x9",
             "-device",
             "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
             "-object",
@@ -676,6 +676,8 @@ class VM(Storage):
             "-device",
             f"qemu-xhci,multifunction=on,streams=on,id=usb-bus3,bus={b}.0,addr=0x12",
             "-device",
+            "virtio-mouse-pci",
+            "-device",
             f"usb-ehci,multifunction=on,id=usb-bus2,bus={b}.0,addr=0x0d",
             "-device",
             f"piix3-usb-uhci,multifunction=on,id=usb-bus1,bus={b}.0,addr=0x0e",
@@ -683,13 +685,24 @@ class VM(Storage):
             f"pci-bridge,id=pci-bridge1,chassis_nr=1,bus={b}.0,addr=0x0f",
             "-device",
             f"pci-bridge,id=pci-bridge2,chassis_nr=2,bus={b}.0,addr=0x10",
+            "-object",
+            "rng-random,filename=/dev/hwrng,id=rng0",
+            "-device",
+            f"virtio-rng-pci,rng=rng0,bus={b}.0,addr=0x08",
+            "-sandbox",
+            "on,obsolete=deny,spawn=deny",
         ]
         if x.reserve is not None:
             r += ["-mem-path", x.reserve, "-mem-prealloc"]
         if x.bios is not None:
             r += ["-bios", x.bios]
         if x.tpm is not None:
-            r += ["-tpmdev", f"passthrough,id=tpm0,path={x.tpm},version=v2.0"]
+            r += [
+                "-tpmdev",
+                f"passthrough,id=tpm0,path={x.tpm},version=v2.0",
+                "-device",
+                "tpm-tis,tpmdev=tpm0",
+            ]
         if x.extra is not None:
             r += x.extra
         if "q35" in t and self.get("dev.iommu", True):
@@ -709,14 +722,46 @@ class VM(Storage):
             # NOTE(dij): Support MacOS with an OSK. This allows MacOS to not need
             #            to use the "extra" tag.
             r += ["-device", f"isa-applesmc,osk={s}"]
+        del s
         g = self.get("dev.display", "virtio")
         if nes(g):
-            r += ["-vga", g]
+            if g == "virtio":
+                v = True
+                s = "virtio-vga,disable-modern=false,disable-legacy=auto,iommu_platform=true,hostmem=32M"
+            else:
+                v = False
+                s = g
         else:
-            r += ["-vga", "std"]
-        del g, s
-        if self.get("dev.sound", True):
-            r += ["-device", f"intel-hda,id=sound1,bus={b}.0,addr=0x0b"]
+            v = False
+            s = "std"
+        n = self.set("dev.display_count", 1)
+        if not isinstance(n, int) or n <= 0 or n > 4:
+            self.set("dev.display_count", 1)
+            n = 1
+        for _ in range(0, n):
+            if v:
+                r += ["-device", f"{s},bus={b}.0"]
+            else:
+                r += ["-vga", s]
+        del g, s, v
+        s = self.get("dev.sound", True)
+        # "dev.sound" = false will disable this.
+        # When it's true, we use the default sound device.
+        if s is not None and s:
+            r += [
+                "-audiodev",
+                f"driver=pa,id=audio0,server=/var/run/user/{uid}/pulse/native",
+            ]
+            if s == "virtio":
+                r += [
+                    "-device",
+                    f"virtio-sound-pci,audiodev=audio0,id=sound1,bus={b}.0,addr=0x0b",
+                ]
+            else:
+                r += [
+                    "-device",
+                    "usb-audio,id=sound1,audiodev=audio0,bus=usb-bus3.0,port=1",
+                ]
         i = self.get("dev.input", "virtio")
         if i == "tablet":
             r += ["-device", "usb-tablet,id=tablet0,bus=usb-bus2.0,port=1"]
@@ -738,6 +783,7 @@ class VM(Storage):
             r += [
                 "-device",
                 f"virtio-tablet-pci,id=tablet0,bus={b}.0,addr=0x0a",
+                "-device",
             ]
         del i
         if self.get("vm.spice", True):
@@ -747,7 +793,8 @@ class VM(Storage):
             #            it does.
             r += [
                 "-spice",
-                f"unix=on,addr={self._path}.spice,disable-ticketing=on,playback-compression=off,image-compression=off",
+                f"unix=on,addr={self._path}.spice,disable-ticketing=on,playback-compression=off,"
+                "image-compression=off,gl=on,agent-mouse=on",
                 "-chardev",
                 "spicevmc,id=spicechannel0,name=vdagent",
                 "-device",
