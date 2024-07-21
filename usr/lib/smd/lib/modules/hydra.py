@@ -628,8 +628,11 @@ class VM(Storage):
             raise Error('"cpu.options" list can only contain string values')
         # NOTE(dij): These two lines /could/ fail just in case, luckily we haven't
         #            done /much/ yet.
-        d = self._build_drives(server, uid, x.user, b, t)
-        a = self._build_adapters(server, b)
+        try:
+            d = self._build_drives(server, uid, x.user, b, t)
+            a = self._build_adapters(server, b)
+        except KeyError as err:
+            raise Error(f'building requires the missing value "{err}"')
         n = self.get("cpu.sockets", 1)
         r = [x.bin, "-runas", HYDRA_USER, "-smbios"] + self._build_bios(server, x, uid)
         r += [
@@ -1122,6 +1125,8 @@ class VM(Storage):
                     raise Error(
                         f'drive "{n}" file "{p}" does not exist or is not a file: {err}'
                     )
+            if "type" not in d:
+                raise Error(f'drive "{n}" is missing the "type" value')
             # NOTE(dij): Security Check
             #            Can only be a file or block device. If the target is
             #            a block device, it must be owned by root and the
