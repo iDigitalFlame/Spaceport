@@ -67,6 +67,7 @@ network inet6                                                        stream,
 /dev/                                                                r,
 
 /sys/{bus,class}/                                                    r,
+
 /sys/devices/system/cpu/present                                      r,
 /sys/devices/system/cpu/kernel_max                                   r,
 /sys/devices/virtual/tty/tty*/active                                 r,
@@ -90,6 +91,11 @@ owner /proc/@{pid}/cgroup                                            r,
 owner /proc/@{pid}/cmdline                                           r,
 owner /proc/@{pid}/mountinfo                                         r,
 
+/dev/hidraw*                                                         rw,
+
+/sys/class/{input,hidraw}/**                                         rw,
+/sys/bus/usb{,-serial}/devices/**                                    rw,
+
 owner /tmp/{,*}.org.*                                                rwmk,
 
 owner /dev/shm/{,*}.org.*                                            rwmk,
@@ -110,3 +116,5 @@ owner @{HOME}/.pki/nssdb/{,**}                                       rwk,
 owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
 
 /usr/bin/dbus-send                                                   ix,
+
+deny /sys/{bus,class}/**                                             rw,

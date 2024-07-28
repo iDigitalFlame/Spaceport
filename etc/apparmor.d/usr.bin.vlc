@@ -55,12 +55,14 @@ profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
     /usr/share/vlc/**                   r,
     /usr/share/hwdata/pnp.ids           r,
 
+    /dev/                               r,
     /dev/sr*                            r,
     /dev/dvb/**                         r,
 
     owner @{HOME}/.config/vlc           r,
 
     deny @{HOME}/.config/vlc{,*}        w,
+    deny /usr/bin/xdg-screensaver       rx,
     deny @{HOME}/.local/share/vlc{,/**} w,
 
     include if exists <local/usr.bin.vlc>
