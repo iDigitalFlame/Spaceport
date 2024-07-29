@@ -43,7 +43,7 @@ profile vesktop /usr/{bin,lib/vesktop}/vesktop {
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
-    owner @{HOME}/.config/vesktop/{,**} rwk,
+    /sys/bus/pci/devices                r,
 
     /usr/bin/vesktop                    r,
     /usr/lib/vesktop/{,**}              r,
@@ -53,6 +53,8 @@ profile vesktop /usr/{bin,lib/vesktop}/vesktop {
 
     /usr/lib/vesktop/vesktop            ixr,
     /usr/lib/vesktop/chrome-sandbox     ix,
+
+    owner @{HOME}/.config/vesktop/{,**} rwk,
 
     deny /dev/tty                       rw,
     deny /dev/pts/*                     rw,

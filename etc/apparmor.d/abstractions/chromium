@@ -116,5 +116,3 @@ owner @{HOME}/.pki/nssdb/{,**}                                       rwk,
 owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
 
 /usr/bin/dbus-send                                                   ix,
-
-deny /sys/{bus,class}/**                                             rw,
