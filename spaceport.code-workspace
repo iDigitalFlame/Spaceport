@@ -28,6 +28,7 @@
             "getgrnam",
             "getpgid",
             "getpwnam",
+            "ghidra",
             "Govs",
             "hpet",
             "ifname",

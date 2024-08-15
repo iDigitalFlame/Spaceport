@@ -57,9 +57,14 @@ profile wpa-supplicant /usr/bin/wpa_supplicant {
     network                              packet  raw,
     network                              netlink raw,
 
+    /sys/device/pci**                    r,
+
     /usr/bin/wpa_supplicant              rm,
     /etc/wpa_supplicant/{,*}             r,
     /etc/libnl/{classid,pktloc}          r,
+
+    owner @{HOME}/.pki/wifi/**           r,
+    owner @{HOME}/.local/lib/pki/wifi/** r,
 
     /dev/rfkill                          rw,
 

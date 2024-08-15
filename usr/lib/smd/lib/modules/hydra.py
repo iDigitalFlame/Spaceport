@@ -687,7 +687,7 @@ class VM(Storage):
             "-device",
             f"pci-bridge,id=pci-bridge2,chassis_nr=2,bus={b}.0,addr=0x10",
             "-object",
-            "rng-random,filename=/dev/hwrng,id=rng0",
+            "rng-random,filename=/dev/urandom,id=rng0",
             "-device",
             f"virtio-rng-pci,rng=rng0,bus={b}.0,addr=0x08",
             "-sandbox",
@@ -727,14 +727,24 @@ class VM(Storage):
         g = self.get("dev.display", "virtio")
         if nes(g):
             if g == "virtio":
-                v = True
-                s = "virtio-vga,disable-modern=false,disable-legacy=auto,iommu_platform=true,hostmem=32M"
+                # NOTE(dij): VirtIO VGA drivers are REALLY buggy on Windows. They cause
+                #            BSODs randomally. It's driver related as if the driver isn't
+                #            installed, the BSODs stop. However, this limits your maximum
+                #            screen resolution to 1200x1080.
+                server.warning(
+                    f"[m/hydra/VM({self.vmid})]: The drivers for the VirtIO VGA device have compatibility issues with"
+                    " Windows, your VM may BSOD."
+                )
+                s, v = (
+                    "virtio-vga,disable-modern=false,disable-legacy=auto,iommu_platform=true,hostmem=32M",
+                    True,
+                )
+            elif g == "qxl":
+                s, v = "qxl-vga,vram_size_mb=32,ram_size_mb=32", True
             else:
-                v = False
-                s = g
+                v, s = False, g
         else:
-            v = False
-            s = "std"
+            v, s = False, "std"
         n = self.set("dev.display_count", 1)
         if not isinstance(n, int) or n <= 0 or n > 4:
             self.set("dev.display_count", 1)
@@ -1376,7 +1386,12 @@ class VM(Storage):
                 del o, v
             except (ValueError, AttributeError, OSError):
                 r = None
-            if nes(r):
+            if isinstance(r, str) and len(r) == 0:
+                r = None
+            elif nes(r):
+                r = r.strip()
+                if r.endswith(";"):
+                    r = r[0:-1]  # Remove trailer
                 server.error(f"[m/hydra/VM({self.vmid})]: Process output ({r}).")
         else:
             r = None

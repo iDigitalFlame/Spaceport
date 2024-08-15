@@ -40,6 +40,7 @@ firefox-ublock-origin
 freerdp2
 gcc
 gdb
+ghidra
 ghostscript
 git
 git-lfs
@@ -142,6 +143,7 @@ qemu-audio-pa
 qemu-audio-spice
 qemu-base
 qemu-chardev-spice
+qemu-hw-display-qxl
 qemu-hw-display-virtio-gpu
 qemu-hw-display-virtio-gpu-pci
 qemu-hw-display-virtio-vga

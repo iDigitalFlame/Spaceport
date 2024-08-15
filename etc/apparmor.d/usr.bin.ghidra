@@ -36,69 +36,38 @@
 
 include <tunables/global>
 
-profile arduino /usr/{bin,share/arduino}/arduino {
+profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} {
+    include <abstractions/qt>
     include <abstractions/gtk>
-    include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
     include <abstractions/nameservice>
     include <abstractions/freedesktop.org>
 
-    network                                                   inet    stream,
-    network                                                   inet6   stream,
-    network                                                   netlink raw,
-
     /tmp/                                                     r,
-    /usr/lib/                                                 r,
     /etc/fstab                                                r,
-    /usr/bin/arduino                                          r,
-    /etc/avrdude.conf                                         r,
+    /opt/ghidra{,/**}                                         r,
     /usr/share/java/*.jar                                     r,
-    /usr/share/arduino/{,**}                                  r,
     /etc/ssl/certs/java/cacerts                               r,
     /etc/java-[0-9]*-openjdk/**                               r,
-    /usr/share/arduino/lib/*.so                               rm,
-    /usr/share/doc/arduino/{,**}                              r,
     /etc/java-openjdk/net.properties                          r,
-    /usr/share/arduino-builder/{,**}                          r,
-    /usr/share/doc/arduino-core/{,**}                         r,
     /etc/java-openjdk/jaxp.properties                         r,
     /etc/java-openjdk/logging.properties                      r,
     /etc/java-openjdk/security/java.security                  r,
     /etc/java-openjdk/security/policy/unlimited/              r,
     /etc/java-openjdk/security/policy/**/*.policy             r,
-    /usr/share/glib-2.0/schemas/gschemas.compiled             r,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa rm,
 
-    /dev/                                                     r,
-    /dev/bus/usb/                                             r,
-    /dev/bus/usb/*/                                           r,
-
-    /sys/bus/                                                 r,
-    /sys/class/                                               r,
-    /sys/bus/usb/                                             r,
-    /sys/class/tty/                                           r,
-    /sys/class/usbmisc/                                       r,
     /sys/fs/cgroup/{,**}                                      r,
     /sys/kernel/mm/hugepages/                                 r,
-    /sys/bus/usb/devices/{,**}                                r,
-    /sys/devices/**/usb*/**/{idVendor,idProduct}              r,
     /sys/devices/system/cpu/cpu0/microcode/version            r,
     /sys/kernel/mm/transparent_hugepage/{,shmem_}enabled      r,
-    /sys/devices/**/usb*/**/{manufacturer,serial,product}     r,
 
     /proc/cgroups                                             r,
+    /proc/sys/vm/mmap_min_addr                                r,
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
-
-    @{run}/udev/data/+usb:*                                   r,
-    @{run}/udev/data/c16*:*                                   r,
-
-    /dev/bus/usb/*/*                                          rwk,
-    /dev/tty{ACM,S,USB}*                                      rw,
-
-    /sys/devices/**/usb*/{,**}                                rw,
 
     owner @{HOME}/                                            r,
     owner @{HOME}/.config/java/jssc/linux/*.so                rm,
@@ -108,58 +77,42 @@ profile arduino /usr/{bin,share/arduino}/arduino {
     owner /proc/@{pid}/mountinfo                              r,
     owner /proc/@{pid}/c{group,mdline}                        r,
 
+    owner @{HOME}/.cache/JNA/**                               rmwkl,
     owner @{HOME}/.java/fonts/*/                              rw,
-    owner @{HOME}/.arduino{,15}/{,**}                         rw,
+    owner @{HOME}/.config/Ghidra/**                           rwkl,
     owner @{HOME}/.config/java/fonts/*/                       rw,
+    owner @{HOME}/**{,.ghidra.test}.lock~{,~}                 kl,
     owner @{HOME}/.java/fonts/*/fcinfo[0-9]*.tmp              rw,
     owner @{HOME}/.java/fonts/*/fcinfo-*.properties           rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
+    owner /tmp/ghidra*.cache                                  rw,
+    owner /tmp/~tmp*.pdb.db{,/**}                             rw,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
-    owner /{tmp,var/run}/build[0-9]*.tmp                      rw,
-    owner /{tmp,var/run}/console[0-9]*.tmp                    rw,
-    owner /{tmp,var/run}/untitled[0-9]*.tmp                   rw,
+    owner /{tmp,var/run}/*-{g,G}hidra{,/**}                   rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
-    owner /{tmp,var/run}/cc*.{s,res,c,o,ld,le}                rw,
-    owner /{tmp,var/run}/build[0-9]*.tmp/{,**}                rw,
-    owner /{tmp,var/run}/console[0-9]*.tmp/{,**}              rw,
-    owner /{tmp,var/run}/untitled[0-9]*.tmp/{,**}             rw,
-    owner /{tmp,var/run}/arduino_{build,cache}_[0-9]*/{,**}   rw,
-    owner /{tmp,var/run}/{library,package}_index.json*.tmp*   rw,
-    owner /{tmp,var/run}/arduino_modified_sketch_[0-9]*/{,**} rw,
 
     owner /proc/@{pid}/coredump_filter                        rw,
 
-    owner @{run}/lock/tmp*                                    rw,
-    owner @{run}/lock/LCK..ttyS[0-9]*                         rw,
     owner @{run}/user/@{uid}/dconf/user                       rw,
 
-    /usr/bin/id                                               rix,
-    /usr/bin/sed                                              rix,
-    /usr/bin/groups                                           rix,
-    /usr/bin/avrdude                                          rix,
-    /usr/bin/dirname                                          rix,
+    /usr/bin/id                                               ix,
+    /usr/bin/expr                                             rix,
+    /usr/bin/sleep                                            rix,
+    /usr/bin/uname                                            rix,
     /usr/bin/readlink                                         rix,
     /usr/bin/xdg-open                                         Px -> xdg-open,
-    /usr/bin/{,e}grep                                         rix,
-    /usr/bin/c{at,hmod}                                       rix,
-    /usr/bin/{,ba,da}sh                                       rix,
-    /usr/bin/arduino-builder                                  rPx,
-    /usr/share/arduino/arduino                                rix,
+    /usr/bin/{,ba,da}sh                                       ix,
+    /opt/ghidra/support/launch.sh                             rix,
     /usr/lib/jvm/default{,-runtime}/bin/java                  rix,
     /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 rix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               rix,
     /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         rix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       rix,
+    /opt/ghidra/Ghidra/{Extensions,Features,Framework}/**     rix,
 
-    owner @{HOME}/.arduino*/packages/arduino/tools/**         rix,
+    deny network,
 
-    deny /usr/share/arduino/**                                w,
-    deny @{HOME}/.arduino15/preferences.txt                   w,
-    deny @{HOME}/.dotfiles/.arduino15/preferences.txt         w,
-
-    ptrace (read) peer=arduino-builder,
-
-    include if exists <local/usr.bin.arduino>
+    include if exists <local/usr.bin.ghidra>
 }

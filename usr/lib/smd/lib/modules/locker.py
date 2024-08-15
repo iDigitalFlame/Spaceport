@@ -1001,11 +1001,18 @@ class LockerServer(object):
         except OSError as err:
             return server.error("[m/locker]: Cannot read the wake alarm!", err)
         if len(a) > 0:
+            server.debug(
+                f'[m/locker]: Wakealarm "{LOCKER_PATH_WAKEALARM}" content was "{a}".'
+            )
             try:
                 write(LOCKER_PATH_WAKEALARM, "0")
             except OSError as err:
                 server.error("[m/locker]: Cannot reset the wake alarm!", err)
             return False
+        else:
+            server.debug(
+                f'[m/locker]: Wakealarm "{LOCKER_PATH_WAKEALARM}" content was empty.'
+            )
         del a
         return True
 
