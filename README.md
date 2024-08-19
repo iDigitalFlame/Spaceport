@@ -61,3 +61,5 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - NetworkManager
 - network-manager-applet
 - yay
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z4121TDS)

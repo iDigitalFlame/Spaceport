@@ -50,7 +50,7 @@ list() {
     list_target=${1%/}
     find "$list_target" -type f -not -wholename "$list_target"/.git/\* -print | while IFS= read -r list_file; do
         list_name=$(printf "%s" "$list_file" | awk "{gsub(\"${list_target}\", \"\"); print \$0}")
-        if ! echo "$list_name" | grep -qE '.(nlk|nolink)$|^/.git(|ignore$|config$)|^/(LICENSE|license|.vscode)$|^/[a-zA-Z0-9_.-]+.(md|vscode|MD|code-workspace)$'; then
+        if ! echo "$list_name" | grep -qE '.(nlk|nolink)$|^/.git(|ignore$|config$|hub$)|^/(LICENSE|license|.vscode)$|^/[a-zA-Z0-9_.-]+.(md|vscode|MD|code-workspace)$'; then
             check "${list_src}${list_name}" "${list_target}${list_name}"
         fi
     done

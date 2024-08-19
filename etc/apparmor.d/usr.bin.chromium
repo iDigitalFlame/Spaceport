@@ -41,17 +41,19 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} {
     include <abstractions/chromium>
     include <abstractions/user-home>
 
-    owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
+    owner @{HOME}/.config/chrom{e,ium}-flags.conf   r,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**          rw,
-    owner @{HOME}/.config/chrom{e,ium}/**         rwlk,
-    owner @{HOME}/.config/chrom{e,ium}/{,**}      rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
+    /sys/{bus,class}/usb{,-serial}/devices/**       rw,
 
-    /usr/bin/xdg-open                             Px -> xdg-open,
-    /usr/bin/xdg-settings                         Pxr -> xdg-settings,
-    /usr/bin/chrom{e,ium}                         ix,
-    /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
+    owner @{HOME}/.cache/chrom{e,ium}/**            rw,
+    owner @{HOME}/.config/chrom{e,ium}/**           rwlk,
+    owner @{HOME}/.config/chrom{e,ium}/{,**}        rwl,
+    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite   k,
+
+    /usr/bin/xdg-open                               Px -> xdg-open,
+    /usr/bin/xdg-settings                           Pxr -> xdg-settings,
+    /usr/bin/chrom{e,ium}                           ix,
+    /usr/lib/chrom{e,ium}/chrom{e,ium}              ix,
 
     ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/bin/chrom{e,ium},
@@ -59,6 +61,8 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} {
 
     deny ptrace read peer=unconfined,
     deny ptrace read peer=xdg-{open,settings},
+
+    deny /sys/{bus,class}/^usb{,-serial}/devices/** r,
 
     include if exists <local/usr.bin.chromium>
 }
