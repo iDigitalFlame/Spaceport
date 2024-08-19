@@ -67,6 +67,9 @@ profile ghr /{opt/spaceport,usr}/bin/ghr {
 
     deny /dev/dri/**                            rw,
 
+    # Disconnected path
+    deny apparmor/.null                         rw,
+
     deny network,
 
     include if exists <local/usr.bin.ghr>

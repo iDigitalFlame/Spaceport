@@ -43,6 +43,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} {
 
     owner @{HOME}/.config/chrom{e,ium}-flags.conf   r,
 
+    /sys/{bus,class}{,/}                            r,
     /sys/{bus,class}/usb{,-serial}/devices/**       rw,
 
     owner @{HOME}/.cache/chrom{e,ium}/**            rw,
