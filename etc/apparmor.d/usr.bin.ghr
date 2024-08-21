@@ -36,7 +36,7 @@
 
 include <tunables/global>
 
-profile ghr /{opt/spaceport,usr}/bin/ghr {
+profile ghr /{opt/spaceport,usr}/bin/ghr flags=(chroot_attach) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/nameservice>
@@ -68,7 +68,7 @@ profile ghr /{opt/spaceport,usr}/bin/ghr {
     deny /dev/dri/**                            rw,
 
     # Disconnected path
-    deny apparmor/.null                         rw,
+    deny /apparmor/.null                        rw,
 
     deny network,
 
