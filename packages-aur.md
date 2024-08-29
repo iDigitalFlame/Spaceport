@@ -8,6 +8,7 @@ firefox-temporary-containers
 flatery-icon-theme-git
 kora-icon-theme
 osslsigncode
+swaync-git
 vesktop-bin
 wlay-git
 youtube-music-desktop

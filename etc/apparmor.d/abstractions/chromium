@@ -37,6 +37,7 @@
 abi <abi/3.0>,
 
 include <abstractions/dri>
+include <abstractions/mesa>
 include <abstractions/audio>
 include <abstractions/dconf>
 include <abstractions/gnome>

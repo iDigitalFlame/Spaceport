@@ -172,7 +172,6 @@ swaybg
 swayfx
 swayidle
 swayimg
-swaync
 swig
 sysfsutils
 tcpdump
