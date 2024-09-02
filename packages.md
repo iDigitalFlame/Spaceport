@@ -206,3 +206,4 @@ yay
 zsh
 zsh-completions
 zsh-syntax-highlighting
+zvbi

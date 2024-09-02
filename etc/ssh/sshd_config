@@ -57,7 +57,7 @@ KexAlgorithms                   curve25519-sha256@libssh.org,diffie-hellman-grou
 LoginGraceTime                  1m
 PermitRootLogin                 no
 AllowTcpForwarding              no
-AuthorizedKeysFile              .ssh/authorized_keys
+AuthorizedKeysFile              .ssh/no_keys
 ClientAliveCountMax             0
 ClientAliveInterval             600
 IgnoreUserKnownHosts            no
