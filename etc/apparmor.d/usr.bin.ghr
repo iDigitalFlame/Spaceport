@@ -36,39 +36,41 @@
 
 include <tunables/global>
 
-profile ghr /{opt/spaceport,usr}/bin/ghr flags=(chroot_attach) {
+profile ghr /{opt/spaceport,usr}/bin/ghr flags=(attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/nameservice>
 
-    capability                                  setuid,
-    capability                                  setgid,
-    capability                                  dac_override,
-    capability                                  dac_read_search,
+    capability                                     setuid,
+    capability                                     setgid,
+    capability                                     dac_override,
+    capability                                     dac_read_search,
 
     # We can't scrub these as this can cause the apps to fail to load any
     # non-standard libraries.
-    /usr/bin/**                                 puxr,
-    /opt/notesnook/**                           puxrm,
-    /usr/lib{,32,64}/**                         puxrm,
-    /opt/vscodium-bin/**                        puxrm,
-    /opt/ultimaker-cura/**                      puxrm,
-    /{usr,opt/spaceport}/bin/**                 puxr,
+    /usr/bin/**                                    puxr,
+    /opt/notesnook/**                              puxrm,
+    /usr/lib{,32,64}/**                            puxrm,
+    /opt/vscodium-bin/**                           puxrm,
+    /opt/ultimaker-cura/**                         puxrm,
+    /{usr,opt/spaceport}/bin/**                    puxr,
 
     # GHR is SUID so it's not an owner.
-    @{HOME}/.config/rust/**                     PUx,
-    @{HOME}/.local/lib/go/bin/**                PUx,
-    @{HOME}/Documents/Utilities/**              PUx,
-    @{HOME}/.private/.local/bin/**              PUx,
-    @{HOME}/.dotfiles/.local/bin/**             PUx,
-    @{HOME}/.local/{apps,bin,lib}/**            PUx,
-    @{HOME}/.vscode-oss/extensions/**           PUx,
-    @{HOME}/.config/VSCodium/Home/extensions/** PUx,
+    @{HOME}/.config/rust/**                        PUx,
+    @{HOME}/.local/lib/go/bin/**                   PUx,
+    @{HOME}/Documents/Utilities/**                 PUx,
+    @{HOME}/.private/.local/bin/**                 PUx,
+    @{HOME}/.dotfiles/.local/bin/**                PUx,
+    @{HOME}/.local/{apps,bin,lib}/**               PUx,
+    @{HOME}/.vscode-oss/extensions/**              PUx,
+    @{HOME}/.config/VSCodium/Home/extensions/**    PUx,
 
-    deny /dev/dri/**                            rw,
+    deny /dev/dri/**                               rw,
+    deny /tmp/.usercache/*/mesa{,_db}/**           rw,
+    deny @{HOME}/.cache/mesa_shader_cache{,_db}/** rw,
 
     # Disconnected path
-    deny /apparmor/.null                        rw,
+    deny /apparmor/.null                           rw,
 
     deny network,
 
