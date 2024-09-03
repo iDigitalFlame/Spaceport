@@ -155,11 +155,11 @@ profile arduino /usr/{bin,share/arduino}/arduino {
 
     owner @{HOME}/.arduino*/packages/arduino/tools/**         ixr,
 
+    ptrace (read) peer=arduino-builder,
+
     deny /usr/share/arduino/**                                w,
     deny @{HOME}/.arduino15/preferences.txt                   w,
     deny @{HOME}/.dotfiles/.arduino15/preferences.txt         w,
-
-    ptrace (read) peer=arduino-builder,
 
     include if exists <local/usr.bin.arduino>
 }

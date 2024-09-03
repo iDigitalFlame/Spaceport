@@ -99,6 +99,7 @@ notesnook-bin
 noto-fonts
 noto-fonts-emoji
 ntfs-3g
+obs-studio
 onefetch
 openbsd-netcat
 openssh

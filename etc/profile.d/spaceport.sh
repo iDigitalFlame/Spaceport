@@ -85,6 +85,9 @@ export PATH
 if ! [ -d "/tmp/.usercache/${USER}" ]; then
     mkdir "/tmp/.usercache/${USER}" 2> /dev/null
 fi
+if ! [ -d "/tmp/.usercache/${USER}/qt" ]; then
+    mkdir "/tmp/.usercache/${USER}/qt" 2> /dev/null
+fi
 if ! [ -d "/tmp/.usercache/${USER}/mesa" ]; then
     mkdir "/tmp/.usercache/${USER}/mesa" 2> /dev/null
 fi

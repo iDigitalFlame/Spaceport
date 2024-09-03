@@ -54,9 +54,9 @@ profile blueman /usr/bin/blueman-* {
 
     /dev/rfkill                         r,
 
-    owner @{PROC}/@{pid}/fd/            r,
-    owner @{PROC}/@{pid}/mounts         r,
-    owner @{PROC}/@{pid}/cmdline        r,
+    owner /proc/@{pid}/fd/              r,
+    owner /proc/@{pid}/mounts           r,
+    owner /proc/@{pid}/cmdline          r,
 
     owner @{run}/user/@{uid}/dconf/user rw,
 

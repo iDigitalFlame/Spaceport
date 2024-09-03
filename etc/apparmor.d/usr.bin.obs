@@ -36,34 +36,37 @@
 
 include <tunables/spaceport>
 
-profile aa-notify /usr/bin/aa-notify {
-    include <abstractions/base>
-    include <abstractions/python>
+profile obs /usr/bin/obs {
+    include <abstractions/dri>
+    include <abstractions/gui>
+    include <abstractions/mesa>
+    include <abstractions/audio>
+    include <abstractions/dconf>
+    include <abstractions/video>
+    include <abstractions/openssl>
+    include <abstractions/vulkan>
     include <abstractions/nameservice>
-    include <abstractions/dbus-session-strict>
 
-    @{sysconfig}/etc/apparmor/notify.conf r,
+    /usr/bin/obs                           r,
+    /etc/machine-id                        r,
+    /usr/share/obs/**                      r,
+    /etc/udev/hwdb.bin                     r,
+    /usr/share/obs/**/*.so                 rm,
+    /usr/share/hwdata/pci.ids              r,
 
-    /usr/bin/                             r,
-    /etc/inputrc                          r,
-    /usr/bin/aa-notify                    r,
-    /etc/apparmor/*.conf                  r,
-    /usr/share/terminfo/**                r,
-    /var/log/audit/audit.log              r,
+    /proc/modules                          r,
+    /proc/@{pid}/net/unix                  r,
 
-    @{run}/log/audit/audit.log            r,
+    owner /proc/@{pid}/statm               r,
 
-    /proc/                                r,
+    owner @{HOME}/.config/obs-studio/{,**} rw,
 
-    owner /proc/@{pid}/stat               r,
-    owner /proc/@{pid}/cmdline            r,
+    /usr/bin/obs-ffmpeg-mux                ix,
 
-    owner /{,var/}tmp/*                   rw,
+    deny /usr/bin/{,ba,da}sh               x,
 
-    deny capability                       sys_ptrace,
-
-    deny network,
     deny ptrace,
+    deny network,
 
-    include if exists <local/usr.bin.aa-notify>
+    include if exists <local/usr.bin.obs>
 }

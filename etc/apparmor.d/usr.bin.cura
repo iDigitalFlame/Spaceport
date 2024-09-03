@@ -72,7 +72,6 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     owner @{HOME}/.cache/cura/{,**}             rwkl,
     owner @{HOME}/.config/cura/{,**}            rwk,
     owner @{HOME}/.local/share/cura/{,**}       rw,
-    owner @{HOME}/.cache/qtshadercache-*/{,**}  rwkl,
     owner @{HOME}/.cache/Ultimaker\ B.V./{,**}  rwkl,
 
     /usr/bin/ld                                 ixr,
