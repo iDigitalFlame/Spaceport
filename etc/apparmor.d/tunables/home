@@ -36,5 +36,6 @@
 
 @{HOMEDIRS}=/home/
 @{HOME}=@{HOMEDIRS}/*/
+@{CONFIG}=@{HOME}/.config/ @{HOME}/.dotfiles/.config/
 
-include <tunables/home.d>
+include if exists <tunables/home.d>

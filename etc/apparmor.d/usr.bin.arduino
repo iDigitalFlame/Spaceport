@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile arduino /usr/{bin,share/arduino}/arduino {
     include <abstractions/gtk>
@@ -95,18 +95,20 @@ profile arduino /usr/{bin,share/arduino}/arduino {
     @{run}/udev/data/+usb:*                                   r,
     @{run}/udev/data/c16*:*                                   r,
 
-    /dev/bus/usb/*/*                                          rwk,
-    /dev/tty{ACM,S,USB}*                                      rw,
-
-    /sys/devices/**/usb*/{,**}                                rw,
-
     owner @{HOME}/                                            r,
+    owner @{HOME}/.arduino15/preferences.txt                  r,
     owner @{HOME}/.config/java/jssc/linux/*.so                rm,
+    owner @{HOME}/.dotfiles/.arduino15/preferences.txt        r,
 
     owner /proc/@{pid}/fd/                                    r,
     owner /proc/@{pid}/stat                                   r,
     owner /proc/@{pid}/mountinfo                              r,
     owner /proc/@{pid}/c{group,mdline}                        r,
+
+    /dev/bus/usb/*/*                                          rwk,
+    /dev/tty{ACM,S,USB}*                                      rw,
+
+    /sys/devices/**/usb*/{,**}                                rw,
 
     owner @{HOME}/.java/fonts/*/                              rw,
     owner @{HOME}/.arduino{,15}/{,**}                         rw,
@@ -135,25 +137,23 @@ profile arduino /usr/{bin,share/arduino}/arduino {
     owner @{run}/lock/LCK..ttyS[0-9]*                         rw,
     owner @{run}/user/@{uid}/dconf/user                       rw,
 
-    /usr/bin/id                                               rix,
-    /usr/bin/sed                                              rix,
-    /usr/bin/groups                                           rix,
-    /usr/bin/avrdude                                          rix,
-    /usr/bin/dirname                                          rix,
-    /usr/bin/readlink                                         rix,
+    /usr/bin/groups                                           ixr,
+    /usr/bin/{i,se}d                                          ixr,
+    /usr/bin/readlink                                         ixr,
     /usr/bin/xdg-open                                         Px -> xdg-open,
-    /usr/bin/{,e}grep                                         rix,
-    /usr/bin/c{at,hmod}                                       rix,
-    /usr/bin/{,ba,da}sh                                       rix,
-    /usr/bin/arduino-builder                                  rPx,
-    /usr/share/arduino/arduino                                rix,
-    /usr/lib/jvm/default{,-runtime}/bin/java                  rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       rix,
+    /usr/bin/{,e}grep                                         ixr,
+    /usr/bin/c{at,hmod}                                       ixr,
+    /usr/bin/{,ba,da}sh                                       ixr,
+    /usr/bin/arduino-builder                                  Pxr,
+    /usr/bin/{avrdud,dirnam}e                                 ixr,
+    /usr/share/arduino/arduino                                ixr,
+    /usr/lib/jvm/default{,-runtime}/bin/java                  ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ixr,
 
-    owner @{HOME}/.arduino*/packages/arduino/tools/**         rix,
+    owner @{HOME}/.arduino*/packages/arduino/tools/**         ixr,
 
     deny /usr/share/arduino/**                                w,
     deny @{HOME}/.arduino15/preferences.txt                   w,

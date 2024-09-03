@@ -36,32 +36,29 @@
 
 include <tunables/spaceport>
 
-profile blueman /usr/bin/blueman-* {
-    include <abstractions/gtk>
-    include <abstractions/mime>
-    include <abstractions/audio>
-    include <abstractions/dconf>
-    include <abstractions/python>
-    include <abstractions/nameservice>
-    include <abstractions/xdg-desktop>
-    include <abstractions/dbus-session>
+profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd flags=(attach_disconnected) {
+    include <abstractions/samba-rpcd>
 
-    network                             bluetooth raw,
+    /home/                                                    r,
+    /usr/lib*/samba/                                          r,
+    /usr/lib*/samba/{,samba/}samba-dcerpcd                    rm,
 
-    /usr/bin/                           r,
-    /usr/share/blueman/{,**}            r,
-    /usr/share/glib-2.0/schemas/*       r,
+    @{run}/smd/hydra/smb.conf                                 r,
 
-    /dev/rfkill                         r,
+    @{HOME}/{,**}                                             r,
 
-    owner @{PROC}/@{pid}/fd/            r,
-    owner @{PROC}/@{pid}/mounts         r,
-    owner @{PROC}/@{pid}/cmdline        r,
+    /dev/cores/samba-dcerpcd/{,**}                            rw,
 
-    owner @{run}/user/@{uid}/dconf/user rw,
+    @{run}/samba/ncalrpc/{,**}                                rw,
+    @{run}/{,samba/}samba-dcerpcd.pid                         rwk,
 
-    /usr/bin/blueman-*                  ixr,
-    /usr/lib/gio-launch-desktop         ix,
+    /usr/lib*/samba/{,samba/}rpcd_classic                     Px -> samba-rpcd-classic,
+    /usr/lib*/samba/{,samba/}rpcd_spoolss                     Px -> samba-rpcd-spoolss,
+    /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper}           Px -> samba-rpcd,
+    /usr/lib*/samba/{,samba/}rpcd_{rpcecho,fsrvp,lsad,winreg} Px -> samba-rpcd,
 
-    include if exists <local/usr.bin.blueman>
+    deny @{HOME}/{,**}                                        wkl,
+
+    include if exists <local/samba-dcerpcd>
+    include if exists <local/usr.lib.samba-dcerpcd>
 }

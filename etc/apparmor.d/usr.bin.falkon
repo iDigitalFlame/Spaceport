@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile falkon /usr/bin/falkon {
     include <abstractions/qt>

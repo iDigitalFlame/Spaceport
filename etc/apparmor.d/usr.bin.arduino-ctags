@@ -34,16 +34,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile arduino-ctags /usr/bin/arduino-ctags {
     include <abstractions/base>
 
-    /usr/bin/arduino-ctags                       mr,
+    /usr/bin/arduino-ctags                  rm,
 
-    owner /{tmp,var/run}/arduino_build_*/**      r,
+    owner /{tmp,var/run}/arduino_build_*/** r,
 
-    owner  /{tmp,var/run}/tags.*                 rw,
+    owner /{tmp,var/run}/tags.*             rw,
 
     include if exists <local/usr.bin.arduino-ctags>
 }

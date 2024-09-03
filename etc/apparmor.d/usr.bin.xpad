@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile xpad /usr/bin/xpad {
     include <abstractions/dconf>
@@ -43,10 +43,12 @@ profile xpad /usr/bin/xpad {
 
     /usr/share/gtksourceview-*/styles/{,**} r,
 
-    owner @{HOME}/.config/xpad/{,*}         rw,
+    owner @{CONFIG}/xpad/default-style      r,
+
+    owner @{CONFIG}/xpad/{,*}               rw,
     owner @{run}/user/@{uid}/dconf/user     rw,
 
-    deny @{HOME}/.config/xpad/default-style w,
+    deny @{CONFIG}/xpad/default-style       w,
 
     deny network,
 

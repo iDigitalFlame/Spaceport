@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile slack /usr/{bin,lib}/slack{,/slack} {
     include <abstractions/video>
@@ -63,9 +63,8 @@ profile slack /usr/{bin,lib}/slack{,/slack} {
     # No Slack, bad!
     deny /usr/bin/cut                                                                                              xr,
     deny /usr/bin/ldd                                                                                              xr,
-    deny /usr/bin/grep                                                                                             xr,
-    deny /usr/bin/xprop                                                                                            xr,
     deny /usr/bin/realpath                                                                                         xr,
+    deny /usr/bin/{gre,xpro}p                                                                                      xr,
     deny /usr/bin/{u,base}name                                                                                     xr,
     deny /usr/bin/{,ba,da,z}sh                                                                                     xr,
 

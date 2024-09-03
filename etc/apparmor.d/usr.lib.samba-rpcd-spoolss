@@ -34,31 +34,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
-profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd flags=(attach_disconnected) {
+profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss flags=(attach_disconnected) {
     include <abstractions/samba-rpcd>
 
-    /home/                                                    r,
-    /usr/lib*/samba/                                          r,
-    /usr/lib*/samba/{,samba/}samba-dcerpcd                    rm,
+    /usr/lib*/samba/{,samba/}rpcd_spoolss rm,
 
-    @{run}/smd/hydra/smb.conf                                 r,
+    @{run}/smd/hydra/smb.conf             r,
+    @{run}/{,samba/}samba-bgqd.pid        rk,
 
-    @{HOME}/{,**}                                             r,
+    /dev/urandom                          rw,
 
-    /dev/cores/samba-dcerpcd/{,**}                            rw,
+    /var/cache/samba/printing/            w,
+    /var/cache/samba/printing/*.tdb       rwk,
 
-    @{run}/samba/ncalrpc/                                     rw,
-    @{run}/samba/ncalrpc/**                                   rw,
-    @{run}/{,samba/}samba-dcerpcd.pid                         rwk,
+    @{run}/samba/ncalrpc/{,**}            rw,
 
-    /usr/lib*/samba/{,samba/}rpcd_classic                     Px -> samba-rpcd-classic,
-    /usr/lib*/samba/{,samba/}rpcd_spoolss                     Px -> samba-rpcd-spoolss,
-    /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper}           Px -> samba-rpcd,
-    /usr/lib*/samba/{,samba/}rpcd_{rpcecho,fsrvp,lsad,winreg} Px -> samba-rpcd,
+    /usr/lib*/samba/{,samba/}samba-bgqd   Px -> samba-bgqd,
 
-    deny @{HOME}/{,**}                                        wkl,
-
-    include if exists <local/samba-dcerpcd>
+    include if exists <local/samba-rpcd-spoolss>
+    include if exists <local/usr.lib.samba-rpcd-spoolss>
 }

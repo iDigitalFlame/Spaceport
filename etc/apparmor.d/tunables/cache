@@ -34,18 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+@{CACHE}=/tmp/.usercache/*/
 
-profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(attach_disconnected) {
-    include <abstractions/wutmp>
-    include <abstractions/samba-rpcd>
-
-    /usr/lib*/samba/{,samba/}rpcd_classic rm,
-
-    @{run}/smd/hydra/smb.conf             r,
-
-    /dev/urandom                          rw,
-    /dev/cores/rpcd_classic/{,**}         rw,
-
-    include if exists <local/samba-rpcd-classic>
-}
+include if exists <tunables/cache.d>

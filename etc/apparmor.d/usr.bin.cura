@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     include <abstractions/qt>
@@ -55,8 +55,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     /etc/fstab                                  r,
     /opt/ultimaker-cura/{,**}                   rm,
 
-    /sys/devices/pci*/**                        r,
-    /sys/devices/pnp*/**                        r,
+    /sys/devices/p{ci,np}*/**                   r,
 
     /dev/                                       r,
     /dev/zero                                   rm,
@@ -95,8 +94,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     deny /usr/share/fonts/**                    w,
     deny /var/lib/libuuid/clock.txt             w,
 
-    deny network                                inet,
-    deny network                                inet6,
+    deny network,
 
     include if exists <local/usr.bin.cura>
 }

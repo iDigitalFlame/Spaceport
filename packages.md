@@ -112,6 +112,7 @@ pacman
 pacman-contrib
 pam-u2f
 patch
+pavucontrol-qt
 picocom
 pipewire-alsa
 pipewire-pulse

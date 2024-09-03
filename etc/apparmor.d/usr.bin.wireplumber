@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile wireplumber /usr/bin/wireplumber {
     include <abstractions/base>
@@ -124,8 +124,6 @@ profile wireplumber /usr/bin/wireplumber {
     owner @{HOME}/.config/event-sound-cache.tdb.*       rwk,
     owner @{HOME}/.local/s{hare,tate}/wireplumber/{,*}  rwkl,
 
-    deny @{HOME}/.local/share/wireplumber/scripts{,/*}  rwx,
-
     dbus bind bus=session name=org.freedesktop.ReserveDevice1.Audio0,
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
@@ -140,6 +138,8 @@ profile wireplumber /usr/bin/wireplumber {
     dbus send bus=system path=/org/freedesktop/UPower{,/**} interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=org.freedesktop.UPower, label=upowerd),
     dbus send bus=system path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member={MakeThreadRealtime,MakeThreadHighPriority} peer=(name=:*, label=rtkit-daemon),
     dbus send bus=system path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member={MakeThreadRealtime,MakeThreadHighPriority} peer=(name=org.freedesktop.RealtimeKit1),
+
+    deny @{HOME}/.local/share/wireplumber/scripts{,/*}  rwx,
 
     include if exists <local/usr.bin.wireplumber>
 }

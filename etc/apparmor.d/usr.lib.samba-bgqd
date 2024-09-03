@@ -34,20 +34,29 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
-profile samba-rpcd /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper,rpcecho,fsrvp,lsad,winreg} flags=(attach_disconnected) {
-    include <abstractions/samba-rpcd>
+profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/samba>
+    include <abstractions/openssl>
+    include <abstractions/nameservice>
+    include <abstractions/cups-client>
 
-    /usr/lib*/samba/{,samba/}rpcd_{mdssvc,epmapper}           rm,
-    /usr/lib*/samba/{,samba/}rpcd_{rpcecho,fsrvp,lsad,winreg} rm,
+    /usr/lib*/samba/{,samba/}samba-bgqd rm,
 
-    @{run}/smd/hydra/smb.conf                                 r,
+    /proc/sys/kernel/core_pattern       r,
 
-    /dev/cores/rpcd_lsad/                                     rw,
-    /dev/cores/rpcd_winreg/{,**}                              rw,
+    @{run}/smd/hydra/smb.conf           r,
 
-    @{run}/samba/ncalrpc/np/winreg                            rw,
+    owner /proc/@{pid}/fd/              r,
 
-    include if exists <local/samba-rpcd>
+    /var/cache/samba/printing/*.tdb     rwk,
+
+    @{run}/{,samba/}samba-bgqd.pid      rwk,
+
+    signal receive set=term peer=smbd,
+
+    include if exists <local/samba-bgqd>
+    include if exists <local/usr.lib.samba-bgqd>
 }

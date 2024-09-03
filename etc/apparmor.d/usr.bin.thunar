@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile thunar /usr/bin/{T,t}hunar {
     include <abstractions/gtk>
@@ -42,25 +42,27 @@ profile thunar /usr/bin/{T,t}hunar {
     include <abstractions/user-data>
     include <abstractions/xdg-desktop>
 
-    /{,**}                                                           r,
-    /usr/lib/tumbler-*/plugins/*                                     rm,
-    /usr/share/thumbnailers/*.thumbnailer                            r,
+    # NOTE(dij): Needed to open any files for reading.
+    /{,**}                                                      r,
 
-    owner @{run}/user/@{uid}/dconf/user                              rw,
+    /usr/lib/tumbler-*/plugins/*                                rm,
+    /usr/share/thumbnailers/*.thumbnailer                       r,
 
-    owner @{HOME}/**                                                 l,
+    owner @{HOME}/**                                            l,
+    owner @{CONFIG}/xfce4/xfconf/xfce-perchannel-xml/thunar.xml r,
 
-    /usr/bin/ffmpegthumbnailer                                       ix,
+    owner @{run}/user/@{uid}/dconf/user                         rw,
+
+    /usr/bin/ffmpegthumbnailer                                  ix,
 
     # NOTE(dij): Thunar has unrestricted open permissions as it's needed to
     #            open any file when using it to browse the filesystem.
-    /usr/lib/gio-launch-desktop                                      Pux -> xdg-open,
-    /usr/bin/xdg-{open,settings}                                     PUx,
+    /usr/lib/gio-launch-desktop                                 Pux -> xdg-open,
+    /usr/bin/xdg-{open,settings}                                PUx,
 
-    deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml w,
+    deny @{CONFIG}/xfce4/xfconf/xfce-perchannel-xml/thunar.xml  w,
 
-    deny network                                                     inet,
-    deny network                                                     inet6,
+    deny network,
 
     include if exists <local/usr.bin.thunar>
 }

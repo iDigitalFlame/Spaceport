@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile corepdf /usr/bin/corepdf {
     include <abstractions/dri>
@@ -45,17 +45,18 @@ profile corepdf /usr/bin/corepdf {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
-    # Needed to open any files for reading.
-    /**                          r,
-    /usr/share/poppler/**        r,
-    /usr/share/texmf/{,**}       r,
-    /usr/local/texlive/{,**}     r,
-    /usr/share/hwdata/pnp.ids    r,
+    /usr/share/poppler/**                  r,
+    /usr/share/texmf/{,**}                 r,
+    /usr/local/texlive/{,**}               r,
+    /usr/share/hwdata/pnp.ids              r,
 
-    owner /proc/@{pid}/mountinfo r,
+    owner /proc/@{pid}/mountinfo           r,
 
-    deny /dev/tty                r,
-    deny /dev/disk/by-label/     r,
+    owner @{CONFIG}/cubocore/coreapps.conf r,
+
+    deny /dev/tty                          r,
+    deny /dev/disk/by-label/               r,
+    deny @{CONFIG}/cubocore/coreapps.conf  w,
 
     deny network,
 

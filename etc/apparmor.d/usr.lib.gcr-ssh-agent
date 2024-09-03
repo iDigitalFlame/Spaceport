@@ -34,23 +34,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile gcr-ssh-agent /usr/lib/gcr-ssh-agent {
     include <abstractions/base>
 
     /usr/lib/gcr-ssh-agent            rm,
 
-    owner @{HOME}/.ssh{,/,/*}         r,
+    owner @{HOME}/.config/ssh{,/,/*}  r,
 
     owner @{run}/user/@{uid}/gcr{,/*} rw,
 
     /usr/bin/ssh-agent                Pxr -> ssh-agent,
 
-    deny network                      inet,
-    deny network                      inet6,
-
     signal (receive) set=(cont, term) peer=unconfined,
+
+    deny network,
 
     include if exists <local/usr.lib.gcr-ssh-agent>
 }

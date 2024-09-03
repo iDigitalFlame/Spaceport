@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile keepassxc /usr/bin/keepassxc {
     include <abstractions/qt>
@@ -48,6 +48,7 @@ profile keepassxc /usr/bin/keepassxc {
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
 
+    /usr/bin/                                                  r,
     /usr/share/keepassxc/**                                    r,
 
     /dev/                                                      r,
@@ -58,14 +59,17 @@ profile keepassxc /usr/bin/keepassxc {
 
     @{run}/udev/data/**                                        r,
 
+    owner @{HOME}/.private/keepassxc.ini                       rkl,
+    owner @{HOME}/.local/lib/keepassxc.ini                     rkl,
+    owner @{CONFIG}/keepassxc/keepassxc.ini                    rkl,
+    owner @{HOME}/.cache/keepassxc/keepassxc.ini               rkl,
+
     /{dev,sys}/bus/usb/{,**}                                   rw,
     /{dev,sys}/bus/usb/devices/{,**}                           rw,
 
-    owner /tmp/.mounts/*/**                                    rwkl,
+    owner @{MOUNTS}/**/*{*.kdbx,*.kdbx.*}                      rwkl,
 
     owner @{HOME}/{#*,*.kdbx,*.kdbx.*}                         rwkl,
-    owner @{HOME}/.cache/keepassxc/keepassxc.ini               rkl,
-    owner @{HOME}/.config/keepassxc/keepassxc.ini              rkl,
     owner @{HOME}/Documents/**/{#*,*.kdbx,*.kdbx.*}            rwkl,
     owner @{HOME}/.cache/keepassxc/keepassxc.ini.lock          rwkl,
     owner @{HOME}/.config/keepassxc/keepassxc.ini.lock         rwkl,
@@ -74,12 +78,12 @@ profile keepassxc /usr/bin/keepassxc {
     /usr/bin/wl-copy                                           ix,
 
     deny /dev/tty                                              rw,
-    deny /usr/bin/                                             r,
-    deny @{HOME}/.cache/keepassxc/keepassxc.ini                w,
-    deny @{HOME}/.config/keepassxc/keepassxc.ini               w,
+    deny @{HOME}/.private/keepassxc.ini                        w,
+    deny @{HOME}/.local/lib/keepassxc.ini                      w,
+    deny @{CONFIG}/keepassxc/keepassxc.ini                     w,
+    deny @{HOME}/.c{ache,onfig}/keepassxc/keepassxc.ini        w,
 
-    deny network                                               inet,
-    deny network                                               inet6,
+    deny network,
 
-    include if exists <local/keepassxc>
+    include if exists <local/usr.bin.keepassxc>
 }

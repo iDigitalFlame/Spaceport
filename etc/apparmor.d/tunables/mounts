@@ -34,28 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+@{MOUNTS}=/tmp/.mounts/*/ /mnt/*/
 
-profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(attach_disconnected) {
-    include <abstractions/base>
-    include <abstractions/samba>
-    include <abstractions/openssl>
-    include <abstractions/nameservice>
-    include <abstractions/cups-client>
-
-    /usr/lib*/samba/{,samba/}samba-bgqd rm,
-
-    /proc/sys/kernel/core_pattern       r,
-
-    @{run}/smd/hydra/smb.conf           r,
-
-    owner /proc/@{pid}/fd/              r,
-
-    /var/cache/samba/printing/*.tdb     rwk,
-
-    @{run}/{,samba/}samba-bgqd.pid      rwk,
-
-    signal receive set=term peer=smbd,
-
-    include if exists <local/samba-bgqd>
-}
+include if exists <tunables/mounts.d>

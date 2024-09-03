@@ -34,38 +34,45 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} {
     include <abstractions/video>
     include <abstractions/chromium>
     include <abstractions/user-home>
 
-    /sys/{bus,class}{,/}                          r,
-    /sys/{bus,class}/usb*/{,devices/}             r,
+    @{sysconfig}/etc/chromium/policies/managed/policies.json r,
 
-    owner @{HOME}/.config/chrom{e,ium}-flags.conf r,
+    /etc/chromium/policies/managed/policies.json             r,
 
-    /sys/{bus,class}/usb{,-serial}/{,devices/**}  rw,
+    /sys/{bus,class}{,/}                                     r,
+    /sys/{bus,class}/usb*/{,devices/}                        r,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**          rw,
-    owner @{HOME}/.config/chrom{e,ium}/**         rwlk,
-    owner @{HOME}/.config/chrom{e,ium}/{,**}      rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite k,
+    owner @{CONFIG}/chrom{e,ium}-flags.conf                  r,
 
-    /usr/bin/xdg-open                             Px -> xdg-open,
-    /usr/bin/xdg-settings                         Pxr -> xdg-settings,
-    /usr/bin/chrom{e,ium}                         ix,
-    /usr/lib/chrom{e,ium}/chrom{e,ium}            ix,
+    /sys/{bus,class}/usb{,-serial}/{,devices/**}             rw,
+
+    owner @{CACHE}/chromium_cache/**                         rw,
+    owner @{CACHE}/chromium_cache/**/*.sqlite                k,
+
+    owner @{HOME}/.cache/chrom{e,ium}/**                     rw,
+    owner @{HOME}/.config/chrom{e,ium}/**                    rwlk,
+    owner @{HOME}/.config/chrom{e,ium}/{,**}                 rwl,
+    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite            k,
+
+    /usr/bin/xdg-open                                        Px -> xdg-open,
+    /usr/bin/xdg-settings                                    Pxr -> xdg-settings,
+    /usr/bin/chrom{e,ium}                                    ix,
+    /usr/lib/chrom{e,ium}/chrom{e,ium}                       ix,
 
     ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/bin/chrom{e,ium},
     ptrace trace peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
 
+    deny /sys/{bus,class}/[^u]*/{,devices/}                  r,
+
     deny ptrace read peer=unconfined,
     deny ptrace read peer=xdg-{open,settings},
-
-    deny /sys/{bus,class}/[^u]*/{,devices/}       r,
 
     include if exists <local/usr.bin.chromium>
 }

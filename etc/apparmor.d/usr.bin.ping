@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile ping /{usr/,}bin/{,iputils-}ping {
     include <abstractions/base>
@@ -54,4 +54,5 @@ profile ping /{usr/,}bin/{,iputils-}ping {
     /{,usr/}bin/{,iputils-}ping              ixrm,
 
     include if exists <local/bin.ping>
+    include if exists <local/usr.bin.ping>
 }

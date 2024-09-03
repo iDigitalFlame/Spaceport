@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile ssh-agent /usr/bin/ssh-agent {
     include <abstractions/base>
@@ -43,9 +43,8 @@ profile ssh-agent /usr/bin/ssh-agent {
 
     /usr/bin/ssh-agent                           rm,
 
-    owner @{HOME}/.ssh/{,*}                      r,
     owner @{HOME}/.local/ssh/{,*}                r,
-    owner @{HOME}/.local/lib/ssh/{,*}            r,
+    owner @{HOME}/.config/ssh/{,*}               r,
 
     /dev/tty*                                    rw,
 
@@ -58,10 +57,9 @@ profile ssh-agent /usr/bin/ssh-agent {
 
     /usr/bin/gpg-agent                           ux,
 
-    deny network                                 inet,
-    deny network                                 inet6,
-
     signal (receive) set=(cont term) peer=unconfined,
+
+    deny network,
 
     include if exists <local/usr.bin.ssh-agent>
 }

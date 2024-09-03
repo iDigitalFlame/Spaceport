@@ -34,15 +34,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile mupdf /usr/bin/mupdf {
     include <abstractions/gui>
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
-    # Needed to open any files for reading.
-    /**                      r,
     /usr/bin/mupdf           r,
     /usr/share/texmf/{,**}   r,
     /usr/local/texlive/{,**} r,

@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile vesktop /usr/{bin,lib/vesktop}/vesktop {
     include <abstractions/video>
@@ -43,25 +43,27 @@ profile vesktop /usr/{bin,lib/vesktop}/vesktop {
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
-    /sys/bus/pci/devices                r,
+    /sys/bus/pci/devices                 r,
 
-    /usr/bin/vesktop                    r,
-    /usr/lib/vesktop/{,**}              r,
+    /usr/bin/vesktop                     r,
+    /usr/lib/vesktop/{,**}               r,
 
-    /usr/bin/xdg-open                   px -> xdg-open,
-    /usr/bin/xdg-settings               pxr -> xdg-settings,
+    owner @{CONFIG}/vesktop/themes/*.css r,
 
-    /usr/lib/vesktop/vesktop            ixr,
-    /usr/lib/vesktop/chrome-sandbox     ix,
+    owner @{HOME}/.config/vesktop/{,**}  rwk,
 
-    owner @{HOME}/.config/vesktop/{,**} rwk,
+    /usr/bin/xdg-open                    px -> xdg-open,
+    /usr/bin/xdg-settings                pxr -> xdg-settings,
 
-    deny /dev/tty                       rw,
-    deny /dev/pts/*                     rw,
+    /usr/lib/vesktop/vesktop             ixr,
+    /usr/lib/vesktop/chrome-sandbox      ix,
 
     ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/{bin,lib/vesktop}/vesktop,
     ptrace trace peer=/usr/lib/vesktop/chrome-sandbox,
+
+    deny /dev/tty                        rw,
+    deny /dev/pts/*                      rw,
 
     include if exists <local/usr.lib.vesktop>
 }

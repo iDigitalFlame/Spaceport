@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} {
     include <abstractions/qt>
@@ -98,19 +98,19 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} {
     owner @{run}/user/@{uid}/dconf/user                       rw,
 
     /usr/bin/id                                               ix,
-    /usr/bin/expr                                             rix,
-    /usr/bin/sleep                                            rix,
-    /usr/bin/uname                                            rix,
-    /usr/bin/readlink                                         rix,
+    /usr/bin/expr                                             ixr,
+    /usr/bin/sleep                                            ixr,
+    /usr/bin/uname                                            ixr,
+    /usr/bin/readlink                                         ixr,
     /usr/bin/xdg-open                                         Px -> xdg-open,
     /usr/bin/{,ba,da}sh                                       ix,
-    /opt/ghidra/support/launch.sh                             rix,
-    /usr/lib/jvm/default{,-runtime}/bin/java                  rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         rix,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       rix,
-    /opt/ghidra/Ghidra/{Extensions,Features,Framework}/**     rix,
+    /opt/ghidra/support/launch.sh                             ixr,
+    /usr/lib/jvm/default{,-runtime}/bin/java                  ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ixr,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ixr,
+    /opt/ghidra/Ghidra/{Extensions,Features,Framework}/**     ixr,
 
     deny network,
 

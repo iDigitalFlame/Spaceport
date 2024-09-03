@@ -43,4 +43,4 @@
 @{XDG_DOCUMENTS_DIR}="Documents"
 @{XDG_PUBLICSHARE_DIR}=""
 
-include <tunables/xdg-user-dirs.d>
+include if exists <tunables/xdg-user-dirs.d>

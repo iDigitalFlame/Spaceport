@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile more /usr/bin/{less,more} {
     include <abstractions/base>
@@ -45,13 +45,16 @@ profile more /usr/bin/{less,more} {
 
     @{sysconfig}/etc/sysless{,key} r,
 
+    # Required for more|less to work
     /**                            r,
+
     /etc/sysless{,key}             r,
     /usr/bin/{less,more}           rm,
     /usr/share/terminfo/{,**}      r,
 
     owner @{HOME}/                 r,
     owner @{HOME}/.lesshs*         r,
+    owner @{CONFIG}/lesskey        r,
 
     signal (receive) set=(stop, cont, term, kill),
 

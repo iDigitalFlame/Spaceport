@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile ssh /usr/bin/ssh {
     include <abstractions/base>
@@ -57,9 +57,8 @@ profile ssh /usr/bin/ssh {
     owner /proc/@{pid}/fd/                     r,
     owner /proc/@{pid}/loginuid                r,
 
-    owner @{HOME}/.ssh/{,*}                    r,
     owner @{HOME}/.local/ssh/{,*}              r,
-    owner @{HOME}/.local/lib/ssh/{,*}          r,
+    owner @{HOME}/.config/ssh/{,*}             r,
 
     owner /tmp/ssh-*/{,agent.*}                rwkl,
 

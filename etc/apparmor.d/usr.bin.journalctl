@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile journalctl /usr/bin/journalctl  {
     include <abstractions/base>
@@ -68,13 +68,12 @@ profile journalctl /usr/bin/journalctl  {
 
     /usr/bin/{less,more}                          Pxr -> more,
 
-    deny network                                  inet,
-    deny network                                  inet6,
-
-    signal (receive) set=(term) peer=unconfined,
     signal send                 peer=more,
+    signal (receive) set=(term) peer=unconfined,
 
     ptrace read,
+
+    deny network,
 
     include if exists <local/usr.bin.journalctl>
 }

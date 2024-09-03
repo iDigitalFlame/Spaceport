@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile top /usr/bin/top {
     include <abstractions/base>
@@ -73,13 +73,13 @@ profile top /usr/bin/top {
     /proc/sys/kernel/{pid_max,osrelease}      r,
     /proc/@{pid}/task/@{tid}/oom_{,score_}adj r,
 
-    deny @{HOME}/.config/procps{,/*}          rw,
-
-    deny network,
-
     signal send,
 
     ptrace read,
+
+    deny @{HOME}/.config/procps{,/*}          rw,
+
+    deny network,
 
     include if exists <local/usr.bin.top>
 }

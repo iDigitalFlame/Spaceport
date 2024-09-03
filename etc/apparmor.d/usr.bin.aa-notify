@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile aa-notify /usr/bin/aa-notify {
     include <abstractions/base>
@@ -60,9 +60,9 @@ profile aa-notify /usr/bin/aa-notify {
 
     owner /{,var/}tmp/*                   rw,
 
-    deny network,
-
     deny capability                       sys_ptrace,
+
+    deny network,
 
     deny ptrace,
 

@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconnected) {
     include <abstractions/base>
@@ -50,7 +50,7 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconn
 
     owner @{run}/user/@{uid}/keyring/control r,
 
-    owner @{HOME}/.ssh/{,**}                 r,
+    owner @{HOME}/.config/ssh/{,**}          r,
     owner @{HOME}/.local/lib/ssh/{,**}       r,
 
     owner @{run}/user/@{uid}/keyring/{,*}    rw,
@@ -61,11 +61,8 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconn
     /usr/bin/ssh-add                         ixr,
     /usr/bin/ssh-agent                       Pxr -> ssh-agent,
 
-    deny network                             inet,
-    deny network                             inet6,
-
-    signal receive set=(cont, term) peer=unconfined,
     signal send    set=(term)       peer=ssh-agent,
+    signal receive set=(cont, term) peer=unconfined,
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
     dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=xdg-desktop-portal),
@@ -82,6 +79,8 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconn
     dbus send bus=system  path=/org/freedesktop/login1{,session/*,seat/*} interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
     dbus send bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll,Read} peer=(name="{:*,org.freedesktop.portal.Desktop}", label=xdg-desktop-portal),
     dbus send bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member={ReleaseDevice,TakeControl,TakeDevice,SetBrightness,SetLockedHint,SetIdleHint} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
+
+    deny network,
 
     include if exists <local/usr.bin.gnome-keyring-daemon>
 }

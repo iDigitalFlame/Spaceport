@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile electron /usr/{bin/electron*,lib/electron*/electron} {
     include <abstractions/video>
@@ -45,6 +45,8 @@ profile electron /usr/{bin/electron*,lib/electron*/electron} {
 
     /sys/devices/virtual/dmi/id/bios_vendor     r,
 
+    owner @{CONFIG}/vesktop/themes/*.css        r,
+
     owner @{HOME}/.config/vesktop/{,**}         rwk,
 
     /usr/bin/xdg-open                           px -> xdg-open,
@@ -52,12 +54,12 @@ profile electron /usr/{bin/electron*,lib/electron*/electron} {
     /usr/lib/electron*/chrome-sandbox           ix,
     /usr/{bin/electron*,lib/electron*/electron} ixr,
 
-    deny /dev/tty                               rw,
-    deny /dev/pts/*                             rw,
-
     ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/lib/electron*/chrome-sandbox,
     ptrace trace peer=/usr/{bin/electron*,lib/electron*/electron},
+
+    deny /dev/tty                               rw,
+    deny /dev/pts/*                             rw,
 
     include if exists <local/usr.lib.electron>
 }

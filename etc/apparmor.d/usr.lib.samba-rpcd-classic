@@ -36,32 +36,17 @@
 
 include <tunables/spaceport>
 
-profile blueman /usr/bin/blueman-* {
-    include <abstractions/gtk>
-    include <abstractions/mime>
-    include <abstractions/audio>
-    include <abstractions/dconf>
-    include <abstractions/python>
-    include <abstractions/nameservice>
-    include <abstractions/xdg-desktop>
-    include <abstractions/dbus-session>
+profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(attach_disconnected) {
+    include <abstractions/wutmp>
+    include <abstractions/samba-rpcd>
 
-    network                             bluetooth raw,
+    /usr/lib*/samba/{,samba/}rpcd_classic rm,
 
-    /usr/bin/                           r,
-    /usr/share/blueman/{,**}            r,
-    /usr/share/glib-2.0/schemas/*       r,
+    @{run}/smd/hydra/smb.conf             r,
 
-    /dev/rfkill                         r,
+    /dev/urandom                          rw,
+    /dev/cores/rpcd_classic/{,**}         rw,
 
-    owner @{PROC}/@{pid}/fd/            r,
-    owner @{PROC}/@{pid}/mounts         r,
-    owner @{PROC}/@{pid}/cmdline        r,
-
-    owner @{run}/user/@{uid}/dconf/user rw,
-
-    /usr/bin/blueman-*                  ixr,
-    /usr/lib/gio-launch-desktop         ix,
-
-    include if exists <local/usr.bin.blueman>
+    include if exists <local/samba-rpcd-classic>
+    include if exists <local/usr.lib.samba-rpcd-classic>
 }

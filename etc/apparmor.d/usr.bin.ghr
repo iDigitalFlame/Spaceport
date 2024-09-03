@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile ghr /{opt/spaceport,usr}/bin/ghr flags=(attach_disconnected) {
     include <abstractions/base>
@@ -66,7 +66,7 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(attach_disconnected) {
     @{HOME}/.config/VSCodium/Home/extensions/**    PUx,
 
     deny /dev/dri/**                               rw,
-    deny /tmp/.usercache/*/mesa{,_db}/**           rw,
+    deny @{CACHE}/mesa{,_db}/**                    rw,
     deny @{HOME}/.cache/mesa_shader_cache{,_db}/** rw,
 
     # Disconnected path

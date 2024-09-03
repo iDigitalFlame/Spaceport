@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile qtws /usr/bin/qtws {
     include <abstractions/qt>
@@ -43,12 +43,11 @@ profile qtws /usr/bin/qtws {
     /usr/bin/qtws                                         rm,
     /usr/share/qtws-apps/youtube-music/youtube-music.qtws r,
 
+    owner @{CONFIG}/user-dirs.dirs                        r,
+
     owner @{HOME}/.cache/qtws/**                          rwkl,
     owner @{HOME}/.local/share/qtws/**                    rwk,
-    owner @{HOME}/.config/user-dirs.dirs                  r,
     owner @{HOME}/.config/qtws_Youtube\ Music/*           rw,
-    owner @{HOME}/.private/.config/user-dirs.dirs         r,
-    owner @{HOME}/.dotfiles/.config/user-dirs.dirs        r,
 
     /usr/lib/qt{,*}/QtWebEngineProcess                    ix,
     /usr/lib/qt{,*}/libexec/QtWebEngineProcess            ix,

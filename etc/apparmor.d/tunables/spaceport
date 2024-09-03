@@ -34,34 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/spaceport>
-
-profile blueman /usr/bin/blueman-* {
-    include <abstractions/gtk>
-    include <abstractions/mime>
-    include <abstractions/audio>
-    include <abstractions/dconf>
-    include <abstractions/python>
-    include <abstractions/nameservice>
-    include <abstractions/xdg-desktop>
-    include <abstractions/dbus-session>
-
-    network                             bluetooth raw,
-
-    /usr/bin/                           r,
-    /usr/share/blueman/{,**}            r,
-    /usr/share/glib-2.0/schemas/*       r,
-
-    /dev/rfkill                         r,
-
-    owner @{PROC}/@{pid}/fd/            r,
-    owner @{PROC}/@{pid}/mounts         r,
-    owner @{PROC}/@{pid}/cmdline        r,
-
-    owner @{run}/user/@{uid}/dconf/user rw,
-
-    /usr/bin/blueman-*                  ixr,
-    /usr/lib/gio-launch-desktop         ix,
-
-    include if exists <local/usr.bin.blueman>
-}
+include <tunables/cache>
+include <tunables/mounts>
+include <tunables/global>

@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile smbd /usr/{bin,sbin}/smbd flags=(attach_disconnected) {
     include <abstractions/base>
@@ -104,6 +104,7 @@ profile smbd /usr/{bin,sbin}/smbd flags=(attach_disconnected) {
     signal send set=term peer=samba-bgqd,
 
     include if exists <samba/smbd-shares>
+    include if exists <local/usr.bin.smbd>
     include if exists <local/usr.sbin.smbd>
     include if exists <local/usr.sbin.smbd-shares>
 }

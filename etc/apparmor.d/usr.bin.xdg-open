@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 # NOTE(dij): Only used to transition to xdg-open and open stuff. Only allows
 #            launching most stuff we "own" (user files) and has a specific list
@@ -85,8 +85,7 @@ profile xdg-open /usr/bin/xdg-open {
     owner @{HOME}/.private/.local/bin/**                   PUx,
     owner @{HOME}/.dotfiles/.local/bin/**                  PUx,
 
-    deny network                                           inet,
-    deny network                                           inet6,
+    deny network,
 
     include if exists <local/usr.bin.xdg-open>
 }

@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
     include <abstractions/qt>
@@ -59,10 +59,10 @@ profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
     /dev/sr*                            r,
     /dev/dvb/**                         r,
 
-    owner @{HOME}/.config/vlc           r,
+    owner @{CONFIG}/vlc{,/,/*}          r,
 
-    deny @{HOME}/.config/vlc{,*}        w,
-    deny /usr/bin/xdg-screensaver       rx,
+    deny @{CONFIG}/vlc{,/,/*}           w,
+    deny /usr/bin/xdg-screensaver       xr,
     deny @{HOME}/.local/share/vlc{,/**} w,
 
     include if exists <local/usr.bin.vlc>

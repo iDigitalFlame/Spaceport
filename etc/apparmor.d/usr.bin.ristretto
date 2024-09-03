@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile ristretto /usr/bin/ristretto {
     include <abstractions/dconf>
@@ -42,12 +42,15 @@ profile ristretto /usr/bin/ristretto {
     include <abstractions/user-data-ro>
 
     # Needed to open any files for reading.
-    /**                                                                 r,
+    /**                                                            r,
 
-    owner @{run}/user/@{uid}/dconf/user                                 rw,
+    owner @{HOME}/.config/ristretto/accels.scm                     r,
+    owner @{CONFIG}/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml r,
 
-    deny @{HOME}/.config/ristretto/accels.scm                           w,
-    deny @{HOME}/.config/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml w,
+    owner @{run}/user/@{uid}/dconf/user                            rw,
+
+    deny @{HOME}/.config/ristretto/accels.scm                      w,
+    deny @{CONFIG}/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml  w,
 
     deny network,
 

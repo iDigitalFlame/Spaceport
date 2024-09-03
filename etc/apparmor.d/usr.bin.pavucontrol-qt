@@ -34,25 +34,26 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
-profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss flags=(attach_disconnected) {
-    include <abstractions/samba-rpcd>
+profile pavucontrol-qt /usr/bin/pavucontrol-qt {
+    include <abstractions/qt>
+    include <abstractions/audio>
+    include <abstractions/dconf>
+    include <abstractions/nameservice>
 
-    /usr/lib*/samba/{,samba/}rpcd_spoolss rm,
+    /etc/machine-id                                    r,
+    /usr/bin/pavucontrol-qt                            rm,
+    /usr/share/pavucontrol-qt/**                       r,
 
-    @{run}/smd/hydra/smb.conf             r,
-    @{run}/{,samba/}samba-bgqd.pid        rk,
+    /sys/devices/pci*/**                               r,
 
-    /dev/urandom                          rw,
+    owner @{HOME}/                                     r,
+    owner @{CONFIG}/pavucontrol-qt/pavucontrol-qt.conf r,
 
-    /var/cache/samba/printing/            w,
-    /var/cache/samba/printing/*.tdb       rwk,
+    deny @{CONFIG}/pavucontrol-qt/pavucontrol-qt.conf  w,
 
-    @{run}/samba/ncalrpc/                 rw,
-    @{run}/samba/ncalrpc/**               rw,
+    deny network,
 
-    /usr/lib*/samba/{,samba/}samba-bgqd   Px -> samba-bgqd,
-
-    include if exists <local/samba-rpcd-spoolss>
+    include if exists <local/usr.bin.pavucontrol-qt>
 }

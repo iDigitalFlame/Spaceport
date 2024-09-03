@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/global>
+include <tunables/spaceport>
 
 profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     include <abstractions/dri>
@@ -52,8 +52,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived {
     /sys/class/block/                                              r,
     /sys/devices/pci*/**/dev                                       r,
     /sys/devices/system/node/                                      r,
-    /sys/devices/virtual/block/                                    r,
-    /sys/devices/virtual/block/*/dev                               r,
+    /sys/devices/virtual/block/{,*/dev}                            r,
 
     /proc/{,partitions,uptime}                                     r,
 
