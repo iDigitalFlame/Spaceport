@@ -8,6 +8,7 @@ firefox-temporary-containers
 flatery-icon-theme-git
 kora-icon-theme
 osslsigncode
+rshell
 swaync-git
 vesktop-bin
 wlay-git

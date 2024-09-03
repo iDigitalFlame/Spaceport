@@ -40,25 +40,26 @@ profile more /usr/bin/{less,more} {
     include <abstractions/base>
     include <abstractions/consoles>
 
-    capability                     dac_override,
-    capability                     dac_read_search,
+    capability                        dac_override,
+    capability                        dac_read_search,
 
-    @{sysconfig}/etc/sysless{,key} r,
+    @{sysconfig}/etc/sysless{,key}    r,
 
     # Required for more|less to work
-    /**                            r,
+    /**                               r,
 
-    /etc/sysless{,key}             r,
-    /usr/bin/{less,more}           rm,
-    /usr/share/terminfo/{,**}      r,
+    /etc/sysless{,key}                r,
+    /usr/bin/{less,more}              rm,
+    /usr/share/terminfo/{,**}         r,
 
-    owner @{HOME}/                 r,
-    owner @{HOME}/.lesshs*         r,
-    owner @{CONFIG}/lesskey        r,
+    owner @{HOME}/                    r,
+    owner @{HOME}/.lesshs*            r,
+    owner @{CONFIG}/lesskey           r,
 
     signal (receive) set=(stop, cont, term, kill),
 
-    deny @{HOME}/.lesshs*          w,
+    deny @{HOME}/.lesshs*             w,
+    deny @{HOME}/.local/state/lesshs* w,
 
     deny network,
 
