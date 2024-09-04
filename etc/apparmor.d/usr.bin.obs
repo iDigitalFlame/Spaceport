@@ -64,6 +64,7 @@ profile obs /usr/bin/obs {
     /usr/bin/obs-ffmpeg-mux                ix,
 
     deny /usr/bin/{,ba,da}sh               x,
+    deny /usr/bin/xdg-screensaver          xr,
 
     deny ptrace,
     deny network,
