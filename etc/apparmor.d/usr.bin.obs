@@ -47,24 +47,27 @@ profile obs /usr/bin/obs {
     include <abstractions/vulkan>
     include <abstractions/nameservice>
 
-    /usr/bin/obs                           r,
-    /etc/machine-id                        r,
-    /usr/share/obs/**                      r,
-    /etc/udev/hwdb.bin                     r,
-    /usr/share/obs/**/*.so                 rm,
-    /usr/share/hwdata/pci.ids              r,
+    /usr/bin/obs                            r,
+    /etc/machine-id                         r,
+    /usr/share/obs/**                       r,
+    /etc/udev/hwdb.bin                      r,
+    /usr/share/obs/**/*.so                  rm,
+    /usr/share/hwdata/pci.ids               r,
 
-    /proc/modules                          r,
-    /proc/@{pid}/net/unix                  r,
+    /sys/devices/virtual/dmi/id/bios_vendor r,
 
-    owner /proc/@{pid}/statm               r,
+    /proc/modules                           r,
+    /proc/@{pid}/net/unix                   r,
 
-    owner @{HOME}/.config/obs-studio/{,**} rw,
+    owner /proc/@{pid}/statm                r,
+    owner /proc/@{pid}/task/**              r,
 
-    /usr/bin/obs-ffmpeg-mux                ix,
+    owner @{HOME}/.config/obs-studio/{,**}  rw,
 
-    deny /usr/bin/{,ba,da}sh               x,
-    deny /usr/bin/xdg-screensaver          xr,
+    /usr/bin/obs-ffmpeg-mux                 ix,
+
+    deny /usr/bin/{,ba,da}sh                x,
+    deny /usr/bin/xdg-screensaver           xr,
 
     deny ptrace,
     deny network,
