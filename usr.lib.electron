@@ -50,7 +50,7 @@ profile electron /usr/{bin/electron*,lib/electron*/electron} {
     owner @{HOME}/.config/vesktop/{,**}         rwk,
 
     /usr/bin/xdg-open                           px -> xdg-open,
-    /usr/bin/xdg-settings                       Pxr -> xdg-settings,
+    /usr/bin/xdg-settings                       pxr -> xdg-settings,
     /usr/lib/electron*/chrome-sandbox           ix,
     /usr/{bin/electron*,lib/electron*/electron} ixr,
 

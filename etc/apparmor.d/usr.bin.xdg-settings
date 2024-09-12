@@ -71,7 +71,7 @@ profile xdg-settings /usr/bin/xdg-settings {
     /usr/bin/w{c,hich}                   ix,
     /usr/bin/dbus-send                   ix,
     /usr/bin/m{v,ktemp}                  ix,
-    /usr/bin/{,da,ba}sh                  ixr,
+    /usr/bin/{,ba,da}sh                  ixr,
     /usr/bin/{u,base}name                ix,
     /usr/bin/rea{dlink,lpath}            ix,
 

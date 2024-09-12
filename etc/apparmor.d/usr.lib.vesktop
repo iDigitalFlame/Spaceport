@@ -36,34 +36,36 @@
 
 include <tunables/spaceport>
 
-profile vesktop /usr/{bin,lib/vesktop}/vesktop {
+profile vesktop /usr/bin/vesktop {
     include <abstractions/video>
     include <abstractions/chromium>
     include <abstractions/user-home>
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
-    /sys/bus/pci/devices                 r,
+    /sys/bus/pci/devices                        r,
+    /sys/devices/virtual/dmi/id/bios_vendor     r,
 
-    /usr/bin/vesktop                     r,
-    /usr/lib/vesktop/{,**}               r,
+    /usr/bin/bash                               r,
+    /usr/bin/vesktop                            r,
+    /usr/lib/vesktop/{,**}                      r,
 
-    owner @{CONFIG}/vesktop/themes/*.css r,
+    owner @{CONFIG}/vesktop/themes/*.css        r,
 
-    owner @{HOME}/.config/vesktop/{,**}  rwk,
+    owner @{HOME}/.config/vesktop/{,**}         rwk,
 
-    /usr/bin/xdg-open                    px -> xdg-open,
-    /usr/bin/xdg-settings                pxr -> xdg-settings,
-
-    /usr/lib/vesktop/vesktop             ixr,
-    /usr/lib/vesktop/chrome-sandbox      ix,
+    /usr/bin/xdg-open                           px -> xdg-open,
+    /usr/bin/xdg-settings                       pxr -> xdg-settings,
+    /usr/bin/electron*                          ixr,
+    /usr/lib/electron*/chrome-sandbox           ix,
+    /usr/{bin/electron*,lib/electron*/electron} ixr,
 
     ptrace read  peer=/usr/bin/xdg-{open,settions},
-    ptrace trace peer=/usr/{bin,lib/vesktop}/vesktop,
-    ptrace trace peer=/usr/lib/vesktop/chrome-sandbox,
+    ptrace trace peer=/usr/lib/electron*/chrome-sandbox,
+    ptrace trace peer=/usr/{bin/electron*,lib/electron*/electron},
 
-    deny /dev/tty                        rw,
-    deny /dev/pts/*                      rw,
+    deny /dev/tty                               rw,
+    deny /dev/pts/*                             rw,
 
     include if exists <local/usr.lib.vesktop>
 }

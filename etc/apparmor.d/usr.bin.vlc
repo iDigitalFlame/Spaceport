@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile vlc /usr/bin/{,c,n,q,r,s,s}lc {
+profile vlc /usr/bin/{,c,n,q,r,s,v}lc {
     include <abstractions/qt>
     include <abstractions/dri>
     include <abstractions/audio>
