@@ -43,6 +43,7 @@ profile vesktop /usr/bin/vesktop {
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
+    /sys/{bus,class}/                           r,
     /sys/bus/pci/devices                        r,
     /sys/devices/virtual/dmi/id/bios_vendor     r,
 
