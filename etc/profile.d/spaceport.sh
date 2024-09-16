@@ -91,6 +91,10 @@ fi
 if ! [ -d "/tmp/.usercache/${USER}/mesa" ]; then
     mkdir "/tmp/.usercache/${USER}/mesa" 2> /dev/null
 fi
+if ! [ -d "/tmp/.usercache/${USER}/screen" ]; then
+    mkdir "/tmp/.usercache/${USER}/screen" 2> /dev/null
+    chmod 700 "/tmp/.usercache/${USER}/screen" 2> /dev/null
+fi
 if ! [ -d "/tmp/.usercache/${USER}/mesa_db" ]; then
     mkdir "/tmp/.usercache/${USER}/mesa_db" 2> /dev/null
 fi
