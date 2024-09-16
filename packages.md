@@ -138,6 +138,7 @@ python-pip
 python-psutil
 python-pycodestyle
 python-pygls
+python-pyserial
 python-requests
 python-websocket-client
 qemu-audio-alsa
