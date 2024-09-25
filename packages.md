@@ -46,7 +46,6 @@ git
 git-lfs
 gnome-keyring
 go
-grimshot
 gtklock
 hunspell-en_us
 imagemagick
