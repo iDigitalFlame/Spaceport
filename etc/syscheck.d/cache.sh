@@ -73,7 +73,12 @@ chmod 2644 /var/lib/pacman/sync/*
 chown -R root:root "/var/lib/pacman/sync"
 
 chmod 2755 "/var/lib/pacman/local"
+chmod 2640 /var/lib/pacman/local/*
 chown -R root:root "/var/lib/pacman/local"
 
 chmod 2700 "/var/cache/ldconfig"
 chown -R root:root "/var/cache/ldconfig"
+
+chmod 2775 "/var/cache/makepkg"
+chmod 2660 /var/cache/makepkg/*
+chown root:makepkg -R "/var/cache/makepkg"
