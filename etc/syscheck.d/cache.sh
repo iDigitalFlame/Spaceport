@@ -69,11 +69,11 @@ chmod 2640 /var/cache/pacman/pkg/*
 chown -R alpm:root "/var/cache/pacman/pkg"
 
 chmod 2755 "/var/lib/pacman/sync"
-chmod 2644 /var/lib/pacman/sync/*
+chmod 2644 /var/lib/pacman/sync/*.db
 chown -R root:root "/var/lib/pacman/sync"
 
-chmod 2755 "/var/lib/pacman/local"
-chmod 2640 /var/lib/pacman/local/*
+chmod 2755 -R "/var/lib/pacman/local"
+find "/var/lib/pacman/local" -type f -exec chmod 644 {} \;
 chown -R root:root "/var/lib/pacman/local"
 
 chmod 2700 "/var/cache/ldconfig"
