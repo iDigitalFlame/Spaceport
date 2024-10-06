@@ -65,7 +65,7 @@ chmod 2644 /var/cache/fontconfig/*
 chown -R root:root "/var/cache/fontconfig"
 
 chmod -R 2750 "/var/cache/pacman/pkg"
-chmod 2640 /var/cache/pacman/pkg/*
+chmod 2660 /var/cache/pacman/pkg/*
 chown -R alpm:root "/var/cache/pacman/pkg"
 
 chmod 2755 "/var/lib/pacman/sync"

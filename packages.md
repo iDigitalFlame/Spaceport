@@ -18,6 +18,7 @@ ca-certificates-mozilla
 cdrtools
 chaotic-keyring
 chaotic-mirrorlist
+chromium-widevine
 cifs-utils
 clang
 cmake
