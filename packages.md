@@ -35,6 +35,7 @@ exfat-utils
 falkon
 ffmpegthumbnailer
 firefox
+firefox-dark-reader
 firefox-noscript
 firefox-tree-style-tab
 firefox-ublock-origin
