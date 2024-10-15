@@ -48,6 +48,7 @@ git
 git-lfs
 gnome-keyring
 go
+grim
 gtklock
 hunspell-en_us
 imagemagick
@@ -168,6 +169,7 @@ sbsigntools
 screen
 seahorse
 slack-electron
+slurp
 spice-gtk
 sqlmap
 squid
@@ -176,6 +178,7 @@ swaybg
 swayfx
 swayidle
 swayimg
+swaync
 swig
 sysfsutils
 tcpdump

@@ -7,10 +7,8 @@ firefox-extension-styl-us-bin
 firefox-extension-user-agent-switcher
 firefox-temporary-containers
 flatery-icon-theme-git
-grimshot
 kora-icon-theme
 osslsigncode
-swaync-git
 vesktop-bin
 wlay-git
 youtube-music-desktop
