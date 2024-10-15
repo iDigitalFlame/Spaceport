@@ -61,7 +61,7 @@ pacman -Qeqn 1> "${SYSCONFIG}/packages.md"
 pacman -Qeqm 1> "${SYSCONFIG}/packages-aur.md"
 systemctl list-unit-files | grep "masked" | awk '{print $1}' | sort 1> "${SYSCONFIG}/masked.md"
 systemctl list-unit-files | awk '{print $1" "$2}' | grep "enabled" | grep -vE ".target|enabled-runtime" | awk '{print $1}' | sort 1> "${SYSCONFIG}/units.md"
-systemctl list-units | grep "@." | grep -vE "dead|exited" | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." | sort 1> "${SYSCONFIG}/indirect.md"
+systemctl list-units | grep "@." | grep -vE "dead|exited|etc-pacman\.d-gnupg\.service" | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." | sort 1> "${SYSCONFIG}/indirect.md"
 
 if [ -d "/etc/syscheck.d" ]; then
     for entry in /etc/syscheck.d/*.sh; do
