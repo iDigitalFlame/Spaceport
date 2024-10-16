@@ -11,4 +11,5 @@ kora-icon-theme
 osslsigncode
 vesktop-bin
 wlay-git
+wlroots0.16
 youtube-music-desktop
