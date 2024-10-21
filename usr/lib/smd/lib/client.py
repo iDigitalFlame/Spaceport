@@ -116,6 +116,7 @@ class Client(Service):
             p.close()
             self.stop()
             del p, r
+        self.info("[main]: Shutdown complete.")
         return True
 
     def send(self, _, message):

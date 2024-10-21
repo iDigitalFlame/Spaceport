@@ -799,6 +799,9 @@ class Backup(object):
                     f"[m/backup/job/{self.id}] Cannot suspend Backup {self}!", err
                 )
         server.info(f"[m/backup/job/{self.id}] Suspending Backup {self}.")
+        # NOTE(dij): Clear "last time" so a suspended Backup task does not fail
+        #            when it wakes up.
+        self._time = None
         self._paused.set()
         return True
 

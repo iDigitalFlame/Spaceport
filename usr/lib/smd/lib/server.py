@@ -239,7 +239,7 @@ class Server(Service):
                 remove(self._path)
             except OSError as err:
                 self.error(f'[main]: Cannot remove the socket "{self._path}"!', err)
-        self.debug("[main]: Server shutdown complete.")
+        self.info("[main]: Shutdown complete.")
         self._complete.set()
 
     def _flush(self):

@@ -12,6 +12,7 @@ plymouth-quit-wait.service
 plymouth-start.service
 rescue.service
 ssh-access.target
+sshd-unix-local.socket
 syslog.service
 systemd-boot-update.service
 systemd-bsod.service
