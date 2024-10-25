@@ -47,6 +47,7 @@ from lib.util import boolean, a2z, nes
 from lib.constants.config import RADIO_EXEC, RADIO_NAMES
 from lib.constants import (
     MSG_POST,
+    MSG_STATUS,
     MSG_ACTION,
     MSG_CONFIG,
     HOOK_RADIO,
@@ -105,6 +106,12 @@ class Radio(object):
             return server.warning(
                 f'[m/radio]: Ignoring unknown Radio name "{message.radio}"!'
             )
+        if message.type == MSG_STATUS:
+            return {
+                "radio": message.radio,
+                "boot": server.get(f"radio.{message.radio}.boot", False),
+                "state": self._states.get(message.radio, False),
+            }
         if message.type == MSG_CONFIG:
             server.set(
                 f"radio.{message.radio}.boot", boolean(message.get("boot", True))

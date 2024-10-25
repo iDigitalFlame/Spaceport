@@ -38,8 +38,27 @@
 #   Used to keep links un-borken for non-default configurations of directories
 
 from lib.util import boolean
-from lib import send_message, print_error
-from lib.constants import BOOLEANS, HOOK_RADIO, MSG_ACTION, MSG_CONFIG
+from lib.constants.config import TIMEOUT_SEC_MESSAGE
+from lib import send_message, print_error, check_error
+from lib.constants import BOOLEANS, HOOK_RADIO, MSG_ACTION, MSG_CONFIG, MSG_STATUS
+
+
+def get_status(args, radio):
+    try:
+        r = send_message(
+            args.socket,
+            HOOK_RADIO,
+            (HOOK_RADIO, "state"),
+            TIMEOUT_SEC_MESSAGE,
+            {"type": MSG_STATUS, "radio": radio},
+        )
+    except Exception as err:
+        return print_error(f'Cannot query the "{radio}" status!', err)
+    check_error(r, f'Cannot retrive the "{radio}" status')
+    print(f'Status of "{radio}":\n  - State: {"Enabled" if r.state else "Disabled"}')
+    print(f'  - Boot : {"Enabled" if r.boot else "Disabled"}')
+    del r
+    return True
 
 
 def set_command(args, radio, force=False):

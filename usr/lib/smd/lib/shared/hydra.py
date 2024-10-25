@@ -75,6 +75,23 @@ def get_devices():
     return r
 
 
+def valid_snap_name(v):
+    if not nes(v) or len(v) < 4:
+        return False
+    for i in v:
+        c = ord(i)
+        if 0x61 <= c <= 0x7A:  # a-z
+            continue
+        if 0x41 <= c <= 0x5A:  # A-Z
+            continue
+        if 0x30 <= c <= 0x39:  # 0-9
+            continue
+        if c == 0x2E or c == 0x5F or c == 0x2D or c == 0x2B:  # . _ - +
+            continue
+        return False
+    return True
+
+
 def _load_user_config(path, config):
     if not isinstance(config, dict) or "hydra" not in config:
         return None, None

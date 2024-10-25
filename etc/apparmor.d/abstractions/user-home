@@ -46,3 +46,5 @@ owner @{HOME}/*                           rw,
 owner @{HOME}/[^.]*/**                    rw, # Allow subdirectories of non dot-files
 owner @{HOME}/Downloads/*                 rw,
 owner @{HOME}/@{XDG_DOWNLOAD_DIR}/*       rw,
+
+include if exists <abstractions/user-home.d>

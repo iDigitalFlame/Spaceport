@@ -40,3 +40,5 @@ abi <abi/3.0>,
 
 /sys/bus/pci/devices/                                                                                            r,
 /sys/devices/pci*/**/{class,config,device,irq,resource,revision,subsystem_device,subsystem_vendor,uevent,vendor} r,
+
+include if exists <abstractions/dri.d>

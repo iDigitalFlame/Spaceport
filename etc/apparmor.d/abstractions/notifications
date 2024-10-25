@@ -49,3 +49,5 @@ dbus send bus=session path=/org/freedesktop/Notifications member=CloseNotificati
 dbus send bus=session path=/org/freedesktop/Notifications member=GetServerInformation,
 
 deny dbus bus=session path=/com/canonical/[Uu]nity/[Dd]ebug**,
+
+include if exists <abstractions/notifications.d>

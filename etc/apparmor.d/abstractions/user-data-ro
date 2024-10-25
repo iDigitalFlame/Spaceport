@@ -45,3 +45,5 @@ owner /tmp/*               r,
 owner /tmp/.mounts/*/{,**} r,
 
 owner @{HOME}/{,**}        r,
+
+include if exists <abstractions/user-data-ro.d>

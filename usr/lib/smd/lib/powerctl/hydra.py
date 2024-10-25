@@ -41,9 +41,10 @@ from time import sleep
 from os import fork, execl
 from os.path import basename
 from lib.util import nes, num
+from datetime import datetime
 from lib.util.file import read_json, expand
-from lib.shared.hydra import load_vm, get_devices
 from lib import print_error, send_message, check_error
+from lib.shared.hydra import load_vm, get_devices, valid_snap_name
 from lib.constants import (
     EMPTY,
     HYDRA_TAP,
@@ -60,7 +61,11 @@ from lib.constants import (
     HYDRA_HIBERNATE,
     HYDRA_USB_QUERY,
     HYDRA_USB_CLEAN,
+    HYDRA_SNAP_LIST,
+    HYDRA_SNAP_TAKE,
     HYDRA_USB_DELETE,
+    HYDRA_SNAP_DELETE,
+    HYDRA_SNAP_RESTORE,
     HYDRA_USER_DIRECTORY,
     HYDRA_USER_ADD_ALIAS,
     HYDRA_USER_DELETE_ALIAS,
@@ -74,6 +79,7 @@ from lib.constants.config import (
 )
 
 _CACHE = dict()
+# TODO(dij): Update this
 _SCHEMA = """# HydraVM Schema v2-release
 
 bios {
@@ -345,6 +351,30 @@ def _vm(x, p):
     return f"VM({x})"
 
 
+def _time(n, s):
+    if not isinstance(s, (float, int)) or s == 0:
+        return ""
+    v = datetime.fromtimestamp(s)
+    if v.year < 1971:
+        return ""
+    if n == v:
+        return "0s"
+    if (n - v).days > 0:
+        return v.strftime("%H:%M %m/%d/%y")
+    m, y = divmod((n - v).seconds, 60)
+    h, m = divmod(m, 60)
+    if h > 12:
+        if h >= n.hour:
+            return v.strftime("%H:%M %m/%d/%y")
+        return v.strftime("%H:%M")
+    del v
+    if h > 0:
+        return f"{h}h {m}m"
+    if m > 0:
+        return f"{m}m {y}s"
+    return f"{y}s"
+
+
 def _usb_vet(args):
     d, n = get_devices(), args.usb_name.lower()
     if len(n) == 9 and ":" in n and n in d:
@@ -376,6 +406,46 @@ def _get_check(args, vm):
     if vm is not None:
         return vm
     return _get_vm(args)
+
+
+def _print_snaps(snaps, sel):
+    if not isinstance(snaps, list) or len(snaps) == 0:
+        return
+    n = datetime.now()
+    if sel == snaps[0]["name"]:
+        print(
+            f' - *{snaps[0]["name"]} - {_time(n, snaps[0]["date"])} [Base Snapshot] [You are Here]'
+        )
+    else:
+        print(f' - {snaps[0]["name"]} - {_time(n, snaps[0]["date"])} [Base Snapshot]')
+    if len(snaps) == 1:
+        return
+    c, z = 0, None
+    for x in range(1, len(snaps)):
+        s = sel == snaps[x]["name"]
+        if z is None:
+            print(
+                f'{" " * (c + 1)} - {"*" if s else ""}{snaps[x]["name"]} - '
+                f'{_time(n, snaps[x]["date"])}{" [You are Here]" if s else ""}'
+            )
+            z = snaps[x]
+            continue
+        if (
+            z["id"] > snaps[x]["id"]
+            and z["date"] > snaps[x]["date"]
+            and z["order"] < snaps[x]["order"]
+        ):
+            c -= 1
+        else:
+            c += 1
+        if c < 0:
+            c = 0
+        print(
+            f'{" " * (c + 1)} - {"*" if s else ""}{snaps[x]["name"]} - '
+            f'{_time(n, snaps[x]["date"])}{" [You are Here]" if s else ""}'
+        )
+        z = snaps[x]
+    del c, n, z
 
 
 def _get_vm(args, name=None):
@@ -588,6 +658,8 @@ def tokenize(args):
     else:
         vm = _get_vm(args)
     if c == "start" or args.start:
+        if len(args.args) >= 2 and args.args[1].lower() == "temp":
+            args.temp = True
         return vm_start(args, vm)
     if c == "reboot" or c == "restart" or args.restart:
         if vm is None or args.all_restart or args.args[0] == "all":
@@ -608,13 +680,30 @@ def tokenize(args):
     if c == "tap" or args.tap:
         return vm_tap(args, vm)
     if c == "vnc" or c == "v" or args.connect_vnc:
+        if len(args.args) >= 2 and args.args[1].lower() == "temp":
+            args.temp = True
         return vm_connect(args, vm, True)
     if c == "spice" or c == "s" or c == "view" or c == "connect" or args.connect:
+        if len(args.args) >= 2 and args.args[1].lower() == "temp":
+            args.temp = True
         return vm_connect(args, vm)
     if c == "ip" or args.ga_ip:
         return vm_ip(args, vm)
     if c == "ping" or args.ga_ping:
         return vm_ping(args, vm)
+    if c == "snap" or args.snap:
+        if len(args.args) == 1:
+            return vm_snap_list(args, vm)
+        o = args.args[1].lower() if len(args.args) >= 3 else None
+        if nes(o) and (o == "new" or o == "take"):
+            args.snap = args.args[2]
+            return vm_snap(args, vm)
+        if nes(o) and (o == "use" or o == "restore" or o == "revert"):
+            args.snap_restore = args.args[2]
+            return vm_snap_restore(args, vm)
+        if nes(o) and (o == "del" or o == "delete"):
+            args.snap_delete = args.args[2]
+            return vm_snap_delete(args, vm)
     if c == "wake" or c == "resume" or args.wake:
         if vm is None or args.all_wake or args.args[0] == "all":
             return _all(args, HYDRA_WAKE)
@@ -702,6 +791,23 @@ def vm_stop(args, vm=None):
     return True
 
 
+def vm_snap(args, vm=None):
+    vm = _get_check(args, vm)
+    if not valid_snap_name(args.snap):
+        return print_error("Snapshot name is invalid!")
+    vm["type"], vm["name"] = HYDRA_SNAP_TAKE, args.snap
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot take Snapshot!", err)
+    check_error(r, "Cannot take Snapshot")
+    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    del r, vm
+    return True
+
+
 def vm_ping(args, vm=None):
     vm = _get_check(args, vm)
     vm["type"] = HYDRA_GA_PING
@@ -719,7 +825,7 @@ def vm_ping(args, vm=None):
 
 def vm_start(args, vm=None):
     vm = _get_check(args, vm)
-    vm["type"] = HYDRA_START
+    vm["type"], vm["temp"] = HYDRA_START, args.temp
     try:
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
     except OSError as err:
@@ -766,6 +872,63 @@ def vm_hibernate(args, vm=None):
     except OSError as err:
         return print_error("Cannot hibernate the VM!", err)
     check_error(r, "Cannot hibernate the VM")
+    del r, vm
+    return True
+
+
+def vm_snap_list(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_SNAP_LIST
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot list Snapshots!", err)
+    check_error(r, "Cannot list Snapshots")
+    if len(r["snaps"]) == 0:
+        return print("No Snapshots found.")
+    n = 0
+    for k, v in r["snaps"].items():
+        if n > 0:
+            print()
+        n += 1
+        print(f'Snapshots of "{k}" ({v["file"]})')
+        _print_snaps(v["snaps"], r.get("snap_current"))
+    del n, r, vm
+    return True
+
+
+def vm_snap_delete(args, vm=None):
+    vm = _get_check(args, vm)
+    if not valid_snap_name(args.snap_delete):
+        return print_error("Snapshot name is invalid!")
+    vm["type"], vm["name"] = HYDRA_SNAP_DELETE, args.snap_delete
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot delete Snapshot!", err)
+    check_error(r, "Cannot delete Snapshot")
+    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    del r, vm
+    return True
+
+
+def vm_snap_restore(args, vm=None):
+    vm = _get_check(args, vm)
+    if not valid_snap_name(args.snap_restore):
+        return print_error("Snapshot name is invalid!")
+    vm["type"], vm["name"] = HYDRA_SNAP_RESTORE, args.snap_restore
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot restore Snapshot!", err)
+    check_error(r, "Cannot restore Snapshot")
+    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
     del r, vm
     return True
 
@@ -836,7 +999,7 @@ def vm_sleep(args, wake=False, vm=None):
 
 def vm_connect(args, vm=None, vnc=False):
     vm = _get_check(args, vm)
-    vm["type"] = HYDRA_START
+    vm["type"], vm["temp"] = HYDRA_START, args.temp
     try:
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
     except OSError as err:

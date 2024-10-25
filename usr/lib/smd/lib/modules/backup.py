@@ -52,9 +52,9 @@ from lib.structs import Message, Storage, as_error
 from lib.util import num, nes, cancel_nul, boolean, fnv32
 from subprocess import DEVNULL, Popen, PIPE, SubprocessError
 from os.path import isabs, isdir, exists, isfile, getsize, basename, getctime
-from lib.util.file import read, read_json, write_json, info, write, remove_file
 from os import chmod, urandom, remove, makedirs, statvfs, environ, set_blocking
 from lib.constants.files import BACKUP_RESTORE_SCRIPT, BACKUP_RESTORE_SCRIPT_NO_KEY
+from lib.util.file import read, read_json, write_json, info, write, remove_file, copy
 from lib.constants.config import (
     BACKUP_STATE,
     BACKUP_HOSTS,
@@ -301,8 +301,8 @@ class Plan(object):
             f, c = True, 0
         else:
             f = self.schedule.is_full(c)
-            c = 0 if f else c + 1
-        state[self.uuid]["count"] = c
+        if f:
+            state[self.uuid]["count"] = 0
         del c
         return not f
 
@@ -938,10 +938,12 @@ class Backup(object):
                 c = 0
         else:
             c = 0
+        # NOTE(dij): The "count" attribute was incremented when the Backup starts
+        #            but now it should be only incremented on a successful run.
         n = {
             "size": self._size,
             "last": datetime.now().isoformat(),
-            "count": c + 1,
+            "count": c + (1 if self._state == BACKUP_STATE_DONE else 0),
             "error": self._state == BACKUP_STATE_ERROR,
         }
         s[self._plan.uuid] = n
@@ -1128,6 +1130,13 @@ class Backup(object):
         try:
             if not self._increment and isfile(s):
                 remove(s)
+            elif isfile(s):
+                # NOTE(dij): Copy file to save a Backup to return to if this one
+                #            fails.
+                copy(s, f"{s}.bak", perms=0o400)
+                server.debug(
+                    f'[m/backup/job/{self.id}]: Created a backup of the state file "{s}" as "{s}.bak".'
+                )
         except OSError as err:
             server.error(f"[m/backup/job/{self.id}]: Cannot remove state file", err)
             return self._update(server, BACKUP_STATE_ERROR)
@@ -1290,6 +1299,13 @@ class Backup(object):
         try:
             if not self._increment and isfile(s):
                 remove(s)
+            elif isfile(s):
+                # NOTE(dij): Copy file to save a Backup to return to if this one
+                #            fails.
+                copy(s, f"{s}.bak", perms=0o400)
+                server.debug(
+                    f'[m/backup/job/{self.id}]: Created a backup of the state file "{s}" as "{s}.bak".'
+                )
         except OSError as err:
             server.error(f"[m/backup/job/{self.id}]: Cannot remove state file", err)
             return self._update(server, BACKUP_STATE_ERROR)
@@ -1567,12 +1583,6 @@ class Backup(object):
             return self._update(server, BACKUP_STATE_ERROR)
         self._next(server)
 
-    def stop(self, server, force=False):
-        if self._cancel.is_set():
-            return
-        server.info(f"[m/backup/job/{self.id}]: Stopping Backup Job {self}.")
-        self._stop(server, force)
-
     def _step_timeout(self, server, post):
         if post:
             server.error(
@@ -1604,6 +1614,34 @@ class Backup(object):
         )
         del r, x
         return True
+
+    def stop(self, server, force=False, final=False):
+        if final:
+            try:
+                s = f"{BACKUP_STATE_DIR}/{self._plan.uuid}.db.bak"
+                if self._state == BACKUP_STATE_DONE and isfile(s):
+                    server.debug(
+                        f'[m/backup/job/{self.id}]: Removing state backup file "{s}".'
+                    )
+                    remove(s)
+                elif self._state < BACKUP_STATE_DONE and isfile(s):
+                    # Restore backup DB
+                    server.info(
+                        f'[m/backup/job/{self.id}]: Restoring state backup file "{s}" to "{s[:-4]}"!'
+                    )
+                    copy(s, s[:-4], perms=0o640)
+                    remove(s)
+            except OSError as err:
+                server.error(
+                    f'[m/backup/job/{self.id}]: Cannot remove/restore the state backup file "{s}"!',
+                    err,
+                )
+            finally:
+                del s
+        if self._cancel.is_set():
+            return
+        server.info(f"[m/backup/job/{self.id}]: Stopping Backup Job {self}.")
+        self._stop(server, force)
 
     def _exec_and_watch(self, server, cmd, stdin=None, add=None, read=False):
         server.debug(f'[m/backup/job/{self.id}]: Executing command "{" ".join(cmd)}".')
@@ -1885,7 +1923,7 @@ class BackupServer(object):
                 return
             if message.state < BACKUP_STATE_ERROR:
                 return
-            self._current.stop(server)
+            self._current.stop(server, final=True)
             if not message.final:
                 return
             if self._current.save(server, BACKUP_STATE):
@@ -1997,7 +2035,7 @@ class BackupServer(object):
         del r, a
         if self._queue.is_empty():
             del s
-            server.debug("[m/backup]: Not starting a Backup as the queue is empty.")
+            server.info("[m/backup]: Not starting a Backup as the queue is empty.")
             return {"result": "No Backups are scheduled or could be started!"}
         try:
             n = self._queue.next(server, s, path, force)
@@ -2005,7 +2043,7 @@ class BackupServer(object):
             server.error("[m/backup]: Cannot read the Backup state file!", err)
             return as_error("Cannot read the Backup state!")
         if n is None:
-            server.debug("[m/backup]: Not starting a Backup as the queue is empty.")
+            server.info("[m/backup]: Not starting a Backup as the queue is empty.")
             return {"result": "No Backups are scheduled or could be started!"}
         server.debug(f"[m/backup]: Selected Plan {n}..")
         i = n.incremental(s, force_full)

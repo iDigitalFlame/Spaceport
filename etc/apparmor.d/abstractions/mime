@@ -61,3 +61,5 @@ owner @{HOME}/.dotfiles/.local/share/applications/mimeinfo.cache           r,
 owner @{HOME}/.local/share/applications/{defaults,mimeapps}.list           r,
 owner @{HOME}/.private/.local/share/applications/{defaults,mimeapps}.list  r,
 owner @{HOME}/.dotfiles/.local/share/applications/{defaults,mimeapps}.list r,
+
+include if exists <abstractions/mime.d>

@@ -42,7 +42,7 @@ from lib.util import nes
 from lib import print_error
 from lib.util.file import read
 from lib.constants.config import RADIO_PATH_BLUE
-from lib.shared.radio import set_command, set_config
+from lib.shared.radio import set_command, set_config, get_status
 
 
 def default(_):
@@ -52,6 +52,10 @@ def default(_):
     except OSError as err:
         return print_error("Cannot retrive Bluetooth status!", err)
     print("Bluetooth is disabled.")
+
+
+def status(args):
+    get_status(args, "bluetooth")
 
 
 def config(args):

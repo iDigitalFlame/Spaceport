@@ -224,6 +224,16 @@ ARGS = {
             },
         ),
         (
+            "-s",
+            {
+                "dest": "status",
+                "help": "show the current Bluetooth boot and enabled state",
+                "action": "store_true",
+                "required": False,
+            },
+            "status",
+        ),
+        (
             "command",
             {
                 "help": "bluetooth commands",
@@ -296,6 +306,16 @@ ARGS = {
                 "action": "store_true",
                 "required": False,
             },
+        ),
+        (
+            "-s",
+            {
+                "dest": "status",
+                "help": "show the current Wireless boot and enabled state",
+                "action": "store_true",
+                "required": False,
+            },
+            "status",
         ),
         (
             "command",
@@ -462,6 +482,52 @@ ARGS = {
             "vm_tap",
         ),
         (
+            "-sl",
+            {
+                "dest": "snaps",
+                "help": "list the Snapshots for the selected VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_snap_list",
+        ),
+        (
+            "-st",
+            {
+                "dest": "snap",
+                "type": str,
+                "help": "take a Snapshot of the selected VM",
+                "action": "store",
+                "metavar": "alias",
+                "required": False,
+            },
+            "vm_snap",
+        ),
+        (
+            "-sr",
+            {
+                "dest": "snap_restore",
+                "type": str,
+                "help": "restore a Snapshot of the selected VM",
+                "action": "store",
+                "metavar": "alias",
+                "required": False,
+            },
+            "vm_snap_restore",
+        ),
+        (
+            "-sd",
+            {
+                "dest": "snap_delete",
+                "type": str,
+                "help": "delete a Snapshot of the selected VM",
+                "action": "store",
+                "metavar": "alias",
+                "required": False,
+            },
+            "vm_snap_delete",
+        ),
+        (
             "-x",
             {
                 "dest": "stop",
@@ -522,6 +588,15 @@ ARGS = {
                 "required": False,
             },
             "vm_start",
+        ),
+        (
+            "--temp",
+            {
+                "dest": "temp",
+                "help": "use temporary disks when starting the VM (no changes saved)",
+                "action": "store_true",
+                "required": False,
+            },
         ),
         (
             "-r",

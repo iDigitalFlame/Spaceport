@@ -44,3 +44,5 @@ owner /media/{,**}         rw,
 owner /tmp/.mounts/*/{,**} rw,
 
 owner @{HOME}/{,**}        rw,
+
+include if exists <abstractions/user-data.d>

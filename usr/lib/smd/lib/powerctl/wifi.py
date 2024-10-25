@@ -43,7 +43,7 @@ from lib import print_error
 from lib.util.file import read
 from os.path import dirname, isfile
 from lib.constants.config import RADIO_PATH_WIFI
-from lib.shared.radio import set_command, set_config
+from lib.shared.radio import set_command, set_config, get_status
 
 
 def default(_):
@@ -53,6 +53,10 @@ def default(_):
     except OSError as err:
         return print_error("Cannot retrive Wireless status!", err)
     print("Wireless is disabled.")
+
+
+def status(args):
+    get_status(args, "bluetooth")
 
 
 def config(args):

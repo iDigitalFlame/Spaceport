@@ -54,3 +54,5 @@ owner @{HOME}/.config/QtProject.conf.??????                 rwl -> @{HOME}/.conf
 owner @{HOME}/.cache/qt_compose_cache_{little,big}_endian_* rwl -> @{HOME}/.cache/#[0-9]*[0-9],
 
 deny /usr/share/qt{,*}/resources/**                         w,
+
+include if exists <abstractions/qt.d>

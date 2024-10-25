@@ -42,3 +42,5 @@ abi <abi/3.0>,
 /sys/devices/virtual/dmi/id/{product_name,product_family} r,
 
 /proc/version                                             r,
+
+include if exists <abstractions/version.d>

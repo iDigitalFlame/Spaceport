@@ -46,3 +46,5 @@ owner @{HOME}/.local/share/                    r,
 owner @{HOME}/.config/user-dirs.dirs           r,
 owner @{HOME}/.private/.config/user-dirs.dirs  r,
 owner @{HOME}/.dotfiles/.config/user-dirs.dirs r,
+
+include if exists <abstractions/xdg-desktop.d>

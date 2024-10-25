@@ -64,3 +64,5 @@ owner @{HOME}/.dotfiles/.config/gtk-{2,3,4}.0/{,*} r,
 
 deny @{HOME}/.xsession-errors                      rw,
 deny /var/cache/fontconfig/{,**}                   w,
+
+include if exists <abstractions/gui.d>
