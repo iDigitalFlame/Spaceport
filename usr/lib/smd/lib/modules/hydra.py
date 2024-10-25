@@ -179,14 +179,6 @@ def _parse_mounted():
     return r
 
 
-def _snap_state_name(v):
-    if v == HYDRA_STATE_SNAP:
-        return "Snapshot"
-    elif v == HYDRA_STATE_SNAP_LOAD:
-        return "Revert"
-    return "Snapshot Delete"
-
-
 def _command_response(v):
     if not isinstance(v, (bytes, bytearray)) or len(v) == 0:
         return None
@@ -820,10 +812,16 @@ class VM(Storage):
         return dict(sorted(d.items()))
 
     def _snap_done(self, server, job, name, err):
-        s, p = _snap_state_name(self._state), self._state
+        if self._state == HYDRA_STATE_SNAP:
+            s = "Snapshot"
+        elif self._state == HYDRA_STATE_SNAP_LOAD:
+            s = "Revert"
+        else:
+            s = "Snapshot Delete"
+        p = self._state != HYDRA_STATE_SNAP_DEL
         self._state = HYDRA_STATE_RUNNING
         if err is None:
-            if p != HYDRA_STATE_SNAP_DEL:
+            if p:
                 try:
                     with open(f"{HYDRA_DIR_SNAPS}/{self.vmid}", "w") as f:
                         f.write(name)
@@ -839,6 +837,7 @@ class VM(Storage):
                 f"VM({self.vmid}) {s} complete!",
                 "virt-viewer",
             )
+        del p
         server.error(
             f'[m/hydra/VM({self.vmid})]: Snapper Job "{job}" failed with error: {err}!'
         )
@@ -862,18 +861,15 @@ class VM(Storage):
         o, c = self.get("cpu.options", list()), self.get("cpu.type", "host")
         i, m = c == "host", self.get("cpu.saveable", False)
         if x.intel and self.get("cpu.auto_options", True):
+            c = (
+                f"{c},kvm=on,pdpe1gb,+kvm_pv_unhalt,+kvm_pv_eoi,+kvmclock,hv_relaxed,"
+                "hv_frequencies,hv_synic,hv_reenlightenment,hv_vpindex,hv_spinlocks=0x1FFF,hv_vapic,hv_time,"
+                "hv_stimer"
+            )
             if m:
-                c = (
-                    f"{c},kvm=on,migratable=yes,-invtsc,pdpe1gb,+kvm_pv_unhalt,+kvm_pv_eoi,+kvmclock,hv_relaxed,"
-                    "hv_frequencies,hv_synic,hv_reenlightenment,hv_vpindex,hv_spinlocks=0x1FFF,hv_vapic,hv_time,"
-                    "hv_stimer"
-                )
+                c += ",migratable=yes,-invtsc"
             else:
-                c = (
-                    f"{c},kvm=on,migratable=no,pdpe1gb,+kvm_pv_unhalt,+kvm_pv_eoi,+kvmclock,hv_relaxed,hv_passthrough,"
-                    "hv_frequencies,hv_synic,hv_reenlightenment,hv_vpindex,hv_spinlocks=0x1FFF,hv_vapic,hv_time,"
-                    "hv_stimer"
-                )
+                c += ",migratable=no,hv_passthrough"
         if i:
             c = f"{c},l3-cache=on"
         del i
@@ -1799,7 +1795,7 @@ class VM(Storage):
             # NOTE(dij): I don't see this path being called, but I'm
             #            leaving this logic here to prevent any weird
             #            shit happening.
-            return
+            return (None, None)
         if not nes(command) and not isinstance(command, dict):
             raise Error('"command" must be a dict or string')
         if ga and self._state == HYDRA_STATE_SLEEPING:

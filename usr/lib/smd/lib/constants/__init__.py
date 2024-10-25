@@ -43,7 +43,7 @@
 ## Base Constants
 EMPTY = str()
 NEWLINE = "\n"
-VERSION = "SMD-7.6_Tank_v2"
+VERSION = "SMD-7.7_Tank_v2"
 BOOLEANS = [
     "0",
     "1",
