@@ -51,3 +51,4 @@
 -A exclude,always -F msgtype=CONFIG_CHANGE
 -A exclude,always -F msgtype=SERVICE_START
 -A exclude,always -F msgtype=SYSTEM_SHUTDOWN
+-A exclude,always -F msgtype=ANOM_PROMISCUOUS
