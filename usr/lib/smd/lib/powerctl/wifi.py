@@ -56,7 +56,7 @@ def default(_):
 
 
 def status(args):
-    get_status(args, "bluetooth")
+    get_status(args, "wireless")
 
 
 def config(args):
