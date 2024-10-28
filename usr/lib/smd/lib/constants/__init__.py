@@ -142,7 +142,14 @@ HYDRA_USER_ADD_ALIAS = 0x19
 HYDRA_USER_DELETE_ALIAS = 0x20
 
 ## Logging Translation Constants
-LOG_INDEX = {50: " CRIT ", 40: "ERROR", 30: " WARN", 20: " INFO", 10: "DEBUG"}
+LOG_INDEX = {
+    90: " DUMP",
+    50: " CRIT",
+    40: "ERROR",
+    30: " WARN",
+    20: " INFO",
+    10: "DEBUG",
+}
 
 LOG_LEVELS = {
     "0": 10,

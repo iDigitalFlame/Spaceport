@@ -118,7 +118,7 @@ class Conn(object):
                 f"[conn]: Message 0x{m.header():02X} was sent to socket FD({self._sock.fileno()})."
             )
             if LOG_PAYLOAD:
-                server.error(f"[dump]: OUT > {m}")
+                server.dump(f"OUT > {m}")
         except OSError as err:
             if err.errno == 0x20 or err.errno == 0x9:
                 if self._sock.fileno() == -1:
@@ -263,7 +263,7 @@ class Server(Service):
                 f"PID({m.pid()})/UID({m.uid()})/FD({file})."
             )
             if LOG_PAYLOAD:
-                self.error(f"[dump]:  IN < {m}")
+                self.dump(f"  IN < {m}")
             del m
             return
         except OSError as err:

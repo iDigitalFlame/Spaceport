@@ -113,6 +113,9 @@ class Service(object):
     def cancel(self, event):
         return self._dispatcher.cancel_task(event)
 
+    def dump(self, message):
+        self._log.dump(message)
+
     def forward(self, message):
         if message is None:
             return
@@ -121,7 +124,7 @@ class Service(object):
             f"[service]: Forwarding message 0x{message.header():02X} to internal Hooks."
         )
         if LOG_PAYLOAD:
-            self._log.error(f"[dump]: FWD > {message}")
+            self._log.dump(f" FWD > {message}")
         self._dispatcher.add(None, message)
 
     def set(self, name, value):

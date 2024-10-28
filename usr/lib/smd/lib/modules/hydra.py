@@ -1106,9 +1106,7 @@ class VM(Storage):
         r += a + d
         del a, d, b
         if self.get("vm.debug", False) or opts.debug:
-            server.error(
-                f'[m/hydra/VM({self.vmid})]: Runtime command dump: [{" ".join(r)}]'
-            )
+            server.dump(f'[m/hydra/VM({self.vmid})]: Runtime command: [{" ".join(r)}]')
         return r
 
     def _start(self, server, manager, uid, opts):

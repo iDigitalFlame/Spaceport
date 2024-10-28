@@ -774,7 +774,7 @@ class Backup(object):
             makedirs(BACKUP_STATE_DIR, exist_ok=True, mode=0o0750)
         except OSError as err:
             raise OSError(f'cannot make directory "{BACKUP_STATE_DIR}": {err}')
-        server.info(f"[m/backup/job/{self.id}] Starting Backup Job {self}..")
+        server.info(f"[m/backup/job/{self.id}]: Starting Backup Job {self}..")
         server.notify("Backup Status", f"Staring Backup {self}!", "yed")
         self._next(server)
 
@@ -784,9 +784,9 @@ class Backup(object):
                 self._proc.send_signal(SIGCONT)
             except (SubprocessError, OSError) as err:
                 return server.error(
-                    f"[m/backup/job/{self.id}] Cannot resume Backup {self}!", err
+                    f"[m/backup/job/{self.id}]: Cannot resume Backup {self}!", err
                 )
-        server.info(f"[m/backup/job/{self.id}] Resuming Backup {self}.")
+        server.info(f"[m/backup/job/{self.id}]: Resuming Backup {self}.")
         self._paused.clear()
         return True
 
@@ -796,9 +796,9 @@ class Backup(object):
                 self._proc.send_signal(SIGSTOP)
             except (SubprocessError, OSError) as err:
                 return server.error(
-                    f"[m/backup/job/{self.id}] Cannot suspend Backup {self}!", err
+                    f"[m/backup/job/{self.id}]: Cannot suspend Backup {self}!", err
                 )
-        server.info(f"[m/backup/job/{self.id}] Suspending Backup {self}.")
+        server.info(f"[m/backup/job/{self.id}]: Suspending Backup {self}.")
         # NOTE(dij): Clear "last time" so a suspended Backup task does not fail
         #            when it wakes up.
         self._time = None
@@ -976,15 +976,19 @@ class Backup(object):
             return True
         if n == 0:
             return True
+        if self._state > 0xB:
+            v = "Unknown"
+        else:
+            v = BACKUP_STATE_NAMES[self._state].title()
         if len(e) == 0:
             server.error(
-                f"[m/backup/job/{self.id}]: Process exited with a non-zero exit code ({n})!"
+                f"[m/backup/job/{self.id}]: {v} process exited with a non-zero exit code ({n})!"
             )
             return self._update(server, BACKUP_STATE_ERROR)
         server.error(
-            f"[m/backup/job/{self.id}]: Process exited with a non-zero exit code ({n}): {e}!"
+            f"[m/backup/job/{self.id}]: {v} process exited with a non-zero exit code ({n}): {e}!"
         )
-        del n, e
+        del n, e, v
         return self._update(server, BACKUP_STATE_ERROR)
 
     def _step_keygen(self, server):
@@ -1601,16 +1605,16 @@ class Backup(object):
             r = (s.f_frsize * s.f_bavail) - x
         except OSError as err:
             return server.error(
-                f"[m/backup/job/{self.id}] Cannot get free space size for Backup storage!",
+                f"[m/backup/job/{self.id}]: Cannot get free space size for Backup storage!",
                 err,
             )
         del s, p
         if r < 0:
             return server.error(
-                f"[m/backup/job/{self.id}] Insufficient space on device, {_size(x)} needed {_size(r)} free!"
+                f"[m/backup/job/{self.id}]: Insufficient space on device, {_size(x)} needed {_size(r)} free!"
             )
         server.debug(
-            f"[m/backup/job/{self.id}] Free space check {_size(x)} needed, {_size(r)} free."
+            f"[m/backup/job/{self.id}]: Free space check {_size(x)} needed, {_size(r)} free."
         )
         del r, x
         return True

@@ -137,7 +137,7 @@ class Client(Service):
             message.send(self._socket)
             self.debug(f"[conn]: Message 0x{message.header():02X} was sent.")
             if LOG_PAYLOAD:
-                self.error(f"[dump]: OUT > {message}")
+                self.dump(f"OUT > {message}")
         except OSError as err:
             if err.errno == 0x20:
                 return self.info("[conn]: Server has disconnected!")
@@ -156,7 +156,7 @@ class Client(Service):
             self._dispatcher.add(None, m)
             self.debug(f"[conn]: Received Message 0x{m.header():02X}.")
             if LOG_PAYLOAD:
-                self.error(f"[dump]:  IN < {m}")
+                self.dump(f"  IN < {m}")
             del m
         except OSError as err:
             if err.errno == 0x3E8 or err.errno == 0x68:
