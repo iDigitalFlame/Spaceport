@@ -36,31 +36,46 @@
 
 include <tunables/spaceport>
 
-profile signal-desktop /usr/{bin,lib}/signal-desktop {
+profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enforce) {
     include <abstractions/video>
     include <abstractions/chromium>
     include <abstractions/user-home>
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
-    /sys/{bus,class}/                                r,
-    /sys/bus/pci/devices                             r,
+    /sys/{bus,class}/                                                                                              r,
+    /sys/bus/pci/devices                                                                                           r,
+    /sys/fs/cgroup/user.slice/cpu.max                                                                              r,
+    /sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max                                                            r,
+    /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/cpu.max                                        r,
 
-    /usr/lib/signal-desktop/**                       r,
+    /usr/lib/signal-desktop/**                                                                                     r,
+    /usr/lib/signal-desktop/resources/**                                                                           rm,
 
-    owner @{HOME}/                                   r,
-    owner @{HOME}/.config/Slack/{,**}                rwkl,
+    owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/cpu.max                        r,
+    owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/sway.service/memory.{high,max} r,
 
-    /usr/bin/xdg-open                                px -> xdg-open,
-    /usr/bin/xdg-settings                            pxr -> xdg-settings,
-    /usr/lib/signal-desktop/signal-desktop           ixr,
-    /usr/lib/signal-desktop/electron*/chrome-sandbox ix,
+    owner @{HOME}/                                                                                                 r,
+    owner @{HOME}/.config/Signal/{,**}                                                                             rwkl,
+
+    /usr/bin/xdg-open                                                                                              Px -> xdg-open,
+    /usr/bin/xdg-settings                                                                                          irx,
+    /usr/lib/signal-desktop/signal-desktop                                                                         ixr,
+    /usr/lib/signal-desktop/electron*/chrome-sandbox                                                               ix,
 
     ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/lib/signal-desktop/chrome-sandbox,
 
-    deny /dev/tty                                    rw,
-    deny /dev/pts/*                                  rw,
+    deny /dev/tty                                                                                                  rw,
+    deny /dev/pts/*                                                                                                rw,
+
+    # Ignore the npp error for Signal, same as Slack
+    deny /usr/bin/cut                                                                                              xr,
+    deny /usr/bin/ldd                                                                                              xr,
+    deny /usr/bin/realpath                                                                                         xr,
+    deny /usr/bin/{gre,xpro}p                                                                                      xr,
+    deny /usr/bin/{u,base}name                                                                                     xr,
+    deny /usr/bin/{,ba,da,z}sh                                                                                     xr,
 
     include if exists <local/usr.lib.signal-desktop>
 }
