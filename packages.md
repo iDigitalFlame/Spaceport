@@ -168,6 +168,7 @@ samba
 sbsigntools
 screen
 seahorse
+signal-desktop
 slack-electron
 slurp
 spice-gtk
