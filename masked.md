@@ -1,3 +1,4 @@
+var-lib-machines.mount
 alsa-state.service
 audit-rules.service
 connman.service
@@ -5,14 +6,10 @@ dbus-org.bluez.service
 debug-shell.service
 display-manager.service
 emergency.service
-emergency.target
-first-boot-complete.target
 nslcd.service
 plymouth-quit-wait.service
 plymouth-start.service
 rescue.service
-ssh-access.target
-sshd-unix-local.socket
 syslog.service
 systemd-boot-update.service
 systemd-bsod.service
@@ -26,4 +23,7 @@ systemd-repart.service
 systemd-suspend-then-hibernate.service
 systemd-sysusers.service
 systemd-update-done.service
-var-lib-machines.mount
+sshd-unix-local.socket
+emergency.target
+first-boot-complete.target
+ssh-access.target
