@@ -59,7 +59,7 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     owner @{HOME}/.config/Signal/{,**}                                                                             rwkl,
 
     /usr/bin/xdg-open                                                                                              Px -> xdg-open,
-    /usr/bin/xdg-settings                                                                                          irx,
+
     /usr/lib/signal-desktop/signal-desktop                                                                         ixr,
     /usr/lib/signal-desktop/electron*/chrome-sandbox                                                               ix,
 
@@ -68,14 +68,7 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
 
     deny /dev/tty                                                                                                  rw,
     deny /dev/pts/*                                                                                                rw,
-
-    # Ignore the npp error for Signal, same as Slack
-    deny /usr/bin/cut                                                                                              xr,
-    deny /usr/bin/ldd                                                                                              xr,
-    deny /usr/bin/realpath                                                                                         xr,
-    deny /usr/bin/{gre,xpro}p                                                                                      xr,
-    deny /usr/bin/{u,base}name                                                                                     xr,
-    deny /usr/bin/{,ba,da,z}sh                                                                                     xr,
+    deny /usr/bin/xdg-settings                                                                                     rx,
 
     include if exists <local/usr.lib.signal-desktop>
 }
