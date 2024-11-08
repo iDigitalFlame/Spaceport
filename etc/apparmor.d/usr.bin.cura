@@ -53,9 +53,15 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     include <abstractions/freedesktop.org>
 
     /etc/fstab                                  r,
+    /etc/machine-id                             r,
     /opt/ultimaker-cura/{,**}                   rm,
 
+    /proc/{cmdline,modules}                     r,
+
+    /sys/module/*/holders/                      r,
+    /sys/module/compression                     r,
     /sys/devices/p{ci,np}*/**                   r,
+    /sys/module/*/{,coresize,refcnt}            r,
 
     /dev/                                       r,
     /dev/zero                                   rm,
@@ -78,6 +84,8 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
     /usr/bin/gcc                                ixr,
     /usr/bin/bash                               ix,
     /usr/bin/cura                               ixr,
+    /usr/bin/grep                               ixr,
+    /usr/bin/kmod                               ixr,
     /usr/bin/uname                              ixr,
     /usr/bin/ldconfig                           ixr,
     /usr/bin/UltiMaker-Cura                     ixr,
