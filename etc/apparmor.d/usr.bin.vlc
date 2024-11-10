@@ -42,6 +42,8 @@ profile vlc /usr/bin/{,c,n,q,r,s,v}lc {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/gnome>
+    include <abstractions/video>
+    include <abstractions/vulkan>
     include <abstractions/openssl>
     include <abstractions/p11-kit>
     include <abstractions/user-home>

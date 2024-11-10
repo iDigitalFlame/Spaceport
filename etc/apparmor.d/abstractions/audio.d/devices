@@ -34,25 +34,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/spaceport>
-
-profile leafpad /usr/bin/leafpad {
-    include <abstractions/gnome>
-    include <abstractions/user-data>
-    include <abstractions/nameservice>
-
-    /etc/fstab                   r,
-    /usr/bin/leafpad             rm,
-
-    owner /tmp/**                r,
-
-    owner /proc/@{pid}/mountinfo r,
-
-    owner @{CONFIG}/leafpad/{,*} r,
-
-    deny @{CONFIG}/leafpad/{,*}  w,
-
-    deny network,
-
-    include if exists <local/usr.bin.leafpad>
-}
+/dev/snd/{,**} r,

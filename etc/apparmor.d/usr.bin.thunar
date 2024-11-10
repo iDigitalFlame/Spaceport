@@ -48,6 +48,8 @@ profile thunar /usr/bin/{T,t}hunar {
     /usr/lib/tumbler-*/plugins/*                                rm,
     /usr/share/thumbnailers/*.thumbnailer                       r,
 
+    owner /tmp/**                                               rwkl,
+
     owner @{HOME}/**                                            l,
     owner @{CONFIG}/xfce4/xfconf/xfce-perchannel-xml/thunar.xml r,
 

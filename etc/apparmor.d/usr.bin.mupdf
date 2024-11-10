@@ -45,7 +45,7 @@ profile mupdf /usr/bin/mupdf {
     /usr/share/texmf/{,**}   r,
     /usr/local/texlive/{,**} r,
 
-    owner /tmp/*.pdf         r,
+    owner /tmp/**            r,
 
     deny network,
 

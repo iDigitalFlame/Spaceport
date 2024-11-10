@@ -53,6 +53,8 @@ profile corepdf /usr/bin/corepdf {
 
     owner /proc/@{pid}/mountinfo           r,
 
+    owner /tmp/**                          r,
+
     owner @{CONFIG}/cubocore/coreapps.conf r,
 
     deny /dev/tty                          r,

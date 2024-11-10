@@ -43,8 +43,8 @@ profile obs /usr/bin/obs {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/video>
-    include <abstractions/openssl>
     include <abstractions/vulkan>
+    include <abstractions/openssl>
     include <abstractions/nameservice>
 
     /usr/bin/obs                            r,
