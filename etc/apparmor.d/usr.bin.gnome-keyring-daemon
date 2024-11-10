@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(attach_disconnected) {
+profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/openssl>
     include <abstractions/dbus-system>

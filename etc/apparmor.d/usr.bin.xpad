@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xpad /usr/bin/xpad {
+profile xpad /usr/bin/xpad flags=(enforce) {
     include <abstractions/dconf>
     include <abstractions/gnome>
     include <abstractions/user-data-ro>

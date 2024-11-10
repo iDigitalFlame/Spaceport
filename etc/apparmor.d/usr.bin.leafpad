@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile leafpad /usr/bin/leafpad {
+profile leafpad /usr/bin/leafpad flags=(enforce) {
     include <abstractions/gnome>
     include <abstractions/user-data>
     include <abstractions/nameservice>

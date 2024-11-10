@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile arduino /usr/{bin,share/arduino}/arduino {
+profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/base>
     include <abstractions/consoles>

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile cupsd /usr/bin/cupsd {
+profile cupsd /usr/bin/cupsd flags=(enforce) {
     include <abstractions/base>
     include <abstractions/python>
     include <abstractions/openssl>

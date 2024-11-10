@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile ghr /{opt/spaceport,usr}/bin/ghr flags=(attach_disconnected) {
+profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/nameservice>

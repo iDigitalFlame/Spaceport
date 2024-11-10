@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile corepdf /usr/bin/corepdf {
+profile corepdf /usr/bin/corepdf flags=(enforce) {
     include <abstractions/dri>
     include <abstractions/gui>
     include <abstractions/mesa>

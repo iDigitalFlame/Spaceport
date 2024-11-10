@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile notesnook /{usr/bin,opt/notesnook}/notesnook {
+profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce) {
     include <abstractions/version>
     include <abstractions/chromium>
     include <abstractions/user-home>

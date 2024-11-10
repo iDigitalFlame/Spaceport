@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile obs /usr/bin/obs {
+profile obs /usr/bin/obs flags=(enforce) {
     include <abstractions/dri>
     include <abstractions/gui>
     include <abstractions/mesa>

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile top /usr/bin/top {
+profile top /usr/bin/top flags=(enforce) {
     include <abstractions/base>
     include <abstractions/wutmp>
     include <abstractions/consoles>

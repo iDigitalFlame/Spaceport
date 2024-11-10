@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile ssh /usr/bin/ssh {
+profile ssh /usr/bin/ssh flags=(enforce) {
     include <abstractions/base>
     include <abstractions/openssl>
     include <abstractions/consoles>

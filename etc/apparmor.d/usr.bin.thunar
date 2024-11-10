@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile thunar /usr/bin/{T,t}hunar {
+profile thunar /usr/bin/{T,t}hunar flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/dconf>
     include <abstractions/user-data>

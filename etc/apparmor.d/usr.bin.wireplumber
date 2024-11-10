@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile wireplumber /usr/bin/wireplumber {
+profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     include <abstractions/base>
     include <abstractions/audio>
     include <abstractions/video>

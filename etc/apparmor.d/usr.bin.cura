@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura {
+profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/dri>
     include <abstractions/gtk>

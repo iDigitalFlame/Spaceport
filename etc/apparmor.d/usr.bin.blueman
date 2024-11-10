@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile blueman /usr/bin/blueman-* {
+profile blueman /usr/bin/blueman-* flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/mime>
     include <abstractions/audio>

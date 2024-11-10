@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile telegram-desktop /usr/bin/telegram-desktop {
+profile telegram-desktop /usr/bin/telegram-desktop flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/dri>
     include <abstractions/audio>

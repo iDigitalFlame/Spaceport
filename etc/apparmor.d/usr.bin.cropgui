@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile cropgui /usr/bin/cropgui {
+profile cropgui /usr/bin/cropgui flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/gui>
     include <abstractions/base>

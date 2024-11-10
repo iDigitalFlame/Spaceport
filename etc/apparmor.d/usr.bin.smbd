@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile smbd /usr/{bin,sbin}/smbd flags=(attach_disconnected) {
+profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/samba>
     include <abstractions/wutmp>

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile arduino-builder /usr/bin/arduino-builder {
+profile arduino-builder /usr/bin/arduino-builder flags=(enforce) {
     include <abstractions/base>
     include <abstractions/user-data-ro>
 

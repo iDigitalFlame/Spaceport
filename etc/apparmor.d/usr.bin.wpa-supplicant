@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile wpa-supplicant /usr/bin/wpa_supplicant {
+profile wpa-supplicant /usr/bin/wpa_supplicant flags=(enforce) {
     include <abstractions/base>
     include <abstractions/openssl>
     include <abstractions/dbus-system>

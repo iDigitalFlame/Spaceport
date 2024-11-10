@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} {
+profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/gtk>
     include <abstractions/consoles>

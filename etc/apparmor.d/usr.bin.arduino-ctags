@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile arduino-ctags /usr/bin/arduino-ctags {
+profile arduino-ctags /usr/bin/arduino-ctags flags=(enforce) {
     include <abstractions/base>
 
     /usr/bin/arduino-ctags                  rm,

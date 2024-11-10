@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile aa-notify /usr/bin/aa-notify {
+profile aa-notify /usr/bin/aa-notify flags=(enforce) {
     include <abstractions/base>
     include <abstractions/python>
     include <abstractions/nameservice>

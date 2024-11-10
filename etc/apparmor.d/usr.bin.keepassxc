@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile keepassxc /usr/bin/keepassxc {
+profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/dconf>
     include <abstractions/gnome>

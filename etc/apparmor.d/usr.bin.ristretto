@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile ristretto /usr/bin/ristretto {
+profile ristretto /usr/bin/ristretto flags=(enforce) {
     include <abstractions/dconf>
     include <abstractions/gnome>
     include <abstractions/user-data-ro>

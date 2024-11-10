@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile cups-notifier-dbus /usr/lib/cups/notifier/dbus {
+profile cups-notifier-dbus /usr/lib/cups/notifier/dbus flags=(enforce) {
     include <abstractions/base>
     include <abstractions/nameservice>
     include <abstractions/dbus-system>

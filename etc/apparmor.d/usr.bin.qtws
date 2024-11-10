@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile qtws /usr/bin/qtws {
+profile qtws /usr/bin/qtws flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/chromium>
 

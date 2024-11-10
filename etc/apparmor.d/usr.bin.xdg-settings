@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xdg-settings /usr/bin/xdg-settings {
+profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/consoles>

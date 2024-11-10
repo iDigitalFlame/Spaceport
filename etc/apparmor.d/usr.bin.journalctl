@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile journalctl /usr/bin/journalctl  {
+profile journalctl /usr/bin/journalctl flags=(enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/nameservice>

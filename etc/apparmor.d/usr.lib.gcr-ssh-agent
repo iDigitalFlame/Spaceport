@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile gcr-ssh-agent /usr/lib/gcr-ssh-agent {
+profile gcr-ssh-agent /usr/lib/gcr-ssh-agent flags=(enforce) {
     include <abstractions/base>
 
     /usr/lib/gcr-ssh-agent            rm,

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile falkon /usr/bin/falkon {
+profile falkon /usr/bin/falkon flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/chromium>
     include <abstractions/user-home>
