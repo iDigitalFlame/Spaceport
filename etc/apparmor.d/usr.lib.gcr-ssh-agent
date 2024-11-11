@@ -41,11 +41,14 @@ profile gcr-ssh-agent /usr/lib/gcr-ssh-agent flags=(enforce) {
 
     /usr/lib/gcr-ssh-agent            rm,
 
+    owner @{HOME}/.local/ssh{,/,/*}   r,
     owner @{HOME}/.config/ssh{,/,/*}  r,
 
     owner @{run}/user/@{uid}/gcr{,/*} rw,
 
     /usr/bin/ssh-agent                Pxr -> ssh-agent,
+
+    deny @{HOME}/.ssh{,/}             rw,
 
     signal (receive) set=(cont, term) peer=unconfined,
 
