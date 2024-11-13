@@ -102,7 +102,7 @@ class Logger(object):
     def dump(self, message):
         # NOTE(dij): This makes dumps (for debuging) show up regardless of the
         #            logging level.
-        self._log._log(90, message)
+        self._log._log(90, message, None)
 
     def info(self, message, err=None):
         if err is not None:

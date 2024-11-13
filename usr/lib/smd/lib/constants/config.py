@@ -151,10 +151,10 @@ HYDRA_EXEC_SPICE = "/usr/bin/spicy"
 
 HYDRA_FILE_SMB = f"{HYDRA_DIR}/smb.conf"
 HYDRA_FILE_DNS = f"{HYDRA_DIR}/dns.conf"
-HYDRA_FILE_UEFI = ["/usr/share/edk2/ia32/OVMF.fd", "/usr/share/edk2/x64/OVMF.fd"]
+HYDRA_FILE_UEFI = ["/usr/share/edk2/ia32/OVMF.4m.fd", "/usr/share/edk2/x64/OVMF.4m.fd"]
 HYDRA_FILE_UEFI_VARS = [
-    "/usr/share/edk2/ia32/OVMF_VARS.fd",
-    "/usr/share/edk2/x64/OVMF_VARS.fd",
+    "/usr/share/edk2/ia32/OVMF_VARS.4m.fd",
+    "/usr/share/edk2/x64/OVMF_VARS.4m.fd",
 ]
 
 HYDRA_RESERVE = "/proc/sys/vm/nr_hugepages"

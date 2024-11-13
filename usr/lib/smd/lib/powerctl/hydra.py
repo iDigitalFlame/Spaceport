@@ -825,7 +825,7 @@ def vm_ping(args, vm=None):
 
 def vm_start(args, vm=None):
     vm = _get_check(args, vm)
-    vm["type"], vm["temp"] = HYDRA_START, args.temp
+    vm["type"], vm["temp"], vm["debug"] = HYDRA_START, args.temp, args.debug
     try:
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
     except OSError as err:
@@ -999,7 +999,7 @@ def vm_sleep(args, wake=False, vm=None):
 
 def vm_connect(args, vm=None, vnc=False):
     vm = _get_check(args, vm)
-    vm["type"], vm["temp"] = HYDRA_START, args.temp
+    vm["type"], vm["temp"], vm["debug"] = HYDRA_START, args.temp, args.debug
     try:
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
     except OSError as err:

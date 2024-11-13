@@ -590,6 +590,15 @@ ARGS = {
             "vm_start",
         ),
         (
+            "--debug",
+            {
+                "dest": "debug",
+                "help": "temporarily enable the debug flag when starting the VM",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "--temp",
             {
                 "dest": "temp",
