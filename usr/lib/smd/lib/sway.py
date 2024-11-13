@@ -40,6 +40,7 @@
 from os import getenv
 from os.path import exists
 from struct import pack, unpack
+from lib.constants import EMPTY
 from lib.util import nes, boolean
 from collections import namedtuple
 from json import loads, dumps, JSONDecodeError
@@ -53,7 +54,18 @@ from socket import (
 )
 
 Window = namedtuple(
-    "Window", ["id", "pid", "app", "name", "focused", "sticky", "fullscreen"]
+    "Window",
+    [
+        "id",
+        "pid",
+        "app",
+        "name",
+        "focused",
+        "sticky",
+        "floating",
+        "fullscreen",
+        "workspace",
+    ],
 )
 Display = namedtuple(
     "Display",
@@ -88,37 +100,59 @@ _MAGIC = b"i3-ipc"
 _WINDOW_TYPES = ["con", "floating_con"]
 
 
-def _nodes(w, n):
+def _ws(v):
+    if not isinstance(v, dict) or len(v) == 0:
+        return None
+    try:
+        return Workspace(
+            int(v["id"]) if "id" in v else None,
+            int(v["num"]) if "num" in v else None,
+            v["name"],
+            v.get("representation"),
+            v.get("output"),
+            boolean(v.get("urgent", False)),
+            boolean(v.get("focused", False)),
+            boolean(v.get("visible", False)),
+        )
+    except ValueError as err:
+        raise OSError(f"invalid workspace attribute: {err}")
+
+
+def _nodes(w, n, ws):
     if not isinstance(n, dict) or len(n) == 0:
         return
-    if "pid" in n and n.get("type") in _WINDOW_TYPES:
+    if "type" in n and n["type"] == "workspace":
+        ws = _ws(n)
+    elif "type" in n and "pid" in n and n["type"] in _WINDOW_TYPES:
         c = n.get("app_id")
         if (
             not nes(c)
             and "window_properties" in n
-            and "class" in n["window_properties"]
+            and isinstance(n["window_properties"], dict)
         ):
-            c = n["window_properties"]["class"]
+            c = n["window_properties"].get("class")
         w.append(
             Window(
                 int(n["id"]) if "id" in n else None,
                 int(n["pid"]),
                 c.lower(),
-                n.get("name", "").lower(),
+                n.get("name", EMPTY).lower(),
                 boolean(n.get("focused", False)),
                 boolean(n.get("sticky", False)),
+                n.get("type") == "floating_con",
                 boolean(n.get("fullscreen_mode", 0)),
+                ws,
             )
         )
         del c
     if "nodes" in n:
         if isinstance(n["nodes"], list):
             for i in n["nodes"]:
-                _nodes(w, i)
+                _nodes(w, i, ws)
     if "floating_nodes" in n:
         if isinstance(n["floating_nodes"], list):
             for i in n["floating_nodes"]:
-                _nodes(w, i)
+                _nodes(w, i, ws)
 
 
 def focused(sock=None):
@@ -132,7 +166,7 @@ def windows(sock=None):
     _, r = swaymsg(4, sock=sock)
     w = list()
     try:
-        _nodes(w, r)
+        _nodes(w, r, None)
     except ValueError as err:
         raise OSError(f"invalid window attribute: {err}")
     del r
@@ -145,23 +179,9 @@ def workspaces(sock=None):
     if not isinstance(r, list) or len(r) == 0:
         return o
     for i in r:
-        if "name" not in i or i.get("type") != "workspace":
+        if "name" not in i or "type" not in i or i["type"] != "workspace":
             continue
-        try:
-            o.append(
-                Workspace(
-                    int(i["id"]) if "id" in i else None,
-                    int(i["num"]) if "num" in i else None,
-                    i["name"],
-                    i.get("representation"),
-                    i.get("output"),
-                    boolean(i.get("urgent", False)),
-                    boolean(i.get("focused", False)),
-                    boolean(i.get("visible", False)),
-                )
-            )
-        except ValueError as err:
-            raise OSError(f"invalid workspace attribute: {err}")
+        o.append(_ws(i))
     del r
     return o
 
@@ -172,7 +192,7 @@ def displays(nodes=False, sock=None):
     if not isinstance(r, list) or len(r) == 0:
         return o
     for i in r:
-        if "name" not in i or i.get("type") != "output":
+        if "name" not in i or "type" not in i or i["type"] != "output":
             continue
         if "rect" not in i or "width" not in i["rect"] or "height" not in i["rect"]:
             continue
