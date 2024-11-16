@@ -42,23 +42,22 @@ profile pipewire-pulse /usr/bin/pipewire-pulse flags=(enforce, attach_disconnect
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    capability                                    sys_ptrace,
+    capability                                  sys_ptrace,
 
-    /                                             r,
-    /etc/machine-id                               r,
-    /etc/pipewire/{,**}                           r,
-    /usr/bin/pipewire-pulse                       rm,
-    /etc/pipewire/client.conf                     r,
-    /usr/share/pipewire/{,**}                     r,
-    /etc/pipewire/client.conf.d/{,**}             r,
-    /usr/share/pipewire/client{,-rt}.conf         r,
+    /                                           r,
+    /etc/machine-id                             r,
+    /etc/pipewire/{,**}                         r,
+    /usr/bin/pipewire-pulse                     rm,
+    /etc/pipewire/client.conf                   r,
+    /usr/share/pipewire/{,**}                   r,
+    /etc/pipewire/client.conf.d/{,**}           r,
+    /usr/share/pipewire/client{,-rt}.conf       r,
 
-    /sys/devices/virtual/dmi/id/product_name      r,
-    /sys/devices/virtual/dmi/id/{bios,sys}_vendor r,
+    /sys/devices/virtual/dmi/id/*_{name,vendor} r,
 
-    owner @{run}/user/@{uid}/pulse/pid            rw,
+    owner @{run}/user/@{uid}/pulse/pid          rw,
 
-    /usr/bin/pactl                                rix,
+    /usr/bin/pactl                              rix,
 
     ptrace read,
 
