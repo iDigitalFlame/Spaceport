@@ -54,13 +54,12 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce) {
     /usr/bin/xdg-open                                                                                              Px -> xdg-open,
     /usr/bin/electron*                                                                                             ixr,
 
-    /usr/lib/electron*/electron                                                                                    ixr,
-    /usr/lib/electron*/chrome_crashpad_handler                                                                     ix,
+    /usr/lib/electron*/{chrome_crashpad_handler,electron}                                                          ix,
 
     deny /dev/tty                                                                                                  rw,
     deny /dev/pts/*                                                                                                rw,
     deny /usr/bin/ldd                                                                                              rx,
-    deny /usr/bin/{,b,d}sh                                                                                         rx,
+    deny /usr/bin/{,ba,da}sh                                                                                       rx,
     deny /usr/bin/xdg-settings                                                                                     rx,
 
     include if exists <local/usr.lib.slack>

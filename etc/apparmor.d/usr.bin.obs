@@ -46,6 +46,7 @@ profile obs /usr/bin/obs flags=(enforce) {
     include <abstractions/vulkan>
     include <abstractions/openssl>
     include <abstractions/nameservice>
+    include <abstractions/user-data-ro>
 
     /usr/bin/obs                            r,
     /etc/machine-id                         r,
@@ -60,7 +61,7 @@ profile obs /usr/bin/obs flags=(enforce) {
     /proc/@{pid}/net/unix                   r,
 
     owner /proc/@{pid}/statm                r,
-    owner /proc/@{pid}/task/**              r,
+    owner /proc/@{pid}/task/@{pid}/**       r,
 
     owner @{HOME}/.config/obs-studio/{,**}  rw,
 

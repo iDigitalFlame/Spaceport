@@ -43,14 +43,14 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
+    /usr/lib/signal-desktop/**                                                                                     r,
+    /usr/lib/signal-desktop/resources/**                                                                           rm,
+
     /sys/{bus,class}/                                                                                              r,
     /sys/bus/pci/devices                                                                                           r,
     /sys/fs/cgroup/user.slice/cpu.max                                                                              r,
     /sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max                                                            r,
     /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/cpu.max                                        r,
-
-    /usr/lib/signal-desktop/**                                                                                     r,
-    /usr/lib/signal-desktop/resources/**                                                                           rm,
 
     owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/cpu.max                        r,
     owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/sway.service/memory.{high,max} r,

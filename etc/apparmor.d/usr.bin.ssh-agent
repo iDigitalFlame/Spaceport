@@ -40,6 +40,7 @@ profile ssh-agent /usr/bin/ssh-agent flags=(enforce) {
     include <abstractions/base>
     include <abstractions/openssl>
     include <abstractions/nameservice>
+    include <abstractions/private-files>
 
     /usr/bin/ssh-agent                           rm,
 

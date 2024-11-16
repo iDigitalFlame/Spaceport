@@ -49,7 +49,6 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     network                                                   inet6   stream,
     network                                                   netlink raw,
 
-    /tmp/                                                     r,
     /usr/lib/                                                 r,
     /etc/fstab                                                r,
     /usr/bin/arduino                                          r,
@@ -92,6 +91,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
 
+    /tmp/                                                     r,
+
     @{run}/udev/data/+usb:*                                   r,
     @{run}/udev/data/c16*:*                                   r,
 
@@ -118,6 +119,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
+    owner /proc/@{pid}/coredump_filter                        rw,
+
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/build[0-9]*.tmp                      rw,
     owner /{tmp,var/run}/console[0-9]*.tmp                    rw,
@@ -130,8 +133,6 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     owner /{tmp,var/run}/arduino_{build,cache}_[0-9]*/{,**}   rw,
     owner /{tmp,var/run}/{library,package}_index.json*.tmp*   rw,
     owner /{tmp,var/run}/arduino_modified_sketch_[0-9]*/{,**} rw,
-
-    owner /proc/@{pid}/coredump_filter                        rw,
 
     owner @{run}/lock/tmp*                                    rw,
     owner @{run}/lock/LCK..ttyS[0-9]*                         rw,

@@ -48,6 +48,8 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
 
     /proc/version                                          r,
 
+    owner @{CONFIG}/mimeapps.list                          r,
+
     @{sysconfig}/bin/ghr                                   Px,
     @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
 
@@ -78,9 +80,6 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     /usr/{bin,lib/signal-desktop}/signal-desktop           Px,
     /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura       Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
-
-    owner @{HOME}/.config/mimeapps.list                    r,
-    owner @{HOME}/.dotfiles/.config/mimeapps.list          r,
 
     owner @{HOME}/.local/bin/**                            PUx,
     owner @{HOME}/.private/.local/bin/**                   PUx,

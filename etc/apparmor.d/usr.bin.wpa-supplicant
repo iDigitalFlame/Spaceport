@@ -41,6 +41,7 @@ profile wpa-supplicant /usr/bin/wpa_supplicant flags=(enforce) {
     include <abstractions/openssl>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>
+    include <abstractions/private-files>
 
     capability                           chown,
     capability                           mknod,
@@ -57,11 +58,11 @@ profile wpa-supplicant /usr/bin/wpa_supplicant flags=(enforce) {
     network                              packet  raw,
     network                              netlink raw,
 
-    /sys/device/pci**                    r,
-
     /usr/bin/wpa_supplicant              rm,
     /etc/wpa_supplicant/{,*}             r,
     /etc/libnl/{classid,pktloc}          r,
+
+    /sys/device/pci**                    r,
 
     owner @{HOME}/.pki/wifi/**           r,
     owner @{HOME}/.local/lib/pki/wifi/** r,

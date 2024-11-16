@@ -36,18 +36,22 @@
 
 include <tunables/spaceport>
 
-profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(enforce, attach_disconnected) {
-    include <abstractions/wutmp>
-    include <abstractions/samba-rpcd>
+profile xdg-permission-store /usr/lib/xdg-permission-store flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
     include <abstractions/private-files>
+    include <abstractions/dbus-session-strict>
 
-    /usr/lib*/samba/{,samba/}rpcd_classic rm,
+    /usr/lib/xdg-permission-store rm,
 
-    @{run}/smd/hydra/smb.conf             r,
+    owner @{HOME}/                r,
 
-    /dev/urandom                          rw,
-    /dev/cores/rpcd_classic/{,**}         rw,
+    signal receive set=(term hup kill) peer=unconfined,
 
-    include if exists <local/samba-rpcd-classic>
-    include if exists <local/usr.lib.samba-rpcd-classic>
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+
+    deny network,
+
+    include if exists <local/usr.lib.xdg-permission-store>
 }

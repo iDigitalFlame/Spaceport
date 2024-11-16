@@ -41,6 +41,7 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
     include <abstractions/python>
     include <abstractions/openssl>
     include <abstractions/nameservice>
+    include <abstractions/private-files>
     include <abstractions/authentication>
 
     capability                                kill,

@@ -36,18 +36,41 @@
 
 include <tunables/spaceport>
 
-profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(enforce, attach_disconnected) {
-    include <abstractions/wutmp>
-    include <abstractions/samba-rpcd>
+profile waybar /usr/bin/waybar flags=(enforce) {
+    include <abstractions/gtk>
+    include <abstractions/mime>
+    include <abstractions/audio>
+    include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    /usr/lib*/samba/{,samba/}rpcd_classic rm,
+    /usr/bin/waybar                               rm,
+    /etc/machine-id                               r,
+    /usr/share/glib-2.0/schemas/gschemas.compiled r,
 
-    @{run}/smd/hydra/smb.conf             r,
+    /dev/rfkill                                   r,
 
-    /dev/urandom                          rw,
-    /dev/cores/rpcd_classic/{,**}         rw,
+    /sys/class/power_supply/{,**}                 r,
+    /sys/devices/**/power_supply/**               r,
+    /sys/devices/system/cpu/present               r,
+    /sys/devices/virtual/dmi/id/*_{name,vendor}   r,
 
-    include if exists <local/samba-rpcd-classic>
-    include if exists <local/usr.lib.samba-rpcd-classic>
+    /proc/spl/kstat/zfs/arcstats                  r,
+
+    owner /proc/@{pid}/net/dev                    r,
+
+    owner @{CONFIG}/waybar/{,*}                   r,
+    owner @{HOME}/.config/dconf/user              r,
+
+    owner /dev/tty*                               rw,
+
+    owner /proc/@{pid}/task/@{pid}/comm           rw,
+
+    owner @{run}/user/@{uid}/dconf/user           rw,
+
+    /usr/bin/wpctl                                ix,
+    /usr/bin/{,ba,da,z}sh                         ix,
+
+    deny network,
+
+    include if exists <local/usr.bin.waybar>
 }

@@ -1,0 +1,70 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile rtkit-daemon /usr/lib/rtkit-daemon flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                    setgid,
+    capability                    setuid,
+    capability                    sys_nice,
+    capability                    sys_chroot,
+    capability                    sys_ptrace,
+    capability                    dac_read_search,
+
+    /usr/lib/rtkit-daemon         rm,
+
+    /proc/@{pid}/stat             r,
+    /proc/@{pid}/limits           r,
+    /proc/@{pid}/task/@{pid}/stat r,
+
+    dbus receive bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=Changed peer=(name=*, label=polkitd),
+
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=polkitd),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=*, label=polkitd),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=*, label=polkitd),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1),
+    dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={GetConnectionUnixUser,GetConnectionUnixProcessID} peer=(name=org.freedesktop.DBus, label=dbus-system),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1, label=polkitd),
+
+    deny network,
+
+    include if exists <local/usr.lib.rtkit-daemon>
+}

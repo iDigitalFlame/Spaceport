@@ -40,6 +40,7 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/consoles>
+    include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
 
     /usr/bin/xdg-settings                r,
@@ -51,6 +52,8 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     owner /proc/@{pid}/fd/               r,
 
     owner @{run}/user/@{uid}/            r,
+
+    owner @{CONFIG}/mimeapps.list        r,
 
     @{sysconfig}/bin/ghr                 ix,
 
@@ -74,8 +77,6 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     /usr/bin/{,ba,da}sh                  ixr,
     /usr/bin/{u,base}name                ix,
     /usr/bin/rea{dlink,lpath}            ix,
-
-    owner @{CONFIG}/mimeapps.list        r,
 
     deny network,
 

@@ -56,15 +56,15 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
     /etc/machine-id                             r,
     /opt/ultimaker-cura/{,**}                   rm,
 
-    /proc/{cmdline,modules}                     r,
+    /dev/                                       r,
+    /dev/zero                                   rm,
 
     /sys/module/*/holders/                      r,
     /sys/module/compression                     r,
     /sys/devices/p{ci,np}*/**                   r,
     /sys/module/*/{,coresize,refcnt}            r,
 
-    /dev/                                       r,
-    /dev/zero                                   rm,
+    /proc/{cmdline,modules}                     r,
 
     owner /proc/@{pid}/fd/                      r,
     owner /proc/@{pid}/mounts                   r,

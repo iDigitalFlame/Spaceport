@@ -36,18 +36,31 @@
 
 include <tunables/spaceport>
 
-profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(enforce, attach_disconnected) {
-    include <abstractions/wutmp>
-    include <abstractions/samba-rpcd>
+profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    /usr/lib*/samba/{,samba/}rpcd_classic rm,
+    capability                    sys_admin,
+    capability                    dac_read_search,
 
-    @{run}/smd/hydra/smb.conf             r,
+    /etc/fuse{,*}.conf            r,
+    /usr/bin/fusermount{,*}       rm,
 
-    /dev/urandom                          rw,
-    /dev/cores/rpcd_classic/{,**}         rw,
+    /proc/@{pid}/mounts           r,
 
-    include if exists <local/samba-rpcd-classic>
-    include if exists <local/usr.lib.samba-rpcd-classic>
+    /dev/fuse                     rw,
+    /dev/tty*                     rw,
+
+    owner @{run}/user/@{uid}/doc/ rw,
+
+    mount options=(rw, rprivate)                  -> /,
+    mount options=(rw, rbind) @{run}/user/@{uid}/ -> /,
+    mount fstype=fuse.portal                      -> @{run}/user/@{uid}/doc/,
+
+    umount @{run}/user/@{uid}/doc/,
+
+    unix (send receive) type=stream peer=(label=xdg-document-portal),
+
+    include if exists <local/usr.bin.fusermount>
 }

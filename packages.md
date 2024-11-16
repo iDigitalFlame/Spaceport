@@ -161,6 +161,7 @@ qemu-vhost-user-gpu
 qt5-wayland
 reflector
 ristretto
+rofi-wayland
 rsync
 rustup
 samba

@@ -43,10 +43,17 @@ deny @{HOME}/.local/lib/zshrc.sh                                                
 deny @{HOME}/.config/openvpn/{,**}                                              mrwkl,
 
 # Get alerts on file acccess to weird areas
+audit deny @{CONFIG}/zsh/*                                                      wl,
+audit deny @{HOME}/.zshenv                                                      wl,
+audit deny @{CONFIG}/.zshenv                                                    wl,
 audit deny @{HOME}/.ssh/{,**}                                                   mrwkl,
 audit deny @{HOME}/.cert/{,**}                                                  mrwkl,
 audit deny @{HOME}/.local/bin/{,**}                                             wl,
+audit deny @{HOME}/.cache/zsh/{,**}                                             mrwkl,
+audit deny @{HOME}/.cache/wget-hsts                                             mrwkl,
+audit deny @{HOME}/.local/.ssh/{,**}                                            mrwkl,
 audit deny @{run}/user/@{uid}/gcr{,**}                                          mrwkl,
+audit deny @{HOME}/.config/openvpn/{,**}                                        mrwkl,
 audit deny @{run}/user/@{uid}/keyring{,**}                                      mrwkl,
 audit deny @{HOME}/.local/share/gnupg/{,**}                                     mrwkl,
 audit deny @{HOME}/.private/.local/bin/{,**}                                    wl,

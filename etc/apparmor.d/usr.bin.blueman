@@ -45,6 +45,7 @@ profile blueman /usr/bin/blueman-* flags=(enforce) {
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
     include <abstractions/dbus-session>
+    include <abstractions/private-files>
 
     network                             bluetooth raw,
 

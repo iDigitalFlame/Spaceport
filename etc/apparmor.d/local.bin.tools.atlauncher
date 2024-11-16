@@ -51,7 +51,6 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     network                                                                                                        inet  stream,
     network                                                                                                        inet6 stream,
 
-    /tmp/                                                                                                          r,
     /usr/lib/                                                                                                      r,
     /etc/fstab                                                                                                     r,
     /usr/bin/dash                                                                                                  rm,
@@ -97,9 +96,10 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     /proc/@{pid}/net/i{f_inet6,pv6_route}                                                                          r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                                                                       r,
 
+    /tmp/                                                                                                          r,
+
     owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/cpu.max                        r,
     owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/sway.service/memory.{high,max} r,
-
 
     owner /proc/@{pid}/fd/                                                                                         r,
     owner /proc/@{pid}/stat                                                                                        r,
@@ -110,7 +110,6 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     # This is for AtLauncher to download files manually.
     owner @{HOME}/Downloads/*.jar                                                                                  r,
     owner @{HOME}/.config/java/jssc/linux/*.so                                                                     rm,
-
 
     owner @{HOME}/.cache/JNA/**                                                                                    rmwkl,
     owner @{HOME}/.java/fonts/*/                                                                                   rw,
@@ -123,13 +122,12 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner @{HOME}/Documents/Minecraft/**/lib/jspawnhelper                                                          rwix,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties                                                         rw,
 
-    owner /{tmp,var/run}/hsperfdata_*/                                                                             rw,
-    owner /{tmp,var/run}/hsperfdata_*/@{pid}                                                                       rwk,
-
     owner /proc/@{pid}/coredump_filter                                                                             rw,
     owner /proc/@{pid}/task/@{pid}/comm                                                                            rw,
 
     owner /tmp/*.tmp                                                                                               rw,
+    owner /{tmp,var/run}/hsperfdata_*/                                                                             rw,
+    owner /{tmp,var/run}/hsperfdata_*/@{pid}                                                                       rwk,
 
     owner @{run}/user/@{uid}/dconf/user                                                                            rw,
 

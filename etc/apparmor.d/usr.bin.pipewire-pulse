@@ -36,18 +36,33 @@
 
 include <tunables/spaceport>
 
-profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(enforce, attach_disconnected) {
-    include <abstractions/wutmp>
-    include <abstractions/samba-rpcd>
+profile pipewire-pulse /usr/bin/pipewire-pulse flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/audio>
+    include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    /usr/lib*/samba/{,samba/}rpcd_classic rm,
+    capability                                    sys_ptrace,
 
-    @{run}/smd/hydra/smb.conf             r,
+    /                                             r,
+    /etc/machine-id                               r,
+    /etc/pipewire/{,**}                           r,
+    /usr/bin/pipewire-pulse                       rm,
+    /etc/pipewire/client.conf                     r,
+    /usr/share/pipewire/{,**}                     r,
+    /etc/pipewire/client.conf.d/{,**}             r,
+    /usr/share/pipewire/client{,-rt}.conf         r,
 
-    /dev/urandom                          rw,
-    /dev/cores/rpcd_classic/{,**}         rw,
+    /sys/devices/virtual/dmi/id/product_name      r,
+    /sys/devices/virtual/dmi/id/{bios,sys}_vendor r,
 
-    include if exists <local/samba-rpcd-classic>
-    include if exists <local/usr.lib.samba-rpcd-classic>
+    owner @{run}/user/@{uid}/pulse/pid            rw,
+
+    /usr/bin/pactl                                rix,
+
+    ptrace read,
+
+    deny network,
+
+    include if exists <local/usr.bin.pipewire-pulse>
 }

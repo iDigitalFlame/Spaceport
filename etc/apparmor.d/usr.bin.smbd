@@ -45,6 +45,7 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
     include <abstractions/user-tmp>
     include <abstractions/cups-client>
     include <abstractions/nameservice>
+    include <abstractions/private-files>
     include <abstractions/authentication>
 
     capability                                    lease,

@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile qtws /usr/bin/qtws flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/chromium>
+    include <abstractions/private-files>
 
     /usr/bin/qtws                                         rm,
     /usr/share/qtws-apps/youtube-music/youtube-music.qtws r,

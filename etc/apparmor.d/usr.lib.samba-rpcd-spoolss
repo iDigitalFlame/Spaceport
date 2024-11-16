@@ -38,16 +38,17 @@ include <tunables/spaceport>
 
 profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss flags=(enforce, attach_disconnected) {
     include <abstractions/samba-rpcd>
+    include <abstractions/private-files>
 
     /usr/lib*/samba/{,samba/}rpcd_spoolss rm,
 
     @{run}/smd/hydra/smb.conf             r,
     @{run}/{,samba/}samba-bgqd.pid        rk,
 
-    /dev/urandom                          rw,
-
     /var/cache/samba/printing/            w,
     /var/cache/samba/printing/*.tdb       rwk,
+
+    /dev/urandom                          rw,
 
     @{run}/samba/ncalrpc/{,**}            rw,
 

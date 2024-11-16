@@ -1,0 +1,115 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile upowerd /usr/lib/upowerd flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/dbus-system>
+    include <abstractions/private-files>
+
+    /etc/UPower/                                  r,
+    /usr/lib/upowerd                              rm,
+    /var/lib/upower/{,**}                         r,
+    /etc/UPower/UPower.conf                       r,
+
+    /dev/                                         r,
+    /dev/bus/usb/                                 r,
+    /dev/input/event*                             r,
+
+    /sys/bus/usb/                                 r,
+    /sys/devices/                                 r,
+    /sys/{bu,clas}s/                              r,
+    /sys/class/leds/                              r,
+    /sys/class/input/                             r,
+    /sys/class/sound/                             r,
+    /sys/class/usbmisc/                           r,
+    /sys/bus/hid/devices/                         r,
+    /sys/devices/**/uevent                        r,
+    /sys/class/power_supply/                      r,
+    /sys/bus/usb/devices/{,**}                    r,
+    /sys/devices/**/capabilities/*                r,
+    /sys/devices/**/power_supply/**/*             r,
+    /sys/devices/**/leds/**/max_brightness        r,
+    /sys/devices/virtual/dmi/id/product_name      r,
+    /sys/devices/**/leds/**/brightness_hw_changed r,
+
+    @{run}/udev/data/                             r,
+    @{run}/udev/data/c10:*                        r,
+    @{run}/udev/data/c13:*                        r,
+    @{run}/udev/data/+usb:*                       r,
+    @{run}/udev/data/+hid:*                       r,
+    @{run}/udev/data/+i2c:*                       r,
+    @{run}/udev/data/+pci:*                       r,
+    @{run}/udev/data/c116:*                       r,
+    @{run}/udev/data/+acpi:*                      r,
+    @{run}/udev/data/+serio:*                     r,
+    @{run}/udev/data/c16[6,7]:*                   r,
+    @{run}/udev/data/+platform:*                  r,
+    @{run}/udev/data/c18[0,8,9]:*                 r,
+    @{run}/udev/data/+sound:card*                 r,
+    @{run}/udev/data/+input:input*                r,
+    @{run}/udev/data/+power_supply*               r,
+
+    /var/lib/upower/history-*.dat{,.*}            rw,
+
+    /dev/bus/usb/**                               rwk,
+
+    /sys/devices/**/usb*/{,**}                    rw,
+    /sys/devices/**/leds/**/brightness            rw,
+
+    @{run}/systemd/inhibit/*.ref                  rw,
+
+    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus receive bus=system path=/org/bluez/hci*{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member={SessionNew,SessionRemoved,UserNew,UserRemoved,PrepareFor*} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+
+    dbus send bus=system path=/org/bluez/hci* interface=org.bluez.Media* member=RegisterApplication peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/bluez interface=org.bluez.ProfileManager* member=RegisterProfile peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/bluez/hci* interface=org.freedesktop.DBus.Properties member=Set peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus send bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus send bus=system path=/org/bluez/hci* interface=org.bluez.BatteryProviderManager* member=RegisterProfile peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/bluez interface=org.bluez.AgentManager* member={RegisterAgent,RequestDefaultAgent,UnregisterAgent} peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus send bus=system path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member=PauseDeviceComplete peer=(name=org.freedesktop.login1, label=systemd-logind),
+    dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member={Inhibit,CanHibernate,CanHybridSleep,CanPowerOff,CanReboot,CanSuspend,CreateSession,GetSessionByPID} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+
+    deny network,
+
+    include if exists <local/usr.lib.upowerd>
+}

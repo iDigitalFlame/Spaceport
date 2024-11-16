@@ -41,6 +41,7 @@ profile top /usr/bin/top flags=(enforce) {
     include <abstractions/wutmp>
     include <abstractions/consoles>
     include <abstractions/nameservice>
+    include <abstractions/private-files>
 
     capability                                kill,
     capability                                sys_nice,
@@ -53,8 +54,6 @@ profile top /usr/bin/top flags=(enforce) {
     /sys/devices/system/node/                 r,
     /sys/devices/system/node/node*/cpumap     r,
     /sys/devices/system/node/node*/meminfo    r,
-
-    @{run}/systemd/sessions/                  r,
 
     /proc/                                    r,
     /proc/tty/drivers                         r,
@@ -73,9 +72,11 @@ profile top /usr/bin/top flags=(enforce) {
     /proc/sys/kernel/{pid_max,osrelease}      r,
     /proc/@{pid}/task/@{tid}/oom_{,score_}adj r,
 
-    signal send,
+    @{run}/systemd/sessions/                  r,
 
     ptrace read,
+
+    signal send,
 
     deny @{HOME}/.config/procps{,/*}          rw,
 

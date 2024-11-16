@@ -1,0 +1,115 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(enforce, attach_disconnected) {
+    include <abstractions/dri>
+    include <abstractions/base>
+    include <abstractions/mesa>
+    include <abstractions/dconf>
+    include <abstractions/audio>
+    include <abstractions/wayland>
+    include <abstractions/consoles>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+    include <abstractions/freedesktop.org>
+    include <abstractions/dbus-session-strict>
+
+    capability                                   sys_ptrace,
+
+    /etc/sysconfig/proxy                         r,
+    /usr/share/drirc.d/{,*}                      r,
+    /usr/lib/xdg-desktop-portal-wlr              rm,
+    /usr/share/xdg-desktop-portal/**             r,
+
+    /sys/devices/virtual/dmi/id/*_{name,vendor}  r,
+
+    /proc/                                       r,
+    /proc/cmdline                                r,
+    /proc/1/cgroup                               r,
+    /proc/sys/kernel/osrelease                   r,
+
+    owner /proc/@{pid}/                          r,
+    owner /proc/@{pid}/cgroup                    r,
+    owner /proc/@{pid}/mountinfo                 r,
+    owner /proc/@{pid}/task/@{pid}/              r,
+    owner /proc/@{pid}/task/@{pid}/{comm,status} r,
+
+    owner @{HOME}/                               r,
+    owner @{CONFIG}/user-dirs.dirs               r,
+    owner @{HOME}/.config/dconf/user             r,
+
+    /dev/tty                                     rw,
+    /dev/dri/render*                             rw,
+    /dev/shm/wlroots-*                           rw,
+
+    owner @{run}/user/@{uid}/dconf/user          rw,
+
+    /usr/bin/{,ba,da,z}sh                        ix,
+    /usr/lib/xdg-desktop-portal-validate-icon    rix,
+
+    ptrace read,
+
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=*, label=rtkit-daemon),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member=Get peer=(name=org.freedesktop.RealtimeKit1),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=*, label=rtkit-daemon),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=org.freedesktop.RealtimeKit1),
+    dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=xdg-permission-store),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=org.freedesktop.RealtimeKit1, label=rtkit-daemon),
+    dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.impl.portal.PermissionStore member=Lookup peer=(name=*, label=xdg-permission-store),
+    dbus send bus=system  path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={GetConnectionUnixUser,GetConnectionUnixProcessID} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus send bus=system  path=/org/freedesktop/NetworkManager{,/**} interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus send bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={GetDevices,GetPermissions} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus send bus=system  path=/org/freedesktop/NetworkManager/Settings interface=org.freedesktop.NetworkManager.Settings member=ListConnections peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus send bus=system  path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=GetSettings peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Realtime member=MakeThread* peer=(name=:*),
+    dbus receive bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=InterfacesAdded peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system path=/org/freedesktop/NetworkManager interface=org.freedesktop.DBus.Properties member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system path=/org/freedesktop/NetworkManager{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=Updated peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={CheckPermissions,DeviceAdded,DeviceRemoved,StateChanged} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+
+    deny network,
+
+    include if exists <local/usr.lib.xdg-deskop-portal-wlr>
+}

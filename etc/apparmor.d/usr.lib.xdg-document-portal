@@ -36,46 +36,50 @@
 
 include <tunables/spaceport>
 
-profile journalctl /usr/bin/journalctl flags=(enforce) {
+profile xdg-document-portal /usr/lib/xdg-document-portal flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
 
-    capability                                    mknod,
-    capability                                    net_admin,
-    capability                                    sys_ptrace,
-    capability                                    sys_resource,
-    capability                                    dac_override,
-    capability                                    dac_read_search,
+    capability                    sys_nice,
+    capability                    sys_admin,
+    capability                    sys_ptrace,
+    capability                    sys_resource,
 
-    /usr/bin/journalctl                           rm,
+    /                             r,
+    /usr/lib/xdg-document-portal  rm,
 
-    /proc/cmdline                                 r,
-    /proc/1/environ                               r,
-    /proc/sys/fs/nr_open                          r,
-    /proc/sys/kernel/{osrelease,random/boot_id}   r,
+    /proc/                        r,
+    /proc/1/cgroup                r,
+    /proc/sys/fs/pipe-max-size    r,
 
-    /{run,var}/log/journal/                       r,
-    /{run,var}/log/journal/*/                     r,
-    /{run,var}/log/journal/*/user-*.journal*      r,
-    /{run,var}/log/journal/*/system{,@*}.journal* r,
+    owner /proc/@{pid}/fd/        r,
+    owner /proc/@{pid}/{,cgroup}  r,
 
-    owner /proc/@{pid}/stat                       r,
-    owner /proc/@{pid}/cgroup                     r,
+    owner @{HOME}/                r,
 
-    /var/lib/systemd/catalog/database             rw,
-    /var/lib/systemd/catalog/.#database*          rw,
+    /dev/fuse                     rw,
 
-    /usr/bin/{less,more}                          Pxr -> more,
+    owner @{run}/user/@{uid}/doc/ rw,
 
-    ptrace read,
+    /usr/bin/fusermount{,*}       Pxr -> fusermount,
 
-    signal send                 peer=more,
-    signal (receive) set=(term) peer=unconfined,
+    ptrace (read),
+
+    signal receive set=(term hup) peer=unconfined,
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+
+    dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=xdg-permission-store),
+    dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.impl.portal.PermissionStore member=Lookup peer=(name=*, label=xdg-permission-store),
+
+    mount fstype=fuse.portal -> @{run}/user/@{uid}/doc/,
+
+    unix (send receive) type=stream peer=(label=xdg-document-portal//fusermount),
 
     deny network,
 
-    include if exists <local/usr.bin.journalctl>
+    include if exists <local/usr.lib.xdg-document-portal>
 }

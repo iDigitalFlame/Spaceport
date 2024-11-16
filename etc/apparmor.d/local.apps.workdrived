@@ -45,6 +45,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     include <abstractions/version>
     include <abstractions/nameservice>
     include <abstractions/notifications>
+    include <abstractions/private-files>
 
     network                                                        inet  stream,
     network                                                        inet6 stream,

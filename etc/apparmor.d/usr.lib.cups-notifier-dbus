@@ -40,6 +40,7 @@ profile cups-notifier-dbus /usr/lib/cups/notifier/dbus flags=(enforce) {
     include <abstractions/base>
     include <abstractions/nameservice>
     include <abstractions/dbus-system>
+    include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
 
     /usr/lib/cups/notifier/dbus      rm,

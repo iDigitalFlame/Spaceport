@@ -42,6 +42,7 @@ profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(enforce, attach_di
     include <abstractions/openssl>
     include <abstractions/nameservice>
     include <abstractions/cups-client>
+    include <abstractions/private-files>
 
     /usr/lib*/samba/{,samba/}samba-bgqd rm,
 

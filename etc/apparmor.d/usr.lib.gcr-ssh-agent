@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile gcr-ssh-agent /usr/lib/gcr-ssh-agent flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/private-files>
 
     /usr/lib/gcr-ssh-agent            rm,
 
@@ -48,9 +49,9 @@ profile gcr-ssh-agent /usr/lib/gcr-ssh-agent flags=(enforce) {
 
     /usr/bin/ssh-agent                Pxr -> ssh-agent,
 
-    deny @{HOME}/.ssh{,/}             rw,
-
     signal (receive) set=(cont, term) peer=unconfined,
+
+    deny @{HOME}/.ssh{,/}             rw,
 
     deny network,
 

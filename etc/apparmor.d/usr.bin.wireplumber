@@ -42,6 +42,7 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     include <abstractions/video>
     include <abstractions/nameservice>
     include <abstractions/dbus-system>
+    include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
 
     network                                             netlink   raw,
