@@ -54,8 +54,6 @@ profile waybar /usr/bin/waybar flags=(enforce) {
     /sys/devices/system/cpu/present               r,
     /sys/devices/virtual/dmi/id/*_{name,vendor}   r,
 
-    /proc/spl/kstat/zfs/arcstats                  r,
-
     owner /proc/@{pid}/net/dev                    r,
 
     owner @{CONFIG}/waybar/{,*}                   r,
