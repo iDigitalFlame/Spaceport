@@ -64,8 +64,10 @@ profile waybar /usr/bin/waybar flags=(enforce) {
     owner /proc/@{pid}/task/@{pid}/comm           rw,
 
     owner @{run}/user/@{uid}/dconf/user           rw,
+    owner @{run}/user/@{uid}/sway-ipc*.sock       rw,
 
     /usr/bin/wpctl                                ix,
+    /usr/bin/swaymsg                              ix,
     /usr/bin/{,ba,da,z}sh                         ix,
 
     deny network,
