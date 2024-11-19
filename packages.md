@@ -127,7 +127,6 @@ psmisc
 python
 python-beautifulsoup4
 python-black
-python-cherrypy
 python-django
 python-flake8-black
 python-gobject
