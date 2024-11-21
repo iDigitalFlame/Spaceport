@@ -69,8 +69,6 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     ptrace trace peer=/usr/bin/chrom{e,ium},
     ptrace trace peer=/usr/lib/chrom{e,ium}/chrom{e,ium},
 
-    deny /sys/{bus,class}/[^u]*/{,devices/}                  r,
-
     deny ptrace read peer=unconfined,
     deny ptrace read peer=xdg-{open,settings},
 

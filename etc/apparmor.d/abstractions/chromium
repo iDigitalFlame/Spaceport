@@ -67,6 +67,7 @@ network inet6                                                        stream,
 
 /dev/                                                                r,
 
+/sys/bus/pci/devices{,/**}                                           r,
 /sys/devices/system/cpu/present                                      r,
 /sys/devices/system/cpu/kernel_max                                   r,
 /sys/devices/virtual/tty/tty*/active                                 r,
@@ -114,5 +115,7 @@ owner @{HOME}/.pki/nssdb/{,**}                                       rwk,
 owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
 
 /usr/bin/dbus-send                                                   ix,
+
+deny /usr/lib/chromium/extensions{,/,/**}                            w,
 
 include if exists <abstractions/chromium.d>
