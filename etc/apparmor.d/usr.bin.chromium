@@ -72,5 +72,12 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     deny ptrace read peer=unconfined,
     deny ptrace read peer=xdg-{open,settings},
 
+    deny /sys/{bus,cla}s/{acc,rfk,therm}*/{,**}              r,
+    deny /sys/{bus,cla}s/{dev,net,mmc,scsi}*/{,**}           r,
+    deny /sys/{bus,cla}s/*{p,q,r,s,u,v,x,y,z}/{,**}          r,
+    deny /sys/{bus,cla}s/*{c,e,f,g,h,i,j,k,n,o}/{,**}        r,
+    deny /sys/{bus,cla}s/{dma,mem,pwm,tpm,nvme}*/{,**}       r,
+    deny /sys/{bus,cla}s/{mtd,cpuid,ata,back,intel}*/{,**}   r,
+
     include if exists <local/usr.bin.chromium>
 }
