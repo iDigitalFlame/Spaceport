@@ -62,5 +62,7 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce) {
     deny /usr/bin/{,ba,da}sh                                                                                       rx,
     deny /usr/bin/xdg-settings                                                                                     rx,
 
+    deny ptrace read,
+
     include if exists <local/usr.lib.slack>
 }
