@@ -36,15 +36,18 @@
 
 include <tunables/spaceport>
 
-profile arduino-ctags /usr/bin/arduino-ctags flags=(enforce) {
+profile swayidle /usr/bin/swayidle flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/wayland>
     include <abstractions/private-files>
 
-    /usr/bin/arduino-ctags                  rm,
+    /usr/bin/swayidle      rm,
 
-    owner /{tmp,var/run}/arduino_build_*/** r,
+    /usr/bin/swaymsg       ix,
+    /usr/bin/{,ba,da}sh    ix,
+    /usr/lib/smd/libexec/* Pxr,
 
-    owner /{tmp,var/run}/tags.*             rw,
+    deny network,
 
-    include if exists <local/usr.bin.arduino-ctags>
+    include if exists <local/usr.bin.swayidle>
 }

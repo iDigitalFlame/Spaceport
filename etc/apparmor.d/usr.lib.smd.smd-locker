@@ -36,15 +36,10 @@
 
 include <tunables/spaceport>
 
-profile arduino-ctags /usr/bin/arduino-ctags flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/private-files>
+profile smd-locker /{,/opt/spaceport/}usr/lib/smd/libexec/smd-locker flags=(enforce) {
+    include <abstractions/smd>
 
-    /usr/bin/arduino-ctags                  rm,
+    deny network,
 
-    owner /{tmp,var/run}/arduino_build_*/** r,
-
-    owner /{tmp,var/run}/tags.*             rw,
-
-    include if exists <local/usr.bin.arduino-ctags>
+    include if exists <local/usr.lib.smd.smd-locker>
 }

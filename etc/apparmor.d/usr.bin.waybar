@@ -42,33 +42,33 @@ profile waybar /usr/bin/waybar flags=(enforce) {
     include <abstractions/audio>
     include <abstractions/nameservice>
     include <abstractions/private-files>
+    include <abstractions/freedesktop.org>
 
-    /usr/bin/waybar                               rm,
-    /etc/machine-id                               r,
-    /usr/share/glib-2.0/schemas/gschemas.compiled r,
+    /usr/bin/waybar                             rm,
+    /etc/machine-id                             r,
 
-    /dev/rfkill                                   r,
+    /dev/rfkill                                 r,
 
-    /sys/class/power_supply/{,**}                 r,
-    /sys/devices/**/power_supply/**               r,
-    /sys/devices/system/cpu/present               r,
-    /sys/devices/virtual/dmi/id/*_{name,vendor}   r,
+    /sys/class/power_supply/{,**}               r,
+    /sys/devices/**/power_supply/**             r,
+    /sys/devices/system/cpu/present             r,
+    /sys/devices/virtual/dmi/id/*_{name,vendor} r,
 
-    owner /proc/@{pid}/net/dev                    r,
+    owner /proc/@{pid}/net/dev                  r,
 
-    owner @{CONFIG}/waybar/{,*}                   r,
-    owner @{HOME}/.config/dconf/user              r,
+    owner @{CONFIG}/waybar/{,*}                 r,
+    owner @{HOME}/.config/dconf/user            r,
 
-    owner /dev/tty*                               rw,
+    owner /dev/tty*                             rw,
 
-    owner /proc/@{pid}/task/@{pid}/comm           rw,
+    owner /proc/@{pid}/task/@{pid}/comm         rw,
 
-    owner @{run}/user/@{uid}/dconf/user           rw,
-    owner @{run}/user/@{uid}/sway-ipc*.sock       rw,
+    owner @{run}/user/@{uid}/dconf/user         rw,
+    owner @{run}/user/@{uid}/sway-ipc*.sock     rw,
 
-    /usr/bin/wpctl                                ix,
-    /usr/bin/swaymsg                              ix,
-    /usr/bin/{,ba,da,z}sh                         ix,
+    /usr/bin/wpctl                              ix,
+    /usr/bin/swaymsg                            ix,
+    /usr/bin/{,ba,da,z}sh                       ix,
 
     deny network,
 

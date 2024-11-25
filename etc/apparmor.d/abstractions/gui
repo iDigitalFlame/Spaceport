@@ -60,7 +60,7 @@ include <abstractions/wayland>
 owner @{CONFIG}/theme/**           r,
 owner @{CONFIG}/gtk-{2,3,4}.0/{,*} r,
 
-deny @{HOME}/.xsession-errors      rw,
 deny /var/cache/fontconfig/{,**}   w,
+deny @{HOME}/.xsession-errors{,*}  rw,
 
 include if exists <abstractions/gui.d>

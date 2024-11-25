@@ -74,8 +74,8 @@ profile xdg-desktop-portal /usr/lib/xdg-desktop-portal flags=(enforce, attach_di
 
     owner @{run}/user/@{uid}/dconf/user          rw,
 
-    /usr/bin/{,ba,da,z}sh                        rix,
-    /usr/lib/xdg-desktop-portal-validate-icon    rix,
+    /usr/bin/{,ba,da,z}sh                        ixr,
+    /usr/lib/xdg-desktop-portal-validate-icon    ixr,
 
     ptrace read,
 

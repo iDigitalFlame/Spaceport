@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile mupdf /usr/bin/mupdf flags=(enforce) {
     include <abstractions/gui>
+    include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 

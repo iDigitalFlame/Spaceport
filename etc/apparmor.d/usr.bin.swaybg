@@ -36,15 +36,20 @@
 
 include <tunables/spaceport>
 
-profile arduino-ctags /usr/bin/arduino-ctags flags=(enforce) {
+profile swaybg /usr/bin/swaybg flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/mime>
+    include <abstractions/wayland>
     include <abstractions/private-files>
 
-    /usr/bin/arduino-ctags                  rm,
+    /usr/bin/swaybg   rm,
 
-    owner /{tmp,var/run}/arduino_build_*/** r,
+    # For pictures and backgrounds.
+    owner @{HOME}/**  r,
 
-    owner /{tmp,var/run}/tags.*             rw,
+    /dev/shm/swaybg-* rw,
 
-    include if exists <local/usr.bin.arduino-ctags>
+    deny network,
+
+    include if exists <local/usr.bin.swaybg>
 }

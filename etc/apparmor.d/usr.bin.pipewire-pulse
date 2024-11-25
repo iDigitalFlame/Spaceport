@@ -57,7 +57,7 @@ profile pipewire-pulse /usr/bin/pipewire-pulse flags=(enforce, attach_disconnect
 
     owner @{run}/user/@{uid}/pulse/pid          rw,
 
-    /usr/bin/pactl                              rix,
+    /usr/bin/pactl                              ixr,
 
     ptrace read,
 

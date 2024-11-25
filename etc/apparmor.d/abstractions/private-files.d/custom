@@ -53,6 +53,7 @@ audit deny @{HOME}/.cache/zsh/{,**}                                             
 audit deny @{HOME}/.cache/wget-hsts                                             mrwkl,
 audit deny @{HOME}/.local/.ssh/{,**}                                            mrwkl,
 audit deny @{run}/user/@{uid}/gcr{,**}                                          mrwkl,
+audit deny @{HOME}/.config/Yubico{,/**}                                         mrwkl,
 audit deny @{HOME}/.config/openvpn/{,**}                                        mrwkl,
 audit deny @{run}/user/@{uid}/keyring{,**}                                      mrwkl,
 audit deny @{HOME}/.local/share/gnupg/{,**}                                     mrwkl,

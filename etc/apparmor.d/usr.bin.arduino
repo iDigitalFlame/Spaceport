@@ -67,7 +67,6 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     /etc/java-openjdk/security/java.security                  r,
     /etc/java-openjdk/security/policy/unlimited/              r,
     /etc/java-openjdk/security/policy/**/*.policy             r,
-    /usr/share/glib-2.0/schemas/gschemas.compiled             r,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa rm,
 
     /dev/                                                     r,

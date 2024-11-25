@@ -36,15 +36,33 @@
 
 include <tunables/spaceport>
 
-profile arduino-ctags /usr/bin/arduino-ctags flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/private-files>
+profile gtklock /usr/bin/gtklock flags=(enforce) {
+    include <abstractions/gtk>
+    include <abstractions/dconf>
+    include <abstractions/nameservice>
+    include <abstractions/authentication>
+    include <abstractions/freedesktop.org>
 
-    /usr/bin/arduino-ctags                  rm,
+    /etc/shells                                  r,
 
-    owner /{tmp,var/run}/arduino_build_*/** r,
+    /sys/{bu,clas}s/                             r,
+    /sys/class/hidraw/                           r,
 
-    owner /{tmp,var/run}/tags.*             rw,
+    /sys/devices/**/manufacturer                 r,
+    /sys/devices/**/{produc,ueven}t              r,
 
-    include if exists <local/usr.bin.arduino-ctags>
+    owner @{HOME}/.cache/smd/*                   r,
+    owner @{HOME}/.config/Yubico/u2f_keys        r,
+
+    /dev/hidraw*                                 rwk,
+
+    owner @{run}/faillock/*                      rwk,
+    owner @{run}/user/@{uid}/dconf/user          rw,
+    owner @{run}/user/@{uid}/pam-u2f-authpending rw,
+
+    /usr/bin/unix_chkpwd                         Pxr,
+
+    deny network,
+
+    include if exists <local/usr.bin.gtklock>
 }

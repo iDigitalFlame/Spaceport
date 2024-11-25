@@ -81,7 +81,7 @@ profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(enforce, a
     owner @{run}/user/@{uid}/dconf/user          rw,
 
     /usr/bin/{,ba,da,z}sh                        ix,
-    /usr/lib/xdg-desktop-portal-validate-icon    rix,
+    /usr/lib/xdg-desktop-portal-validate-icon    ixr,
 
     ptrace read,
 

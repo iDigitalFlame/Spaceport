@@ -34,17 +34,5 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/spaceport>
-
-profile arduino-ctags /usr/bin/arduino-ctags flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/private-files>
-
-    /usr/bin/arduino-ctags                  rm,
-
-    owner /{tmp,var/run}/arduino_build_*/** r,
-
-    owner /{tmp,var/run}/tags.*             rw,
-
-    include if exists <local/usr.bin.arduino-ctags>
-}
+@{sysconfig}/etc/pam.d/*    r,
+@{sysconfig}/etc/login.defs r,
