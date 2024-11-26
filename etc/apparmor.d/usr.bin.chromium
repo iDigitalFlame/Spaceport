@@ -45,7 +45,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
 
     /etc/chromium/policies/managed/policies.json             r,
 
-    /sys/{bus,class}{,/}                                     r,
+    /sys/{bus,class}{,/**                                    r,
     /sys/{bus,class}/usb*/{,devices/}                        r,
 
     owner @{CONFIG}/chrom{e,ium}-flags.conf                  r,
@@ -73,10 +73,12 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     deny ptrace read peer=xdg-{open,settings},
 
     deny /sys/{bu,clas}s/{acc,rfk,therm}*/{,**}              r,
+    deny /sys/{bu,clas}s/*{p,q,r,u,v,x,y,z}/{,**}            r,
     deny /sys/{bu,clas}s/{dev,net,mmc,scsi}*/{,**}           r,
-    deny /sys/{bu,clas}s/*{p,q,r,s,u,v,x,y,z}/{,**}          r,
-    deny /sys/{bu,clas}s/*{c,e,f,g,h,i,j,k,n,o}/{,**}        r,
+    deny /sys/{bu,clas}s/*{c,e,f,g,h,j,k,n,o}/{,**}          r,
+    deny /sys/{bu,clas}s/{clockevent,mdio_bus}s/{,**}        r,
     deny /sys/{bu,clas}s/{dma,mem,pwm,tpm,nvme}*/{,**}       r,
+    deny /sys/{bu,clas}s/{acp,me,mipi-ds,sp,wm}i/{,**}       r,
     deny /sys/{bu,clas}s/{mtd,cpuid,ata,back,intel}*/{,**}   r,
 
     include if exists <local/usr.bin.chromium>

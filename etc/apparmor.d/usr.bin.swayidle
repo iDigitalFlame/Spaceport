@@ -41,13 +41,13 @@ profile swayidle /usr/bin/swayidle flags=(enforce) {
     include <abstractions/wayland>
     include <abstractions/private-files>
 
-    @{sysconfig}/usr/lib/smd/libexec/* Pxr,
+    @{sysconfig}/usr/lib/smd/libexec/smd-locker Pxr -> smd-locker,
 
-    /usr/bin/swayidle                  rm,
+    /usr/bin/swayidle                           rm,
 
-    /usr/bin/swaymsg                   ix,
-    /usr/bin/{,ba,da}sh                ix,
-    /usr/lib/smd/libexec/*             Pxr,
+    /usr/bin/swaymsg                            ix,
+    /usr/bin/{,ba,da}sh                         ix,
+    /usr/lib/smd/libexec/smd-locker             Pxr -> smd-locker,
 
     deny network,
 

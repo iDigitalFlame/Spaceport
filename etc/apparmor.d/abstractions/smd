@@ -40,24 +40,26 @@ include <abstractions/base>
 include <abstractions/python>
 include <abstractions/nameservice>
 
-@{sysconfig}/usr/lib/smd/lib/**                r,
-@{sysconfig}/usr/lib/smd/{,s}bin/*             r,
+@{sysconfig}/usr/lib/smd/{,s}bin{,/*}     r,
+@{sysconfig}/usr/lib/smd/lib{,exec}{,/**} r,
+@{sysconfig}/var/cache/smd/constants.json r,
 
-/usr/bin/                                      r,
-/usr/lib/smd/lib/**                            r,
-/usr/lib/smd/{,s}bin/*                         r,
+/usr/bin/                                 r,
+/usr/lib/smd/{,s}bin{,/*}                 r,
+/usr/lib/smd/lib{,exec}{,/**}             r,
+/var/cache/smd/constants.json             r,
 
-/proc/                                         r,
+/proc/                                    r,
 
-owner /proc/@{pid}/stat                        r,
-owner /proc/@{pid}/cmdline                     r,
+owner /proc/@{pid}/stat                   r,
+owner /proc/@{pid}/cmdline                r,
 
-owner @{CONFIG}/smd.json                       r,
+owner @{CONFIG}/smd.json                  r,
 
-@{run}/smd/*.sock                              rw,
+@{run}/smd/*.sock                         rw,
 
-/usr/lib/smd/lib/smd-message                   ixr,
-@{sysconfig}/usr/lib/smd/lib/smd-message       ixr,
+/usr/lib/smd/lib/smd-message              ixr,
+@{sysconfig}/usr/lib/smd/lib/smd-message  ixr,
 
 unix (connect, receive, send) type=stream peer=(addr="@{run}/smd/*.sock"),
 
