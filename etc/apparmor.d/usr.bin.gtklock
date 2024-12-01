@@ -47,7 +47,6 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
 
     /sys/{bu,clas}s/                             r,
     /sys/class/hidraw/                           r,
-
     /sys/devices/**/manufacturer                 r,
     /sys/devices/**/{produc,ueven}t              r,
 
