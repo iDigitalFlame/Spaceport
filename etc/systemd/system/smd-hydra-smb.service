@@ -48,6 +48,7 @@ ExecStart               = /usr/bin/smbd --foreground --no-process-group --config
 ExecReload              = /usr/bin/kill -HUP $MAINPID
 PrivateTmp              = true
 KeyringMode             = private
+PrivatePIDs             = true
 ProtectClock            = false
 PrivateUsers            = false
 ProtectSystem           = full

@@ -45,7 +45,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
 
     /etc/chromium/policies/managed/policies.json             r,
 
-    /sys/{bus,class},/**                                     r,
+    /sys/{bus,class}{,/,/**}                                 r,
     /sys/{bus,class}/usb*/{,devices/}                        r,
 
     owner @{CONFIG}/chrom{e,ium}-flags.conf                  r,

@@ -48,6 +48,7 @@ MountFlags              = shared
 ProtectProc             = default
 KeyringMode             = private
 ProtectHome             = read-only
+PrivatePIDs             = false
 ProtectClock            = false
 PrivateUsers            = false
 ExecStartPre            = -/usr/bin/mkdir -p /opt/hydra/smd-backup /var/cache/smd

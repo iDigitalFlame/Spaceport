@@ -45,6 +45,7 @@ ExecStart               = /usr/lib/smd/libexec/smd-suspend-pre
 PrivateTmp              = true
 KeyringMode             = private
 ProtectHome             = true
+PrivatePIDs             = true
 ProtectClock            = true
 PrivateUsers            = false
 ProtectSystem           = strict

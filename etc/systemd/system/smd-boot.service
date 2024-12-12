@@ -45,6 +45,7 @@ ExecStart               = /usr/bin/mount -o ro,remount /boot
 PrivateTmp              = true
 KeyringMode             = private
 ProtectHome             = true
+PrivatePIDs             = true
 ProtectClock            = true
 PrivateUsers            = false
 ProtectSystem           = strict
