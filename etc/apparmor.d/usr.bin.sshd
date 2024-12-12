@@ -36,42 +36,9 @@
 
 include <tunables/spaceport>
 
-profile waybar /usr/bin/waybar flags=(enforce) {
-    include <abstractions/gtk>
-    include <abstractions/mime>
-    include <abstractions/audio>
-    include <abstractions/nameservice>
-    include <abstractions/private-files>
-    include <abstractions/freedesktop.org>
+profile sshd /usr/bin/sshd flags=(enforce) {
+    # NOTE(dij): Used to stop "sshd" from running.
+    audit deny /usr/bin/sshd rm,
 
-    /usr/bin/waybar                             rm,
-    /etc/machine-id                             r,
-    /opt/*/**/icons/*/*.{ico,png,svg}           r,
-
-    /dev/rfkill                                 r,
-
-    /sys/class/power_supply/{,**}               r,
-    /sys/devices/**/power_supply/**             r,
-    /sys/devices/system/cpu/present             r,
-    /sys/devices/virtual/dmi/id/*_{name,vendor} r,
-
-    owner /proc/@{pid}/net/dev                  r,
-
-    owner @{CONFIG}/waybar/{,*}                 r,
-    owner @{HOME}/.config/dconf/user            r,
-
-    owner /dev/tty*                             rw,
-
-    owner /proc/@{pid}/task/@{pid}/comm         rw,
-
-    owner @{run}/user/@{uid}/dconf/user         rw,
-    owner @{run}/user/@{uid}/sway-ipc*.sock     rw,
-
-    /usr/bin/wpctl                              ix,
-    /usr/bin/swaymsg                            ix,
-    /usr/bin/{,ba,da,z}sh                       ix,
-
-    deny network,
-
-    include if exists <local/usr.bin.waybar>
+    include if exists <local/usr.bin.sshd>
 }
