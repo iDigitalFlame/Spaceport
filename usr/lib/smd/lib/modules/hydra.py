@@ -1537,7 +1537,7 @@ class VM(Storage):
             elif d["format"] == "raw" and d["type"] == "virtio":
                 s += ",aio=native,cache.direct=on"
             else:
-                s += ",aio=io_uring,cache=writeback"
+                s += ",aio=threads,cache=writeback"
             u = False
             # NOTE(dij): CDs and ISOs are always read only.
             if d.get("readonly", False) or d["type"] == "cd" or d["type"] == "iso":

@@ -40,6 +40,9 @@ include <abstractions/base>
 include <abstractions/python>
 include <abstractions/nameservice>
 
+capability                                dac_override,
+capability                                dac_read_search,
+
 @{sysconfig}/usr/lib/smd/{,s}bin{,/*}     r,
 @{sysconfig}/usr/lib/smd/lib{,exec}{,/**} r,
 @{sysconfig}/var/cache/smd/constants.json r,
@@ -48,6 +51,8 @@ include <abstractions/nameservice>
 /usr/lib/smd/{,s}bin{,/*}                 r,
 /usr/lib/smd/lib{,exec}{,/**}             r,
 /var/cache/smd/constants.json             r,
+
+/dev/null                                 r,
 
 /proc/                                    r,
 
