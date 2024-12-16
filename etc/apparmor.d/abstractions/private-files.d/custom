@@ -49,12 +49,13 @@ audit deny @{run}/user/@{uid}/keyring{,**}                                      
 audit deny @{CONFIG}/zsh/*                                                      wl,
 audit deny @{CONFIG}/.zshenv                                                    wl,
 
+audit deny @{CACHE}/wget-hsts                                                   mrwkl,
+audit deny @{CACHE}/zsh/{,**}                                                   mrwkl,
+
 audit deny @{HOME}/.zshenv                                                      wl,
 audit deny @{HOME}/.ssh/{,**}                                                   mrwkl,
 audit deny @{HOME}/.cert/{,**}                                                  mrwkl,
 audit deny @{HOME}/.local/bin/{,**}                                             wl,
-audit deny @{HOME}/.cache/zsh/{,**}                                             mrwkl,
-audit deny @{HOME}/.cache/wget-hsts                                             mrwkl,
 audit deny @{HOME}/.local/.ssh/{,**}                                            mrwkl,
 audit deny @{HOME}/.config/Yubico{,/**}                                         mrwkl,
 audit deny @{HOME}/.config/openvpn/{,**}                                        mrwkl,

@@ -50,7 +50,8 @@ profile falkon /usr/bin/falkon flags=(enforce) {
 
     /sys/devices/virtual/tty/tty*/active       r,
 
-    owner @{HOME}/.cache/falkon/{,**}          rwk,
+    owner @{CACHE}/falkon/{,**}                rwk,
+
     owner @{HOME}/.local/share/falkon/{,**}    rw,
     owner @{HOME}/.config/falkon/profiles/**   rwkl,
 

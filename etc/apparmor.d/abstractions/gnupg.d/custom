@@ -34,9 +34,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-owner @{HOME}/.local/share/gnupg/*.gpg       r,
-owner @{HOME}/.local/share/gnupg/options     r,
-owner @{HOME}/.local/share/gnupg/pubring.kbx r,
-owner @{HOME}/.local/share/gnupg/so/*.x86_64 rm,
-owner @{HOME}/.local/share/gnupg/random_seed rw,
-owner @{HOME}/.local/share/gnupg/trustdb.gpg rw,
+owner @{GPG_DIR}/*.gpg       r,
+owner @{GPG_DIR}/options     r,
+owner @{GPG_DIR}/pubring.kbx r,
+owner @{GPG_DIR}/so/*.x86_64 rm,
+owner @{GPG_DIR}/random_seed rw,
+owner @{GPG_DIR}/trustdb.gpg rw,

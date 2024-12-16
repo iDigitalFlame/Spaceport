@@ -53,7 +53,8 @@ profile dconf-service /usr/lib/dconf-service flags=(enforce, attach_disconnected
 
     owner /tmp/dbus-*                               rw,
 
-    owner @{HOME}/.cache/dconf/{,user,user.*}       rw,
+    owner @{CACHE}/dconf/{,user,user.*}             rw,
+
     owner @{HOME}/.config/dconf/{,user,user.*}      rw,
     owner @{HOME}/.config/glib-2.0/settings/keyfile w,
 

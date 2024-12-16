@@ -46,28 +46,29 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/lib/signal-desktop/chrome-sandbox,
 
-    /usr/lib/signal-desktop/**                                                                                     r,
-    /usr/lib/signal-desktop/resources/**                                                                           rm,
+    /usr/lib/signal-desktop/**                               r,
+    /usr/lib/signal-desktop/resources/**                     rm,
 
-    /sys/{bus,class}/                                                                                              r,
-    /sys/bus/pci/devices                                                                                           r,
-    /sys/fs/cgroup/user.slice/cpu.max                                                                              r,
-    /sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max                                                            r,
-    /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/cpu.max                                        r,
+    /sys/{bus,class}/                                        r,
+    /sys/bus/pci/devices                                     r,
+    /sys/fs/cgroup/user.slice/cpu.max                        r,
+    /sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max      r,
 
-    owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/cpu.max                        r,
-    owner /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/app.slice/sway.service/memory.{high,max} r,
+    @{CGROUP}/cpu.max                                        r,
 
-    owner @{HOME}/                                                                                                 r,
-    owner @{HOME}/.config/Signal/{,**}                                                                             rwkl,
+    owner @{CGROUP}/app.slice/cpu.max                        r,
+    owner @{CGROUP}/app.slice/sway.service/memory.{high,max} r,
 
-    /usr/bin/xdg-open                                                                                              Pix -> xdg-open,
-    /usr/lib/signal-desktop/signal-desktop                                                                         ixr,
-    /usr/lib/signal-desktop/electron*/chrome-sandbox                                                               ix,
+    owner @{HOME}/                                           r,
+    owner @{HOME}/.config/Signal/{,**}                       rwkl,
 
-    deny /dev/tty                                                                                                  rw,
-    deny /dev/pts/*                                                                                                rw,
-    deny /usr/bin/xdg-settings                                                                                     rx,
+    /usr/bin/xdg-open                                        Pix -> xdg-open,
+    /usr/lib/signal-desktop/signal-desktop                   ixr,
+    /usr/lib/signal-desktop/electron*/chrome-sandbox         ix,
+
+    deny /dev/tty                                            rw,
+    deny /dev/pts/*                                          rw,
+    deny /usr/bin/xdg-settings                               rx,
 
     include if exists <local/usr.lib.signal-desktop>
 }

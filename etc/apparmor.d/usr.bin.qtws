@@ -52,7 +52,8 @@ profile qtws /usr/bin/qtws flags=(enforce) {
 
     owner @{CONFIG}/user-dirs.dirs                        r,
 
-    owner @{HOME}/.cache/qtws/**                          rwkl,
+    owner @{CACHE}/qtws/**                                rwkl,
+
     owner @{HOME}/.local/share/qtws/**                    rwk,
     owner @{HOME}/.config/qtws_Youtube\ Music/*           rw,
 

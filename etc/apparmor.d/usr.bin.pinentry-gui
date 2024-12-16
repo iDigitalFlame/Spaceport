@@ -59,6 +59,9 @@ profile pinentry-gui /usr/bin/pinentry-{gnome3,gtk,qt*,*} flags=(enforce) {
 
     owner /dev/shm/#*          rw,
 
+    /usr/bin/ldd               ixr,
+    /usr/lib/ld-*              ixr,
+    /usr/bin/{,ba,da,z}sh      ixr,
     /usr/bin/pinentry{,-*}     Pxrm,
 
     deny network,

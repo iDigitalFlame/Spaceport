@@ -75,10 +75,11 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
 
     /dev/tty*                                   rw,
 
-    owner @{HOME}/.cache/cura/{,**}             rwkl,
+    owner @{CACHE}/cura/{,**}                   rwkl,
+    owner @{CACHE}/Ultimaker\ B.V./{,**}        rwkl,
+
     owner @{HOME}/.config/cura/{,**}            rwk,
     owner @{HOME}/.local/share/cura/{,**}       rw,
-    owner @{HOME}/.cache/Ultimaker\ B.V./{,**}  rwkl,
 
     /usr/bin/ld                                 ix,
     /usr/bin/gcc                                ix,
@@ -88,7 +89,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
     /usr/bin/uname                              ix,
     /usr/bin/ldconfig                           ix,
     /usr/bin/{,ba,da}sh                         ix,
-    /usr/bin/UltiMaker-Cura                     ix,
+    /usr/bin/UltiMaker-Cura                     ixr,
     /opt/ultimaker-cura/AppRun                  ix,
     /opt/ultimaker-cura/CuraEngine              ix,
     /opt/ultimaker-cura/UltiMaker-Cura          ix,

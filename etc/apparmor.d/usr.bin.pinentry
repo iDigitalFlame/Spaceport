@@ -46,6 +46,7 @@ profile pinentry /usr/bin/pinentry{,-curses,-emacs,-tty} flags=(enforce) {
     owner /dev/tty*        r,
 
     /usr/bin/ldd           ixr,
+    /usr/lib/ld-*          ixr,
     /usr/bin/{,ba,da,z}sh  ixr,
     /usr/bin/pinentry{,-*} Pxrm,
 

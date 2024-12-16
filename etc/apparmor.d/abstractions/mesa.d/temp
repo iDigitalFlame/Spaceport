@@ -34,25 +34,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/etc/vdpau_wrapper.cfg                                                r,
+/etc/vdpau_wrapper.cfg                                          r,
 
-owner @{CACHE}/mesa                                                   rw,
-owner @{CACHE}/mesa/index                                             rw,
-owner @{CACHE}/mesa/[a-f0-9][a-f0-9]/                                 rw,
-owner @{CACHE}/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*                        rw,
-owner @{CACHE}/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp                    rwk,
+owner @{CACHE_TMP}/mesa                                         rw,
+owner @{CACHE_TMP}/mesa/index                                   rw,
+owner @{CACHE_TMP}/mesa/[a-f0-9][a-f0-9]/                       rw,
+owner @{CACHE_TMP}/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*              rw,
+owner @{CACHE_TMP}/mesa/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp          rwk,
 
-owner @{CACHE}/mesa_db                                                rw,
-owner @{CACHE}/mesa_db/{index,marker,part*/}                          rw,
-owner @{CACHE}/mesa_db/part*/mesa_cache.{db,idx}                      rwk,
+owner @{CACHE_TMP}/mesa_db                                      rw,
+owner @{CACHE_TMP}/mesa_db/{index,marker,part*/}                rw,
+owner @{CACHE_TMP}/mesa_db/part*/mesa_cache.{db,idx}            rwk,
 
-owner @{HOME}/.cache/                                                 r,
-owner @{HOME}/.cache/mesa_shader_cache/                               rw,
-owner @{HOME}/.cache/mesa_shader_cache/index                          rw,
-owner @{HOME}/.cache/mesa_shader_cache/[a-f0-9][a-f0-9]/              rw,
-owner @{HOME}/.cache/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*     rw,
-owner @{HOME}/.cache/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp rwk,
+owner @{CACHE}/                                                 r,
+owner @{CACHE}/mesa_shader_cache/                               rw,
+owner @{CACHE}/mesa_shader_cache/index                          rw,
+owner @{CACHE}/mesa_shader_cache/[a-f0-9][a-f0-9]/              rw,
+owner @{CACHE}/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*     rw,
+owner @{CACHE}/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp rwk,
 
-owner @{HOME}/.cache/mesa_shader_cache_db/                            rw,
-owner @{HOME}/.cache/mesa_shader_cache_db/{index,marker,part*/}       rw,
-owner @{HOME}/.cache/mesa_shader_cache_db/part*/mesa_cache.{db,idx}   rwk,
+owner @{CACHE}/mesa_shader_cache_db/                            rw,
+owner @{CACHE}/mesa_shader_cache_db/{index,marker,part*/}       rw,
+owner @{CACHE}/mesa_shader_cache_db/part*/mesa_cache.{db,idx}   rwk,

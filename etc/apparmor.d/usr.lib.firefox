@@ -60,12 +60,13 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce)
     owner @{run}/user/*/wayland-proxy-*                                rwk,
     owner @{run}/shm/wayland.mozilla.ipc.[0-9]*                        rw,
 
-    owner @{HOME}/.cache/librewolf/**                                  rw,
+    owner @{CACHE}/librewolf/**                                        rw,
+    owner @{CACHE}/mozilla/firefox/**                                  rw,
+    owner @{CACHE}/librewolf/**/*.sqlite                               k,
+    owner @{CACHE}/mozilla/firefox/**/*.sqlite                         k,
+
     owner @{HOME}/.config/librewolf/{,**}                              rw,
-    owner @{HOME}/.cache/mozilla/firefox/**                            rw,
-    owner @{HOME}/.cache/librewolf/**/*.sqlite                         k,
     owner @{HOME}/.config/mozilla/firefox/{,**}                        rw,
-    owner @{HOME}/.cache/mozilla/firefox/**/*.sqlite                   k,
     owner @{HOME}/.config/librewolf/**/*.{db,parentlock,sqlite}*       k,
     owner @{HOME}/.config/mozilla/firefox/**/*.{db,parentlock,sqlite}* k,
 

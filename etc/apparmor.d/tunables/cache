@@ -34,6 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{CACHE}=/tmp/.usercache/*/
+@{CACHE}=@{HOME}/.cache
+@{CACHE_TMP}=/tmp/.usercache/*/
 
 include if exists <tunables/cache.d>

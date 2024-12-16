@@ -71,7 +71,7 @@ profile spicy /usr/bin/spicy flags=(enforce) {
 
     /tmp/orcexec.*                                rwm,
 
-    owner @{HOME}/.cache/gstreamer-1.0/registry.* rw,
+    owner @{CACHE}/gstreamer-1.0/registry.*       rw,
 
     /usr/bin/spicy-s{creenshot,tats}              ix,
     /usr/lib/gstreamer-1.0/gst-plugin-scanner     ix,

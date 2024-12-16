@@ -62,13 +62,14 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
 
     /dev/tty*                                                rw,
 
-    owner @{CACHE}/chromium_cache/**                         rw,
-    owner @{CACHE}/chromium_cache/**/*.sqlite                k,
+    owner @{CACHE_TMP}/chromium_cache/**                     rw,
+    owner @{CACHE_TMP}/chromium_cache/**/*.sqlite            k,
 
-    owner @{HOME}/.cache/chrom{e,ium}/**                     rw,
+    owner @{CACHE}/chrom{e,ium}/**                           rw,
+    owner @{CACHE}/chrom{e,ium}/**/*.sqlite                  k,
+
     owner @{HOME}/.config/chrom{e,ium}/**                    rwlk,
     owner @{HOME}/.config/chrom{e,ium}/{,**}                 rwl,
-    owner @{HOME}/.cache/chrom{e,ium}/**/*.sqlite            k,
 
     /usr/bin/xdg-open                                        Pix -> xdg-open,
     /usr/bin/xdg-settings                                    Pix -> xdg-settings,

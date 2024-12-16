@@ -41,12 +41,12 @@ profile bluetoothctl /usr/bin/bluetoothctl flags=(enforce) {
     include <abstractions/consoles>
     include <abstractions/private-files>
 
-    /etc/inputrc                                        r,
-    /usr/bin/bluetoothctl                               rm,
-    /usr/share/terminfo/**                              r,
+    /etc/inputrc                                  r,
+    /usr/bin/bluetoothctl                         rm,
+    /usr/share/terminfo/**                        r,
 
-    owner @{HOME}/.cache/                               rw,
-    owner @{HOME}/.cache/.bluetoothctl_history{,-*.tmp} rw,
+    owner @{CACHE}/                               rw,
+    owner @{CACHE}/.bluetoothctl_history{,-*.tmp} rw,
 
     include if exists <local/usr.bin.bluetoothctl>
 }

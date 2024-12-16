@@ -87,7 +87,8 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     owner /{tmp,var/run}/*-{g,G}hidra{,/**}                   rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
 
-    owner @{HOME}/.cache/JNA/**                               rmwkl,
+    owner @{CACHE}/JNA/**                                     rmwkl,
+
     owner @{HOME}/.java/fonts/*/                              rw,
     owner @{HOME}/.config/Ghidra/**                           rwkl,
     owner @{HOME}/.config/java/fonts/*/                       rw,

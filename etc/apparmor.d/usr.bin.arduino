@@ -92,8 +92,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
 
-    @{run}/udev/data/+usb:*                                   r,
     @{run}/udev/data/c16*:*                                   r,
+    @{run}/udev/data/+usb:*                                   r,
 
     /tmp/                                                     r,
 

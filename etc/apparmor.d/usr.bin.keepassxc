@@ -62,7 +62,7 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     owner @{HOME}/.private/keepassxc.ini                       rkl,
     owner @{HOME}/.local/lib/keepassxc.ini                     rkl,
     owner @{CONFIG}/keepassxc/keepassxc.ini                    rkl,
-    owner @{HOME}/.cache/keepassxc/keepassxc.ini               rkl,
+    owner @{CACHE}/keepassxc/keepassxc.ini                     rkl,
 
     /{dev,sys}/bus/usb/{,**}                                   rw,
     /{dev,sys}/bus/usb/devices/{,**}                           rw,
@@ -71,7 +71,7 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
 
     owner @{HOME}/{#*,*.kdbx,*.kdbx.*}                         rwkl,
     owner @{HOME}/Documents/**/{#*,*.kdbx,*.kdbx.*}            rwkl,
-    owner @{HOME}/.cache/keepassxc/keepassxc.ini.lock          rwkl,
+    owner @{CACHE}/keepassxc/keepassxc.ini.lock                rwkl,
     owner @{HOME}/.config/keepassxc/keepassxc.ini.lock         rwkl,
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**/{#*,*.kdbx,*.kdbx.*} rwkl,
 
