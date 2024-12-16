@@ -50,7 +50,13 @@ profile journalctl /usr/bin/journalctl flags=(enforce) {
     capability                                    dac_override,
     capability                                    dac_read_search,
 
+    signal send               peer=pager,
+    signal receive set=(term) peer=unconfined,
+
+    ptrace read,
+
     /usr/bin/journalctl                           rm,
+    /usr/share/terminfo/{,**}                     r,
 
     /proc/cmdline                                 r,
     /proc/1/environ                               r,
@@ -68,12 +74,7 @@ profile journalctl /usr/bin/journalctl flags=(enforce) {
     /var/lib/systemd/catalog/database             rw,
     /var/lib/systemd/catalog/.#database*          rw,
 
-    /usr/bin/{less,more}                          Pxr -> more,
-
-    ptrace read,
-
-    signal send                 peer=more,
-    signal (receive) set=(term) peer=unconfined,
+    /usr/bin/{less,more}                          Pix -> pager,
 
     deny network,
 

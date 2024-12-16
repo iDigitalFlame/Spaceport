@@ -68,18 +68,14 @@ profile upowerd /usr/lib/upowerd flags=(enforce, attach_disconnected) {
     /sys/devices/**/leds/**/brightness_hw_changed r,
 
     @{run}/udev/data/                             r,
-    @{run}/udev/data/c10:*                        r,
-    @{run}/udev/data/c13:*                        r,
+    @{run}/udev/data/c*:*                         r,
     @{run}/udev/data/+usb:*                       r,
     @{run}/udev/data/+hid:*                       r,
     @{run}/udev/data/+i2c:*                       r,
     @{run}/udev/data/+pci:*                       r,
-    @{run}/udev/data/c116:*                       r,
     @{run}/udev/data/+acpi:*                      r,
     @{run}/udev/data/+serio:*                     r,
-    @{run}/udev/data/c16[6,7]:*                   r,
     @{run}/udev/data/+platform:*                  r,
-    @{run}/udev/data/c18[0,8,9]:*                 r,
     @{run}/udev/data/+sound:card*                 r,
     @{run}/udev/data/+input:input*                r,
     @{run}/udev/data/+power_supply*               r,
@@ -93,11 +89,6 @@ profile upowerd /usr/lib/upowerd flags=(enforce, attach_disconnected) {
 
     @{run}/systemd/inhibit/*.ref                  rw,
 
-    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name="{*,org.bluez}", label=bluetoothd),
-    dbus receive bus=system path=/org/bluez/hci*{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.bluez}", label=bluetoothd),
-    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
-    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member={SessionNew,SessionRemoved,UserNew,UserRemoved,PrepareFor*} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
-
     dbus send bus=system path=/org/bluez/hci* interface=org.bluez.Media* member=RegisterApplication peer=(name=org.bluez, label=bluetoothd),
     dbus send bus=system path=/org/bluez interface=org.bluez.ProfileManager* member=RegisterProfile peer=(name=org.bluez, label=bluetoothd),
     dbus send bus=system path=/org/bluez/hci* interface=org.freedesktop.DBus.Properties member=Set peer=(name="{*,org.bluez}", label=bluetoothd),
@@ -108,6 +99,11 @@ profile upowerd /usr/lib/upowerd flags=(enforce, attach_disconnected) {
     dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
     dbus send bus=system path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member=PauseDeviceComplete peer=(name=org.freedesktop.login1, label=systemd-logind),
     dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member={Inhibit,CanHibernate,CanHybridSleep,CanPowerOff,CanReboot,CanSuspend,CreateSession,GetSessionByPID} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+
+    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus receive bus=system path=/org/bluez/hci*{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member={SessionNew,SessionRemoved,UserNew,UserRemoved,PrepareFor*} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
 
     deny network,
 

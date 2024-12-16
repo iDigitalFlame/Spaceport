@@ -1,0 +1,61 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile vncviewer /usr/bin/vncviewer flags=(enforce) {
+    include <abstractions/gtk>
+
+    network                                              inet  stream,
+    network                                              inet6 stream,
+
+    /usr/bin/vncviewer                                   rm,
+
+    owner @{CONFIG}/fltk/fltk.org/*.prefs                r,
+    owner @{CONFIG}/tigervnc/default.tigervnc            r,
+
+    owner @{HOME}/                                       r,
+    owner @{HOME}/.local/share/tigervnc/tigervnc.history r,
+
+    @{run}/smd/hydra/*.vnc                               rw,
+
+    deny /etc/fltk{,/,/*}                                rw,
+    deny @{CONFIG}/fltk/fltk.org/*.prefs                 w,
+    deny @{CONFIG}/tigervnc/default.tigervnc             w,
+    deny @{HOME}/.local/share/tigervnc/tigervnc.history  w,
+
+    include if exists <local/usr.bin.vncviewer>
+}

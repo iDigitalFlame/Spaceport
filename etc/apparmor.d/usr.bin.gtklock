@@ -56,10 +56,11 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
     /dev/hidraw*                                 rwk,
 
     owner @{run}/faillock/*                      rwk,
-    owner @{run}/user/@{uid}/dconf/user          rw,
     owner @{run}/user/@{uid}/pam-u2f-authpending rw,
 
-    /usr/bin/unix_chkpwd                         Pxr,
+    # NOTE(dij): Trying to directly choose the profile transition will cause
+    #            this profile to not load correctly (weird).
+    /usr/bin/unix_chkpwd                         Px,
 
     deny network,
 

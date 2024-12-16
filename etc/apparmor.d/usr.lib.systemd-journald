@@ -1,0 +1,114 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile systemd-journald /usr/lib/systemd/systemd-journald flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/private-files>
+
+    capability                                                          kill,
+    capability                                                          chown,
+    capability                                                          fowner,
+    capability                                                          setgid,
+    capability                                                          setuid,
+    capability                                                          syslog,
+    capability                                                          sys_admin,
+    capability                                                          sys_ptrace,
+    capability                                                          audit_read,
+    capability                                                          dac_override,
+    capability                                                          audit_control,
+    capability                                                          dac_read_search,
+
+    network                                                             netlink raw,
+
+    ptrace read,
+
+    @{sysconfig}/etc/systemd/journald.conf                              r,
+
+    /etc/machine-id                                                     r,
+    /var/lib/dbus/machine-id                                            r,
+    /etc/systemd/journald.conf                                          r,
+    /usr/lib/systemd/systemd-journald                                   rm,
+    /etc/systemd/journald.conf.d/{,**}                                  r,
+
+    /sys/devices/**/uevent                                              r,
+    /sys/module/printk/parameters/time                                  r,
+    /sys/firmware/efi/efivars/SecureBoot-*                              r,
+
+    /proc/cmdline                                                       r,
+    /proc/pressure/*                                                    r,
+    /proc/@{pid}/cgroup                                                 r,
+    /proc/@{pid}/attr/current                                           r,
+    /proc/sys/kernel/hostname                                           r,
+    /proc/sys/kernel/osrelease                                          r,
+    /proc/1/{cgroup,environ,sched}                                      r,
+    /proc/@{pid}/{loginu,session}id                                     r,
+    /proc/sys/kernel/random/boot_id                                     r,
+    /proc/@{pid}/c{group,mdline,omm}                                    r,
+
+    @{run}/utmp                                                         rk,
+    @{run}/udev/data/+hid:*                                             r,
+    @{run}/udev/data/+acpi:*                                            r,
+    @{run}/udev/data/{b,c}*:*                                           r,
+    @{run}/udev/data/+virtio:*                                          r,
+    @{run}/udev/data/+mdio_bus:*                                        r,
+    @{run}/udev/data/+ieee80211:*                                       r,
+    @{run}/udev/data/+bluetooth:*                                       r,
+    @{run}/host/container-manager                                       r,
+    @{run}/udev/data/+s{csi,dio}:*                                      r,
+    @{run}/udev/data/+input:input*                                      r,
+    @{run}/udev/data/+thunderbolt:*                                     r,
+    @{run}/udev/data/+p{ci,latform}:*                                   r,
+    @{run}/udev/data/+usb{,-serial}:*                                   r,
+
+    owner /proc/@{pid}/stat                                             r,
+
+    /dev/kmsg                                                           rw,
+
+    /sys/fs/cgroup/system.slice/@{profile_name}.service/memory.pressure rw,
+
+    /{run,var}/log/                                                     rw,
+    /{run,var}/log/journal/                                             rw,
+    /{run,var}/log/journal/*/                                           rw,
+    /{run,var}/log/journal/*/*                                          rwl -> /{run,var}/log/journal/*/#*,
+
+    @{run}/systemd/notify                                               rw,
+    @{run}/systemd/journal/{,**}                                        rw,
+
+    include if exists <local/usr.lib.systemd-journald>
+}

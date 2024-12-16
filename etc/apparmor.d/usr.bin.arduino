@@ -38,7 +38,7 @@ include <tunables/spaceport>
 
 profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     include <abstractions/gtk>
-    include <abstractions/base>
+    include <abstractions/dconf>
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
@@ -48,6 +48,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     network                                                   inet    stream,
     network                                                   inet6   stream,
     network                                                   netlink raw,
+
+    ptrace read peer=arduino-builder,
 
     /usr/lib/                                                 r,
     /etc/fstab                                                r,
@@ -90,35 +92,30 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
 
-    /tmp/                                                     r,
-
     @{run}/udev/data/+usb:*                                   r,
     @{run}/udev/data/c16*:*                                   r,
 
-    owner @{HOME}/                                            r,
-    owner @{HOME}/.arduino15/preferences.txt                  r,
-    owner @{HOME}/.config/java/jssc/linux/*.so                rm,
-    owner @{HOME}/.dotfiles/.arduino15/preferences.txt        r,
+    /tmp/                                                     r,
 
     owner /proc/@{pid}/fd/                                    r,
     owner /proc/@{pid}/stat                                   r,
     owner /proc/@{pid}/mountinfo                              r,
     owner /proc/@{pid}/c{group,mdline}                        r,
 
+    owner @{HOME}/                                            r,
+    owner @{HOME}/.arduino15/preferences.txt                  r,
+    owner @{HOME}/.config/java/jssc/linux/*.so                rm,
+    owner @{HOME}/.dotfiles/.arduino15/preferences.txt        r,
+
     /dev/bus/usb/*/*                                          rwk,
     /dev/tty{ACM,S,USB}*                                      rw,
 
     /sys/devices/**/usb*/{,**}                                rw,
 
-    owner @{HOME}/.java/fonts/*/                              rw,
-    owner @{HOME}/.arduino{,15}/{,**}                         rw,
-    owner @{HOME}/.config/java/fonts/*/                       rw,
-    owner @{HOME}/.java/fonts/*/fcinfo[0-9]*.tmp              rw,
-    owner @{HOME}/.java/fonts/*/fcinfo-*.properties           rw,
-    owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
-    owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
-
     owner /proc/@{pid}/coredump_filter                        rw,
+
+    owner @{run}/lock/tmp*                                    rw,
+    owner @{run}/lock/LCK..ttyS[0-9]*                         rw,
 
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/build[0-9]*.tmp                      rw,
@@ -133,29 +130,31 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     owner /{tmp,var/run}/{library,package}_index.json*.tmp*   rw,
     owner /{tmp,var/run}/arduino_modified_sketch_[0-9]*/{,**} rw,
 
-    owner @{run}/lock/tmp*                                    rw,
-    owner @{run}/lock/LCK..ttyS[0-9]*                         rw,
-    owner @{run}/user/@{uid}/dconf/user                       rw,
+    owner @{HOME}/.java/fonts/*/                              rw,
+    owner @{HOME}/.arduino{,15}/{,**}                         rw,
+    owner @{HOME}/.config/java/fonts/*/                       rw,
+    owner @{HOME}/.java/fonts/*/fcinfo[0-9]*.tmp              rw,
+    owner @{HOME}/.java/fonts/*/fcinfo-*.properties           rw,
+    owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
+    owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
-    /usr/bin/groups                                           ixr,
-    /usr/bin/{i,se}d                                          ixr,
-    /usr/bin/readlink                                         ixr,
-    /usr/bin/xdg-open                                         Px -> xdg-open,
-    /usr/bin/{,e}grep                                         ixr,
-    /usr/bin/c{at,hmod}                                       ixr,
-    /usr/bin/{,ba,da}sh                                       ixr,
-    /usr/bin/arduino-builder                                  Pxr,
-    /usr/bin/{avrdud,dirnam}e                                 ixr,
-    /usr/share/arduino/arduino                                ixr,
-    /usr/lib/jvm/default{,-runtime}/bin/java                  ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ixr,
+    /usr/bin/groups                                           ix,
+    /usr/bin/{i,se}d                                          ix,
+    /usr/bin/readlink                                         ix,
+    /usr/bin/xdg-open                                         Pix -> xdg-open,
+    /usr/bin/{,e}grep                                         ix,
+    /usr/bin/c{at,hmod}                                       ix,
+    /usr/bin/{,ba,da}sh                                       ix,
+    /usr/bin/arduino-builder                                  Px -> arduino-builder,
+    /usr/bin/{avrdud,dirnam}e                                 ix,
+    /usr/share/arduino/arduino                                ix,
+    /usr/lib/jvm/default{,-runtime}/bin/java                  ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ix,
 
     owner @{HOME}/.arduino*/packages/arduino/tools/**         ixr,
-
-    ptrace read peer=arduino-builder,
 
     deny /usr/share/arduino/**                                w,
     deny @{HOME}/.arduino15/preferences.txt                   w,

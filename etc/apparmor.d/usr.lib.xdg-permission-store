@@ -43,11 +43,11 @@ profile xdg-permission-store /usr/lib/xdg-permission-store flags=(enforce, attac
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
 
+    signal receive set=(term hup kill) peer=unconfined,
+
     /usr/lib/xdg-permission-store rm,
 
     owner @{HOME}/                r,
-
-    signal receive set=(term hup kill) peer=unconfined,
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
 

@@ -43,7 +43,8 @@ deny @{HOME}/Downloads/.*                 rw,
 deny @{HOME}/@{XDG_DOWNLOAD_DIR}/.*       rw,
 
 owner @{HOME}/*                           rw,
-owner @{HOME}/[^.]*/**                    rw, # Allow subdirectories of non dot-files
+# NOTE(dij): Allow subdirectories of non dot-files
+owner @{HOME}/[^.]*/**                    rw,
 owner @{HOME}/Downloads/*                 rw,
 owner @{HOME}/@{XDG_DOWNLOAD_DIR}/*       rw,
 

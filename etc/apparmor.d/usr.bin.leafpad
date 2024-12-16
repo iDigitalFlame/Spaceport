@@ -44,15 +44,15 @@ profile leafpad /usr/bin/leafpad flags=(enforce) {
     /etc/fstab                   r,
     /usr/bin/leafpad             rm,
 
-    owner /tmp/**                r,
-
     owner /proc/@{pid}/mountinfo r,
+
+    owner /tmp/**                r,
 
     owner @{CONFIG}/leafpad/{,*} r,
 
-    deny @{CONFIG}/leafpad/{,*}  w,
-
     deny network,
+
+    deny @{CONFIG}/leafpad/{,*}  w,
 
     include if exists <local/usr.bin.leafpad>
 }

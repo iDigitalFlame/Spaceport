@@ -40,9 +40,11 @@ profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(enforce, attach_di
     include <abstractions/base>
     include <abstractions/samba>
     include <abstractions/openssl>
-    include <abstractions/nameservice>
     include <abstractions/cups-client>
+    include <abstractions/nameservice>
     include <abstractions/private-files>
+
+    signal receive set=term peer=smbd,
 
     /usr/lib*/samba/{,samba/}samba-bgqd rm,
 
@@ -55,8 +57,6 @@ profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(enforce, attach_di
     /var/cache/samba/printing/*.tdb     rwk,
 
     @{run}/{,samba/}samba-bgqd.pid      rwk,
-
-    signal receive set=term peer=smbd,
 
     include if exists <local/samba-bgqd>
     include if exists <local/usr.lib.samba-bgqd>

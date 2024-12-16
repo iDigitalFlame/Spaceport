@@ -66,7 +66,7 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     /etc/java-openjdk/security/java.security                                                                       r,
     /etc/java-openjdk/security/policy/unlimited/                                                                   r,
     /etc/java-openjdk/security/policy/**/*.policy                                                                  r,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa rm,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa                                                      rm,
 
     /sys/bus/pci/**                                                                                                r,
     /sys/{bu,clas}s/                                                                                               r,
@@ -111,6 +111,13 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner @{HOME}/Downloads/*.jar                                                                                  r,
     owner @{HOME}/.config/java/jssc/linux/*.so                                                                     rm,
 
+    owner /proc/@{pid}/coredump_filter                                                                             rw,
+    owner /proc/@{pid}/task/@{tid}/comm                                                                            rw,
+
+    owner /tmp/*.tmp                                                                                               rw,
+    owner /{tmp,var/run}/hsperfdata_*/                                                                             rw,
+    owner /{tmp,var/run}/hsperfdata_*/@{pid}                                                                       rwk,
+
     owner @{HOME}/.cache/JNA/**                                                                                    rmwkl,
     owner @{HOME}/.java/fonts/*/                                                                                   rw,
     owner @{HOME}/.config/java/fonts/*/                                                                            rw,
@@ -122,27 +129,18 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner @{HOME}/Documents/Minecraft/**/lib/jspawnhelper                                                          rwix,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties                                                         rw,
 
-    owner /proc/@{pid}/coredump_filter                                                                             rw,
-    owner /proc/@{pid}/task/@{pid}/comm                                                                            rw,
-
-    owner /tmp/*.tmp                                                                                               rw,
-    owner /{tmp,var/run}/hsperfdata_*/                                                                             rw,
-    owner /{tmp,var/run}/hsperfdata_*/@{pid}                                                                       rwk,
-
-    owner @{run}/user/@{uid}/dconf/user                                                                            rw,
-
-    /usr/bin/uname                                                                                                 ixr,
-    /usr/bin/ldconfig                                                                                              ixr,
-    /usr/bin/xdg-open                                                                                              Px -> xdg-open,
-    /usr/bin/ls{cpu,pci}                                                                                           ixr,
-    /usr/lib/gio-launch-desktop                                                                                    Pux -> xdg-open,
-    /usr/lib/jvm/default{,-runtime}/{,jre/}bin/java                                                                ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk/{,jre/}bin/java                                                               ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper                                                              ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/{,jre/}bin/java                                                             ixr,
-    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper                                                            ixr,
+    /usr/bin/uname                                                                                                 ix,
+    /usr/bin/ldconfig                                                                                              ix,
+    /usr/bin/xdg-open                                                                                              Pix -> xdg-open,
+    /usr/bin/ls{cpu,pci}                                                                                           ix,
+    /usr/lib/gio-launch-desktop                                                                                    Pix -> xdg-open,
+    /usr/lib/jvm/default{,-runtime}/{,jre/}bin/java                                                                ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk/{,jre/}bin/java                                                               ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper                                                              ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/{,jre/}bin/java                                                             ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper                                                            ix,
 
     deny ptrace read peer=xdg-{open,settings},
 
-    include if exists <local/local.bin.tools.atlauncher>
+    include if exists <local/local.bin.atlauncher>
 }

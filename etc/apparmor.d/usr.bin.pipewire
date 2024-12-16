@@ -1,0 +1,103 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile pipewire /usr/bin/pipewire flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/audio>
+    include <abstractions/video>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                                                 sys_ptrace,
+
+    network                                                    netlink raw,
+
+    ptrace read,
+
+    /                                                          r,
+    /etc/machine-id                                            r,
+    /etc/pipewire/{,**}                                        r,
+    /var/lib/dbus/machine-id                                   r,
+    /usr/share/pipewire/{,**}                                  r,
+
+    /sys/{bu,clas}s/                                           r,
+    /sys/bus/media/devices/                                    r,
+    /sys/devices/**/device:*/**/path                           r,
+    /sys/module/apparmor/parameters/enabled                    r,
+    /sys/devices/virtual/dmi/id/{*_vendor,*_version,*_name}    r,
+    /sys/devices/pci*/**/{idVendor,idProduct,removable,uevent} r,
+
+    @{run}/udev/data/c*:*                                      r,
+
+    /dev/media*                                                rw,
+
+    owner /proc/@{pid}/task/@{tid}/comm                        rw,
+
+    owner @{run}/user/@{uid}/bus                               rw,
+    owner @{run}/user/@{uid}/pulse/pid                         rw,
+    owner @{run}/user/@{uid}/pipewire-*                        rw,
+    owner @{run}/user/@{uid}/pipewire-*.lock                   rwk,
+
+    owner /tmp/dbus-*                                          rw,
+
+    /usr/bin/pactl                                             ix,
+    /usr/bin/pipewire                                          ixrm,
+    /usr/bin/pipewire-pulse                                    Px -> pipewire-pulse,
+
+    unix (bind, listen)                   type=stream addr="@/tmp/dbus-*",
+    unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
+    unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
+
+    dbus (send, receive) bus=session interface=org.pulseaudio.Server,
+
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=*, label=rtkit-daemon),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member=Get peer=(name=org.freedesktop.RealtimeKit1),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=*, label=rtkit-daemon),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=org.freedesktop.RealtimeKit1),
+    dbus send bus=system  path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-system),
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=org.freedesktop.RealtimeKit1, label=rtkit-daemon),
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={GetConnectionUnixUser,GetConnectionUnixProcessID} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=system  path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-system),
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+
+    include if exists <local/usr.bin.pipewire>
+}

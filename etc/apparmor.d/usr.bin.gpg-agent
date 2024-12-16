@@ -1,0 +1,96 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile gpg-agent /usr/bin/gpg-agent flags=(enforce) {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
+
+    signal receive peer=scdaemon,
+    signal receive peer=pinentry{,-*},
+
+    /usr/share/gnupg/*                                    r,
+    /usr/bin/gpg-agent                                    rm,
+
+    owner @{GPG_SYS_DIR}/.gpg-*                           r,
+    owner @{GPG_SYS_DIR}/*.conf                           r,
+
+    owner /proc/@{pid}/fd/                                r,
+
+    owner @{run}/user/@{uid}/gnupg/.gpg-*                 r,
+    owner @{run}/user/@{uid}/gnupg/*.conf                 r,
+
+    owner @{GPG_DIR}/.gpg-*                               r,
+    owner @{GPG_DIR}/*.conf                               r,
+    owner @{GPG_DIR}/.gpg-*                               r,
+    owner @{GPG_DIR}/*.conf                               r,
+
+    owner @{GPG_SYS_DIR}/                                 rw,
+    owner @{GPG_SYS_DIR}/.#lk*                            rw,
+    owner @{GPG_SYS_DIR}/sshcontrol                       rw,
+    owner @{GPG_SYS_DIR}/crls.d/{,*}                      rw,
+    owner @{GPG_SYS_DIR}/{,d.*/}{,S.*}                    rw,
+    owner @{GPG_SYS_DIR}/*.{db,kbx,kbx~,gpg}              rw,
+    owner @{GPG_SYS_DIR}/openpgp-revocs.d/{,*}            rw,
+    owner @{GPG_SYS_DIR}/private-keys-v1.d/{,*}           rw,
+
+    owner @{run}/user/@{uid}/gnupg/                       rw,
+    owner @{run}/user/@{uid}/gnupg/.#lk*                  rw,
+    owner @{run}/user/@{uid}/gnupg/sshcontrol             rw,
+    owner @{run}/user/@{uid}/gnupg/crls.d/{,*}            rw,
+    owner @{run}/user/@{uid}/gnupg/{,d.*/}{,S.*}          rw,
+    owner @{run}/user/@{uid}/gnupg/*.{db,kbx,kbx~,gpg}    rw,
+    owner @{run}/user/@{uid}/gnupg/openpgp-revocs.d/{,*}  rw,
+    owner @{run}/user/@{uid}/gnupg/private-keys-v1.d/{,*} rw,
+
+    owner @{GPG_DIR}/                                     rw,
+    owner @{GPG_DIR}/.#lk*                                rw,
+    owner @{GPG_DIR}/sshcontrol                           rw,
+    owner @{GPG_DIR}/crls.d/{,*}                          rw,
+    owner @{GPG_DIR}/{,d.*/}{,S.*}                        rw,
+    owner @{GPG_DIR}/*.{db,kbx,kbx~,gpg}                  rw,
+    owner @{GPG_DIR}/openpgp-revocs.d/{,*}                rw,
+    owner @{GPG_DIR}/private-keys-v1.d/{,*}               rw,
+
+    /usr/bin/pinentry{,-*}                                Px,
+    /usr/{bin,lib}/{,gnupg/}scdaemon                      Px -> scdaemon,
+
+    deny network,
+
+    include if exists <local/usr.bin.gpg-agent>
+}

@@ -1,0 +1,196 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile profile_name /path/to/binary flags=(enforce[, attach_disconnected]) {
+    include <abstractions/base>
+        # Only needed if gui/gnome/gtk/qt is not used.
+    include <abstractions/private-files
+        # Only needed if user-data{,-*} is not used. Do not use for processes that
+        # need key access
+
+    capability X,
+        # Capabilities listed first at top.
+
+    network X,
+        # Network is next.
+
+    signal receive set=(X) peer=unconfined,
+        # Signals are next.
+        # Signal movement (send/receive) does not need parentheses if it's a
+        # single one.
+
+    ptrace X,
+        # Ptrace is next. Make sure to have the capability "sys_ptrace" if using
+        # ptrace. Operations (send/receive) do not need parentheses if it's a
+        # single one.
+
+    mount /dev -> /mnt,
+        # Mount directives are next.
+
+    # Files begin here.
+    #
+    #  Permissions always follow the following format.
+    #   'm' is always last, but before 'l' or 'k'. (eg: rm, rwm, ixrm, rwmlk.)
+    #       'k' is always last if used, otherwise 'l' is last if used.
+    #   Execute permissions are always first. (eg: ixr/Px/Pixr).
+    #
+    #  - Read: r,
+    #  - Read/Load:  rm,
+    #  - Read/Write: rw,
+    #  - Read/Write/Load: rwm,
+    #  - Read/Lock: rk,
+    #  - Read/Link: rl,
+    #  - Read/Link/Lock: rlk,
+    #  - Read/Load/Link/Lock: rmlk,
+    #  - Read/Write/Load/Link/Lock: rwmlk,
+    #  - Execute (Inherit)/Read/Load/Link/Lock: ixrmlk,
+    #  - Execute (Inherit)/Read/Link/Lock: ixrlk,
+    #  - Execute (Inherit)/Read/Write: ixrw,
+    #
+    # 'mkl' are allowed inside "read" blocks.
+
+    # Files with the "owner" prefix are always AFTER the block of non-owner blocks
+    # ie: "/tmp r," is above "owner /tmp r,".
+
+    # System "disk" files are always on top.
+    /etc/**                             r,
+    /usr/lib/**/*.so                    rm,
+
+    # Device files are next.
+    /dev/tty                            r,
+
+    # The sysfs file system is next.
+    /sys/bus/                           r,
+    /sys/fs/**                          r,
+
+    # The procfs file system is next.
+    /proc/cmdline                       r,
+    /proc/@{pid}/stat                   r,
+
+    # The run tmpfs is next. The "@{run}" variable is always used.
+    @{run}/pid.pid                      r,
+    @{run}/user/@{uid}/comm             r,
+
+    # The /tmp tmpfs is next.
+    /tmp/file                           r,
+    /tmp/tmpdisk_*                      r,
+
+    # The user home dir is next. The "@{HOME}" variable is always used.
+    @{HOME}/                            r,
+    @{HOME}/.config/                    r,
+
+    # "Owned" directives follow.
+    # These follow the same order as above.
+    owned /opt/**                       r,
+
+    owned /dev/ttyAM*                   r,
+
+    owned /sys/bus/pci*/**/name         r,
+
+    owned /proc/@{pid}/task/@{tid}/comm r,
+
+    owned @{run}/user/@{uid}/dconf      r,
+
+    owned /tmp/files_*.txt              r,
+
+    owned @{HOME}/.config/cache_*/*.txt r,
+
+    # Next the same order follows as above, but with any writable directives.
+    # There does NOT need to be a read directive above if it can be also covered
+    # by the below write directive.
+    /var/lib/file                       rw,
+
+    /sys/bus/usb**/*/uevent             rw,
+
+    /proc/@{pid}/mounts                 rw,
+
+    @{run}/user/@{uid}/dconf            rw, # would remove the entry at line 122.
+
+    @{HOME}/.marked                     w,
+
+    # Like above, "owned" directives follow in the same order.
+
+    owned @{run}/user/@{uid}/config     rw,
+
+    owned @{HOME}/.config/conf.json     rwlk,
+
+    # Execute permissions follow. These also have the same ordering, but can be
+    # combined. The only seperator is the "owned" prefix.
+
+    /usr/bin/test-*                     ixr,
+    /usr/local/share/tests{,*}          ix,
+
+    owned @{HOME}/.local/bin/*          ixr,
+
+    unix send,
+    # Unix sockets follow.
+    # Similar to signal/ptrace, operations (send/receive/bind) do not need
+    # parentheses if it's a single one.
+
+    unix (send, bind),
+
+    # DBus rules follow.
+    # Similar to unix, operations (send/receive/bind) do not need parentheses
+    # if it's a single one.
+    # DBus operations are seperated by type.
+    #
+    # The order goes
+    #  - bind
+    #  - send/receive/bind combos
+    #  - send
+    #  - receive
+
+    dbus bind,
+
+    dbus (send, receive) interface=bleh,
+
+    dbus send bus=system,
+
+    dbus receive bus=session,
+
+    # Finally deny rules follow.
+    #
+    # Deny rules follow the order.
+    #  - Files (operations follow the order of files above).
+    #  - Capabilities
+    #  - Signals
+    #  - Ptrace
+    #  - DBus
+
+    include if exists <local/path.to.binary>
+}

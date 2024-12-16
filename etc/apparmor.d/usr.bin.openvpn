@@ -1,0 +1,80 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile openvpn /usr/bin/openvpn flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+
+    capability                                 setuid,
+    capability                                 setgid,
+    capability                                 net_admin,
+    capability                                 dac_override,
+    capability                                 dac_read_search,
+
+    network                                    inet    dgram,
+    network                                    inet6   dgram,
+    network                                    inet    stream,
+    network                                    inet6   stream,
+    network                                    netlink raw,
+
+    signal receive set=(term) peer=nm-openvpn-service,
+
+    /usr/bin/openvpn                           rm,
+    /etc/openvpn/{,**}                         r,
+
+    @{HOME}/.cert/{,**}                        r,
+    @{HOME}/.config/openvpn/{,**}              r,
+
+    @{run}/systemd/journal/dev-log             r,
+
+    owner /proc/@{pid}/net/route               r,
+
+    /var/log/openvpn/*.log                     w,
+
+    /dev/net/tun                               rw,
+
+    @{run}/openvpn/*.{pid,status}              rw,
+    @{run}/NetworkManager/nm-openvpn-*         rw,
+
+    /usr/bin/ip                                ix,
+    /usr/bin/systemd-ask-password              Px -> systemd-ask-password,
+    /usr/lib/nm-openvpn-service-openvpn-helper Px -> nm-openvpn-auth-dialog,
+    /usr/lib/nm-openvpn-service-openvpn-helper Px -> nm-openvpn-auth-dialog,
+
+    include if exists <local/usr.bin.openvpn>
+}

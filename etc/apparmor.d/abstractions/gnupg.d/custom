@@ -34,9 +34,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+owner @{HOME}/.local/share/gnupg/*.gpg       r,
 owner @{HOME}/.local/share/gnupg/options     r,
-owner @{HOME}/.local/share/gnupg/pubring.gpg r,
-owner @{HOME}/.local/share/gnupg/secring.gpg r,
 owner @{HOME}/.local/share/gnupg/pubring.kbx r,
 owner @{HOME}/.local/share/gnupg/so/*.x86_64 rm,
 owner @{HOME}/.local/share/gnupg/random_seed rw,

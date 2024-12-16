@@ -38,11 +38,9 @@ include <tunables/spaceport>
 
 profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected) {
     include <abstractions/base>
-    include <abstractions/nameservice>
     include <abstractions/dbus-system>
+    include <abstractions/nameservice>
     include <abstractions/private-files>
-
-    @{sysconfig}/etc/polkit-1/rules.d/spaceport.rules r,
 
     capability                                        setgid,
     capability                                        setuid,
@@ -50,6 +48,10 @@ profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected)
     capability                                        sys_ptrace,
 
     audit capability                                  net_admin,
+
+    ptrace read,
+
+    @{sysconfig}/etc/polkit-1/rules.d/spaceport.rules r,
 
     /etc/machine-id                                   r,
     /etc/polkit-1/rules.d/                            r,
@@ -71,20 +73,18 @@ profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected)
     /proc/@{pid}/fdinfo/*                             r,
     /proc/sys/kernel/osrelease                        r,
     /proc/@{pid}/c{mdline,group}                      r,
-    /proc/@{pid}/task/@{pid}/stat                     r,
+    /proc/@{pid}/task/@{tid}/stat                     r,
 
     @{run}/systemd/sessions/*                         r,
     @{run}/systemd/users/@{uid}                       r,
 
     owner /var/lib/polkit{,-1}/.cache/                rw,
 
-    ptrace read,
-
     dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={GetConnectionUnixProcessID,GetConnectionUnixUser,GetConnectionCredentials} peer=(name=org.freedesktop.DBus, label=dbus-system),
 
-    deny /.cache/                                     rw,
-
     deny network,
+
+    deny /.cache/                                     rw,
 
     include if exists <local/usr.lib.polkit>
 }

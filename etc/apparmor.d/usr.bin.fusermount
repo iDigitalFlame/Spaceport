@@ -44,6 +44,15 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     capability                    sys_admin,
     capability                    dac_read_search,
 
+    mount options=(ro, nosuid, nodev) /dev/fuse   -> /tmp/.mount_**,
+    mount options=(ro, nosuid, nodev) *.AppImage  -> /tmp/.mount_**,
+    mount options=(rw, rprivate)                  -> /,
+    mount options=(rw, rbind) @{run}/user/@{uid}/ -> /,
+    mount fstype=fuse.portal                      -> @{run}/user/@{uid}/doc/,
+
+    umount /tmp/.mount_**,
+    umount @{run}/user/@{uid}/doc/,
+
     /etc/fuse{,*}.conf            r,
     /usr/bin/fusermount{,*}       rm,
 
@@ -55,15 +64,6 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     /tmp/.mount_**                rw,
 
     owner @{run}/user/@{uid}/doc/ rw,
-
-    mount options=(ro, nosuid, nodev) /dev/fuse   -> /tmp/.mount_**,
-    mount options=(ro, nosuid, nodev) *.AppImage  -> /tmp/.mount_**,
-    mount options=(rw, rprivate)                  -> /,
-    mount options=(rw, rbind) @{run}/user/@{uid}/ -> /,
-    mount fstype=fuse.portal                      -> @{run}/user/@{uid}/doc/,
-
-    umount /tmp/.mount_**,
-    umount @{run}/user/@{uid}/doc/,
 
     unix (send receive) type=stream peer=(label=xdg-document-portal),
 

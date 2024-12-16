@@ -1,0 +1,143 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/wutmp>
+    include <abstractions/consoles>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+    include <abstractions/authentication>
+
+    capability                                               chown,
+    capability                                               mknod,
+    capability                                               fowner,
+    capability                                               setgid,
+    capability                                               setuid,
+    capability                                               net_admin,
+    capability                                               sys_ptrace,
+    capability                                               audit_write,
+    capability                                               sys_resource,
+    capability                                               dac_override,
+    capability                                               dac_read_search,
+
+    network                                                  inet    dgram,
+    network                                                  inet6   dgram,
+    network                                                  netlink raw,
+
+    signal send set=(winch, hup, term),
+
+    ptrace read,
+
+    @{sysconfig}/etc/sudoers.d/{,*}                          r,
+
+    /                                                        r,
+    /usr/                                                    r,
+    /usr/bin/                                                r,
+    /etc/sudoers                                             r,
+    /usr/bin/sudo                                            rm,
+    /etc/sudo.conf                                           r,
+    /etc/machine-id                                          r,
+    /usr/lib/sudo/**                                         rm,
+    /etc/sudoers.d/{,*}                                      r,
+    /usr/local/{,s}bin/                                      r,
+    /etc/default/locale                                      r,
+    /var/{db,lib}/sudo/lectured/                             r,
+
+    /dev/                                                    r,
+    /dev/bus/usb/                                            r,
+
+    /sys/bus/usb/                                            r,
+    /sys/{bu,clas}s/                                         r,
+    /sys/class/usbmisc/                                      r,
+    /sys/bus/usb/devices/{,**}                               r,
+    /sys/fs/cgroup/*.slice{,/*.slice}/*.service/cgroup.procs r,
+
+    /proc/@{pid}/stat                                        r,
+    /proc/@{pid}/l{imits,oginuid}                            r,
+    /proc/sys/kernel/seccomp/actions_avail                   r,
+
+    @{run}/                                                  r,
+    @{run}/udev/data/c1*:*                                   r,
+    @{run}/udev/data/+usb:*                                  r,
+    @{run}/systemd/sessions/*                                r,
+
+    owner /var/lib/extrausers/shadow                         r,
+
+    /dev/tty                                                 rwk,
+    /dev/ptmx                                                rwk,
+    /dev/bus/usb/*/{,*}                                      rwk,
+
+    /sys/devices/**/usb*/{,**}                               rw,
+
+    @{run}/faillock/                                         rw,
+    @{run}/faillock/*                                        rwk,
+    @{run}/systemd/sessions/?*.ref                           rw,
+
+    owner /var/log/sudo.log                                  wk,
+    owner /var/lib/sudo/ts/                                  rw,
+    owner /var/lib/sudo/ts/@{uid}                            rwk,
+    owner /var/{db,lib}/sudo/lectured/@{uid}                 rw,
+
+    owner /dev/tty*                                          rw,
+
+    owner @{run}/sudo/                                       rw,
+    owner @{run}/sudo/ts/                                    rw,
+    owner @{run}/sudo/ts/@{uid}                              rwk,
+
+    owner @{HOME}/.yubico/                                   r,
+    owner @{HOME}/.yubico/challenge-*                        rw,
+
+    /opt/*/**                                                PUx,
+    /usr/bin/**                                              PUx,
+    /usr/bin/{ba,da,z}sh                                     Ux,
+    /usr/local/{,s}bin/**                                    PUx,
+
+    @{HOME}/.local/{apps,bin,lib}/**                         PUx,
+
+    unix bind type=stream addr="@*/bus/sudo/system",
+
+    dbus (send, receive) bus=system  interface=org.freedesktop.home1,
+    dbus (send, receive) bus=system  interface=org.freedesktop.login1,
+    dbus (send, receive) bus=session path=/org/freedesktop/systemd1 interface=org.freedesktop.systemd.Manager member={JobRemoved,StartTransientUnit},
+
+    deny @{HOME}/.sudo_as_admin_successful                   rw,
+
+    include if exists <local/usr.bin.sudo>
+}

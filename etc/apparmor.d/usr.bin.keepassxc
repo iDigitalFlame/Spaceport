@@ -42,8 +42,8 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     include <abstractions/gnome>
     include <abstractions/openssl>
     include <abstractions/p11-kit>
-    include <abstractions/nameservice>
     include <abstractions/dbus-strict>
+    include <abstractions/nameservice>
     include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
@@ -77,13 +77,13 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
 
     /usr/bin/wl-copy                                           ix,
 
+    deny network,
+
     deny /dev/tty                                              rw,
     deny @{HOME}/.private/keepassxc.ini                        w,
     deny @{HOME}/.local/lib/keepassxc.ini                      w,
     deny @{CONFIG}/keepassxc/keepassxc.ini                     w,
     deny @{HOME}/.c{ache,onfig}/keepassxc/keepassxc.ini        w,
-
-    deny network,
 
     include if exists <local/usr.bin.keepassxc>
 }

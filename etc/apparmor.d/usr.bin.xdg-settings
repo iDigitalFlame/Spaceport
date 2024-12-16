@@ -55,12 +55,12 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
 
     owner @{CONFIG}/mimeapps.list        r,
 
-    @{sysconfig}/bin/ghr                 ix,
+    @{sysconfig}/bin/ghr                 Pix -> ghr,
 
     /usr/bin/tr                          ix,
     /usr/bin/gio                         ix,
     /usr/bin/env                         ix,
-    /usr/bin/ghr                         ix,
+    /usr/bin/ghr                         Pix -> ghr,
     /usr/bin/head                        ix,
     /usr/bin/file                        ix,
     /usr/bin/xprop                       ix,

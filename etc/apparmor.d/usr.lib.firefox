@@ -72,8 +72,8 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce)
     /usr/bin/tr                                                        ix,
     /usr/bin/pwd                                                       ix,
     /usr/bin/which                                                     ix,
-    /usr/bin/xdg-open                                                  Px -> xdg-open,
-    /usr/lib/gio-launch-desktop                                        Px -> xdg-open,
+    /usr/bin/xdg-open                                                  Pix -> xdg-open,
+    /usr/lib/gio-launch-desktop                                        Pix -> xdg-open,
     /usr/lib/{firefox,librewolf}/**                                    ixr,
     /usr/lib/{firefox,librewolf}/browser/extensions/**                 ixrm,
 
@@ -85,9 +85,6 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce)
     dbus (receive, send) bus=accessibility,
     dbus (receive, send) bus=session path=/org/mozilla/firefox/Remote interface=org.mozilla.firefox member=OpenURL peer=(label=firefox),
 
-    dbus receive bus=session interface=org.a11y.atspi**,
-    dbus receive bus=system path=/org/freedesktop/NetworkManager,
-
     dbus send bus=session peer=(name=org.a11y.Bus),
     dbus send bus=system  path=/org/freedesktop/RealtimeKit1,
     dbus send bus=system  path=/org/freedesktop/NetworkManager member=state,
@@ -97,6 +94,9 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce)
     dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=RequestName peer=(name=org.freedesktop.DBus),
     dbus send bus=session path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={Inhibit,Uninhibit} peer=(label=unconfined),
     dbus send bus=session path=/org/gnome/GConf/Database/* member={AddMatch,AddNotify,AllEntries,LookupExtended,RemoveNotify} peer=(label=unconfined),
+
+    dbus receive bus=session interface=org.a11y.atspi**,
+    dbus receive bus=system path=/org/freedesktop/NetworkManager,
 
     include if exists <local/usr.lib.firefox>
 }

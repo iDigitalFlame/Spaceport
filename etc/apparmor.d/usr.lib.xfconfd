@@ -1,0 +1,65 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile xfconfd /usr/lib/xfce4/xfconf/xfconfd flags=(enforce) {
+    include <abstractions/gui>
+    include <abstractions/xdg-desktop>
+    include <abstractions/private-files>
+    include <abstractions/freedesktop.org>
+
+    /usr/share/xfce{,4}/                            r,
+    /etc/xdg/xfce4/xfconf/**                        r,
+    /usr/lib/xfce4/xfconf/xfconfd                   rm,
+
+    owner @{HOME}/                                  r,
+    owner @{HOME}/.config/xfce4/xfconf/**           r,
+
+    owner /dev/tty*                                 rw,
+
+    owner @{CONFIG}/xfce4/xfconf/**/*.xml           r,
+
+    owner @{HOME}/.config/xfce4/                    rw,
+    owner @{HOME}/.config/xfce4/help{,ers}.rc       rw,
+    owner @{HOME}/.config/xfce4/help{,ers}.rc.*.tmp rw,
+
+    deny network,
+
+    deny @{CONFIG}/xfce4/xfconf/**/*.xml{,.new}     w,
+
+    include if exists <local/usr.lib.xfconfd>
+}

@@ -44,6 +44,9 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(enforce, attac
 
     capability                               ipc_lock,
 
+    signal send    set=(term)       peer=ssh-agent,
+    signal receive set=(cont, term) peer=unconfined,
+
     /usr/bin/gnome-keyring-daemon            rm,
 
     owner /proc/@{pid}/fd/                   r,
@@ -58,18 +61,8 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(enforce, attac
     owner @{HOME}/.local/share/keyrings/     rw,
     owner @{HOME}/.local/share/keyrings/*    rwl,
 
-    /usr/bin/ssh-add                         ixr,
-    /usr/bin/ssh-agent                       Pxr -> ssh-agent,
-
-    signal send    set=(term)       peer=ssh-agent,
-    signal receive set=(cont, term) peer=unconfined,
-
-    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
-    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=xdg-desktop-portal),
-    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Settings member=SettingChanged peer=(name=:*, label=xdg-desktop-portal),
-    dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=:*, label=systemd-logind),
-    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.impl.portal.Settings member={Read,ReadAll} peer=(name=:*, label=xdg-desktop-portal),
-    dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member={PauseDevice,Unlock} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
+    /usr/bin/ssh-add                         ix,
+    /usr/bin/ssh-agent                       Px -> ssh-agent,
 
     dbus send bus=system  path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member=GetSession peer=(name=:*, label=systemd-logind),
     dbus send bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=systemd-logind),
@@ -79,6 +72,13 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(enforce, attac
     dbus send bus=system  path=/org/freedesktop/login1{,session/*,seat/*} interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
     dbus send bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll,Read} peer=(name="{:*,org.freedesktop.portal.Desktop}", label=xdg-desktop-portal),
     dbus send bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member={ReleaseDevice,TakeControl,TakeDevice,SetBrightness,SetLockedHint,SetIdleHint} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=:*, label=xdg-desktop-portal),
+    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Settings member=SettingChanged peer=(name=:*, label=xdg-desktop-portal),
+    dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=:*, label=systemd-logind),
+    dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.impl.portal.Settings member={Read,ReadAll} peer=(name=:*, label=xdg-desktop-portal),
+    dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member={PauseDevice,Unlock} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
 
     deny network,
 

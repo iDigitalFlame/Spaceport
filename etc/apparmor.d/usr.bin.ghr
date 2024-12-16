@@ -47,16 +47,16 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     capability                                     dac_override,
     capability                                     dac_read_search,
 
-    # We can't scrub these as this can cause the apps to fail to load any
-    # non-standard libraries.
-    /usr/bin/**                                    puxr,
-    /opt/notesnook/**                              puxrm,
-    /usr/lib{,32,64}/**                            puxrm,
-    /opt/vscodium-bin/**                           puxrm,
-    /opt/ultimaker-cura/**                         puxrm,
-    /{usr,opt/spaceport}/bin/**                    puxr,
+    # NOTE(dij): We can't scrub these as this can cause the apps to fail to load
+    #            any non-standard libraries.
+    /usr/bin/**                                    pux,
+    /opt/notesnook/**                              pux,
+    /usr/lib{,32,64}/**                            puxm,
+    /opt/vscodium-bin/**                           pux,
+    /opt/ultimaker-cura/**                         pux,
+    /{usr,opt/spaceport}/bin/**                    pux,
 
-    # GHR is SUID so it's not an owner.
+    # NOTE(dij): GHR is SUID so it's not an owner.
     @{HOME}/.config/rust/**                        PUx,
     @{HOME}/.local/lib/go/bin/**                   PUx,
     @{HOME}/Documents/Utilities/**                 PUx,
@@ -66,14 +66,14 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     @{HOME}/.vscode-oss/extensions/**              PUx,
     @{HOME}/.config/VSCodium/Home/extensions/**    PUx,
 
+    deny network,
+
     deny /dev/dri/**                               rw,
     deny @{CACHE}/mesa{,_db}/**                    rw,
     deny @{HOME}/.cache/mesa_shader_cache{,_db}/** rw,
 
     # Disconnected path
     deny /apparmor/.null                           rw,
-
-    deny network,
 
     include if exists <local/usr.bin.ghr>
 }

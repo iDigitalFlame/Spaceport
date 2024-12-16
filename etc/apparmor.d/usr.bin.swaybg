@@ -42,12 +42,12 @@ profile swaybg /usr/bin/swaybg flags=(enforce) {
     include <abstractions/wayland>
     include <abstractions/private-files>
 
-    /usr/bin/swaybg   rm,
+    /usr/bin/swaybg                                     rm,
 
-    # For pictures and backgrounds.
-    owner @{HOME}/**  r,
+    # NOTE(dij): For pictures and backgrounds.
+    owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic} r,
 
-    /dev/shm/swaybg-* rw,
+    /dev/shm/swaybg-*                                   rw,
 
     deny network,
 

@@ -38,7 +38,6 @@ include <tunables/spaceport>
 
 profile blueman /usr/bin/blueman-* flags=(enforce) {
     include <abstractions/gtk>
-    include <abstractions/mime>
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/python>
@@ -58,8 +57,6 @@ profile blueman /usr/bin/blueman-* flags=(enforce) {
     owner /proc/@{pid}/fd/              r,
     owner /proc/@{pid}/mounts           r,
     owner /proc/@{pid}/cmdline          r,
-
-    owner @{run}/user/@{uid}/dconf/user rw,
 
     /usr/bin/blueman-*                  ixr,
     /usr/lib/gio-launch-desktop         ix,

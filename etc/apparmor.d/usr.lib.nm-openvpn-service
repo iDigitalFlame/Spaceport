@@ -1,0 +1,68 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile nm-openvpn-service /usr/lib/nm-openvpn-service flags=(enforce) {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+
+    capability                                 kill,
+    capability                                 dac_override,
+    capability                                 net_admin,
+
+    signal send set=(term) peer=openvpn,
+
+    /usr/lib/nm-openvpn-service                rm,
+
+    owner /proc/@{pid}/fd/                     r,
+
+    @{HOME}/.cert/nm-openvpn/*.pem             r,
+    @{HOME}/.config/openvpn/nm-openvpn/*.pem   r,
+
+    /dev/tty                                   rw,
+    /dev/net/tun                               rw,
+
+    @{run}/NetworkManager/nm-openvpn-*         rw,
+
+    /usr/bin/kmod                              Px -> kmod,
+    /usr/bin/openvpn                           Px -> openvpn,
+    /usr/bin/{,ba,da,z}sh                      ix,
+    /usr/lib/nm-openvpn-auth-dialog            Px -> nm-openvpn-auth-dialog,
+    /usr/lib/nm-openvpn-service-openvpn-helper Px -> nm-openvpn-auth-dialog,
+
+    include if exists <local/usr.lib.nm-openvpn-service>
+}

@@ -1,0 +1,89 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/dbus-system>
+    include <abstractions/private-files>
+
+    capability                               net_admin,
+    capability                               net_bind_service,
+
+    network                                  alg       seqpacket,
+    network                                  netlink   raw,
+    network                                  bluetooth raw,
+    network                                  bluetooth seqpacket,
+    network                                  bluetooth stream,
+
+    @{sysconfig}/etc/bluetooth/{,*.conf}     r,
+
+    /etc/bluetooth/{,*.conf}                 r,
+    /var/lib/bluetooth/{,**}                 rw,
+    /usr/lib/bluetooth/bluetoothd            rm,
+
+    /sys/devices/pci*/**/{uevent,name}       r,
+    /sys/devices/pci**/**/rfkill*/name       r,
+    /sys/devices/platform/**/rfkill/**/name  r,
+    /sys/devices/virtual/dmi/id/chassis_type r,
+    /sys/devices/virtual/misc/uhid/**/uevent r,
+
+    /proc/sys/kernel/hostname                r,
+
+    @{run}/udev/data/+hid:*                  r,
+
+    /dev/uhid                                rw,
+    /dev/uinput                              rw,
+    /dev/rfkill                              rw,
+    /dev/hidraw*                             rw,
+
+    @{run}/sdp                               rw,
+
+    owner @{run}/systemd/notify              w,
+
+    dbus (send, receive) bus=system interface=org.bluez,
+
+    dbus send bus=system path=/MediaEndpoint interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label=pulseaudio),
+    dbus send bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=org.freedesktop.hostname1),
+    dbus send bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name=org.freedesktop.DBus, label="{jwupd,NetworkManager,pulseaudio,upowerd}"),
+    dbus send bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name="{*,org.freedesktop.hostname1}", label=systemd-hostnamed),
+
+    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label="{brave,NetworkManager,pulseaudio,upowerd}"),
+    dbus receive bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.hostname1}", label=systemd-hostnamed),
+
+    include if exists <local/usr.lib.bluetoothd>
+}

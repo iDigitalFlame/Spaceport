@@ -45,8 +45,8 @@ profile reflector /usr/bin/reflector flags=(enforce) {
 
     capability                                 dac_override,
 
-    network inet                               stream,
-    network inet6                              stream,
+    network                                    inet  stream,
+    network                                    inet6 stream,
 
     /usr/bin/{,reflector}                      r,
     /etc/pacman.d/{,*-}mirrorlist              r,

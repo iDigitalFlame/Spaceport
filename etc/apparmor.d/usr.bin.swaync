@@ -1,0 +1,78 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile swaync /usr/bin/swaync flags=(enforce) {
+    include <abstractions/gtk>
+    include <abstractions/audio>
+    include <abstractions/dconf>
+    include <abstractions/notifications>
+    include <abstractions/private-files>
+
+    /etc/machine-id                                   r,
+    /usr/bin/swaync                                   rm,
+    /etc/xdg/swaync/*                                 r,
+    /usr/share/glib-2.0/schemas/gschemas.compiled     r,
+
+    /sys/class/backlight/*/{,max_}brightness          r,
+    /sys/devices/pci*/**/*backlight/{,max_}brightness r,
+
+    owner @{CONFIG}/swaync/style.css                  r,
+    owner @{CONFIG}/swaync/config.json                r,
+
+    owner @{HOME}/                                    r,
+    owner @{HOME}/Pictures/Screenshots/*.{jpg,png}    r,
+
+    /usr/bin/sudo                                     Px -> sudo,
+    /usr/local/bin/*ctl                               Px,
+    /usr/bin/{,ba,da}sh                               ix,
+    /usr/bin/swaync-client                            Px -> swaync-client,
+    /usr/lib/smd/bin/powerctl                         Px,
+
+    @{sysconfig}/usr/lib/smd/bin/powerctl             Px,
+
+    owner @{HOME}/.local/bin/{,sway/}*                PUx,
+    owner @{HOME}/.dotfiles/.local/bin/{,sway/}*      PUx,
+
+    dbus bind name=org.erikreider.swaync.cc,
+
+    dbus (send, receive) interface=org.erikreider.swaync.cc,
+
+    deny network,
+
+    include if exists <local/usr.bin.swaync>
+}

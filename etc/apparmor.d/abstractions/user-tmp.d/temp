@@ -34,5 +34,5 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-owner /tmp/.usercache/*/   rw,
-owner /tmp/.usercache/*/** rwkl,
+owner @{CACHE}/   rw,
+owner @{CACHE}/** rwkl,

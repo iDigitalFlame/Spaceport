@@ -50,7 +50,7 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
 
     owner @{CONFIG}/mimeapps.list                          r,
 
-    @{sysconfig}/bin/ghr                                   Px,
+    @{sysconfig}/bin/ghr                                   Pix -> ghr,
     @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
 
     /usr/bin/env                                           ix,
@@ -64,7 +64,7 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     /usr/bin/{u,base,host}name                             ix,
 
     /usr/bin/ghr                                           Px -> ghr,
-    /usr/bin/vlc                                           Px -> vlc,
+    /usr/bin/vlc                                           Px,
     /usr/bin/leafpad                                       Px,
     /usr/bin/swayimg                                       Px,
     /usr/bin/ristretto                                     Px,

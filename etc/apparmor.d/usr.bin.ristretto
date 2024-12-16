@@ -44,15 +44,14 @@ profile ristretto /usr/bin/ristretto flags=(enforce) {
     # Needed to open any files for reading.
     /**                                                            r,
 
-    owner @{HOME}/.config/ristretto/accels.scm                     r,
     owner @{CONFIG}/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml r,
 
-    owner @{run}/user/@{uid}/dconf/user                            rw,
+    owner @{HOME}/.config/ristretto/accels.scm                     r,
+
+    deny network,
 
     deny @{HOME}/.config/ristretto/accels.scm                      w,
     deny @{CONFIG}/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml  w,
-
-    deny network,
 
     include if exists <local/usr.bin.ristretto>
 }

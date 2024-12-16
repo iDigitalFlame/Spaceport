@@ -38,16 +38,16 @@ include <tunables/spaceport>
 
 profile cups-notifier-dbus /usr/lib/cups/notifier/dbus flags=(enforce) {
     include <abstractions/base>
-    include <abstractions/nameservice>
     include <abstractions/dbus-system>
+    include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
+
+    signal receive set=(term) peer=cupsd,
 
     /usr/lib/cups/notifier/dbus      rm,
 
     /tmp/cups-dbus-notifier-lockfile rwk,
-
-    signal (receive) set=(term) peer=cupsd,
 
     deny network,
 

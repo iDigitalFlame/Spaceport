@@ -38,8 +38,8 @@ include <tunables/spaceport>
 
 profile xdg-desktop-portal /usr/lib/xdg-desktop-portal flags=(enforce, attach_disconnected) {
     include <abstractions/base>
-    include <abstractions/dconf>
     include <abstractions/audio>
+    include <abstractions/dconf>
     include <abstractions/consoles>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>
@@ -48,6 +48,8 @@ profile xdg-desktop-portal /usr/lib/xdg-desktop-portal flags=(enforce, attach_di
     include <abstractions/dbus-session-strict>
 
     capability                                   sys_ptrace,
+
+    ptrace read,
 
     /etc/sysconfig/proxy                         r,
     /usr/lib/xdg-desktop-portal                  rm,
@@ -63,21 +65,17 @@ profile xdg-desktop-portal /usr/lib/xdg-desktop-portal flags=(enforce, attach_di
     owner /proc/@{pid}/                          r,
     owner /proc/@{pid}/cgroup                    r,
     owner /proc/@{pid}/mountinfo                 r,
-    owner /proc/@{pid}/task/@{pid}/              r,
-    owner /proc/@{pid}/task/@{pid}/{comm,status} r,
+    owner /proc/@{pid}/task/@{tid}/              r,
+    owner /proc/@{pid}/task/@{tid}/{comm,status} r,
+
+    owner @{CONFIG}/user-dirs.dirs               r,
 
     owner @{HOME}/                               r,
-    owner @{CONFIG}/user-dirs.dirs               r,
-    owner @{HOME}/.config/dconf/user             r,
 
     /dev/tty                                     rw,
 
-    owner @{run}/user/@{uid}/dconf/user          rw,
-
-    /usr/bin/{,ba,da,z}sh                        ixr,
-    /usr/lib/xdg-desktop-portal-validate-icon    ixr,
-
-    ptrace read,
+    /usr/bin/{,ba,da,z}sh                        ix,
+    /usr/lib/xdg-desktop-portal-validate-icon    ix,
 
     dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=*, label=rtkit-daemon),
     dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member=Get peer=(name=org.freedesktop.RealtimeKit1),
@@ -96,12 +94,12 @@ profile xdg-desktop-portal /usr/lib/xdg-desktop-portal flags=(enforce, attach_di
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
     dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Realtime member=MakeThread* peer=(name=:*),
-    dbus receive bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=InterfacesAdded peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-    dbus receive bus=system path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-    dbus receive bus=system path=/org/freedesktop/NetworkManager interface=org.freedesktop.DBus.Properties member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-    dbus receive bus=system path=/org/freedesktop/NetworkManager{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-    dbus receive bus=system path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=Updated peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-    dbus receive bus=system path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={CheckPermissions,DeviceAdded,DeviceRemoved,StateChanged} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system  path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=InterfacesAdded peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.DBus.Properties member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system  path=/org/freedesktop/NetworkManager{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system  path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=Updated peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+    dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={CheckPermissions,DeviceAdded,DeviceRemoved,StateChanged} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
 
     deny network,
 

@@ -41,8 +41,6 @@
 
 audit deny /opt/secureboot/{,*} rw,
 
-deny ptrace (readby, tracedby),
-
 signal receive   peer=unconfined set=(hup int quit kill segv pipe term cont stop),
 signal           peer=@{profile_name},
 

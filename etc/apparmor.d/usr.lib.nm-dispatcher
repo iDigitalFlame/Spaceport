@@ -1,0 +1,127 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/python>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                              net_admin,
+    capability                              sys_nice,
+    capability                              sys_ptrace,
+
+    ptrace read peer=unconfined,
+
+    /                                       r,
+    /etc/fstab                              r,
+    /usr/lib/nm-dispatcher                  rm,
+    /etc/NetworkManager/dispatcher.d/       r,
+    /usr/lib/NetworkManager/dispatcher.d/   r,
+
+    /sys/class/net/                         r,
+
+    @{run}/systemd/netif/leases/            r,
+
+    owner /proc/@{pid}/fd/                  r,
+
+    /dev/tty                                rw,
+
+    @{run}/systemd/notify                   rw,
+    @{run}/modem-manager-gui/{,timestamps}  rw,
+
+    /usr/bin/date                           ix,
+    /usr/bin/nmcli                          ix,
+    /usr/bin/basename                       ix,
+    /usr/bin/readlink                       ix,
+    /usr/bin/python3*                       ix,
+    /usr/bin/systemctl                      Cx -> systemctl,
+    /usr/bin/c{at,howm}                     ix,
+    /usr/bin/g{awk,rep}                     ix,
+    /usr/bin/{,ba,da}sh                     ix,
+    /usr/bin/systemd-cat                    Pix -> systemd-cat,
+    /usr/bin/mk{dir,temp}                   ix,
+    /usr/bin/{id,rm,tr,sed}                 ix,
+    /etc/NetworkManager/dispatcher.d/**     ixr,
+    /usr/lib/NetworkManager/dispatcher.d/** ixr,
+
+    dbus bind bus=system name=org.freedesktop.nm_dispatcher,
+
+    dbus (send, receive) bus=system interface=org.freedesktop.nm_dispatcher,
+
+    dbus send bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label=NetworkManager),
+
+    deny network,
+
+    profile systemctl {
+        include <abstractions/base>
+        include <abstractions/consoles>
+        include <abstractions/dbus-system>
+
+        capability                      net_admin,
+
+        ptrace read peer=unconfined,
+
+        /etc/                           r,
+        /etc/systemd/                   r,
+        /usr/bin/systemctl              rm,
+        /etc/systemd/system/            r,
+
+        /proc/cmdline                   r,
+        /proc/1/sched                   r,
+        /proc/1/cgroup                  r,
+        /proc/1/environ                 r,
+        /proc/sys/fs/nr_open            r,
+        /proc/sys/kernel/osrelease      r,
+        /proc/sys/kernel/random/boot_id r,
+
+        owner /proc/@{pid}/fd/          r,
+        owner /proc/@{pid}/stat         r,
+        owner /proc/@{pid}/comm         r,
+        owner /proc/@{pid}/cgroup       r,
+
+        owner @{run}/systemd/private    rw,
+
+        unix bind type=stream addr="@*/bus/systemctl/",
+
+        include if exists <local/usr.lib.nm-dispatcher-systemctl>
+    }
+
+    include if exists <local/usr.lib.nm-dispatcher>
+}

@@ -57,20 +57,20 @@ profile arduino-builder /usr/bin/arduino-builder flags=(enforce) {
     owner /{tmp,var/run}/arduino_{build,cache}_[0-9]*/{,**}   rw,
     owner /{tmp,var/run}/arduino_modified_sketch_[0-9]*/{,**} rw,
 
-    /usr/bin/avr-g++                                          ixr,
-    /usr/lib/avr/bin/ld                                       ixr,
-    /usr/bin/arduino-ctags                                    Pxr,
-    /usr/bin/avr-gcc{,-ar}                                    ixr,
-    /usr/lib/avr/bin/a{s,r}                                   ixr,
-    /usr/bin/avr{dude,-size}                                  ixr,
-    /usr/lib/avr/bin/objcopy                                  ixr,
-    /usr/lib/gcc/avr/*/collect2                               ixr,
-    /usr/lib/gcc/avr/*/cc1{,plus}                             ixr,
-    /usr/lib/llvm-[0-9]*/bin/clang                            ixr,
-    /usr/bin/avr-{as,ar,ld,objcopy}                           ixr,
-    /usr/lib/gcc/avr/*/lto{1,-wrapper}                        ixr,
+    /usr/bin/avr-g++                                          ix,
+    /usr/lib/avr/bin/ld                                       ix,
+    /usr/bin/arduino-ctags                                    Px -> arduino-ctags,
+    /usr/bin/avr-gcc{,-ar}                                    ix,
+    /usr/lib/avr/bin/a{s,r}                                   ix,
+    /usr/bin/avr{dude,-size}                                  ix,
+    /usr/lib/avr/bin/objcopy                                  ix,
+    /usr/lib/gcc/avr/*/collect2                               ix,
+    /usr/lib/gcc/avr/*/cc1{,plus}                             ix,
+    /usr/lib/llvm-[0-9]*/bin/clang                            ix,
+    /usr/bin/avr-{as,ar,ld,objcopy}                           ix,
+    /usr/lib/gcc/avr/*/lto{1,-wrapper}                        ix,
 
-    owner @{HOME}/.arduino*/packages/arduino/tools/**         ixr,
+    owner @{HOME}/.arduino*/packages/arduino/tools/**         ix,
 
     include if exists <local/usr.bin.arduino-builder>
 }

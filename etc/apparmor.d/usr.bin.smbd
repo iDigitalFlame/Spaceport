@@ -44,6 +44,7 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
     include <abstractions/consoles>
     include <abstractions/user-tmp>
     include <abstractions/cups-client>
+    include <abstractions/dbus-system>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/authentication>
@@ -59,6 +60,8 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
     capability                                    sys_tty_config,
     capability                                    dac_read_search,
     capability                                    net_bind_service,
+
+    signal send set=term peer=samba-bgqd,
 
     /etc/mtab                                     r,
     /etc/samba/*                                  rk,
@@ -94,15 +97,12 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
 
     @{run}/{,samba/}smbd.pid                      rwk,
     @{run}/samba/ncalrpc/{,**}                    rw,
-    @{run}/dbus/system_bus_socket                 rw,
 
     /home/*/**                                    rwkl,
     /home/{,*,*/}                                 r,
 
     /usr/lib*/samba/{,samba/}samba-bgqd           Px -> samba-bgqd,
     /usr/lib*/samba/{,samba/}samba-dcerpcd        Px -> samba-dcerpcd,
-
-    signal send set=term peer=samba-bgqd,
 
     include if exists <samba/smbd-shares>
     include if exists <local/usr.bin.smbd>

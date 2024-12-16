@@ -54,8 +54,8 @@ profile falkon /usr/bin/falkon flags=(enforce) {
     owner @{HOME}/.local/share/falkon/{,**}    rw,
     owner @{HOME}/.config/falkon/profiles/**   rwkl,
 
-    /usr/bin/xdg-open                          Px -> xdg-open,
-    /usr/bin/xdg-settings                      ixr,
+    /usr/bin/xdg-open                          Pix -> xdg-open,
+    /usr/bin/xdg-settings                      Pix -> xdg-settings,
     /usr/lib/qt{,*}/QtWebEngineProcess         ix,
     /usr/lib/qt{,*}/libexec/QtWebEngineProcess ix,
 

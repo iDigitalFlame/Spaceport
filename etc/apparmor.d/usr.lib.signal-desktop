@@ -43,6 +43,9 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     include <abstractions/notifications>
     include <abstractions/dbus-network-manager-strict>
 
+    ptrace read  peer=/usr/bin/xdg-{open,settions},
+    ptrace trace peer=/usr/lib/signal-desktop/chrome-sandbox,
+
     /usr/lib/signal-desktop/**                                                                                     r,
     /usr/lib/signal-desktop/resources/**                                                                           rm,
 
@@ -58,13 +61,9 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     owner @{HOME}/                                                                                                 r,
     owner @{HOME}/.config/Signal/{,**}                                                                             rwkl,
 
-    /usr/bin/xdg-open                                                                                              Px -> xdg-open,
-
+    /usr/bin/xdg-open                                                                                              Pix -> xdg-open,
     /usr/lib/signal-desktop/signal-desktop                                                                         ixr,
     /usr/lib/signal-desktop/electron*/chrome-sandbox                                                               ix,
-
-    ptrace read  peer=/usr/bin/xdg-{open,settions},
-    ptrace trace peer=/usr/lib/signal-desktop/chrome-sandbox,
 
     deny /dev/tty                                                                                                  rw,
     deny /dev/pts/*                                                                                                rw,

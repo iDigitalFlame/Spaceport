@@ -40,6 +40,8 @@ profile gcr-ssh-agent /usr/lib/gcr-ssh-agent flags=(enforce) {
     include <abstractions/base>
     include <abstractions/private-files>
 
+    signal receive set=(cont, term) peer=unconfined,
+
     /usr/lib/gcr-ssh-agent            rm,
 
     owner @{HOME}/.local/ssh{,/,/*}   r,
@@ -47,13 +49,11 @@ profile gcr-ssh-agent /usr/lib/gcr-ssh-agent flags=(enforce) {
 
     owner @{run}/user/@{uid}/gcr{,/*} rw,
 
-    /usr/bin/ssh-agent                Pxr -> ssh-agent,
-
-    signal (receive) set=(cont, term) peer=unconfined,
-
-    deny @{HOME}/.ssh{,/}             rw,
+    /usr/bin/ssh-agent                Px -> ssh-agent,
 
     deny network,
+
+    deny @{HOME}/.ssh{,/}             rw,
 
     include if exists <local/usr.lib.gcr-ssh-agent>
 }

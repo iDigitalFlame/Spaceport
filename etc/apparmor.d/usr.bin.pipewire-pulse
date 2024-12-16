@@ -44,6 +44,8 @@ profile pipewire-pulse /usr/bin/pipewire-pulse flags=(enforce, attach_disconnect
 
     capability                                  sys_ptrace,
 
+    ptrace read,
+
     /                                           r,
     /etc/machine-id                             r,
     /etc/pipewire/{,**}                         r,
@@ -57,9 +59,7 @@ profile pipewire-pulse /usr/bin/pipewire-pulse flags=(enforce, attach_disconnect
 
     owner @{run}/user/@{uid}/pulse/pid          rw,
 
-    /usr/bin/pactl                              ixr,
-
-    ptrace read,
+    /usr/bin/pactl                              ix,
 
     deny network,
 

@@ -1,0 +1,215 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/ssl_certs>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                                          kill,
+    capability                                          setgid,
+    capability                                          setuid,
+    capability                                          net_raw,
+    capability                                          net_admin,
+    capability                                          sys_chroot,
+    capability                                          sys_module,
+    capability                                          audit_write,
+    capability                                          dac_override,
+    capability                                          net_bind_service,
+
+    network                                             inet stream,
+    network                                             inet6 stream,
+    network                                             inet dgram,
+    network                                             inet6 dgram,
+    network                                             inet raw,
+    network                                             inet6 raw,
+    network                                             netlink raw,
+    network                                             packet dgram,
+
+    signal (send) set=(term) peer=dnsmasq,
+
+    @{sysconfig}/etc/NetworkManager/NetworkManager.conf r,
+
+    /{,etc/}                                            r,
+    /etc/iproute2/*                                     r,
+    /etc/machine-id                                     r,
+    /usr/bin/NetworkManager                             rm,
+    /etc/NetworkManager/{,**}                           r,
+    /usr/share/iproute2/{,**}                           r,
+
+    /sys/bus/                                           r,
+    /sys/class/                                         r,
+    /sys/class/net/                                     r,
+    /sys/class/rfkill/                                  r,
+    /sys/class/net/rfkill/                              r,
+    /sys/devices/**/uevent                              r,
+    /sys/devices/**/*/net/*/{,**}                       r,
+    /sys/devices/virtual/net/{,**}                      r,
+    /sys/devices/pci*/**/net/*/{,**}                    r,
+    /sys/devices/pci*/**/usb*/**/net/{,**}              r,
+
+    /proc/cmdline                                       r,
+    /proc/1/environ                                     r,
+    /proc/@{pid}/stat                                   r,
+    /proc/sys/kernel/osrelease                          r,
+
+    @{run}/udev/data/n*                                 r,
+    @{run}/udev/data/+pci:*                             r,
+    @{run}/udev/data/+rfkill:*                          r,
+    @{run}/systemd/users/@{uid}                         r,
+    @{run}/udev/data/+platform:*                        r,
+
+    owner /proc/@{pid}/fd/                              r,
+    owner /proc/@{pid}/cmdline                          r,
+
+    /etc/resolv.conf                                    rw,
+    /etc/resolv.conf.[0-9A-Z]*                          rw,
+    /var/lib/NetworkManager/{,**}                       rw,
+    /var/run/systemd/resolve/resolv.conf                rw,
+    /etc/NetworkManager/system-connections/{,**}        rw,
+    /var/run/systemd/resolve/resolv.conf.[0-9A-Z]*      rw,
+    /var/lib/NetworkManager/system-connections/{,**}    rw,
+
+    @{run}/nscd/db*                                     rwl,
+    @{run}/nm-*.pid                                     rw,
+    @{run}/NetworkManager/{,**}                         rw,
+    @{run}/systemd/inhibit/*.ref                        rw,
+
+    /dev/rfkill                                         rw,
+
+    /proc/sys/net/**                                    rw,
+
+    /usr/bin/nft                                        ix,
+    /usr/bin/kmod                                       Px -> kmod,
+    /usr/bin/dnsmasq                                    Px -> dnsmasq,
+    /usr/bin/systemctl                                  Cx -> systemctl,
+    /usr/bin/{,ba,da}sh                                 ix,
+    /usr/lib/nm-dispatcher                              Px -> nm-dispatcher,
+    /usr/lib/nm-dhcp-helper                             Px -> nm-dhcp-helper,
+    /usr/lib/nm-daemon-helper                           Px -> nm-daemon-helper,
+    /usr/lib/nm-openvpn-service                         Px -> nm-openvpn-service,
+    /usr/lib/nm-initrd-generator                        Px -> nm-initrd-generator,
+    /usr/lib/nm-openvpn-auth-dialog                     Px -> nm-openvpn-auth-dialog,
+    /usr/lib/nm-openvpn-service-openvpn-helper          Px -> nm-openvpn-auth-dialog,
+
+    dbus bind bus=system name=org.freedesktop.NetworkManager,
+
+    dbus (send, receive) bus=system interface=org.freedesktop.resolve1,
+    dbus (send, receive) bus=system interface=org.fedoraproject.FirewallD1,
+    dbus (send, receive) bus=system interface=org.freedesktop.nm_dispatcher,
+    dbus (send, receive) bus=system interface=org.freedesktop.NetworkManager,
+
+    dbus send bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label=bluetoothd),
+    dbus send bus=system path=/org/bluez interface=org.bluez.ProfileManager* member=RegisterProfile peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/bluez/hci* interface=org.bluez.Media* member=RegisterApplication peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/freedesktop/nm_dispatcher interface=org.freedesktop.nm_dispatcher peer=(name=org.freedesktop.nm_dispatcher),
+    dbus send bus=system path=/org/bluez/hci* interface=org.freedesktop.DBus.Properties member=Set peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus send bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus send bus=system path=/org/freedesktop/ModemManager1 interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=ModemManager),
+    dbus send bus=system path=/org/bluez/hci* interface=org.bluez.BatteryProviderManager* member=RegisterProfile peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=polkitd),
+    dbus send bus=system path=/fi/w1/wpa_supplicant1 interface=fi.w1.wpa_supplicant1.Interface member=CreateInterface peer=(name=*, label=wpa-supplicant),
+    dbus send bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=org.freedesktop.hostname1),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=*, label=polkitd),
+    dbus send bus=system path=/fi/w1/wpa_supplicant1/Interfaces/* interface=org.freedesktop.DBus.Properties member={GetAll,Set} peer=(name=*, label=wpa-supplicant),
+    dbus send bus=system path=/fi/w1/wpa_supplicant1 interface=org.freedesktop.DBus.Properties member={GetAll,PropertiesChanged} peer=(name=*, label=wpa-supplicant),
+    dbus send bus=system path=/org/freedesktop/ModemManager1 interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=*, label=ModemManager),
+    dbus send bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=InterfacesAdded peer=(name=org.freedesktop.DBus, label=nm-online),
+    dbus send bus=system path=/fi/w1/wpa_supplicant1/Interfaces/* interface=fi.w1.wpa_supplicant1.Interface.P2PDevice member=Cancel peer=(name=*, label=wpa-supplicant),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=*, label=polkitd),
+    dbus send bus=system path=/org/bluez interface=org.bluez.AgentManager* member={RegisterAgent,RequestDefaultAgent,UnregisterAgent} peer=(name=org.bluez, label=bluetoothd),
+    dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1),
+    dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus send bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name="{*,org.freedesktop.hostname1}", label=systemd-hostnamed),
+    dbus send bus=system path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member=PauseDeviceComplete peer=(name=org.freedesktop.login1, label=systemd-logind),
+    dbus send bus=system path=/org/freedesktop/ModemManager1 interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=org.freedesktop.ModemManager1, label=ModemManager),
+    dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={GetConnectionUnixUser,GetConnectionUnixProcessID} peer=(name=org.freedesktop.DBus, label=dbus-system),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1, label=polkitd),
+    dbus send bus=system path=/fi/w1/wpa_supplicant1/Interfaces/* interface=fi.w1.wpa_supplicant1.Interface member={AddNetwork,Disconnect,RemoveNetwork,Scan,SelectNetwork} peer=(name=*, label=wpa-supplicant),
+    dbus send bus=system path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member={Inhibit,CanHibernate,CanHybridSleep,CanPowerOff,CanReboot,CanSuspend,CreateSession,GetSessionByPID} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+
+    dbus receive bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*),
+    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name=:*, label=bluetoothd),
+    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus receive bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name=*, label=wpa-supplicant),
+    dbus receive bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=Changed peer=(name=*, label=polkitd),
+    dbus receive bus=system path=/org/bluez/hci*{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.bluez}", label=bluetoothd),
+    dbus receive bus=system path=/fi/w1/wpa_supplicant1/Interfaces/* interface=org.freedesktop.DBus.Properties member={GetAll,PropertiesChanged} peer=(name=*, label=wpa-supplicant),
+    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus receive bus=system path=/fi/w1/wpa_supplicant1/Interfaces/*/BSSs/* interface=org.freedesktop.DBus.Properties member={GetAll,PropertiesChanged} peer=(name=*, label=wpa-supplicant),
+    dbus receive bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.hostname1}", label=systemd-hostnamed),
+    dbus receive bus=system path=/org/freedesktop/login1 interface=org.freedesktop.login1.Manager member={SessionNew,SessionRemoved,UserNew,UserRemoved,PrepareFor*} peer=(name="{*,org.freedesktop.login1}", label=systemd-logind),
+    dbus receive bus=system path=/fi/w1/wpa_supplicant1/Interfaces/* interface=fi.w1.wpa_supplicant1.Interface member={BSSAdded,BSSRemoved,NetworkAdded,NetworkRemoved,NetworkSelected,ScanDone,PropertiesChanged} peer=(name=*, label=wpa-supplicant),
+
+    profile systemctl {
+        include <abstractions/base>
+        include <abstractions/consoles>
+        include <abstractions/dbus-system>
+
+        ptrace read peer=unconfined,
+
+        /etc/                           r,
+        /etc/systemd/                   r,
+        /usr/bin/systemctl              rm,
+        /etc/systemd/system/            r,
+
+        /proc/cmdline                   r,
+        /proc/1/sched                   r,
+        /proc/1/cgroup                  r,
+        /proc/1/environ                 r,
+        /proc/sys/fs/nr_open            r,
+        /proc/sys/kernel/osrelease      r,
+        /proc/sys/kernel/random/boot_id r,
+
+        owner /proc/@{pid}/fd/          r,
+        owner /proc/@{pid}/stat         r,
+        owner /proc/@{pid}/comm         r,
+        owner /proc/@{pid}/cgroup       r,
+
+        owner @{run}/systemd/private    rw,
+
+        unix bind type=stream addr="@*/bus/systemctl/",
+
+        include if exists <local/usr.bin.NetworkManager-systemctl>
+    }
+
+    include if exists <local/usr.bin.NetworkManager>
+}

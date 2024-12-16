@@ -40,6 +40,7 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
     include <abstractions/base>
     include <abstractions/python>
     include <abstractions/openssl>
+    include <abstractions/dbus-system>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/authentication>
@@ -60,6 +61,8 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
     network                                   inet    stream,
     network                                   inet6   stream,
     network                                   netlink raw,
+
+    signal send set=(term) peer=cups-notifier-dbus,
 
     @{sysconfig}/etc/cups/{,**}               r,
 
@@ -85,35 +88,30 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
 
     @{run}/cups/{,**}                         rw,
     @{run}/systemd/notify                     w,
-    @{run}/dbus/system_bus_socket             rw,
 
     owner /tmp/*_latest_print_info            w,
 
-    /usr/bin/python3*                         ixr,
-    /usr/bin/{,ba,da}sh                       ixr,
-    /usr/bin/g{rep,s,sc}                      ixr,
-    /usr/bin/c{at,p,hmod}                     ixr,
-    /usr/bin/{mktemp,printenv}                ixr,
-    /usr/bin/{rm,sed,xz,touch}                ixr,
-    /usr/lib/cups/monitor/dbus                Pxr -> cups-notifier-dbus,
-    /usr/bin/{ippfind,hostname}               ixr,
-    /usr/lib/cups/{daemon,backend}/*          ixr,
-    /usr/lib/cups/{cgi-bin,driver}/*.cgi      ixr,
-    /usr/lib/cups/{filter,monitor,notifier}/* ixr,
-
-    signal send set=(term) peer=cups-notifier-dbus,
-
-    dbus receive bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member={DeviceAdded,DeviceRemoved} peer=(name=:*, label=colord),
-    dbus receive bus=system path=/Client*/ServiceBrowser* interface=org.freedesktop.Avahi.ServiceBrowser member={ItemNew,AllForNow,CacheExhausted} peer=(name=:*, label=avahi-daemon),
+    /usr/bin/python3*                         ix,
+    /usr/bin/{,ba,da}sh                       ix,
+    /usr/bin/g{rep,s,sc}                      ix,
+    /usr/bin/c{at,p,hmod}                     ix,
+    /usr/bin/{mktemp,printenv}                ix,
+    /usr/bin/{rm,sed,xz,touch}                ix,
+    /usr/lib/cups/monitor/dbus                Px -> cups-notifier-dbus,
+    /usr/bin/{ippfind,hostname}               ix,
+    /usr/lib/cups/{daemon,backend}/*          ix,
+    /usr/lib/cups/{cgi-bin,driver}/*.cgi      ix,
+    /usr/lib/cups/{filter,monitor,notifier}/* ix,
 
     dbus send bus=system path=/ interface=org.freedesktop.DBus.Peer member=Ping peer=(name=org.freedesktop.Avahi, label=avahi-daemon),
     dbus send bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member=GetDevices peer=(name=:*, label=colord),
     dbus send bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member=CreateDevice peer=(name=:*, label=colord),
     dbus send bus=system path=/org/freedesktop/ColorManager{,/**} interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=:*, label=colord),
-    dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-daemon),
     dbus send bus=system path=/Client*/ServiceBrowser* interface=org.freedesktop.Avahi.ServiceBrowser member=Free peer=(name=org.freedesktop.Avahi, label=avahi-daemon),
     dbus send bus=system path=/ interface=org.freedesktop.Avahi.Server member={GetAPIVersion,GetState,Service*New} peer=(name=org.freedesktop.Avahi, label=avahi-daemon),
-    dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-daemon),
+
+    dbus receive bus=system path=/org/freedesktop/ColorManager interface=org.freedesktop.ColorManager member={DeviceAdded,DeviceRemoved} peer=(name=:*, label=colord),
+    dbus receive bus=system path=/Client*/ServiceBrowser* interface=org.freedesktop.Avahi.ServiceBrowser member={ItemNew,AllForNow,CacheExhausted} peer=(name=:*, label=avahi-daemon),
 
     include if exists <local/usr.bin.cupsd>
 }

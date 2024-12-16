@@ -48,6 +48,8 @@ profile ssh /usr/bin/ssh flags=(enforce) {
     network                                    inet6   stream,
     network                                    netlink raw,
 
+    signal receive set=(term) peer=gnome-keyring-daemon,
+
     @{sysconfig}/etc/ssh/ssh_config            r,
 
     /etc/ssh/ssh_config                        r,
@@ -68,9 +70,7 @@ profile ssh /usr/bin/ssh flags=(enforce) {
     owner @{HOME}/.config/ssh/known_hosts{,.*} rwl,
 
     /usr/bin/ssh                               ixrm,
-    /usr/bin/{,ba,da,rba,z}sh                  ixr,
-
-    signal (receive) set=(term) peer=gnome-keyring-daemon,
+    /usr/bin/{,ba,da,rba,z}sh                  ix,
 
     include if exists <local/usr.bin.ssh>
 }

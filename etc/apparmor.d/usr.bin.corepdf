@@ -57,11 +57,11 @@ profile corepdf /usr/bin/corepdf flags=(enforce) {
 
     owner @{CONFIG}/cubocore/coreapps.conf r,
 
+    deny network,
+
     deny /dev/tty                          r,
     deny /dev/disk/by-label/               r,
     deny @{CONFIG}/cubocore/coreapps.conf  w,
-
-    deny network,
 
     include if exists <local/usr.bin.corepdf>
 }

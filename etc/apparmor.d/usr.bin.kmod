@@ -1,0 +1,90 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile kmod /usr/bin/{kmod,lsmod,depmod,insmod,rmmod,modinfo,modprobe} flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                                mknod,
+    capability                                syslog,
+    capability                                net_admin,
+    capability                                sys_module,
+    capability                                dac_override,
+    capability                                dac_read_search,
+
+    network                                   inet raw,
+
+    @{sysconfig}/etc/modules-load.d/{,*}      r,
+    @{sysconfig}/etc/modprobe.d/{,*.conf}     r,
+
+    /usr/src/*/*.ko                           r,
+    /etc/depmod.d/{,*.conf}                   r,
+    /etc/modprobe.d/{,*.conf}                 r,
+    /var/lib/dkms/**/module/*.ko              r,
+    /usr/lib/modprobe.d/{,*.conf}             r,
+
+    /sys/module/{,**}                         r,
+
+    /proc/cmdline                             r,
+    /proc/modules                             r,
+
+    /tmp/**/*.ko{,.zst}                       r,
+
+    /usr/lib/modules/*/*modules.*             rw,
+
+    /dev/tty*                                 rw,
+
+    owner /var/tmp/*modules*/{,**}            rw,
+
+    owner @{run}/tmpfiles.d/                  w,
+    owner @{run}/tmpfiles.d/static-nodes.conf w,
+
+    owner /tmp/mkinitcpio.*/{,**}             rw,
+
+    /usr/bin/id                               ix,
+    /usr/bin/sysctl                           Px -> sysctl,
+    /usr/bin/basename                         ix,
+    /usr/bin/{,ba,da}sh                       ix,
+    /usr/bin/{tru,fals}e                      ix,
+    /usr/bin/mod{info,probe}                  ixrm,
+    /usr/bin/{dep,ins,k,ls,rm}mod             ixrm,
+
+    include if exists <local/usr.bin.kmod>
+}

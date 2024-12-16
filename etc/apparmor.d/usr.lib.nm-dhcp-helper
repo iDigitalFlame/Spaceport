@@ -36,33 +36,23 @@
 
 include <tunables/spaceport>
 
-profile more /usr/bin/{less,more} flags=(enforce) {
+profile nm-dhcp-helper /usr/lib/nm-dhcp-helper flags=(enforce) {
     include <abstractions/base>
-    include <abstractions/consoles>
+    include <abstractions/dbus>
     include <abstractions/private-files>
 
-    capability                        dac_override,
-    capability                        dac_read_search,
+    network                            inet  dgram,
+    network                            inet6 dgram,
 
-    @{sysconfig}/etc/sysless{,key}    r,
+    signal send    peer=dhclient,
+    signal receive peer=NetworkManager,
 
-    # Required for more|less to work
-    /**                               r,
+    ptrace readby peer=NetworkManager,
 
-    /etc/sysless{,key}                r,
-    /usr/bin/{less,more}              rm,
-    /usr/share/terminfo/{,**}         r,
+    /usr/lib/nm-dhcp-helper            rm,
+    /var/lib/NetworkManager/*lease     r,
 
-    owner @{HOME}/                    r,
-    owner @{HOME}/.lesshs*            r,
-    owner @{CONFIG}/lesskey           r,
+    @{run}/NetworkManager/private-dhcp rw,
 
-    signal (receive) set=(stop, cont, term, kill),
-
-    deny @{HOME}/.lesshs*             w,
-    deny @{HOME}/.local/state/lesshs* w,
-
-    deny network,
-
-    include if exists <local/usr.bin.more>
+    include if exists <local/usr.lib.nm-dhcp-helper>
 }

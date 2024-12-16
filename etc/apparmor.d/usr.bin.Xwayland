@@ -44,6 +44,11 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     include <abstractions/vulkan>
     include <abstractions/wayland>
     include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    signal receive set=(term hup) peer=unconfined,
+
+    ptrace read,
 
     /usr/bin/xkbcomp                          rm,
     /usr/share/X11/xkb/**                     r,
@@ -61,19 +66,14 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     /dev/dri/card*                            rw,
     /dev/dri/render*                          rw,
     /dev/input/event*                         rw,
-    /dev/shm/wlroots-*                        rw,
-
-    owner /tmp/server-*.xkm                   rwk,
 
     owner @{run}/user/@{uid}/server-*.xkm     rwk,
 
+    owner /tmp/server-*.xkm                   rwk,
+
     /usr/bin/xkbcomp                          Pxr -> xkbcomp,
-    /usr/bin/{,ba,da}sh                       ix,
+    /usr/bin/{,ba,da,z}sh                     ix,
     /usr/bin/{X,x}wayland                     ixrm,
-
-    signal receive set=(term hup) peer=unconfined,
-
-    ptrace read,
 
     deny /var/log/Xorg.*.log                  rw,
     deny @{HOME}/.xsession-errors{,.*}        rw,

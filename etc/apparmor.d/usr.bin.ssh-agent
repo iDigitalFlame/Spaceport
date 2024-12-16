@@ -41,6 +41,8 @@ profile ssh-agent /usr/bin/ssh-agent flags=(enforce) {
     include <abstractions/openssl>
     include <abstractions/nameservice>
 
+    signal receive set=(cont term) peer=unconfined,
+
     /usr/bin/ssh-agent                           rm,
 
     owner @{HOME}/.local/ssh/{,*}                r,
@@ -55,9 +57,7 @@ profile ssh-agent /usr/bin/ssh-agent flags=(enforce) {
     owner @{run}/user/@{uid}/openssh_agent       rw,
     owner @{run}/user/@{uid}/ssh-agent.[0-9A-Z]* w,
 
-    /usr/bin/gpg-agent                           ux,
-
-    signal (receive) set=(cont term) peer=unconfined,
+    /usr/bin/gpg-agent                           Px -> gpg-agent,
 
     deny network,
 

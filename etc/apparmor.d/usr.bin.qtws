@@ -41,8 +41,14 @@ profile qtws /usr/bin/qtws flags=(enforce) {
     include <abstractions/chromium>
     include <abstractions/private-files>
 
+    # NOTE(dij): This is here to allow for in-memory blob locking
+    /**                                                   lk,
+
     /usr/bin/qtws                                         rm,
     /usr/share/qtws-apps/youtube-music/youtube-music.qtws r,
+
+    owner /proc/@{pid}/stat                               r,
+    owner /proc/@{pid}/task/{,*/status}                   r,
 
     owner @{CONFIG}/user-dirs.dirs                        r,
 
@@ -52,9 +58,6 @@ profile qtws /usr/bin/qtws flags=(enforce) {
 
     /usr/lib/qt{,*}/QtWebEngineProcess                    ix,
     /usr/lib/qt{,*}/libexec/QtWebEngineProcess            ix,
-
-    # NOTE(dij): This is here to allow for in-memory blob locking
-    /**                                                   lk,
 
     deny /dev/tty                                         rw,
 

@@ -46,7 +46,6 @@ profile xpad /usr/bin/xpad flags=(enforce) {
     owner @{CONFIG}/xpad/default-style      r,
 
     owner @{CONFIG}/xpad/{,*}               rw,
-    owner @{run}/user/@{uid}/dconf/user     rw,
 
     deny @{CONFIG}/xpad/default-style       w,
 

@@ -1,0 +1,108 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile at-spi2-registryd /usr/lib/at-spi2-registryd flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/private-files>
+
+    /etc/machine-id                                 r,
+    /usr/share/X11/{,**}                            r,
+    /etc/X11/cursors/{,**}                          r,
+    /var/lib/dbus/machine-id                        r,
+    /usr/lib/at-spi2-registryd                      rm,
+    /usr/share/xsessions/{,*.desktop}               r,
+
+    owner @{run}/user/@{uid}/xauth_*                rl -> @{run}/user/@{uid}/#*,
+    owner @{run}/user/@{uid}/iceauth_*              r,
+    owner @{run}/user/@{uid}/ICEauthority           r,
+    owner @{run}/user/@{uid}/X11/Xauthority         r,
+    owner @{run}/user/@{uid}/gdm{,*}/Xauthority     r,
+
+    owner /tmp/xauth_*                              rl -> /tmp/#*,
+
+    /dev/tty*                                       rw,
+
+    /tmp/.X*-lock                                   rw,
+    /tmp/.ICE-unix/*                                rw,
+    /tmp/.X11-unix/*                                rw,
+
+    owner /dev/pts/*                                rw,
+
+    owner @{run}/user/@{uid}/bus                    rw,
+    owner @{run}/user/@{uid}/at-spi/{,bus,bus_*}    rw,
+    owner @{run}/user/@{uid}/.mutter-Xwaylandauth.* rw,
+
+    owner /tmp/dbus-*                               rw,
+
+    owner @{HOME}/.{ICE,X}authority                 rw,
+
+    unix                                  type=stream addr="@/tmp/.ICE-unix/[0-9]*",
+    unix                                  type=stream addr="@/tmp/.X11-unix/X[0-9]*",
+    unix (bind, listen)                   type=stream addr="@/tmp/dbus-*",
+    unix (connect, receive, send)         type=stream peer=(addr="@/tmp/.ICE-unix/[0-9]*"),
+    unix (connect, receive, send)         type=stream peer=(addr="@/tmp/.X11-unix/X[0-9]*"),
+    unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
+    unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
+
+    dbus (send, receive) bus=accessibility interface=org.a11y.atspi,
+    dbus (send, receive) bus=session       interface=org.a11y.{B,b}us,
+
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=gnome-session-binary),
+    dbus send bus=session       path=/org/gnome/SessionManager/Client* interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=gnome-session-binary),
+    dbus send bus=session       path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={RegisterClient,IsSessionRunning} peer=(name=*, label=gnome-session-binary),
+    dbus send bus=accessibility path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-accessibility),
+    dbus send bus=session       path=/org/gnome/SessionManager/Client* interface=org.gnome.SessionManager.ClientPrivate member=EndSessionResponse peer=(name=*, label=gnome-session-binary),
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=org.gnome.SessionManager, label=gnome-session-binary),
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={Setenv,IsSessionRunning} peer=(name=org.gnome.SessionManager, label=gnome-session-binary),
+    dbus send bus=session       path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=accessibility path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-accessibility),
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+    dbus receive bus=session path=/org/gnome/SessionManager interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session path=/org/gnome/SessionManager/Presence interface=org.gnome.SessionManager.Presence member=StatusChanged peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session path=/org/gnome/SessionManager/Client* interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session path=/org/gnome/SessionManager/Client* interface=org.gnome.SessionManager.ClientPrivate member={CancelEndSession,QueryEndSession,EndSession,Stop} peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={ClientAdded,ClientRemoved,SessionRunning,InhibitorRemoved,InhibitorAdded} peer=(name=*, label=gnome-session-binary),
+
+    deny network,
+
+    deny @{HOME}/.xsession-errors                   rw,
+
+    include if exists <local/usr.lib.at-spi2-registryd>
+}

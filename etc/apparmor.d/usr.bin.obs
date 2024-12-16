@@ -60,18 +60,18 @@ profile obs /usr/bin/obs flags=(enforce) {
     /proc/modules                           r,
     /proc/@{pid}/net/unix                   r,
 
-    owner /proc/@{pid}/statm                r,
-    owner /proc/@{pid}/task/@{pid}/**       r,
+    owner /proc/@{pid}/stat{,m}             r,
+    owner /proc/@{pid}/task/@{tid}/**       r,
 
     owner @{HOME}/.config/obs-studio/{,**}  rw,
 
     /usr/bin/obs-ffmpeg-mux                 ix,
 
+    deny network,
+    deny ptrace,
+
     deny /usr/bin/{,ba,da}sh                x,
     deny /usr/bin/xdg-screensaver           xr,
-
-    deny ptrace,
-    deny network,
 
     include if exists <local/usr.bin.obs>
 }

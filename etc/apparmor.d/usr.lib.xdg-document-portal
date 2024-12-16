@@ -48,6 +48,12 @@ profile xdg-document-portal /usr/lib/xdg-document-portal flags=(enforce, attach_
     capability                    sys_ptrace,
     capability                    sys_resource,
 
+    signal receive set=(term hup) peer=unconfined,
+
+    ptrace read,
+
+    mount fstype=fuse.portal -> @{run}/user/@{uid}/doc/,
+
     /                             r,
     /usr/lib/xdg-document-portal  rm,
 
@@ -64,20 +70,14 @@ profile xdg-document-portal /usr/lib/xdg-document-portal flags=(enforce, attach_
 
     owner @{run}/user/@{uid}/doc/ rw,
 
-    /usr/bin/fusermount{,*}       Pxr -> fusermount,
+    /usr/bin/fusermount{,*}       Px -> fusermount,
 
-    ptrace (read),
-
-    signal receive set=(term hup) peer=unconfined,
-
-    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+    unix (send receive) type=stream peer=(label=xdg-document-portal//fusermount),
 
     dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=xdg-permission-store),
     dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.impl.portal.PermissionStore member=Lookup peer=(name=*, label=xdg-permission-store),
 
-    mount fstype=fuse.portal -> @{run}/user/@{uid}/doc/,
-
-    unix (send receive) type=stream peer=(label=xdg-document-portal//fusermount),
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
 
     deny network,
 

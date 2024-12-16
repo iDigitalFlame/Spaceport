@@ -37,6 +37,7 @@
 include <tunables/spaceport>
 
 profile samba-rpcd-classic /usr/lib*/samba/{,samba/}rpcd_classic flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
     include <abstractions/wutmp>
     include <abstractions/samba-rpcd>
     include <abstractions/private-files>

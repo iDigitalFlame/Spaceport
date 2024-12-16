@@ -1,0 +1,95 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile spicy /usr/bin/spicy flags=(enforce) {
+    include <abstractions/gtk>
+    include <abstractions/dconf>
+    include <abstractions/video>
+    include <abstractions/freedesktop.org>
+
+    # NOTE(dij): For USB redirection.
+    capability                                    fowner,
+
+    /usr/share/hwdata/usb.ids                     r,
+    /usr/share/glib-2.0/schemas/gschemas.compiled r,
+
+    /dev/                                         r,
+    /dev/bus/usb/                                 r,
+
+    /sys/{bu,clas}s/                              r,
+
+    /proc/@{pid}/stat                             r,
+    /proc/@{pid}/fdinfo/@{tid}{,/,/comm}          r,
+
+    owner @{CONFIG}/user-dirs.dirs                r,
+    owner @{CONFIG}/spicy/settings                r,
+
+    owner @{HOME}/.local/share/                   r,
+
+    /dev/bus/usb/*/*                              rw,
+
+    /sys/bus/usb/devices/{,*/**}                  rw,
+
+    @{run}/udev/data/c*:*                         rw,
+    @{run}/smd/hydra/*.spice                      rw,
+    @{run}/udev/data/+usb{,-serial}:*             rw,
+
+    /tmp/orcexec.*                                rwm,
+
+    owner @{HOME}/.cache/gstreamer-1.0/registry.* rw,
+
+    /usr/bin/spicy-s{creenshot,tats}              ix,
+    /usr/lib/gstreamer-1.0/gst-plugin-scanner     ix,
+    /usr/lib/spice-client-glib-usb-acl-helper     ix,
+
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=polkitd),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=*, label=polkitd),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=*, label=polkitd),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1),
+    dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1, label=polkitd),
+
+    dbus receive bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=Changed peer=(name=*, label=polkitd),
+
+    deny network,
+
+    deny @{HOME}/orcexec{,*}                      rw,
+    deny @{CONFIG}/spicy/settings{,*}             w,
+    deny @{run}/user/@{uid}/orcexec{,*}           rw,
+
+    include if exists <local/usr.bin.spicy>
+}

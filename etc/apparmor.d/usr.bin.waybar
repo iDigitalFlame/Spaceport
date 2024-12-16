@@ -38,8 +38,8 @@ include <tunables/spaceport>
 
 profile waybar /usr/bin/waybar flags=(enforce) {
     include <abstractions/gtk>
-    include <abstractions/mime>
     include <abstractions/audio>
+    include <abstractions/dconf>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/freedesktop.org>
@@ -58,14 +58,10 @@ profile waybar /usr/bin/waybar flags=(enforce) {
     owner /proc/@{pid}/net/dev                  r,
 
     owner @{CONFIG}/waybar/{,*}                 r,
-    owner @{HOME}/.config/dconf/user            r,
 
     owner /dev/tty*                             rw,
 
-    owner /proc/@{pid}/task/@{pid}/comm         rw,
-
-    owner @{run}/user/@{uid}/dconf/user         rw,
-    owner @{run}/user/@{uid}/sway-ipc*.sock     rw,
+    owner /proc/@{pid}/task/@{tid}/comm         rw,
 
     /usr/bin/wpctl                              ix,
     /usr/bin/swaymsg                            ix,

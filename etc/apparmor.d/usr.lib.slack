@@ -51,18 +51,18 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce) {
     owner @{HOME}/                                                                                                 r,
     owner @{HOME}/.config/Slack/{,**}                                                                              rwkl,
 
-    /usr/bin/xdg-open                                                                                              Px -> xdg-open,
+    /usr/bin/xdg-open                                                                                              Pix -> xdg-open,
     /usr/bin/electron*                                                                                             ixr,
 
     /usr/lib/electron*/{chrome_crashpad_handler,electron}                                                          ix,
+
+    deny ptrace read,
 
     deny /dev/tty                                                                                                  rw,
     deny /dev/pts/*                                                                                                rw,
     deny /usr/bin/ldd                                                                                              rx,
     deny /usr/bin/{,ba,da}sh                                                                                       rx,
     deny /usr/bin/xdg-settings                                                                                     rx,
-
-    deny ptrace read,
 
     include if exists <local/usr.lib.slack>
 }

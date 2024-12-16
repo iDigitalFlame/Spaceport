@@ -1,0 +1,92 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile systemd-timesyncd /usr/lib/systemd/systemd-timesyncd flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                                                          sys_time,
+
+    network                                                             inet  dgram,
+    network                                                             inet6 dgram,
+    network                                                             inet  stream,
+    network                                                             inet6 stream,
+
+    ptrace read peer=unconfined,
+
+    @{sysconfig}/etc/systemd/timesyncd.conf                             r,
+
+    /etc/systemd/timesyncd.conf                                         r,
+    /usr/lib/systemd/systemd-timesyncd                                  rm,
+    /etc/systemd/timesyncd.conf.d/{,**}                                 r,
+
+    /sys/firmware/efi/efivars/SecureBoot-*                              r,
+
+    /proc/cmdline                                                       r,
+    /proc/pressure/*                                                    r,
+    /proc/@{pid}/cgroup                                                 r,
+    /proc/sys/kernel/osrelease                                          r,
+    /proc/1/{cgroup,environ,sched}                                      r,
+    /proc/sys/kernel/random/boot_id                                     r,
+
+    @{run}/systemd/netif/{links/*,state}                                r,
+    @{run}/systemd/timesyncd.conf.d/{,**}                               r,
+
+    owner /proc/@{pid}/stat                                             r,
+
+    /dev/kmsg                                                           w,
+
+    /sys/fs/cgroup/system.slice/@{profile_name}.service/memory.pressure rw,
+
+    @{run}/systemd/notify                                               rw,
+
+    owner /var/lib/systemd/timesync/clock                               rw,
+
+    owner @{run}/systemd/timesync/synchronized                          rw,
+
+    unix (send, receive) type=dgram addr=none peer=(label=unconfined, addr=none),
+    unix (bind)          type=stream addr="@*/bus/systemd-timesyn/bus-api-timesync",
+
+    dbus bind bus=system name=org.freedesktop.timesync1,
+
+    dbus (send, receive) interface=org.freedesktop.timesync1,
+
+    include if exists <local/usr.lib.systemd-timesyncd>
+}

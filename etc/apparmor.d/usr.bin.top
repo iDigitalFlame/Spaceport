@@ -48,6 +48,10 @@ profile top /usr/bin/top flags=(enforce) {
     capability                                sys_ptrace,
     capability                                dac_read_search,
 
+    signal send,
+
+    ptrace read,
+
     /usr/bin/top                              rm,
     /usr/share/terminfo/**                    r,
 
@@ -74,13 +78,9 @@ profile top /usr/bin/top flags=(enforce) {
 
     @{run}/systemd/sessions/                  r,
 
-    ptrace read,
-
-    signal send,
+    deny network,
 
     deny @{HOME}/.config/procps{,/*}          rw,
-
-    deny network,
 
     include if exists <local/usr.bin.top>
 }

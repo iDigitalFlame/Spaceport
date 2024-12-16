@@ -1,0 +1,124 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile at-spi-bus-launcher /usr/lib/at-spi-bus-launcher flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/dconf>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                                       sys_ptrace,
+
+    network                                          inet    dgram,
+    network                                          inet    stream,
+    network                                          inet6   dgram,
+    network                                          inet6   stream,
+    network                                          netlink raw,
+
+    signal receive set=(term hup kill) peer=dbus-session,
+
+    ptrace read,
+
+    /etc/machine-id                                  r,
+    /var/lib/dbus/machine-id                         r,
+    /usr/share/defaults/at-spi2/{,**}                r,
+    /usr/share/glib-2.0/schemas/gschemas.compiled    r,
+    /usr/share/dbus-1/accessibility-services/{,**}   r,
+
+    /sys/module/apparmor/parameters/enabled          r,
+    /sys/kernel/security/apparmor/features/dbus/mask r,
+
+    /proc/1/cgroup                                   r,
+
+    owner /proc/@{pid}/fd/                           r,
+    owner /proc/@{pid}/mounts                        r,
+    owner /proc/@{pid}/oom_score_adj                 r,
+    owner /proc/@{pid}/c{group,mdline}               r,
+    owner /proc/@{pid}/attr/apparmor/current         r,
+
+    owner /tmp/xauth_*                               r,
+
+    owner @{HOME}/.Xauthority                        r,
+
+    /dev/tty*                                        rw,
+
+    /sys/kernel/security/apparmor/.access            rw,
+
+    @{run}/user/@{uid}/at-spi{,/*}                   rw,
+    @{run}/systemd/users/{,@{uid}}{,/}               rw,
+
+    owner /dev/pts/*                                 rw,
+
+    owner /tmp/dbus-*                                rw,
+
+    /usr/lib/at-spi2-registryd                       Px -> at-spi2-registryd,
+    /usr/bin/dbus-broker-launch                      ix,
+    /usr/lib/at-spi-bus-launcher                     ixrm,
+    /usr/bin/dbus-{broker,daemon}                    ix,
+
+    dbus (send, receive) bus=accessibility interface=org.freedesktop.DBus,
+    dbus (send, receive) bus=session       interface=org.a11y.{B,b}us,
+
+    dbus send bus=session       path=/org/a11y/bus interface=org.a11y.Bus member=GetAddress peer=(name=org.a11y.Bus),
+    dbus send bus=session       path=/org/a11y/bus interface=org.a11y.Bus member=GetAddress peer=(name=org.a11y.Bus, label=dbus-accessibility),
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=gnome-session-binary),
+    dbus send bus=session       path=/org/gnome/SessionManager/Client* interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=gnome-session-binary),
+    dbus send bus=accessibility path=/org/a11y/atspi/accessible/root interface=org.a11y.atspi.Socket member=Embed peer=(name=org.a11y.atspi.Registry, label=at-spi2-registryd),
+    dbus send bus=session       path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={RegisterClient,IsSessionRunning} peer=(name=*, label=gnome-session-binary),
+    dbus send bus=accessibility path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-accessibility),
+    dbus send bus=accessibility path=/org/a11y/atspi/registry interface=org.a11y.atspi.Registry member=GetRegisteredEvents peer=(name=org.a11y.atspi.Registry, label=at-spi2-registryd),
+    dbus send bus=session       path=/org/gnome/SessionManager/Client* interface=org.gnome.SessionManager.ClientPrivate member=EndSessionResponse peer=(name=*, label=gnome-session-binary),
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=org.gnome.SessionManager, label=gnome-session-binary),
+    dbus send bus=session       path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={Setenv,IsSessionRunning} peer=(name=org.gnome.SessionManager, label=gnome-session-binary),
+    dbus send bus=session       path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=accessibility path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-accessibility),
+    dbus send bus=accessibility path=/org/a11y/atspi/registry/deviceeventcontroller interface=org.a11y.atspi.DeviceEventController member={GetKeystrokeListeners,GetDeviceEventListeners} peer=(name=org.a11y.atspi.Registry, label=at-spi2-registryd),
+
+    dbus receive bus=accessibility path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=Hello peer=(name=*),
+    dbus receive bus=session       interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+    dbus receive bus=accessibility path=/org/a11y/atspi/accessible/root interface=org.freedesktop.DBus.Properties member=Set peer=(name=*, label=at-spi2-registryd),
+    dbus receive bus=accessibility path=/org/a11y/atspi/registry interface=org.a11y.atspi.Registry member=EventListenerDeregistered peer=(name=*, label=at-spi2-registryd),
+    dbus receive bus=session       path=/org/gnome/SessionManager interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session       path=/org/gnome/SessionManager/Presence interface=org.gnome.SessionManager.Presence member=StatusChanged peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session       path=/org/gnome/SessionManager/Client* interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session       path=/org/gnome/SessionManager/Client* interface=org.gnome.SessionManager.ClientPrivate member={CancelEndSession,QueryEndSession,EndSession,Stop} peer=(name=*, label=gnome-session-binary),
+    dbus receive bus=session       path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={ClientAdded,ClientRemoved,SessionRunning,InhibitorRemoved,InhibitorAdded} peer=(name=*, label=gnome-session-binary),
+
+    include if exists <local/usr.lib.at-spi-bus-launcher>
+}

@@ -45,8 +45,8 @@ include <abstractions/vulkan>
 include <abstractions/p11-kit>
 include <abstractions/openssl>
 include <abstractions/cups-client>
-include <abstractions/nameservice>
 include <abstractions/dbus-strict>
+include <abstractions/nameservice>
 include <abstractions/dbus-session-strict>
 include <abstractions/dbus-accessibility-strict>
 
@@ -54,8 +54,8 @@ capability                                                           sys_admin,
 capability                                                           sys_chroot,
 capability                                                           sys_ptrace,
 
-network inet                                                         stream,
-network inet6                                                        stream,
+network                                                              inet  stream,
+network                                                              inet6 stream,
 
 @{sysconfig}/etc/chromium/policies/managed/{,*}                      r,
 
@@ -79,17 +79,18 @@ network inet6                                                        stream,
 /proc/                                                               r,
 /proc/tty/drivers                                                    r,
 /proc/pressure/{,*}                                                  r,
+/proc/@{pid}/stat{,m}                                                r,
 /proc/sys/vm/overcommit_memory                                       r,
 /proc/sys/kernel/yama/ptrace_scope                                   r,
 /proc/sys/fs/inotify/max_user_watches                                r,
 /proc/sys/net/ipv6/conf/all/disable_ipv6                             r,
 
 owner /proc/@{pid}/fd/                                               r,
-owner /proc/@{pid}/stat                                              r,
-owner /proc/@{pid}/statm                                             r,
 owner /proc/@{pid}/cgroup                                            r,
 owner /proc/@{pid}/cmdline                                           r,
 owner /proc/@{pid}/mountinfo                                         r,
+owner /proc/@{pid}/task/{,@{tid}}                                    r,
+owner /proc/@{pid}/task/@{tid}/{comm,status}                         r,
 
 /dev/hidraw*                                                         rw,
 
@@ -100,7 +101,6 @@ owner /tmp/{,*}.org.*                                                rwmk,
 owner /dev/shm/{,*}.org.*                                            rwmk,
 
 owner @{run}/shm/{,*}.org.*                                          rwmk,
-owner @{run}/user/*/dconf/user                                       rw,
 
 owner /proc/@{pid}/comm                                              rw,
 owner /proc/@{pid}/uid_map                                           rw,
