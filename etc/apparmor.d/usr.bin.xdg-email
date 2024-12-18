@@ -36,9 +36,6 @@
 
 include <tunables/spaceport>
 
-# NOTE(dij): Only used to transition to xdg-open and open stuff. Only allows
-#            launching most stuff we "own" (user files) and has a specific list
-#            of allowed items who also have their own profiles.
 profile xdg-email /usr/bin/xdg-email flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
