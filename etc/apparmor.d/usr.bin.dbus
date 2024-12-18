@@ -1,0 +1,138 @@
+################################
+### iDigitalFlame  2016-2024 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2024 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/dbus-system>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
+
+    capability                                       setgid,
+    capability                                       setuid,
+    capability                                       net_admin,
+    capability                                       sys_ptrace,
+    capability                                       audit_write,
+    capability                                       sys_resource,
+
+    network                                          unix      stream,
+    network                                          netlink   raw,
+    network                                          bluetooth stream,
+    network                                          bluetooth seqpacket,
+
+    signal receive set=(term hup)      peer=gdm{,-*},
+    signal send    set=(term hup kill) peer=xdg-*,
+    signal send    set=(term hup kill) peer=dbus-*,
+    signal send    set=(term hup kill) peer=dconf-service,
+
+    ptrace read,
+
+    /etc/machine-id                                  r,
+    /etc/dbus-1/{,**}                                r,
+    /usr/share/dbus-1/{,**}                          r,
+    /var/lib/dbus/machine-id                         r,
+
+    /sys/module/apparmor/parameters/enabled          r,
+    /sys/kernel/security/apparmor/features/dbus/mask r,
+
+    @{run}/systemd/users/*                           r,
+
+    /proc/cmdline                                    r,
+    /proc/@{pid}/mounts                              r,
+    /proc/@{pid}/cmdline                             r,
+    /proc/@{pid}/environ                             r,
+    /proc/@{pid}/oom_score_adj                       r,
+    /proc/sys/kernel/osrelease                       r,
+    /proc/@{pid}/attr/apparmor/current               r,
+
+    @{HOME}/**                                       r,
+
+    owner /proc/@{pid}/fd/                           r,
+
+    owner @{run}/systemd/users/@{uid}                r,
+
+    owner @{HOME}/.local/share/dbus-1/services/{,**} r,
+
+    /dev/tty*                                        rw,
+    /dev/ptmx                                        rw,
+    /dev/dri/card*                                   rw,
+    /dev/input/event*                                rw,
+
+    /sys/kernel/security/apparmor/.access            rw,
+
+    @{run}/systemd/notify                            w,
+    @{run}/systemd/inhibit/*.ref                     rw,
+    @{run}/systemd/sessions/{,*}.ref                 rw,
+
+    owner /dev/pts/*                                 rw,
+
+    owner @{run}/user/@{uid}/bus                     rw,
+    owner @{run}/user/@{uid}/dbus-1/{,*}             rw,
+    owner @{run}/user/@{uid}/systemd/notify          w,
+    owner @{run}/user/@{uid}/dbus-1/services/        rw,
+
+    owner /tmp/dbus-*                                rw,
+
+    /usr/share/*/**                                  PUx,
+    /usr/{bin,lib}/**                                PUx,
+    /usr/bin/{tru,fals}e                             ix,
+    /usr/bin/dbus-run-session                        ixrm,
+    /usr/lib/at-spi-bus-launcher                     Px -> at-spi-bus-launcher,
+    /usr/bin/dbus-{broker,daemon}{,-launch}          ixrm,
+    /usr/lib/dbus-1.0/dbus-daemon-launch-helper      ixrm,
+    /usr/bin/dbus-update-activation-environment      ixrm,
+
+    unix (bind, listen)                   type=stream addr="@/tmp/dbus-*",
+    unix (send, receive)                  type=stream addr=none peer=(label=gnome-shell, addr=none),
+    unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
+    unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
+
+    dbus bind bus=system  name=org.freedesktop.DBus,
+    dbus bind bus=session name=org.freedesktop.DBus,
+
+    dbus (send, receive) bus=system  interface=org.freedesktop.DBus path=/{,org/freedesktop/DBus},
+    dbus (send, receive) bus=session interface=org.freedesktop.DBus path=/{,org/freedesktop/{d,D}Bus},
+
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+
+    dbus receive bus=system  path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=Hello peer=(name=*),
+    dbus receive bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=Hello peer=(name=*),
+
+    include if exists <local/usr.bin.dbus>
+}

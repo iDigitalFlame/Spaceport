@@ -27,6 +27,7 @@ cowsay
 cups
 cura-bin
 dash
+dbus-daemon-units
 dhcpcd
 dnsmasq
 dosfstools

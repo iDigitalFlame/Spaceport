@@ -100,7 +100,7 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
 
     owner /var/lib/extrausers/shadow                         r,
 
-    /dev/tty                                                 rwk,
+    /dev/tty*                                                rwk,
     /dev/ptmx                                                rwk,
     /dev/bus/usb/*/{,*}                                      rwk,
 
@@ -114,8 +114,6 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
     owner /var/lib/sudo/ts/                                  rw,
     owner /var/lib/sudo/ts/@{uid}                            rwk,
     owner /var/{db,lib}/sudo/lectured/@{uid}                 rw,
-
-    owner /dev/tty*                                          rw,
 
     owner @{run}/sudo/                                       rw,
     owner @{run}/sudo/ts/                                    rw,

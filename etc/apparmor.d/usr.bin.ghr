@@ -42,8 +42,8 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    capability                                  setuid,
     capability                                  setgid,
+    capability                                  setuid,
     capability                                  dac_override,
     capability                                  dac_read_search,
 

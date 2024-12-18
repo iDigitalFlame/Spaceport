@@ -36,40 +36,41 @@
 
 include <tunables/spaceport>
 
-profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_disconnected) {
+profile dirmngr /usr/bin/dirmngr flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/p11-kit>
     include <abstractions/consoles>
-    include <abstractions/private-files>
+    include <abstractions/ssl_certs>
+    include <abstractions/nameservice>
 
-    capability                        dac_override,
-    capability                        dac_read_search,
+    network                                       inet  dgram,
+    network                                       inet6 dgram,
+    network                                       inet  stream,
+    network                                       inet6 stream,
 
-    signal receive set=(stop, cont, term, kill),
+    /usr/bin/dirmngr                              rm,
+    /usr/share/gnupg/*.pem                        r,
 
-    # NOTE(dij): Required for pagers to work
-    /**                               r,
+    owner @{GPG_SYS_DIR}/dirmngr.conf             r,
+    owner @{GPG_SYS_DIR}/dirmngr_ldapservers.conf r,
 
-    @{sysconfig}/etc/sysless{,key}    r,
+    owner @{GPG_DIR}/dirmngr.conf                 r,
+    owner @{GPG_DIR}/dirmngr_ldapservers.conf     r,
 
-    /etc/sysless{,key}                r,
-    /usr/bin/{head,tail}              rm,
-    /usr/share/terminfo/{,**}         r,
-    /usr/bin/{less,more,pager}        rm,
+    owner @{GPG_SYS_DIR}/                         rw,
+    owner @{GPG_SYS_DIR}/crls.d/{,*}              rw,
+    owner @{GPG_SYS_DIR}/crls.d/DIR.txt           rw,
+    owner @{GPG_SYS_DIR}/{,d.*/}{,S.dirmngr}      rw,
 
-    owner @{CONFIG}/lesskey           r,
+    owner /proc/@{pid}/task/@{tid}/comm           rw,
 
-    owner @{HOME}/                    r,
-    owner @{HOME}/.lesshs*            r,
+    owner @{run}/user/@{uid}/gnupg/               rw,
+    owner @{run}/user/@{uid}/gnupg/{,d.*/}{,S.*}  rw,
 
-    /dev/tty*                         rw,
+    owner @{GPG_DIR}/                             rw,
+    owner @{GPG_DIR}/crls.d/{,*}                  rw,
+    owner @{GPG_DIR}/crls.d/DIR.txt               rw,
+    owner @{GPG_DIR}/{,d.*/}{,S.dirmngr}          rw,
 
-    deny network,
-
-    deny @{HOME}/.lesshs*             w,
-    deny @{HOME}/.local/state/lesshs* w,
-
-    # Disconnected path
-    deny /apparmor/.null              rw,
-
-    include if exists <local/usr.bin.pager>
+    include if exists <local/usr.bin.dirmngr>
 }

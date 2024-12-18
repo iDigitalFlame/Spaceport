@@ -69,6 +69,7 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     /usr/bin/{,e}grep                    ix,
     /usr/bin/mimetype                    ix,
     /usr/bin/xdg-mime                    ixr,
+    /usr/bin/xdg-email                   Px -> xdg-email,
     /usr/bin/{,g,m}awk                   ix,
     /usr/bin/s{ed,ort}                   ix,
     /usr/bin/w{c,hich}                   ix,

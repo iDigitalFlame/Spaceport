@@ -75,6 +75,7 @@ profile telegram-desktop /usr/bin/telegram-desktop flags=(enforce) {
     owner @{HOME}/.local/share/TelegramDesktop/{,*} rw,
 
     /usr/bin/xdg-open                               Pix -> xdg-open,
+    /usr/bin/xdg-email                              Pix -> xdg-email,
     /usr/bin/xdg-settings                           Pix -> xdg-settings,
     /usr/bin/telegram-desktop                       ixr,
 

@@ -63,6 +63,7 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     owner @{HOME}/.config/Signal/{,**}                       rwkl,
 
     /usr/bin/xdg-open                                        Pix -> xdg-open,
+    /usr/bin/xdg-email                                       Pix -> xdg-email,
     /usr/lib/signal-desktop/signal-desktop                   ixr,
     /usr/lib/signal-desktop/electron*/chrome-sandbox         ix,
 

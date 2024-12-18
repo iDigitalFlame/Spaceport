@@ -74,6 +74,7 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce)
     /usr/bin/pwd                                                       ix,
     /usr/bin/which                                                     ix,
     /usr/bin/xdg-open                                                  Pix -> xdg-open,
+    /usr/bin/xdg-email                                                 Pix -> xdg-email,
     /usr/lib/gio-launch-desktop                                        Pix -> xdg-open,
     /usr/lib/{firefox,librewolf}/**                                    ixr,
     /usr/lib/{firefox,librewolf}/browser/extensions/**                 ixrm,

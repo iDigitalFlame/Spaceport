@@ -39,7 +39,7 @@ include <tunables/spaceport>
 # NOTE(dij): Only used to transition to xdg-open and open stuff. Only allows
 #            launching most stuff we "own" (user files) and has a specific list
 #            of allowed items who also have their own profiles.
-profile xdg-open /usr/bin/xdg-open flags=(enforce) {
+profile xdg-email /usr/bin/xdg-email flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/xdg-open>
@@ -51,7 +51,6 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     owner @{CONFIG}/mimeapps.list                          r,
 
     @{sysconfig}/bin/ghr                                   Pix -> ghr,
-    @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
 
     /usr/bin/env                                           ix,
     /usr/bin/file                                          ix,
@@ -60,26 +59,11 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     /usr/bin/printf                                        ix,
     /usr/bin/realpath                                      ix,
     /usr/bin/dbus-send                                     ix,
-    /etc/xdg/xdg-open-shim.sh                              ixr,
     /usr/bin/{u,base,host}name                             ix,
 
     /usr/bin/ghr                                           Px -> ghr,
-    /usr/bin/vlc                                           Px,
-    /usr/bin/leafpad                                       Px,
-    /usr/bin/swayimg                                       Px,
-    /usr/bin/xdg-email                                     Px -> xdg-email,
-    /usr/bin/ristretto                                     Px,
-    /usr/bin/{t,T}hunar                                    Px,
-    /usr/bin/{,vs}codium                                   Ux,
-    /usr/bin/{core,mu}pdf                                  Px,
     /usr/bin/chrom{e,ium}                                  Px,
-    /opt/notesnook/notesnook                               Px,
-    /usr/bin/telegram-desktop                              Px,
-    /opt/vscodium-bin/bin/codium                           Ux,
-    /usr/{bin,lib}/slack{,/slack}                          Px,
-    /usr/{bin/electron*,lib/electron*/electron}            Px,
     /usr/{bin,lib/signal-desktop}/signal-desktop           Px,
-    /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura       Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
 
     owner @{HOME}/.local/bin/**                            PUx,

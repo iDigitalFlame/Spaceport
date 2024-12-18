@@ -104,9 +104,9 @@ profile systemd-journald /usr/lib/systemd/systemd-journald flags=(enforce, attac
 
     /{run,var}/log/                                                     rw,
     /{run,var}/log/journal/                                             rw,
-    /{run,var}/log/journal/*/                                           rw,
-    /{run,var}/log/journal/*/*                                          rwl -> /{run,var}/log/journal/*/{,.}#*,
-    /{run,var}/log/journal/*/{,.}#*                                     rwl,
+    /{run,var}/log/journal/*/#*                                         rwl,
+    /{run,var}/log/journal/*/.#*                                        rwl,
+    /{run,var}/log/journal/*{,/,/*}                                     rw,
 
     @{run}/systemd/notify                                               rw,
     @{run}/systemd/journal/{,**}                                        rw,

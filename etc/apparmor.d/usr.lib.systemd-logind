@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile systemd-logind /usr/lib/systemd-logind flags=(enforce, attach_disconnected) {
+profile systemd-logind /usr/lib/systemd/systemd-logind flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/dbus-system>
@@ -58,6 +58,11 @@ profile systemd-logind /usr/lib/systemd-logind flags=(enforce, attach_disconnect
 
     @{sysconfig}/etc/systemd/sleep.conf                                 r,
     @{sysconfig}/etc/systemd/logind.conf                                r,
+
+    /boot/                                                              r,
+    /boot/**/*.efi                                                      r,
+    /boot/EFI/Linux/                                                    r,
+    /boot/loader/loader.conf                                            r,
 
     /                                                                   r,
     /etc/machine-id                                                     r,
@@ -125,7 +130,7 @@ profile systemd-logind /usr/lib/systemd-logind flags=(enforce, attach_disconnect
     /proc/@{pid}/fdinfo/*                                               r,
     /proc/@{pid}/mountinfo                                              r,
     /proc/@{pid}/sessionid                                              r,
-    /proc/@{pid}/{group,omm}                                            r,
+    /proc/@{pid}/c{group,omm}                                           r,
     /proc/sys/kernel/osrelease                                          r,
     /proc/sysvipc/{shm,sem,msg}                                         r,
     /proc/1/{cgroup,environ,sched}                                      r,
@@ -163,9 +168,9 @@ profile systemd-logind /usr/lib/systemd-logind flags=(enforce, attach_disconnect
     /dev/kmsg                                                           w,
     /dev/zram*                                                          rwk,
     /dev/{f,z}d*                                                        rwk,
+    /dev/dri/card*                                                      rw,
     /dev/nvme[0-9]*                                                     rwk,
     /dev/loop[0-9]*                                                     rwk,
-    /dev/dri/card@*                                                     rw,
     /dev/bus/usb/*/*                                                    rwk,
     /dev/mapper/{,*}                                                    rwk,
     /dev/loop[0-9]*p*                                                   rwk,
@@ -180,7 +185,7 @@ profile systemd-logind /usr/lib/systemd-logind flags=(enforce, attach_disconnect
     @{run}/systemd/sessions/{,*}                                        rw,
     @{run}/systemd/users/{,*,.#*}                                       rw,
     @{run}/systemd/inhibit/{,*,.#*,*.ref}                               rw,
-    @{run}/systemd/seats/{,seat@*,.#seat*}                              rw,
+    @{run}/systemd/seats/{,seat*,.#seat*}                               rw,
     @{run}/systemd/shutdown/{,.#}scheduled{,*}                          rw,
     @{run}/systemd/userdb/io.systemd.Multiplexer                        rw,
 
