@@ -34,7 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-abi <abi/3.0>,
+abi <abi/4.0>,
 
 /usr/share/                                    r,
 /usr/local/share/                              r,

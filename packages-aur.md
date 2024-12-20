@@ -4,7 +4,6 @@ firefox-extension-canvasblocker-bin
 firefox-extension-foxyproxy
 firefox-extension-multi-account-containers
 firefox-extension-styl-us-bin
-firefox-extension-user-agent-switcher
 firefox-temporary-containers
 flatery-icon-theme-git
 kora-icon-theme

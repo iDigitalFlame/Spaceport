@@ -44,7 +44,8 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
     include <abstractions/dbus-network-manager-strict>
 
     ptrace read  peer=vesktop,
-    ptrace read  peer=/usr/bin/xdg-{open,settions},
+    ptrace read  peer=/usr/bin/xdg-{open,settions,email},
+    ptrace read  peer=/usr/{bin/electron*,lib/electron*/electron},
     ptrace trace peer=vesktop,
     ptrace trace peer=/usr/lib/electron*/chrome-sandbox,
     ptrace trace peer=/usr/{bin/electron*,lib/electron*/electron},

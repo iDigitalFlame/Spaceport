@@ -89,6 +89,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     /sys/devices/**/usb*/**/{manufacturer,serial,product}     r,
 
     /proc/cgroups                                             r,
+    /proc/@{pid}/stat                                         r,
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
 
@@ -98,7 +99,6 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     /tmp/                                                     r,
 
     owner /proc/@{pid}/fd/                                    r,
-    owner /proc/@{pid}/stat                                   r,
     owner /proc/@{pid}/mountinfo                              r,
     owner /proc/@{pid}/c{group,mdline}                        r,
 

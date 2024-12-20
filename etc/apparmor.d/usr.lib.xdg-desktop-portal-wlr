@@ -54,6 +54,7 @@ profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(enforce, a
 
     ptrace read,
 
+    /                                            r,
     /etc/sysconfig/proxy                         r,
     /usr/share/drirc.d/{,*}                      r,
     /usr/lib/xdg-desktop-portal-wlr              rm,

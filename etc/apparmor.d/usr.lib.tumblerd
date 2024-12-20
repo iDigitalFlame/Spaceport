@@ -77,10 +77,10 @@ profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
 
     owner @{CACHE}/thumbnails/                                                      rw,
     owner @{CACHE}/gstreamer-*/                                                     rw,
-    owner @{CACHE}/thumbnails/{l,n,x}*/{,#*}                                        rw,
     owner @{CACHE}/thumbnails/{l,n,x}*/*.png{,.*}                                   rw,
     owner @{CACHE}/thumbnails/{fail,*large,normal}/#*                               rw,
     owner @{CACHE}/gstreamer-*/registry.*.bin{,.tmp*}                               rw,
+    owner @{CACHE}/thumbnails/{l,n,x}*/{,#*,.goutputstream-*}                       rw,
     owner @{CACHE}/thumbnails/{fail,*large,normal}/gnome-thumbnail-factory/{,*.png} rw,
 
     owner /tmp/tumbler-*                                                            rw,

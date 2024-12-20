@@ -59,6 +59,8 @@ profile waybar /usr/bin/waybar flags=(enforce) {
 
     owner @{CONFIG}/waybar/{,*}                 r,
 
+    /tmp/gdkpixbuf-xpm-tmp.*                    rw,
+
     owner /dev/tty*                             rw,
 
     owner /proc/@{pid}/task/@{tid}/comm         rw,

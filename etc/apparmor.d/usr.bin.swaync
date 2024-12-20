@@ -51,6 +51,7 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     /sys/class/backlight/*/{,max_}brightness          r,
     /sys/devices/pci*/**/*backlight/{,max_}brightness r,
 
+    owner @{CONFIG}/mimeapps.list                     r,
     owner @{CONFIG}/swaync/style.css                  r,
     owner @{CONFIG}/swaync/config.json                r,
 

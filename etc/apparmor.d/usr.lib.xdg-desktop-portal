@@ -51,6 +51,7 @@ profile xdg-desktop-portal /usr/lib/xdg-desktop-portal flags=(enforce, attach_di
 
     ptrace read,
 
+    /                                            r,
     /etc/sysconfig/proxy                         r,
     /usr/lib/xdg-desktop-portal                  rm,
     /usr/share/xdg-desktop-portal/**             r,
