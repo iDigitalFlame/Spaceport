@@ -1,3 +1,4 @@
+7zip
 apparmor
 archlinuxcn-keyring
 archstrike-keyring
@@ -112,7 +113,6 @@ openvpn
 otf-cascadia-code
 otf-fira-mono
 otf-font-awesome-4
-p7zip
 pacman
 pacman-contrib
 pam-u2f

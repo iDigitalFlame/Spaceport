@@ -60,6 +60,7 @@ profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd flags=(enforce, att
     /usr/lib*/samba/{,samba/}rpcd_{rpcecho,fsrvp,lsad,winreg} Px -> samba-rpcd,
 
     deny @{HOME}/{,**}                                        wkl,
+    deny /apparmor/.null                                      rw,
 
     include if exists <local/samba-dcerpcd>
     include if exists <local/usr.lib.samba-dcerpcd>

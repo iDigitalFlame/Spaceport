@@ -43,28 +43,32 @@ include <abstractions/nameservice>
 capability                                dac_override,
 capability                                dac_read_search,
 
-@{sysconfig}/usr/lib/smd/{,s}bin{,/*}     r,
-@{sysconfig}/usr/lib/smd/lib{,exec}{,/**} r,
-@{sysconfig}/var/cache/smd/constants.json r,
+@{sysconfig}/usr/lib/smd/{,s}bin{,/*}             r,
+@{sysconfig}/usr/lib/smd/lib{,exec}{,/**}         r,
+@{sysconfig}/var/cache/smd/constants.json         r,
 
-/usr/bin/                                 r,
-/usr/lib/smd/{,s}bin{,/*}                 r,
-/usr/lib/smd/lib{,exec}{,/**}             r,
-/var/cache/smd/constants.json             r,
+@{sysconfig}/usr/lib/smd/**/__pycache__/*.pyc{,*} rw,
 
-/dev/null                                 r,
+/usr/bin/                                         r,
+/usr/lib/smd/{,s}bin{,/*}                         r,
+/usr/lib/smd/lib{,exec}{,/**}                     r,
+/var/cache/smd/constants.json                     r,
 
-/proc/                                    r,
+/dev/null                                         r,
 
-owner /proc/@{pid}/stat                   r,
-owner /proc/@{pid}/cmdline                r,
+/proc/                                            r,
 
-owner @{CONFIG}/smd.json                  r,
+owner /proc/@{pid}/stat                           r,
+owner /proc/@{pid}/cmdline                        r,
 
-@{run}/smd/*.sock                         rw,
+owner @{CONFIG}/smd.json                          r,
 
-/usr/lib/smd/lib/smd-message              ixr,
-@{sysconfig}/usr/lib/smd/lib/smd-message  ixr,
+/usr/lib/smd/**/__pycache__/*.pyc{,*}             rw,
+
+@{run}/smd/*.sock                                 rw,
+
+/usr/lib/smd/lib/smd-message                      ixr,
+@{sysconfig}/usr/lib/smd/lib/smd-message          ixr,
 
 unix (connect, receive, send) type=stream peer=(addr="@{run}/smd/*.sock"),
 
