@@ -1,7 +1,6 @@
 cups.path
 apparmor.service
 auditd.service
-getty@.service
 NetworkManager-dispatcher.service
 NetworkManager-wait-online.service
 NetworkManager.service

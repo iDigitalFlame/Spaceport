@@ -26,6 +26,7 @@ systemd-homed-firstboot.service
 systemd-homed.service
 systemd-hwdb-update.service
 systemd-importd.service
+systemd-journal-remote.service
 systemd-journal-upload.service
 systemd-machined.service
 systemd-mountfsd.service

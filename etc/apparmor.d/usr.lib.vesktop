@@ -44,9 +44,11 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
     include <abstractions/dbus-network-manager-strict>
 
     ptrace read  peer=vesktop,
+    ptrace read  peer=electron,
     ptrace read  peer=/usr/bin/xdg-{open,settions,email},
     ptrace read  peer=/usr/{bin/electron*,lib/electron*/electron},
     ptrace trace peer=vesktop,
+    ptrace trace peer=electron,
     ptrace trace peer=/usr/lib/electron*/chrome-sandbox,
     ptrace trace peer=/usr/{bin/electron*,lib/electron*/electron},
 
@@ -62,6 +64,7 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
 
     owner @{HOME}/.config/vesktop/{,**}         rwk,
 
+    /usr/bin/slurp                              ix,
     /usr/bin/xdg-open                           Pix -> xdg-open,
     /usr/bin/electron*                          ixr,
     /usr/bin/xdg-email                          Pix -> xdg-email,
@@ -71,6 +74,9 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
 
     deny /dev/tty                               rw,
     deny /dev/pts/*                             rw,
+
+    deny ptrace read  peer=unconfined,
+    deny ptrace trace peer=unconfined,
 
     include if exists <local/usr.lib.vesktop>
 }
