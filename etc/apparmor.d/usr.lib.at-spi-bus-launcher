@@ -68,6 +68,7 @@ profile at-spi-bus-launcher /usr/lib/at-spi-bus-launcher flags=(enforce, attach_
     owner /proc/@{pid}/fd/                           r,
     owner /proc/@{pid}/mounts                        r,
     owner /proc/@{pid}/oom_score_adj                 r,
+    owner /proc/@{pid}/fdinfo/@{tid}/*               r,
     owner /proc/@{pid}/c{group,mdline}               r,
     owner /proc/@{pid}/attr/apparmor/current         r,
 

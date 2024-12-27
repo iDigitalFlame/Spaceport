@@ -95,6 +95,7 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
     owner /proc/@{pid}/loginuid            rw,
 
     /usr/bin/{,ba,da,z}sh                  Ux,
+    /usr/bin/gnome-keyring-daemon          Px -> gnome-keyring-daemon,
 
     unix type=stream addr="@*/bus/login/system",
 
