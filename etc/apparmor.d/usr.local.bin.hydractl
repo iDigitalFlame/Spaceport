@@ -43,7 +43,7 @@ profile smd-hydractl /usr/local/bin/hydra* flags=(enforce) {
     /sys/bus/usb/devices/*/id{Product,Vendor}     r,
     /sys/bus/usb/devices/*/{manufacturer,product} r,
 
-    owner @{CONFIG}/smd.json                      r,
+    owner @{CONFIG}/smd.json                      rw,
 
     @{run}/smd/hydra/*.{spice,vnc}                rw,
 

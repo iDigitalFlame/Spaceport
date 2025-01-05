@@ -2091,14 +2091,14 @@ class HydraServer(object):
         del n, i
         self._running = True
         server.info("[m/hydra]: Startup complete.")
+        return True
 
     def thread(self, server):
         if not self._running:
             if len(self._vms) == 0:
                 return
             server.debug("[m/hydra]: Starting Hydra for pending VMs..")
-            self.start(server)
-            if self._running:
+            if self.start(server):
                 return
             self._vms.clear()
             return server.error(
@@ -2266,7 +2266,9 @@ class HydraServer(object):
                 x._socket_perms_set()
                 return x._status()
             try:
-                self.start(server)
+                if not self.start(server):
+                    server.error(f"[m/hydra/VM({x.vmid})]: Server setup failed!")
+                    return as_error(f"cannot start VM {x.vmid}: Server setup failed")
                 x._start(server, self, message.uid(), message)
                 self._vms[x.vmid] = x
             except Error as err:

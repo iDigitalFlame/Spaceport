@@ -43,6 +43,8 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     include <abstractions/notifications>
     include <abstractions/private-files>
 
+    @{sysconfig}/usr/lib/smd/bin/powerctl             Px -> powerctl,
+
     /etc/machine-id                                   r,
     /usr/bin/swaync                                   rm,
     /etc/xdg/swaync/*                                 r,
@@ -59,12 +61,10 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     owner @{HOME}/Pictures/Screenshots/*.{jpg,png}    r,
 
     /usr/bin/sudo                                     Px -> sudo,
-    /usr/local/bin/*ctl                               Px,
+    /usr/local/bin/*ctl                               Px -> powerctl,
     /usr/bin/{,ba,da}sh                               ix,
     /usr/bin/swaync-client                            Px -> swaync-client,
-    /usr/lib/smd/bin/powerctl                         Px,
-
-    @{sysconfig}/usr/lib/smd/bin/powerctl             Px,
+    /usr/lib/smd/bin/powerctl                         Px -> powerctl,
 
     owner @{HOME}/.local/bin/{,sway/}*                PUx,
     owner @{HOME}/.dotfiles/.local/bin/{,sway/}*      PUx,

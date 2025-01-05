@@ -103,9 +103,10 @@ profile systemd-journald /usr/lib/systemd/systemd-journald flags=(enforce, attac
     /sys/fs/cgroup/system.slice/@{profile_name}.service/memory.pressure rw,
 
     /{run,var}/log/                                                     rw,
-    /{run,var}/log/journal/                                             rw,
-    /{run,var}/log/journal/*/**                                         rwlk,
-    /{run,var}/log/journal/*/{,.}**                                     rwlk -> /{run,var}/log/journal/**/{,.,.#}**,
+    /{run,var}/log/journal/*/#*                                         rwl -> /{run,var}/log/journal/*/.#*,
+    /{run,var}/log/journal/*/.#*                                        rw,
+    /{run,var}/log/journal/{,*,*/}                                      rw,
+    /{run,var}/log/journal/*/*.journal                                  rw,
 
     @{run}/systemd/notify                                               rw,
     @{run}/systemd/journal/{,**}                                        rw,

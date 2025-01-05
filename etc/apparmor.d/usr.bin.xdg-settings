@@ -43,6 +43,8 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
 
+    @{sysconfig}/bin/ghr                 Pix -> ghr,
+
     /usr/bin/xdg-settings                r,
     /usr/share/terminfo/**               r,
     /usr/share/icons/*/cursors/crosshair r,
@@ -54,8 +56,6 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     owner @{run}/user/@{uid}/            r,
 
     owner @{CONFIG}/mimeapps.list        r,
-
-    @{sysconfig}/bin/ghr                 Pix -> ghr,
 
     /usr/bin/tr                          ix,
     /usr/bin/gio                         ix,

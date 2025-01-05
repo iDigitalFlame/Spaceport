@@ -76,7 +76,7 @@ profile top /usr/bin/top flags=(enforce) {
     /proc/sys/kernel/{pid_max,osrelease}      r,
     /proc/@{pid}/task/@{tid}/oom_{,score_}adj r,
 
-    @{run}/systemd/sessions/                  r,
+    @{run}/systemd/sessions/{,*}              r,
 
     deny network,
 

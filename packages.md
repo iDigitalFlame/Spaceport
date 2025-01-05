@@ -44,7 +44,6 @@ firefox-ublock-origin
 freerdp2
 gcc
 gdb
-gdb-multiarch
 ghidra
 ghostscript
 git

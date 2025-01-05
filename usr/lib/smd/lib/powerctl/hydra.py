@@ -830,7 +830,7 @@ def vm_start(args, vm=None):
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
     except OSError as err:
         return print_error("Cannot start the VM!", err)
-    check_error(r, "Cannot start the VM")
+    check_error(r)
     print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
     del r, vm
     return True
@@ -1004,7 +1004,7 @@ def vm_connect(args, vm=None, vnc=False):
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
     except OSError as err:
         return print_error("Cannot start the VM!", err)
-    check_error(r, "Cannot start the VM")
+    check_error(r)
     del vm
     if not args.no_fork and fork() != 0:
         return True

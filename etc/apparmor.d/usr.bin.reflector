@@ -43,6 +43,7 @@ profile reflector /usr/bin/reflector flags=(enforce) {
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
+    capability                                 net_admin,
     capability                                 dac_override,
 
     network                                    inet  stream,
@@ -53,6 +54,8 @@ profile reflector /usr/bin/reflector flags=(enforce) {
     /etc/xdg/reflector/reflector.conf          r,
 
     /var/cache/pacman/mirror{list,status.json} rw,
+
+    /dev/pts/*                                 rw,
 
     include if exists <local/usr.bin.reflector>
 }

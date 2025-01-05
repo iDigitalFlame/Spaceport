@@ -1246,7 +1246,7 @@ class LockerServer(object):
             #            lockscreen is enabled. If the screen was already closed
             #            this won't take effect.
             return server.debug(
-                "[m/locker]: Ignoring Hibernate request due to Backup Locker!"
+                "[m/locker]: Ignoring Suspend request due to Backup Locker!"
             )
         try:
             nulexec(LOCKER_EXEC_SUSPEND, wait=True)

@@ -1,3 +1,6 @@
+usr-share.mount
+usr.mount
+var-cache.mount
 var-lib-machines.mount
 alsa-state.service
 audit-rules.service

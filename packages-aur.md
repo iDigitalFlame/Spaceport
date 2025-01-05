@@ -6,6 +6,7 @@ firefox-extension-multi-account-containers
 firefox-extension-styl-us-bin
 firefox-temporary-containers
 flatery-icon-theme-git
+gdb-multiarch
 kora-icon-theme
 osslsigncode
 vesktop-bin

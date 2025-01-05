@@ -40,6 +40,7 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     include <abstractions/gtk>
     include <abstractions/mesa>
     include <abstractions/audio>
+    include <abstractions/dconf>
     include <abstractions/video>
     include <abstractions/vulkan>
     include <abstractions/consoles>

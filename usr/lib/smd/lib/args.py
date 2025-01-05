@@ -353,7 +353,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "suspend",
-                "help": "set the Suspend timeout (seconds / true - until reboot / false - disable)",
+                "help": "set the Suspend timeout (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -364,7 +364,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "suspend_force",
-                "help": "force set the Suspend timeout (seconds / true - until reboot / false - disable)",
+                "help": "force set the Suspend timeout (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -377,7 +377,7 @@ ARGS = {
                 "dest": "hibernate",
                 "action": "store",
                 "metavar": "seconds",
-                "help": "set the Hibernate timeout (seconds / true - until reboot / false - disable)",
+                "help": "set the Hibernate timeout (seconds / true [until reboot] / false [disable])",
                 "required": False,
             },
         ),
@@ -386,7 +386,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "hibernate_force",
-                "help": "force set the Hibernate timeout (seconds / true - until reboot / false - disable)",
+                "help": "force set the Hibernate timeout (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -395,7 +395,7 @@ ARGS = {
         (
             "timeout",
             {
-                "help": "set the Suspend timeout (seconds / true - until reboot / false - disable)",
+                "help": "set the Suspend timeout (seconds / true [until reboot] / false [disable])",
                 "nargs": "?",
                 "action": "store",
                 "default": None,
@@ -905,7 +905,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "blank",
-                "help": "set the Blank inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "set the Blank inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -917,7 +917,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "blank_force",
-                "help": "force set the Blank inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "force set the Blank inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -929,7 +929,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lockscreen",
-                "help": "set the Lockscreen inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "set the Lockscreen inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -941,7 +941,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lockscreen_force",
-                "help": "force set the Lockscreen inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "force set the Lockscreen inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -953,7 +953,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "suspend",
-                "help": "set the Suspend inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "set the Suspend inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -965,7 +965,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "suspend_force",
-                "help": "force set the Suspend inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "force set the Suspend inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -977,7 +977,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "hibernate",
-                "help": "set the Hibernate inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "set the Hibernate inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -989,7 +989,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "hibernate_force",
-                "help": "force set the Hibernate inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "force set the Hibernate inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -1001,7 +1001,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lid",
-                "help": "set the Lid inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "set the Lid inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -1013,7 +1013,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "lid_force",
-                "help": "force set the Lid inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "force set the Lid inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -1025,7 +1025,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "key",
-                "help": "set the Key inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "set the Key inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -1037,7 +1037,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "key_force",
-                "help": "force set the Key inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "force set the Key inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -1049,7 +1049,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "freeze",
-                "help": "set the App Freeze inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "set the App Freeze inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
@@ -1061,7 +1061,7 @@ ARGS = {
             {
                 "type": str,
                 "dest": "freeze_force",
-                "help": "force set the App Freeze inhibitor time (seconds / true - until reboot / false - disable)",
+                "help": "force set the App Freeze inhibitor time (seconds / true [until reboot] / false [disable])",
                 "action": "store",
                 "metavar": "timeval",
                 "required": False,
