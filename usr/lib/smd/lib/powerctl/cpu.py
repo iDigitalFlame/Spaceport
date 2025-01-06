@@ -73,6 +73,9 @@ def config(args):
     except (ValueError, OSError) as err:
         return print_error("Cannot retrive CPU information!", err)
     p = {"cpus": dict(), "type": MSG_CONFIG}
+    if args.step:
+        # NOTE(dij): "step" always implies turbo.
+        p["turbo"], args.turbo = True, None
     for v in x["cpus"].keys():
         c = dict()
         if nes(args.minimum):
@@ -81,10 +84,15 @@ def config(args):
             except ValueError as err:
                 return print_error(f'Minimum "{args.minimum}" is not valid!', err)
         if nes(args.maximum):
-            try:
-                c["scale_max"] = _parse(args.maximum)
-            except ValueError as err:
-                return print_error(f'Maximum "{args.minimum}" is not valid!', err)
+            # NOTE(dij): If we're using "step" set to the max freq on the first
+            #            "step".
+            if args.step:
+                c["scale_max"] = x["cpus"][v]["max"]
+            else:
+                try:
+                    c["scale_max"] = _parse(args.maximum)
+                except ValueError as err:
+                    return print_error(f'Maximum "{args.minimum}" is not valid!', err)
         if nes(args.governor):
             c["governor"] = args.governor
         if nes(args.power_governor):
@@ -118,6 +126,20 @@ def config(args):
     else:
         w = None
     try:
+        if args.step:
+            try:
+                n = _parse(args.maximum)
+            except ValueError as err:
+                return print_error(f'Step maximum "{args.minimum}" is not valid!', err)
+            # Send initial update. We might wait, depending on the settings.
+            send_message(args.socket, HOOK_CPU, w, TIMEOUT_SEC_MESSAGE, p)
+            # Update with new max value
+            for v in p["cpus"].values():
+                v["scale_max"] = n
+            # The server still validates the data, so this is ok, it just pushes
+            # extra work to the server end to validate. If it's wrong, the server
+            # will return an error.
+            del n
         send_message(args.socket, HOOK_CPU, w, TIMEOUT_SEC_MESSAGE, p)
     except Exception as err:
         return print_error("Cannot update CPU information!", err)

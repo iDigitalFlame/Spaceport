@@ -137,6 +137,15 @@ ARGS = {
             "config",
         ),
         (
+            "-s",
+            {
+                "dest": "step",
+                "help": "set the maximum CPU frequency after setting turbo (implies -t)",
+                "action": "store_true",
+                "required": False,
+            },
+        ),
+        (
             "-n",
             {
                 "type": str,
