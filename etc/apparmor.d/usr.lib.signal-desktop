@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enforce) {
+profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enforce, attach_disconnected) {
     include <abstractions/video>
     include <abstractions/chromium>
     include <abstractions/user-home>
@@ -60,6 +60,9 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     owner @{CGROUP}/app.slice/sway.service/memory.{high,max} r,
 
     owner @{HOME}/                                           r,
+
+    @{run}/systemd/inhibit/*.ref                             rw,
+
     owner @{HOME}/.config/Signal/{,**}                       rwkl,
 
     /usr/bin/xdg-open                                        Pix -> xdg-open,

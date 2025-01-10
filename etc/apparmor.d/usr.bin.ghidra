@@ -65,6 +65,7 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     /sys/kernel/mm/transparent_hugepage/{,shmem_}enabled      r,
 
     /proc/cgroups                                             r,
+    /proc/@{pid}/stat                                         r,
     /proc/sys/vm/mmap_min_addr                                r,
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
@@ -72,8 +73,7 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     /tmp/                                                     r,
 
     owner /proc/@{pid}/fd/                                    r,
-    owner /proc/@{pid}/stat                                   r,
-    owner /proc/@{pid}/mountinfo                              r,
+    owner /proc/@{pid}/mount{info,s}                          r,
     owner /proc/@{pid}/c{group,mdline}                        r,
 
     owner @{HOME}/                                            r,
@@ -110,8 +110,9 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ix,
+    /opt/ghidra/{Extensions,Features,Framework,GPL}/**        ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ix,
-    /opt/ghidra/Ghidra/{Extensions,Features,Framework}/**     ix,
+    /opt/ghidra/Ghidra/{Extensions,Features,Framework,GPL}/** ix,
 
     deny network,
 
