@@ -43,34 +43,34 @@ profile nm-applet /usr/bin/nm-applet flags=(enforce) {
     include <abstractions/nameservice>
     include <abstractions/freedesktop.org>
 
-    /etc/fstab                                     r,
-    /usr/bin/nm-applet                             rm,
-    /usr/share/glib-2.0/schemas/*                  r,
-    /usr/share/mime/application/x-pem-file.xml     r,
+    /etc/fstab                                           r,
+    /usr/bin/nm-applet                                   rm,
+    /usr/share/glib-2.0/schemas/*                        r,
+    /usr/share/mime/application/x-pem-file.xml           r,
 
-    /sys/devices/pci*/{,**/}uevent                 r,
+    /sys/devices/pci*/{,**/}uevent                       r,
 
-    @{run}/udev/data/{c,n}*{,/**/uevent}           r,
-    @{run}/udev/data/+usb:*{,/**/uevent}           r,
-    @{run}/udev/data/+pci:*{,/**/uevent}           r,
-    @{run}/udev/data/+virtio:*{,/**/uevent}        r,
-    @{run}/udev/data/+bluetooth:*{,/**/uevent}     r,
+    @{run}/udev/data/{c,n}*{,/**/uevent}                 r,
+    @{run}/udev/data/+usb:*{,/**/uevent}                 r,
+    @{run}/udev/data/+pci:*{,/**/uevent}                 r,
+    @{run}/udev/data/+virtio:*{,/**/uevent}              r,
+    @{run}/udev/data/+bluetooth:*{,/**/uevent}           r,
 
-    owner /proc/@{pid}/mountinfo                   r,
+    owner /proc/@{pid}/mountinfo                         r,
 
-    owner /tmp/*                                   r,
-    owner /mnt/{,**}                               r,
-    owner /media/{,**}                             r,
-    owner /tmp/.mounts/*/{,**}                     r,
+    owner /tmp/*                                         r,
+    owner /mnt/{,**}                                     r,
+    owner /media/{,**}                                   r,
+    owner /tmp/.mounts/*/{,**}                           r,
 
-    owner @{HOME}/{,**}                            r,
+    owner @{HOME}/{,**}                                  r,
 
-    owner @{HOME}/.cert/nm-openvpn/*.pem           rw,
-    owner @{HOME}/.config/openvpn/nm-openvpn/*.pem rw,
+    owner @{HOME}/.cert/nm-openvpn/*.{crt,pem}           rw,
+    owner @{HOME}/.config/openvpn/nm-openvpn/*.{crt,pem} rw,
 
-    /usr/bin/openvpn                               Px -> openvpn,
-    /usr/bin/nm-connection-editor                  ix,
-    /usr/lib/nm-openvpn-auth-dialog                Pix -> nm-openvpn-auth-dialog,
+    /usr/bin/openvpn                                     Px -> openvpn,
+    /usr/bin/nm-connection-editor                        ix,
+    /usr/lib/nm-openvpn-auth-dialog                      Pix -> nm-openvpn-auth-dialog,
 
     deny network,
 
