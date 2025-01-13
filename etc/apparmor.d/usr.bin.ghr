@@ -47,6 +47,10 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     capability                                  dac_override,
     capability                                  dac_read_search,
 
+    @{sysconfig}/bin/ghr                        rm,
+
+    /usr/bin/ghr                                rm,
+
     # NOTE(dij): We can't scrub these as this can cause the apps to fail to load
     #            any non-standard libraries.
     /usr/bin/**                                 pux,

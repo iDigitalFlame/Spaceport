@@ -41,6 +41,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     include <abstractions/chromium>
     include <abstractions/user-home>
 
+    ptrace read  peer=xdg-{open,settings,email},
     ptrace read  peer=/usr/bin/xdg-{open,settings,email},
     ptrace trace peer=/usr/bin/chrom{e,ium},
     ptrace trace peer=/usr/lib/chrom{e,ium}/chrom{e,ium},

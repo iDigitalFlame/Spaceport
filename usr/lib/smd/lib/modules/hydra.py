@@ -1924,7 +1924,7 @@ class HydraServer(object):
 
     def start(self, server):
         if self._running:
-            return
+            return True
         if not isfile(HYDRA_EXEC_VM):
             return server.error(
                 "[m/hydra]: The required QEMU package is not installed, Hydra VMs cannot run!"

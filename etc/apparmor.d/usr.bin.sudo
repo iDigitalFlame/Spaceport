@@ -122,8 +122,9 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
     owner @{HOME}/.yubico/                                   r,
     owner @{HOME}/.yubico/challenge-*                        rw,
 
+    /lib/**                                                  PUx,
     /opt/*/**                                                PUx,
-    /usr/bin/**                                              PUx,
+    /usr/{bin,lib}/**                                        PUx,
     /usr/bin/{ba,da,z}sh                                     Ux,
     /usr/local/{,s}bin/**                                    PUx,
 

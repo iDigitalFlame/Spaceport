@@ -38,23 +38,32 @@ include <tunables/spaceport>
 
 profile spicy /usr/bin/spicy flags=(enforce) {
     include <abstractions/gtk>
+    include <abstractions/mesa>
+    include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/video>
+    include <abstractions/vulkan>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
     include <abstractions/freedesktop.org>
 
     # NOTE(dij): For USB redirection.
     capability                                    fowner,
 
+    /etc/machine-id                               r,
     /usr/share/hwdata/usb.ids                     r,
     /usr/share/glib-2.0/schemas/gschemas.compiled r,
 
     /dev/                                         r,
+    /dev/shm/                                     r,
     /dev/bus/usb/                                 r,
 
     /sys/{bu,clas}s/                              r,
 
     /proc/@{pid}/stat                             r,
-    /proc/@{pid}/fdinfo/@{tid}{,/,/comm}          r,
+
+    owner /proc/@{pid}/fd/                        r,
+    owner /proc/@{pid}/fdinfo/@{tid}{,/,/comm}    r,
 
     owner @{CONFIG}/user-dirs.dirs                r,
     owner @{CONFIG}/spicy/settings                r,

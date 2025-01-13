@@ -949,6 +949,10 @@ class LockerServer(object):
             or not self._ability.lid
             or LOCKER_TYPE_LID in self._lockers
         ):
+            try:
+                self._lid.seek(2, 0)
+            except OSError:
+                pass  # We're only seeking to prevent backlogged lid actions.
             return
         # NOTE(dij): We're async reading the Lid switch, as it outputs a 48b data
         #            segment on state change. If nothing happens, this returns None.
