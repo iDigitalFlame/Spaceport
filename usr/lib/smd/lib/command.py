@@ -18,7 +18,7 @@
 ########## SPACEPORT ###########
 ### Spaceport + SMD
 #
-# Copyright (C) 2016 - 2024 iDigitalFlame
+# Copyright (C) 2016 - 2025 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ def powerctl():
     a = m.parse_args()
     if a.version:
         print(
-            f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2024\n\n"
+            f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2025\n\n"
             f"System: {NAME} ({NAME_SERVER} / {NAME_CLIENT})"
         )
         exit(0)
