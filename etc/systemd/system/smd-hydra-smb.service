@@ -39,7 +39,7 @@
 [Unit]
 After                   = home.mount network.target smd-daemon.service
 Requires                = home.mount network.target smd-daemon.service
-Description             = Hydra SMB Daemon
+Description             = System Management Daemon Hydra SMB Support
 
 [Service]
 Type                    = notify

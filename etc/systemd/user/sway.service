@@ -44,7 +44,7 @@ Description     = Sway Desktop
 Type            = exec
 ExecStart       = /usr/bin/sway
 ExecStartPre    = -/usr/bin/dash -c "dash -l -c 'set' > /tmp/.sway_env_%U_user"
-ExecStartPost   = -/usr/bin/rm -f "/tmp/.sway_env_%U_user"
+ExecStartPost   = -/usr/bin/dash -c "dbus-update-activation-environment --all; /usr/bin/rm -f '/tmp/.sway_env_%U_user'"
 EnvironmentFile = -/tmp/.sway_env_%U_user
 
 [Install]
