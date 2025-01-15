@@ -82,13 +82,13 @@ profile systemd-journald /usr/lib/systemd/systemd-journald flags=(enforce, attac
     /proc/@{pid}/c{group,mdline,omm}                                    r,
 
     @{run}/utmp                                                         rk,
-    @{run}/udev/data/+hid:*                                             r,
     @{run}/udev/data/+acpi:*                                            r,
     @{run}/udev/data/{b,c}*:*                                           r,
     @{run}/udev/data/+virtio:*                                          r,
     @{run}/udev/data/+mdio_bus:*                                        r,
     @{run}/udev/data/+ieee80211:*                                       r,
     @{run}/udev/data/+bluetooth:*                                       r,
+    @{run}/udev/data/+{drm,hid}:*                                       r,
     @{run}/host/container-manager                                       r,
     @{run}/udev/data/+s{csi,dio}:*                                      r,
     @{run}/udev/data/+input:input*                                      r,
@@ -104,7 +104,7 @@ profile systemd-journald /usr/lib/systemd/systemd-journald flags=(enforce, attac
 
     /{run,var}/log/journal/                                             rw,
     /{run,var}/log/journal/*/                                           rw,
-    /{run,var}/log/journal/*/*                                          rwl -> /{run,var}/log/journal/*/{,.}#*,
+    /{run,var}/log/journal/*/*                                          rwl -> /{run,var}/log/journal/*/#*,
 
     @{run}/systemd/notify                                               rw,
     @{run}/systemd/journal/{,**}                                        rw,
