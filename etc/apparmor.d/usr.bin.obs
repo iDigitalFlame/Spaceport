@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile obs /usr/bin/obs flags=(enforce) {
+profile obs /usr/bin/obs flags=(enforce, attach_disconnected) {
     include <abstractions/dri>
     include <abstractions/gui>
     include <abstractions/mesa>
@@ -70,8 +70,12 @@ profile obs /usr/bin/obs flags=(enforce) {
     deny network,
     deny ptrace,
 
+    deny /dev/tty                           rw,
     deny /usr/bin/{,ba,da}sh                x,
     deny /usr/bin/xdg-screensaver           xr,
+
+    # Disconnected path
+    deny /apparmor/.null                    rw,
 
     include if exists <local/usr.bin.obs>
 }

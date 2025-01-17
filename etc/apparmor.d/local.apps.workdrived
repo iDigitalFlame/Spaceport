@@ -97,8 +97,8 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     /usr/bin/xdg-open                                              Pix -> xdg-open,
     /usr/bin/dbus-send                                             ix,
 
-    deny /dev/tty                                                  r,
     # NOTE(dij): WorkDrive doesn't need to open things.
+    deny /dev/tty                                                  rw,
     deny /usr/bin/cut                                              x,
     deny /usr/bin/file                                             x,
     deny /usr/bin/pmap                                             x,

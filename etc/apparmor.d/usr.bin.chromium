@@ -53,6 +53,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     /sys/{bus,class}{,/,/**}                                 r,
     /sys/{bus,class}/usb*/{,devices/}                        r,
     /sys/devices/virtual/input/mice/uevent                   r,
+    /sys/devices/platform/i8042/serio*/**/uevent             r,
     /sys/devices/**/input/input*/{,event*/}uevent            r,
 
     @{run}/udev/data/*:*                                     r,
@@ -60,8 +61,6 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     owner @{CONFIG}/chrom{e,ium}-flags.conf                  r,
 
     /sys/{bus,class}/usb{,-serial}/{,devices/**}             rw,
-
-    /dev/tty*                                                rw,
 
     owner @{CACHE_TMP}/chromium_cache/**                     rw,
     owner @{CACHE_TMP}/chromium_cache/**/*.sqlite            k,

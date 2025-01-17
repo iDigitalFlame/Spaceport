@@ -39,6 +39,8 @@
 
 /var/cache/ld.so.cache          rm,
 
+owner /dev/tty{,*}              rw,
+
 audit deny /opt/secureboot/{,*} rw,
 
 signal receive   peer=unconfined set=(hup int quit kill segv pipe term cont stop),

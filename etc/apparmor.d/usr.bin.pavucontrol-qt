@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(enforce) {
+profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(enforce, attach_disconnected) {
     include <abstractions/qt>
     include <abstractions/audio>
     include <abstractions/dconf>
@@ -56,6 +56,9 @@ profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(enforce) {
     deny network,
 
     deny @{CONFIG}/pavucontrol-qt/pavucontrol-qt.conf  w,
+
+    # Disconnected path
+    deny /apparmor/.null                               rw,
 
     include if exists <local/usr.bin.pavucontrol-qt>
 }

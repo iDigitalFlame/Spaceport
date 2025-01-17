@@ -72,7 +72,6 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
     /usr/lib/electron*/chrome-sandbox           ix,
     /usr/{bin/electron*,lib/electron*/electron} ixr,
 
-    deny /dev/tty                               rw,
     deny /dev/pts/*                             rw,
 
     deny ptrace read  peer=unconfined,

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce) {
+profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce, attach_disconnected) {
     include <abstractions/chromium>
     include <abstractions/user-home>
 
@@ -99,6 +99,9 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce)
 
     dbus receive bus=session interface=org.a11y.atspi**,
     dbus receive bus=system path=/org/freedesktop/NetworkManager,
+
+    # Disconnected path
+    deny /apparmor/.null                                               rw,
 
     include if exists <local/usr.lib.firefox>
 }

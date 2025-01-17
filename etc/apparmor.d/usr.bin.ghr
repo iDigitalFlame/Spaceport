@@ -51,6 +51,8 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
 
     /usr/bin/ghr                                rm,
 
+    /dev/tty*                                   rw,
+
     # NOTE(dij): We can't scrub these as this can cause the apps to fail to load
     #            any non-standard libraries.
     /usr/bin/**                                 pux,

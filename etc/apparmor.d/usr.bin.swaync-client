@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile swaync-client /usr/bin/swaync-client flags=(enforce) {
+profile swaync-client /usr/bin/swaync-client flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/notifications>
@@ -47,6 +47,9 @@ profile swaync-client /usr/bin/swaync-client flags=(enforce) {
     dbus (send, receive) interface=org.erikreider.swaync.cc,
 
     deny network,
+
+    # Disconnected path
+    deny /apparmor/.null                rw,
 
     include if exists <local/usr.bin.swaync-client>
 }

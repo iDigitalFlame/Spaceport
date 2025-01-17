@@ -116,6 +116,7 @@ owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
 
 /usr/bin/dbus-send                                                   ix,
 
+deny /dev/tty                                                        rw,
 deny /usr/lib/chromium/extensions{,/,/**}                            w,
 
 include if exists <abstractions/chromium.d>

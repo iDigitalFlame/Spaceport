@@ -51,8 +51,6 @@ profile pinentry-gui /usr/bin/pinentry-{gnome3,gtk,qt*,*} flags=(enforce) {
     /usr/share/terminfo/**     r,
     /var/lib/dbus/machine-id   r,
 
-    owner /dev/tty*            r,
-
     owner /proc/@{pid}/cmdline r,
 
     owner /tmp/xauth_*         r,

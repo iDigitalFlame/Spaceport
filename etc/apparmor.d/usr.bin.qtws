@@ -60,7 +60,5 @@ profile qtws /usr/bin/qtws flags=(enforce) {
     /usr/lib/qt{,*}/QtWebEngineProcess                    ix,
     /usr/lib/qt{,*}/libexec/QtWebEngineProcess            ix,
 
-    deny /dev/tty                                         rw,
-
     include if exists <local/usr.bin.qtws>
 }

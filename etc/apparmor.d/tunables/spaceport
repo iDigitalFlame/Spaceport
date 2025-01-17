@@ -41,4 +41,4 @@ include <tunables/global>
 @{GPG_SYS_DIR}=/etc/pacman.d/gnupg /var/db/pacman/gnupg
 @{GPG_DIR}=@{HOME}/.gnupg @{HOME}/.local/share/gnupg @{HOME}/.dotfiles/.local/share/gnupg
 
-@{CGROUP}=/sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service
+@{CGROUP}=/sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service /sys/fs/cgroup/user.slice/user-@{uid}.slice/session-*.scope

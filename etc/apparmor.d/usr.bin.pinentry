@@ -43,8 +43,6 @@ profile pinentry /usr/bin/pinentry{,-curses,-emacs,-tty} flags=(enforce) {
 
     /usr/share/terminfo/** r,
 
-    owner /dev/tty*        r,
-
     /usr/bin/ldd           ixr,
     /usr/lib/ld-*          ixr,
     /usr/bin/{,ba,da,z}sh  ixr,

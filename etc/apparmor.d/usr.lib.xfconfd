@@ -49,8 +49,6 @@ profile xfconfd /usr/lib/xfce4/xfconf/xfconfd flags=(enforce) {
     owner @{HOME}/                                  r,
     owner @{HOME}/.config/xfce4/xfconf/**           r,
 
-    owner /dev/tty*                                 rw,
-
     owner @{CONFIG}/xfce4/xfconf/**/*.xml           r,
 
     owner @{HOME}/.config/xfce4/                    rw,

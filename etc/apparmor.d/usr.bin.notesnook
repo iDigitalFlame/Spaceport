@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce) {
+profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce, attach_disconnected) {
     include <abstractions/version>
     include <abstractions/chromium>
     include <abstractions/user-home>
@@ -55,6 +55,9 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce) {
 
     deny /home/                           r,
     deny /dev/pts/*                       rw,
+
+    # Disconnected path
+    deny /apparmor/.null                  rw,
 
     include if exists <local/usr.bin.notesnook>
 }

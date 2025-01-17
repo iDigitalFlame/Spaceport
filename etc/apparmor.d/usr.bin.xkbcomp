@@ -47,7 +47,7 @@ profile xkbcomp /usr/bin/xkbcomp flags=(enforce, attach_disconnected) {
     /usr/share/X11/xkb/**                     r,
 
     /dev/fb*                                  rw,
-    /dev/tty                                  rw,
+    /dev/tty{,*}                              rw,
     /dev/dri/card*                            rw,
     /dev/dri/render*                          rw,
     /dev/input/event*                         rw,

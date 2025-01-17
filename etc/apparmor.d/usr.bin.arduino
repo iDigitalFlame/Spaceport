@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
+profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/dconf>
     include <abstractions/consoles>
@@ -159,6 +159,9 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce) {
     deny /usr/share/arduino/**                                w,
     deny @{HOME}/.arduino15/preferences.txt                   w,
     deny @{HOME}/.dotfiles/.arduino15/preferences.txt         w,
+
+    # Disconnected path
+    deny /apparmor/.null                                      rw,
 
     include if exists <local/usr.bin.arduino>
 }

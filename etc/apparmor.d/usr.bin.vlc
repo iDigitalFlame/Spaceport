@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce) {
+profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce, attach_disconnected) {
     include <abstractions/qt>
     include <abstractions/dri>
     include <abstractions/audio>
@@ -66,6 +66,9 @@ profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce) {
     deny @{CONFIG}/vlc{,/,/*}           w,
     deny /usr/bin/xdg-screensaver       xr,
     deny @{HOME}/.local/share/vlc{,/**} w,
+
+    # Disconnected path
+    deny /apparmor/.null                rw,
 
     include if exists <local/usr.bin.vlc>
 }

@@ -59,7 +59,7 @@ profile corepdf /usr/bin/corepdf flags=(enforce) {
 
     deny network,
 
-    deny /dev/tty                          r,
+    deny /dev/tty                          rw,
     deny /dev/disk/by-label/               r,
     deny @{CONFIG}/cubocore/coreapps.conf  w,
 

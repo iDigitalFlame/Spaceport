@@ -48,8 +48,6 @@ profile ssh-agent /usr/bin/ssh-agent flags=(enforce) {
     owner @{HOME}/.local/ssh/{,*}                r,
     owner @{HOME}/.config/ssh/{,*}               r,
 
-    /dev/tty*                                    rw,
-
     owner /tmp/ssh-*/                            rw,
     owner /tmp/ssh-*/agent.*                     rw,
 

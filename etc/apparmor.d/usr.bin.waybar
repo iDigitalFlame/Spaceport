@@ -61,8 +61,6 @@ profile waybar /usr/bin/waybar flags=(enforce) {
 
     /tmp/gdkpixbuf-xpm-tmp.*                    rw,
 
-    owner /dev/tty*                             rw,
-
     owner /proc/@{pid}/task/@{tid}/comm         rw,
 
     /usr/bin/wpctl                              ix,

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile blueman /usr/bin/blueman-* flags=(enforce) {
+profile blueman /usr/bin/blueman-* flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/audio>
     include <abstractions/dconf>
@@ -60,6 +60,9 @@ profile blueman /usr/bin/blueman-* flags=(enforce) {
 
     /usr/bin/blueman-*                  ixr,
     /usr/lib/gio-launch-desktop         ix,
+
+    # Disconnected path
+    deny /apparmor/.null                rw,
 
     include if exists <local/usr.bin.blueman>
 }

@@ -56,7 +56,6 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
 
     @{CGROUP}/cpu.max                                        r,
 
-    owner @{CGROUP}/app.slice/cpu.max                        r,
     owner @{CGROUP}/app.slice/sway.service/memory.{high,max} r,
 
     owner @{HOME}/                                           r,
@@ -70,7 +69,6 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     /usr/lib/signal-desktop/signal-desktop                   ixr,
     /usr/lib/signal-desktop/electron*/chrome-sandbox         ix,
 
-    deny /dev/tty                                            rw,
     deny /dev/pts/*                                          rw,
     deny /usr/bin/xdg-settings                               rx,
 
