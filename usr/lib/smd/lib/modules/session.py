@@ -174,7 +174,7 @@ class Session(object):
                 )
         del s
 
-    def _freeze(self, server, pre):
+    def _freeze(self, server, pre, pid=None):
         if not self._can_freeze:
             return server.debug("[m/session]: Not freezing windows as it's disabled.")
         try:
@@ -183,12 +183,19 @@ class Session(object):
             return server.error("[m/session]: Cannot retrive the window list!", err)
         if len(w) == 0:
             return server.debug("[m/session]: No windows detected, not freezing.")
+        if isinstance(pid, int):
+            x = pid
+        else:
+            x = 0
         for i in w:
             if not _can_freeze(self._ignore, i):
                 if pre:
                     server.debug(
                         f'[m/session]: Ignorining Window (pid="{i.pid}", app="{i.app}").'
                     )
+                continue
+            # Ignore the lockscreen PID if it was included.
+            if i.pid == x:
                 continue
             if pre:
                 try:
@@ -222,7 +229,7 @@ class Session(object):
                 not isinstance(message.lockers, list)
                 or LOCKER_TYPE_FREEZE not in message.lockers
             ):
-                self._freeze(server, True)
+                self._freeze(server, True, message.lockscreen)
             else:
                 server.debug(
                     "[m/session]: Ignoring freeze request due to the Freeze locker!"

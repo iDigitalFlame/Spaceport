@@ -149,12 +149,24 @@ HYDRA_EXEC_DNS = "/usr/bin/dnsmasq"
 HYDRA_EXEC_VNC = "/usr/bin/vncviewer"
 HYDRA_EXEC_SPICE = "/usr/bin/spicy"
 
+HYDRA_VM_ARCH = {
+    "x64": "/usr/bin/qemu-system-x86_64",
+    "x86": "/usr/bin/qemu-system-i386",
+    "arm": "/usr/bin/qemu-system-arm",
+    "aarch64": "/usr/bin/qemu-system-aarch64",
+}
+
 HYDRA_FILE_SMB = f"{HYDRA_DIR}/smb.conf"
 HYDRA_FILE_DNS = f"{HYDRA_DIR}/dns.conf"
-HYDRA_FILE_UEFI = ["/usr/share/edk2/ia32/OVMF.4m.fd", "/usr/share/edk2/x64/OVMF.4m.fd"]
+HYDRA_FILE_UEFI = [
+    "/usr/share/edk2/ia32/OVMF.4m.fd",
+    "/usr/share/edk2/x64/OVMF.4m.fd",
+    "/usr/share/edk2/ia32/OVMF_CODE.secboot.4m.fd",
+    "/usr/share/edk2/x64/OVMF_CODE.secboot.4m.fd",
+]
 HYDRA_FILE_UEFI_VARS = [
-    "/usr/share/edk2/ia32/OVMF_VARS.4m.fd",
     "/usr/share/edk2/x64/OVMF_VARS.4m.fd",
+    "/usr/share/edk2/x64/OVMF_VARS.ms.4m.fd",
 ]
 
 HYDRA_RESERVE = "/proc/sys/vm/nr_hugepages"

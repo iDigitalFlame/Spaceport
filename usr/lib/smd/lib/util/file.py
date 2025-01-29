@@ -101,50 +101,6 @@ class Stat(NamedTuple):
             raise FileNotFoundError()
         raise PermissionError(f'"{self.path}" cannot be a block device')
 
-    def check(self, mask=None, uid=None, gid=None, req=None, hide=False):
-        if self.stat is None:
-            raise FileNotFoundError(f'"{self.path}" does not exist')
-        if isinstance(uid, int) and self.uid != uid:
-            if uid == 0:
-                n = "root"
-            else:
-                try:
-                    n = getpwuid(uid).pw_name
-                except KeyError:
-                    n = uid
-            if hide:
-                raise FileNotFoundError(f'"{self.path}" does not exist')
-            raise PermissionError(f'"{self.path}" owner is not "{n}"')
-        if isinstance(gid, int) and self.gid != gid:
-            if gid == 0:
-                n = "root"
-            else:
-                try:
-                    n = getgrgid(gid).gr_name
-                except KeyError:
-                    n = gid
-            if hide:
-                raise FileNotFoundError(f'"{self.path}" does not exist')
-            raise PermissionError(f'"{self.path}" group is not "{n}"')
-        if isinstance(mask, int) and (self.stat.st_mode & mask) != 0:
-            if hide:
-                raise FileNotFoundError(f'"{self.path}" does not exist')
-            raise PermissionError(
-                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the mask ({mask:0o})'
-            )
-        if isinstance(req, int) and (self.stat.st_mode & req) < req:
-            if hide:
-                raise FileNotFoundError(f'"{self.path}" does not exist')
-            raise PermissionError(
-                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the required permissions ({req:0o})'
-            )
-        return self
-
-    def check_if(self, cond, mask=None, uid=None, gid=None, req=None, hide=False):
-        if not cond:
-            return self
-        return self.check(mask, uid, gid, req, hide)
-
     def no(self, file=None, dir=None, char=None, block=None, link=None, hide=False):
         if file is not None:
             if file and not self.isfile:
@@ -192,6 +148,72 @@ class Stat(NamedTuple):
                     raise FileNotFoundError(f'"{self.path}" does not exist')
                 raise PermissionError(f'"{self.path}" cannot be a block device')
         return self
+
+    def check(self, mask=None, uid=None, gid=None, req=None, hide=False, own_gid=False):
+        if self.stat is None:
+            raise FileNotFoundError(f'"{self.path}" does not exist')
+        if isinstance(uid, int) and self.uid != uid:
+            if uid == 0:
+                n = "root"
+            else:
+                try:
+                    n = getpwuid(uid).pw_name
+                except KeyError:
+                    n = uid
+            if hide:
+                raise FileNotFoundError(f'"{self.path}" does not exist')
+            raise PermissionError(f'"{self.path}" owner is not "{n}"')
+        if isinstance(gid, int) and self.gid != gid:
+            if gid == 0:
+                n = "root"
+            else:
+                try:
+                    n = getgrgid(gid).gr_name
+                except KeyError:
+                    n = gid
+            if hide:
+                raise FileNotFoundError(f'"{self.path}" does not exist')
+            raise PermissionError(f'"{self.path}" group is not "{n}"')
+        if isinstance(mask, int) and (self.stat.st_mode & mask) != 0:
+            if hide:
+                raise FileNotFoundError(f'"{self.path}" does not exist')
+            raise PermissionError(
+                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the mask ({mask:0o})'
+            )
+        if isinstance(req, int) and (self.stat.st_mode & req) < req:
+            if hide:
+                raise FileNotFoundError(f'"{self.path}" does not exist')
+            raise PermissionError(
+                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the required permissions ({req:0o})'
+            )
+        if own_gid:
+            g = getpwuid(self.uid).pw_gid
+            if g != self.gid:
+                if hide:
+                    raise FileNotFoundError(f'"{self.path}" does not exist')
+                if self.gid == 0:
+                    n = "root"
+                else:
+                    try:
+                        n = getgrgid(self.gid).gr_name
+                    except KeyError:
+                        n = gid
+                try:
+                    s = getgrgid(g).gr_name
+                except KeyError:
+                    s = g
+                raise PermissionError(
+                    f'"{self.path}" group "{n}" is not the user primary group "{s}"'
+                )
+            del g
+        return self
+
+    def check_if(
+        self, cond, mask=None, uid=None, gid=None, req=None, hide=False, own_gid=False
+    ):
+        if not cond:
+            return self
+        return self.check(mask, uid, gid, req, hide, own_gid)
 
     def check_if_owner(
         self, owner_uid, mask=None, uid=None, gid=None, req=None, hide=False

@@ -39,13 +39,12 @@ umask 0027
 
 export ERRFILE="/dev/null"
 
-# Disable telemetry
+# Disable Telemetry
 export POWERSHELL_TELEMETRY_OPTOUT=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 export NO_AT_BRIDGE=1
 export SCREENRC="${HOME}/.screen/screenrc"
-export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export GTK_RC_FILES="${HOME}/.config/gtk-1.0/gtkrc"
 export GTK2_RC_FILES="${HOME}/.config/gtk-2.0/gtkrc"
 export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
@@ -56,7 +55,15 @@ export QT_QPA_PLATFORM="wayland;xcb"
 export _JAVA_AWT_WM_NONREPARENTING="1"
 export ELECTRON_OZONE_PLATFORM_HINT="wayland"
 
-# XDG User items export
+# Python Configuration
+export PYTHONUTF8=1
+export PYTHON_COLORS=1
+export PYTHONOPTIMIZE=1
+export PYTHONUSERBASE="${HOME}/.local/lib/python"
+export PYTHONCOERCECLOCALE="en_US.UTF-8"
+export PYTHONPYCACHEPREFIX="/var/cache/python"
+
+# XDG User Items Export
 export XDG_DESKTOP_DIR="${HOME}"
 export XDG_CACHE_HOME="${HOME}/.cache"
 export XDG_CONFIG_HOME="${HOME}/.config"

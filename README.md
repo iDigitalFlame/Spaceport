@@ -63,3 +63,18 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - yay
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z4121TDS)
+
+### Hydra Secureboot Config
+
+There's not a package that contains a secureboot image that contains pre-enrolled
+keys, so that'll have to be a manual install.
+
+To do this, we'll follow [this](https://wiki.archlinux.org/title/QEMU#Enabling_Secure_Boot)
+guide on the ArchLinux Wiki.
+
+Download the file [here](http://archive.ubuntu.com/ubuntu/pool/main/e/edk2/ovmf_2024.02-2_all.deb)
+and extract it to get the `OVMF_VARS_4M.ms.fd` file, which can then be copied to
+`/usr/share/edk2/x64/OVMF_VARS.ms.4m.fd` to get the pre-enrolled image.
+
+You can also just copy that over your VM specific `bios.vars` file (defaults to
+`uefi_vars.fd` in the VM folder) if you want it VM specific.

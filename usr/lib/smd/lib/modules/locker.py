@@ -749,7 +749,15 @@ class LockerClient(object):
             nulexec(LOCKER_EXEC_LOCK_KEYRING, wait=True, errors=False)
             server.debug("[m/locker]: Locking user keyring due to Key and Power state!")
         server.send(
-            None, Message(HOOK_LOCK, {"type": MSG_PRE, "lockers": self._lockers})
+            None,
+            Message(
+                HOOK_LOCK,
+                {
+                    "type": MSG_PRE,
+                    "lockers": self._lockers,
+                    "lockscreen": self._lockscreen.pid,
+                },
+            ),
         )
 
     def _lock_dpms(self, server, enable):

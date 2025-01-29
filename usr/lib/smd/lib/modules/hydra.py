@@ -64,6 +64,7 @@ from lib.constants.config import (
     HYDRA_USER,
     HYDRA_BRIDGE,
     HYDRA_RESERVE,
+    HYDRA_VM_ARCH,
     HYDRA_EXEC_VM,
     HYDRA_FILE_DNS,
     HYDRA_EXEC_DNS,
@@ -319,7 +320,8 @@ class VM(Storage):
             raise Error(f'cannot read "{path}": {err}')
         # NOTE(dij): We don't wrap these as they're the same as an Error
         #            and they already provide context.
-        i.only(file=True).check(0o7137, uid, _hydra_user().pw_gid)
+        #            Must be owner with exclusive access.
+        i.only(file=True).check(0o7177, uid, own_gid=True)
         del i
         Storage.__init__(self, path, load=True)
         if not nes(self.get("vm.uuid")):
@@ -766,7 +768,11 @@ class VM(Storage):
         if nes(info.bios):
             f = info.bios
         else:
-            f = HYDRA_FILE_UEFI[int(info.intel)]
+            c = int(info.intel)
+            if self.get("bios.secure_boot"):
+                c += 2
+            f = HYDRA_FILE_UEFI[c]
+            del c
         if nes(info.bios_vars):
             v = info.bios_vars
         else:
@@ -775,13 +781,15 @@ class VM(Storage):
                 f'[m/hydra/VM({self.vmid})]: Copying the default UEFI variables to "{v}".'
             )
             try:
+                u = getpwuid(uid)
                 copy(
-                    HYDRA_FILE_UEFI_VARS[int(info.intel)],
+                    HYDRA_FILE_UEFI_VARS[int(self.get("bios.secure_boot"))],
                     v,
                     uid,
-                    _hydra_user().pw_gid,
-                    0o0640,
+                    u.pw_gid,
+                    0o0600,
                 )
+                del u
             except OSError as err:
                 raise Error(f'Cannot create VM specific UEFI vars file "{v}": {err}')
             else:
@@ -1124,7 +1132,7 @@ class VM(Storage):
         self._state, self._proc = HYDRA_STATE_STOPPED, None
         x = self._build(server, manager, uid, opts)
         if nes(self.path()):
-            self.save(perms=0o640)
+            self.save(perms=0o600)
             server.debug(f'[m/hydra/VM({self.vmid})]: Saved config to "{self.path()}".')
         try:
             self._init_adapters(server)
@@ -1241,7 +1249,11 @@ class VM(Storage):
                 raise Error(f'binary "{x}" is not in "hydra.unsafe.allowed_binaries"')
             del a
         else:
-            x = HYDRA_EXEC_VM
+            k = self.get("vm.arch")
+            if nes(k):
+                x = HYDRA_VM_ARCH.get(k.lower(), HYDRA_EXEC_VM)
+            else:
+                x = HYDRA_EXEC_VM
         e = self.get("vm.extra")
         if isinstance(e, list) and len(e) > 0:
             if not v:
@@ -1286,59 +1298,73 @@ class VM(Storage):
             f = None
         t = self.get("dev.tpm")
         if nes(t):
-            # NOTE(dij): Security Check
-            #            Can only be a TPM chardev device that is not owned by
-            #            root. The calling user must by in the group owned by the
-            #            owner (usually "tss"). The device must have 0o0660 permissions.
-            i = (
-                info(t, False, hide=True)
-                .check(0o7117, req=0o0660, hide=True)
-                .only(char=True)
-            )
-            if i.uid != uid:
-                raise Error(f'character device "{f}" cannot have a non-system owner')
-            if i.uid == 0:
-                raise Error(f'character device "{t}" cannot be owned by root')
-            try:
-                v = getpwuid(i.uid)
-            except KeyError:
-                raise Error(f'cannot find user "{i.uid}" for "{t}"')
-            try:
-                g = getgrgid(v.pw_gid)
-            except KeyError:
-                raise Error(f'cannot find group "{v.pw_gid}" for "{t}"')
-            if u.pw_name not in g.gr_mem:
-                raise Error(
-                    f'user "{u.pw_name}" must be in the group "{g.gr_name}" for "{t}"'
-                )
-            del v, g, i
+            i = info(t, False, hide=True)
+            if i.isfile:
+                # NOTE(dij): Security Check
+                #            Virtual TPM file. Can only be a file owned by the
+                #            calling user that has 0o0600 permissions.
+                i.check(0o7177, uid, hide=True, own_gid=True).only(file=True)
+            else:
+                # NOTE(dij): Security Check
+                #            Can only be a TPM chardev device that is not owned by
+                #            root. The calling user must by in the group owned by the
+                #            owner (usually "tss"). The device must have 0o0660 permissions.
+                i.check(0o7117, req=0o0660, hide=True).only(char=True)
+                if i.uid != uid:
+                    raise Error(
+                        f'character device "{f}" cannot have a non-system owner'
+                    )
+                if i.uid == 0:
+                    raise Error(f'character device "{t}" cannot be owned by root')
+                try:
+                    v = getpwuid(i.uid)
+                except KeyError:
+                    raise Error(f'cannot find user "{i.uid}" for "{t}"')
+                try:
+                    g = getgrgid(v.pw_gid)
+                except KeyError:
+                    raise Error(f'cannot find group "{v.pw_gid}" for "{t}"')
+                if u.pw_name not in g.gr_mem:
+                    raise Error(
+                        f'user "{u.pw_name}" must be in the group "{g.gr_name}" for "{t}"'
+                    )
+                del v, g
+                # NOTE(dij): Denote this is a chardev instead of a file.
+                t = f"dev:{t}"
+            del i
         else:
             # NOTE(dij): Set to None to remove anything else.
             t = None
         k = expand(self.get("dev.kernel"))
         if nes(k):
             # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0640
-            #            permissions.
-            info(k, False, hide=True).check(0o7137, uid, hide=True).only(file=True)
+            #            Can only be a file owned by the calling user that has 0o0600
+            #            permissions. The file must also be owned by the user's primary group.
+            info(k, False, hide=True).check(0o7177, uid, hide=True, own_gid=True).only(
+                file=True
+            )
         else:
             # NOTE(dij): Set to None to remove anything else.
             k = None
         d = expand(self.get("dev.initrd"))
         if nes(d):
             # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0640
-            #            permissions.
-            info(d, False, hide=True).check(0o7137, uid, hide=True).only(file=True)
+            #            Can only be a file owned by the calling user that has 0o0600
+            #            permissions. The file must also be owned by the user's primary group.
+            info(d, False, hide=True).check(0o7177, uid, hide=True, own_gid=True).only(
+                file=True
+            )
         else:
             # NOTE(dij): Set to None to remove anything else.
             d = None
         o = expand(self.get("dev.devicetree"))
         if nes(o):
             # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0640
-            #            permissions.
-            info(o, False, hide=True).check(0o7137, uid, hide=True).only(file=True)
+            #            Can only be a file owned by the calling user that has 0o0600
+            #            permissions. The file must also be owned by the user's primary group.
+            info(o, False, hide=True).check(0o7177, uid, hide=True, own_gid=True).only(
+                file=True
+            )
         else:
             # NOTE(dij): Set to None to remove anything else.
             o = None
@@ -1412,9 +1438,9 @@ class VM(Storage):
             #            not the drive is mounted as read only. The block
             #            device permissions must be 0o0660.
             #
-            #            If the target is a file and is owned by the user
-            #            it must have the Hydra group and the permissions of
-            #            0o660. Unless the "readonly" value is True, in which
+            #            If the target is a file and is owned by the user and
+            #            it must have the user's primary group and the permissions of
+            #            0o600. Unless the "readonly" value is True, in which
             #            the drive will be checked to see if the user has at least
             #            read permissions and the file is not executable.
             #
@@ -1433,9 +1459,9 @@ class VM(Storage):
                 elif v.uid == uid:
                     v.check_if(d.get("readonly", False), 0o7133, req=0o0440).check_if(
                         not d.get("readonly", False),
-                        0o7117,
-                        gid=_hydra_user().pw_gid,
-                        req=0o0660,
+                        0o7177,
+                        req=0o0600,
+                        own_gid=True,
                     )
                 else:
                     v.check(0o7133, req=0o0644, hide=True)
@@ -1444,7 +1470,7 @@ class VM(Storage):
                         f'does not have write permissions to "{p}".'
                     )
                     d["readonly"] = True
-            if v.isblockdev:
+            elif v.isblockdev:
                 if v.uid != 0:
                     raise PermissionError(f'block device "{p}" must be owned by root')
                 v.check(0o7117, req=0o0660, hide=True)
@@ -1481,6 +1507,12 @@ class VM(Storage):
                             f'drive "{n}" block dev "{p}" cannot be checked for mount status'
                         )
                 del g
+            else:
+                # NOTE(dij): This shouldn't reach here, but catch any non-file/blockdev
+                #            disk mount attempts.
+                raise Error(
+                    f'drive "{n}" file "{p}" is not a valid file or block device'
+                )
             del v
             v = d.get("index")
             if isinstance(v, int):

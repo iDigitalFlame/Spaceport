@@ -48,6 +48,8 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected)
 
     owner @{CGROUP}/app.slice/sway.service/memory.{high,max} r,
 
+    owner /proc/@{pid}/mem                                   r,
+
     owner @{HOME}/                                           r,
 
     @{run}/systemd/inhibit/*.ref                             rw,
