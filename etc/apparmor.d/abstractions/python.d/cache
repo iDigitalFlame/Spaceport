@@ -34,4 +34,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/var/cache/python/{,**} rw,
+/var/cache/python/{,**}    rw,
+
+# Prevent saving any cache files outside of the cache dir.
+deny /**/__pycache__/*.pyc rw,

@@ -43,6 +43,7 @@ Type                    = oneshot
 Group                   = smd
 ExecStart               = /usr/lib/smd/bin/powerctl --exit=0 backup -s
 PrivateTmp              = true
+Environment             = PYTHONPYCACHEPREFIX="/var/cache/python"
 KeyringMode             = private
 ProtectHome             = true
 PrivatePIDs             = true

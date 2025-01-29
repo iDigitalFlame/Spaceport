@@ -46,6 +46,7 @@ KillSignal              = SIGINT
 PrivateTmp              = true
 MountFlags              = shared
 ProtectProc             = default
+Environment             = PYTHONPYCACHEPREFIX="/var/cache/python"
 KeyringMode             = private
 ProtectHome             = read-only
 PrivatePIDs             = false

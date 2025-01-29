@@ -42,6 +42,7 @@ Description             = System Management Daemon Post Hibernate Trigger
 Type                    = oneshot
 ExecStart               = /usr/lib/smd/libexec/smd-hibernate-post
 PrivateTmp              = true
+Environment             = PYTHONPYCACHEPREFIX="/var/cache/python"
 KeyringMode             = private
 ProtectHome             = true
 PrivatePIDs             = true

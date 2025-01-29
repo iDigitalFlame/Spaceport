@@ -43,6 +43,7 @@ Description             = System Management Daemon Pre Suspend Trigger
 Type                    = oneshot
 ExecStart               = /usr/lib/smd/libexec/smd-suspend-pre
 PrivateTmp              = true
+Environment             = PYTHONPYCACHEPREFIX="/var/cache/python"
 KeyringMode             = private
 ProtectHome             = true
 PrivatePIDs             = true

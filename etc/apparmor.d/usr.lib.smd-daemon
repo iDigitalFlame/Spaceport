@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Client Daemon Unit
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,18 +34,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After           = sway.service graphical-session.target
-Requires        = graphical-session.target
-Description     = System Management Usermode Client
+include <tunables/spaceport>
 
-[Service]
-Type            = simple
-UMask           = 0027
-ExecStart       = /usr/lib/smd/libexec/smd-client -f -w 1 -j
-KillSignal      = SIGINT
-Environment     = PYTHONPYCACHEPREFIX="/var/cache/python"
-ExecStartPre    = /usr/lib/smd/libexec/smd-wait-sway
+profile smd-locker /{,opt/spaceport/}usr/lib/smd/libexec/smd-daemon flags=(enforce) {
+    include <abstractions/smd>
 
-[Install]
-WantedBy        = graphical-session.target
+    include if exists <local/usr.lib.smd.smd-daemon>
+}

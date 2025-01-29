@@ -47,8 +47,6 @@ capability                                dac_read_search,
 @{sysconfig}/usr/lib/smd/lib{,exec}{,/**}         r,
 @{sysconfig}/var/cache/smd/constants.json         r,
 
-@{sysconfig}/usr/lib/smd/**/__pycache__/*.pyc{,*} rw,
-
 @{sysconfig}/usr/lib/smd/lib/smd-message          ixr,
 
 /usr/bin/                                         r,

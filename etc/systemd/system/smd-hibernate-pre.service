@@ -43,6 +43,7 @@ Description             = System Management Daemon Pre Hibernate Trigger
 Type                    = oneshot
 ExecStart               = /usr/lib/smd/libexec/smd-hibernate-pre
 PrivateTmp              = true
+Environment             = PYTHONPYCACHEPREFIX="/var/cache/python"
 KeyringMode             = private
 ProtectHome             = true
 PrivatePIDs             = true
