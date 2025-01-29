@@ -70,6 +70,7 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     @{HOME}/.dotfiles/.local/bin/**             PUx,
     @{HOME}/.local/{apps,bin,lib}/**            PUx,
     @{HOME}/.vscode-oss/extensions/**           PUx,
+    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**  PUx,
     @{HOME}/.config/VSCodium/Home/extensions/** PUx,
 
     deny network,

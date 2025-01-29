@@ -34,17 +34,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/etc/timezone                   r,
-/etc/gnutls/config              r,
+include <tunables/spaceport>
 
-/var/cache/ld.so.cache          rm,
-
-owner /dev/tty{,*}              rw,
-
-audit deny /opt/secureboot/{,*} rw,
-
-signal receive   peer=smd-{client,daemon} set=(int quit kill term cont stop),
-signal receive   peer=unconfined          set=(int quit kill term cont stop segv pipe hup),
-signal           peer=@{profile_name},
-
-deny signal send peer=unconfined,
+profile codium /{usr/bin,opt/vscodium-bin}/{,bin/}{,vs}codium flags=(unconfined) {
+    include if exists <local/usr.bin.codium>
+}

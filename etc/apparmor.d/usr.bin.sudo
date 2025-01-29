@@ -129,6 +129,7 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
     /usr/local/{,s}bin/**                                    PUx,
 
     @{HOME}/.local/{apps,bin,lib}/**                         PUx,
+    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**               PUx,
 
     unix bind type=stream addr="@*/bus/sudo/system",
 

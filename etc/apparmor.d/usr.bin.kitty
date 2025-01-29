@@ -34,17 +34,31 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/etc/timezone                   r,
-/etc/gnutls/config              r,
+include <tunables/spaceport>
 
-/var/cache/ld.so.cache          rm,
+profile kitty /usr/bin/kitty flags=(enforce) {
+    include <abstractions/dri>
+    include <abstractions/gui>
+    include <abstractions/mesa>
+    include <abstractions/python>
+    include <abstractions/vulkan>
+    include <abstractions/consoles>
 
-owner /dev/tty{,*}              rw,
+    owner /proc/@{pid}/cgroup          r,
 
-audit deny /opt/secureboot/{,*} rw,
+    owner @{run}/user/@{uid}/          r,
 
-signal receive   peer=smd-{client,daemon} set=(int quit kill term cont stop),
-signal receive   peer=unconfined          set=(int quit kill term cont stop segv pipe hup),
-signal           peer=@{profile_name},
+    owner @{CONFIG}/kitty{,/}          r,
+    owner @{CONFIG}/kitty/kitty.conf   r,
 
-deny signal send peer=unconfined,
+    /dev/ptmx                          rw,
+    /dev/pts/*                         rw,
+    /dev/udmabuf                       rw,
+
+    owner @{HOME}/.cache/kitty{,/,/**} rw,
+
+    /usr/bin/kitten                    ix,
+    /usr/bin/{ba,da,z}sh               Ux,
+
+    include if exists <local/usr.bin.kitty>
+}

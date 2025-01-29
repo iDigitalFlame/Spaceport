@@ -36,8 +36,38 @@
 
 include <tunables/spaceport>
 
-profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(complain) {
+profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enforce) {
     include <abstractions/smd>
+    include <abstractions/wayland>
+
+    signal send set=(alrm int quit kill term cont usr1 stop),
+
+    /usr/share/icons/**                                     r,
+
+    /sys/class/power_supply/AC/online                       r,
+    /sys/devices/platform/*/power_supply/AC/online          r,
+    /sys/class/graphics/fb0/device/drm/card*/card*/status   r,
+    /sys/class/graphics/fb0/device/drm/card*/card*/enabled  r,
+
+    /proc/acpi/button/lid/LID0/state                        r,
+
+    owner /proc/@{pid}/cgroup                               r,
+
+    owner /opt/hydra/*/**                                   r,
+
+    owner @{HOME}/Pictures/Backgrounds{,/}                  r,
+    owner @{HOME}/Pictures/Backgrounds/*.{bmp,jpg,jpeg,png} r,
+
+    owner @{run}/user/@{uid}/smd-client-*.log               rw,
+
+    owner @{CONFIG}/smd.json                                rw,
+    owner @{HOME}/.cache/smd/*                              rwl,
+
+    /usr/bin/*                                              Px,
+    /usr/local/bin/*                                        Px,
+
+    @{HOME}/.local/{apps,bin,lib}/**                        PUx,
+    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**              PUx,
 
     include if exists <local/usr.lib.smd.smd-client>
 }
