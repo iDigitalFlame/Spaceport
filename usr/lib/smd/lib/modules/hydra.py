@@ -1017,7 +1017,10 @@ class VM(Storage):
                     "tpm-tis,tpmdev=tpm0",
                 ]
             else:
-                pass
+                server.warning(
+                    f'[m/hydra/VM({self.vmid})]: Cannot start TPM process as "swtpm" is not installed, '
+                    "not adding TPM!"
+                )
         if x.extra is not None:
             r += x.extra
         if "q35" in t and self.get("dev.iommu", True):

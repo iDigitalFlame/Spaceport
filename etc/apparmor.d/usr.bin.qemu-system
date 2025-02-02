@@ -79,7 +79,7 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce) {
     @{run}/smd/hydra/*.swtpm                                               rw,
     @{run}/smd/hydra/*.{pid,qga,spice,sock,vnc}                            rwk,
 
-    owner /proc/@{pid}/task/@{tid}/comm rw,
+    owner /proc/@{pid}/task/@{tid}/comm                                    rw,
 
     owner /var/cache/root/                                                 r,
     owner /var/cache/root/mesa_shader_cache/                               rw,

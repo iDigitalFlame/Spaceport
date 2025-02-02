@@ -126,13 +126,12 @@ def _main(args):
 
 
 if __name__ == "__main__":
-    p = ArgumentParser(description="System Management Daemon Server")
+    p = ArgumentParser(description="System Management Daemon")
     p.add_argument(
         "-s",
         "--socket",
         type=str,
         dest="socket",
-        help="socket to use for messages",
         action="store",
         metavar="socket",
         default=SOCKET,
@@ -143,7 +142,6 @@ if __name__ == "__main__":
         "--log",
         type=str,
         dest="log_file",
-        help="log file to output to",
         action="store",
         metavar="log_file",
         default=LOG_PATH_SERVER,
@@ -154,7 +152,6 @@ if __name__ == "__main__":
         "--log-level",
         type=str,
         dest="log_level",
-        help="log level for logging",
         action="store",
         metavar="log_level",
         default=LOG_LEVEL.lower(),
@@ -166,26 +163,13 @@ if __name__ == "__main__":
         "--config",
         type=str,
         dest="config",
-        help="path to the client configuration file",
         action="store",
         metavar="config",
         default=CONFIG_SERVER,
         required=False,
     )
-    p.add_argument(
-        "-j",
-        "--journal",
-        dest="journal",
-        help="format stdout log for journal/syslog",
-        action="store_true",
-    )
-    p.add_argument(
-        "-r",
-        "--read-only",
-        dest="read_only",
-        help="do not write to config files",
-        action="store_true",
-    )
+    p.add_argument("-j", "--journal", dest="journal", action="store_true")
+    p.add_argument("-r", "--read-only", dest="read_only", action="store_true")
     p.print_help = _help
     if not _main(p.parse_args()):
         exit(1)
