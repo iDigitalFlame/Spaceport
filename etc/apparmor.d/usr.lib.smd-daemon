@@ -39,5 +39,5 @@ include <tunables/spaceport>
 profile smd-daemon /{,opt/spaceport/}usr/lib/smd/libexec/smd-daemon flags=(default_allow) {
     include <abstractions/smd>
 
-    include if exists <local/usr.lib.smd.smd-daemon>
+    include if exists <local/usr.lib.smd-daemon>
 }

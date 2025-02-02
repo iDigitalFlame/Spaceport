@@ -66,6 +66,7 @@ from lib.constants.config import (
     HYDRA_RESERVE,
     HYDRA_VM_ARCH,
     HYDRA_EXEC_VM,
+    HYDRA_TPM_SIZE,
     HYDRA_FILE_DNS,
     HYDRA_EXEC_DNS,
     HYDRA_FILE_SMB,
@@ -74,6 +75,7 @@ from lib.constants.config import (
     HYDRA_WAIT_TIME,
     HYDRA_FILE_UEFI,
     HYDRA_DIR_SNAPS,
+    HYDRA_EXEC_SWTPM,
     HYDRA_PATH_MOUNTS,
     HYDRA_DIR_DEVICES,
     HYDRA_BRIDGE_NAME,
@@ -298,6 +300,7 @@ class VM(Storage):
         "_path",
         "_proc",
         "_wait",
+        "_stpm",
         "_state",
         "_event",
         "_agent",
@@ -315,13 +318,16 @@ class VM(Storage):
         ):
             raise Error(f'path "{path}" is invalid')
         try:
-            i = info(path, False)
+            i = info(path, sym=False)
         except OSError as err:
             raise Error(f'cannot read "{path}": {err}')
         # NOTE(dij): We don't wrap these as they're the same as an Error
         #            and they already provide context.
         #            Must be owner with exclusive access.
         i.only(file=True).check(0o7177, uid, own_gid=True)
+        # NOTE(dij): Verify that the host directory is also owned by the user
+        #            and has write permissions.
+        info(dirname(path), sym=False).check(0o7027, uid, own_gid=True).only(dir=True)
         del i
         Storage.__init__(self, path, load=True)
         if not nes(self.get("vm.uuid")):
@@ -334,6 +340,7 @@ class VM(Storage):
         self._path = f"{HYDRA_DIR}/{self.vmid}"
         self._proc = None
         self._wait = 0
+        self._stpm = None
         self._state = HYDRA_STATE_STOPPED
         self._event = None
         self._agent = False
@@ -535,9 +542,15 @@ class VM(Storage):
             server.debug(f"[m/hydra/VM({self.vmid})]: Entering sleep")
             self._cmd(server, "stop")
             self._proc.send_signal(SIGSTOP)
+            # NOTE(dij): Sleep the STPM process also.
+            if self._stpm is not None:
+                self._stpm.send_signal(SIGSTOP)
             self._state = HYDRA_STATE_SLEEPING
             return
         server.debug(f"[m/hydra/VM({self.vmid})]: Resuming from sleep")
+        # NOTE(dij): Wake the STPM process also.
+        if self._stpm is not None:
+            self._stpm.send_signal(SIGCONT)
         self._proc.send_signal(SIGCONT)
         self._cmd(server, "cont")
         self._state = HYDRA_STATE_RUNNING
@@ -970,12 +983,41 @@ class VM(Storage):
         if x.bios is not None:
             r += ["-bios", x.bios]
         if x.tpm is not None:
-            r += [
-                "-tpmdev",
-                f"passthrough,id=tpm0,path={x.tpm},version=v2.0",
-                "-device",
-                "tpm-tis,tpmdev=tpm0",
-            ]
+            if not self.get("dev.tpm.software"):
+                r += [
+                    "-tpmdev",
+                    f"passthrough,id=tpm0,path={x.tpm},version=v2.0",
+                    "-device",
+                    "tpm-tis,tpmdev=tpm0",
+                ]
+            elif isfile(HYDRA_EXEC_SWTPM):
+                self._stpm = nulexec(
+                    [
+                        HYDRA_EXEC_SWTPM,
+                        "socket",
+                        "--tpm2",
+                        "--terminate",
+                        "--tpmstate",
+                        f"backend-uri=file://{x.tpm},mode=0600,lock",
+                        "--ctrl",
+                        f"type=unixio,path={self._path}.swtpm,mode=0600,uid=0,gid=0,terminate",
+                        "--pid",
+                        f"file={self._path}.swtpm.pid",
+                    ],
+                )
+                server.debug(
+                    f"[m/hydra/VM({self.vmid})]: Starting software TPM process, PID({self._stpm.pid})."
+                )
+                r += [
+                    "-chardev",
+                    f"socket,id=tpm0c,path={self._path}.swtpm",
+                    "-tpmdev",
+                    "emulator,id=tpm0,chardev=tpm0c",
+                    "-device",
+                    "tpm-tis,tpmdev=tpm0",
+                ]
+            else:
+                pass
         if x.extra is not None:
             r += x.extra
         if "q35" in t and self.get("dev.iommu", True):
@@ -1093,23 +1135,23 @@ class VM(Storage):
                 f"unix=on,addr={self._path}.spice,disable-ticketing=on,playback-compression=off,"
                 "image-compression=off,gl=on,agent-mouse=on",
                 "-chardev",
-                "spicevmc,id=spicechannel0,name=vdagent",
+                "spicevmc,id=spice0,name=vdagent",
                 "-device",
-                "virtserialport,chardev=spicechannel0,name=com.redhat.spice.0",
+                "virtserialport,chardev=spice0,name=com.redhat.spice.0",
                 "-device",
-                "nec-usb-xhci,id=usb",
+                "nec-usb-xhci,id=spice-usb-bus,addr=0x13",
                 "-chardev",
-                "spicevmc,name=usbredir,id=usbredirchardev1",
+                "spicevmc,name=usbredir,id=spice-usb1-c",
                 "-device",
-                "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
+                "usb-redir,chardev=spice-usb1-c,id=spice-usb1",
                 "-chardev",
-                "spicevmc,name=usbredir,id=usbredirchardev2",
+                "spicevmc,name=usbredir,id=spice-usb2-c",
                 "-device",
-                "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
+                "usb-redir,chardev=spice-usb2-c,id=spice-usb2",
                 "-chardev",
-                "spicevmc,name=usbredir,id=usbredirchardev3",
+                "spicevmc,name=usbredir,id=spice-usb3-c",
                 "-device",
-                "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
+                "usb-redir,chardev=spice-usb3-c,id=spice-usb3",
             ]
         r += a + d
         del a, d, b
@@ -1174,24 +1216,6 @@ class VM(Storage):
         self._socket_perms_set()
         return self._proc.pid
 
-    def _snap_capture(self, server, manager, name):
-        if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to Snapshot")
-        d = self._snap_drives(server)
-        if len(d) == 0:
-            raise Error("no disks avaliable to Snapshot")
-        v = list(d.values())
-        a = {
-            "tag": name,
-            "job-id": f"snap-job-{self.vmid}-{int(time()):X}",
-            "devices": v,
-            "vmstate": v[0],
-        }
-        _, s = self._cmd(server, "snapshot-save", a, timeout=5, close=False)
-        manager._register_snap(server, self, a["job-id"], s, name)
-        self._state = HYDRA_STATE_SNAP
-        del a, s, v
-
     def _snap_delete(self, server, manager, name):
         if self._state != HYDRA_STATE_RUNNING:
             raise Error("invalid state to delete a Snapshot")
@@ -1225,6 +1249,24 @@ class VM(Storage):
         _, s = self._cmd(server, "snapshot-load", a, timeout=5, close=False)
         manager._register_snap(server, self, a["job-id"], s, name)
         self._state = HYDRA_STATE_SNAP_LOAD
+        del a, s, v
+
+    def _snap_capture(self, server, manager, name):
+        if self._state != HYDRA_STATE_RUNNING:
+            raise Error("invalid state to Snapshot")
+        d = self._snap_drives(server)
+        if len(d) == 0:
+            raise Error("no disks avaliable to Snapshot")
+        v = list(d.values())
+        a = {
+            "tag": name,
+            "job-id": f"snap-job-{self.vmid}-{int(time()):X}",
+            "devices": v,
+            "vmstate": v[0],
+        }
+        _, s = self._cmd(server, "snapshot-save", a, timeout=5, close=False)
+        manager._register_snap(server, self, a["job-id"], s, name)
+        self._state = HYDRA_STATE_SNAP
         del a, s, v
 
     def _build_restriced(self, server, manager, uid):
@@ -1295,11 +1337,31 @@ class VM(Storage):
             info(q, False, hide=True).check(0o7137, uid, hide=True).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
-            f = None
-        t = self.get("dev.tpm")
+            q = None
+        t, c = self.get("dev.tpm.path"), self.get("dev.tpm.software")
+        if nes(t) and not isabs(t):
+            t = f"{dirname(self.path())}/{t}"
+        if c and not nes(t):
+            t = self.set("dev.tpm.path", f"{dirname(self.path())}/tpm.raw")
         if nes(t):
+            if c and not exists(t):
+                # NOTE(dij): Security Check
+                #            Virtual TPM file. Don't need to check here as we check
+                #            on creation of the VM object anyway.
+                server.debug(
+                    f'[m/hydra/VM({self.vmid})]: Creating no-existant software TPM file "{t}".'
+                )
+                with open(t, "wb") as v:
+                    v.seek(HYDRA_TPM_SIZE - 1)
+                    v.write(b"\0")
+                chmod(t, 0o0600, follow_symlinks=False)
+                chown(t, uid, u.pw_gid, follow_symlinks=False)
             i = info(t, False, hide=True)
             if i.isfile:
+                if not c:
+                    raise Error(
+                        f'tmp device "{t}" is a file but "dev.tpm.software" is not set as "true"'
+                    )
                 # NOTE(dij): Security Check
                 #            Virtual TPM file. Can only be a file owned by the
                 #            calling user that has 0o0600 permissions.
@@ -1329,12 +1391,11 @@ class VM(Storage):
                         f'user "{u.pw_name}" must be in the group "{g.gr_name}" for "{t}"'
                     )
                 del v, g
-                # NOTE(dij): Denote this is a chardev instead of a file.
-                t = f"dev:{t}"
             del i
         else:
             # NOTE(dij): Set to None to remove anything else.
             t = None
+        del c
         k = expand(self.get("dev.kernel"))
         if nes(k):
             # NOTE(dij): Security Check
@@ -1714,6 +1775,8 @@ class VM(Storage):
         if self._output is None:
             self._output = (e, r)
         server.info(f"[m/hydra/VM({self.vmid})]: Stopping and cleaning up..")
+        if self._stpm is not None:
+            stop(self._stpm)
         stop(self._proc)
         if self._proc is not None:
             try:
@@ -1721,12 +1784,15 @@ class VM(Storage):
             except Exception:
                 pass
         self._proc = None
+        self._stpm = None
         self._close_adapters(server)
         self._event = cancel_nul(server, self._event)
         self._usb_clean(server, manager)
         remove_file(f"{self._path}.pid")
         remove_file(f"{self._path}.vnc")
         remove_file(f"{self._path}.sock")
+        remove_file(f"{self._path}.swtpm")
+        remove_file(f"{self._path}.swtpm.pid")
         try:
             if self.get("memory.reserve", True):
                 manager.pages(server, self.vmid, None, True)

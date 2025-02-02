@@ -44,7 +44,7 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
     capability                        dac_override,
     capability                        dac_read_search,
 
-    signal receive set=(stop, cont, term, kill),
+    signal receive set=(cont, kill, stop, term),
 
     # NOTE(dij): Required for pagers to work
     /**                               r,
@@ -65,9 +65,6 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
 
     deny @{HOME}/.lesshs*             w,
     deny @{HOME}/.local/state/lesshs* w,
-
-    # Disconnected path
-    deny /apparmor/.null              rw,
 
     include if exists <local/usr.bin.pager>
 }

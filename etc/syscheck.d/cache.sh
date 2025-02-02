@@ -85,3 +85,6 @@ chown root:makepkg -R "/var/cache/makepkg"
 
 chmod 3777 "/var/cache/python"
 chown root:root "/var/cache/python"
+
+chmod 2770 "/var/cache/python/usr/lib/smd"
+chown root:smd "/var/cache/python/usr/lib/smd"

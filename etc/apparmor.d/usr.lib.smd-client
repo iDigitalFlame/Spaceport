@@ -40,7 +40,9 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
     include <abstractions/smd>
     include <abstractions/wayland>
 
-    signal send set=(alrm int quit kill term cont usr1 stop),
+    signal send set=(alrm, cont, int, kill, quit, term, stop, usr1),
+
+    @{sysconfig}/usr/lib/smd/libexec/*                      Px,
 
     /usr/share/icons/**                                     r,
 
@@ -55,19 +57,23 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
 
     owner /opt/hydra/*/**                                   r,
 
+    owner @{CONFIG}/theme/**                                r,
+
     owner @{HOME}/Pictures/Backgrounds{,/}                  r,
     owner @{HOME}/Pictures/Backgrounds/*.{bmp,jpg,jpeg,png} r,
 
     owner @{run}/user/@{uid}/smd-client-*.log               rw,
 
     owner @{CONFIG}/smd.json                                rw,
+
     owner @{HOME}/.cache/smd/*                              rwl,
 
-    /usr/bin/*                                              Px,
-    /usr/local/bin/*                                        Px,
+    /usr/bin/*                                              Pix,
+    /usr/local/bin/*                                        Pix,
+    /usr/lib/smd/libexec/*                                  Pix,
 
-    @{HOME}/.local/{apps,bin,lib}/**                        PUx,
-    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**              PUx,
+    @{HOME}/.local/{apps,bin,lib}/**                        Pixr,
+    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**              Pixr,
 
-    include if exists <local/usr.lib.smd.smd-client>
+    include if exists <local/usr.lib.smd-client>
 }

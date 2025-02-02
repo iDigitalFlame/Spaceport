@@ -41,7 +41,7 @@ profile dconf-service /usr/lib/dconf-service flags=(enforce, attach_disconnected
     include <abstractions/dconf>
     include <abstractions/private-files>
 
-    signal receive set=(term kill hup) peer=dbus-session,
+    signal receive set=(hup, kill, term) peer=dbus-session,
 
     /etc/machine-id                                 r,
     /usr/lib/dconf-service                          rm,

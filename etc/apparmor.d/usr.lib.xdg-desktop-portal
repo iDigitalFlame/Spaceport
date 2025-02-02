@@ -39,5 +39,5 @@ include <tunables/spaceport>
 profile xdg-desktop-portal /usr/lib/xdg-desktop-portal flags=(enforce, attach_disconnected) {
     include <abstractions/xdg-desktop-portal>
 
-    include if exists <local/usr.lib.xdg-deskop-portal>
+    include if exists <local/usr.lib.xdg-desktop-portal>
 }

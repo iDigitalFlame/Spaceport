@@ -61,8 +61,5 @@ profile blueman /usr/bin/blueman-* flags=(enforce, attach_disconnected) {
     /usr/bin/blueman-*                  ixr,
     /usr/lib/gio-launch-desktop         ix,
 
-    # Disconnected path
-    deny /apparmor/.null                rw,
-
     include if exists <local/usr.bin.blueman>
 }

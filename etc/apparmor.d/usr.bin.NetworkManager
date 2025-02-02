@@ -91,10 +91,12 @@ profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnec
     /proc/sys/kernel/osrelease                          r,
 
     @{run}/udev/data/n*                                 r,
-    @{run}/udev/data/+pci:*                             r,
     @{run}/udev/data/+rfkill:*                          r,
     @{run}/systemd/users/@{uid}                         r,
-    @{run}/udev/data/+platform:*                        r,
+    @{run}/udev/data/+ieee80211:*                       r,
+    @{run}/udev/data/+bluetooth:*                       r,
+    @{run}/udev/data/+p{ci,latform}:*                   r,
+    @{run}/udev/data/+usb{,-serial}:*                   r,
 
     owner /proc/@{pid}/fd/                              r,
     owner /proc/@{pid}/cmdline                          r,

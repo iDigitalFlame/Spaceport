@@ -43,7 +43,7 @@ profile xdg-permission-store /usr/lib/xdg-permission-store flags=(enforce, attac
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
 
-    signal receive set=(term hup kill) peer=unconfined,
+    signal receive set=(hup, kill, term) peer=unconfined,
 
     /usr/lib/xdg-permission-store            rm,
 

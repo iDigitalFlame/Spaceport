@@ -41,7 +41,7 @@ profile ssh-agent /usr/bin/ssh-agent flags=(enforce) {
     include <abstractions/openssl>
     include <abstractions/nameservice>
 
-    signal receive set=(cont term) peer=unconfined,
+    signal receive set=(cont, term) peer=unconfined,
 
     /usr/bin/ssh-agent                           rm,
 

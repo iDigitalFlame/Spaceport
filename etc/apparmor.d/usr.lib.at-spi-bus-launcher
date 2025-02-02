@@ -50,7 +50,7 @@ profile at-spi-bus-launcher /usr/lib/at-spi-bus-launcher flags=(enforce, attach_
     network                                          inet6   stream,
     network                                          netlink raw,
 
-    signal receive set=(term hup kill) peer=dbus-session,
+    signal receive set=(hup, kill, term) peer=dbus-session,
 
     ptrace read,
 

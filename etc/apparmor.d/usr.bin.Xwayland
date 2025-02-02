@@ -46,7 +46,7 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    signal receive set=(term hup) peer=unconfined,
+    signal receive set=(hup, term) peer=unconfined,
 
     ptrace read,
 
@@ -75,7 +75,6 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     /usr/bin/{,ba,da,z}sh                     ix,
     /usr/bin/{X,x}wayland                     ixrm,
 
-    deny /apparmor/.null                      rw,
     deny /var/log/Xorg.*.log                  rw,
     deny @{HOME}/.xsession-errors{,.*}        rw,
     deny @{HOME}/.local/share/xorg/Xorg.*.log rw,

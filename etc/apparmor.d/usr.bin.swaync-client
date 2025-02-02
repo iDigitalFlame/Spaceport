@@ -48,8 +48,5 @@ profile swaync-client /usr/bin/swaync-client flags=(enforce, attach_disconnected
 
     deny network,
 
-    # Disconnected path
-    deny /apparmor/.null                rw,
-
     include if exists <local/usr.bin.swaync-client>
 }

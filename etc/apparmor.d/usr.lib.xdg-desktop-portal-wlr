@@ -47,5 +47,5 @@ profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(enforce, a
 
     /dev/dri/render*                             rw,
 
-    include if exists <local/usr.lib.xdg-deskop-portal-wlr>
+    include if exists <local/usr.lib.xdg-desktop-portal-wlr>
 }

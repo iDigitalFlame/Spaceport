@@ -44,6 +44,7 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
     include <abstractions/freedesktop.org>
 
     /etc/shells                                  r,
+    /usr/bin/gtklock                             r,
 
     /sys/{bu,clas}s/                             r,
     /sys/class/hidraw/                           r,

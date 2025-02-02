@@ -69,5 +69,5 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
 
     deny network,
 
-    include if exists <local/usr.bin.xdg-open>
+    include if exists <local/usr.bin.xdg-email>
 }

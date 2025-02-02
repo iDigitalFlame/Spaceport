@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile swayimg /usr/bin/swayimg flags=(enforce) {
+profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     include <abstractions/gui>
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
@@ -46,6 +46,9 @@ profile swayimg /usr/bin/swayimg flags=(enforce) {
 
     /usr/bin/swayimg         rm,
 
+    @{CONFIG}/swayimg/config r,
+
+    owner /dev/pts/*         rw,
     owner /dev/shm/swayimg_* rwk,
 
     deny network,

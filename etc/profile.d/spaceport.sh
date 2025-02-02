@@ -58,7 +58,7 @@ export ELECTRON_OZONE_PLATFORM_HINT="wayland"
 # Python Configuration
 export PYTHONUTF8=1
 export PYTHON_COLORS=1
-export PYTHONOPTIMIZE=1
+export PYTHONOPTIMIZE=2
 export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export PYTHONCOERCECLOCALE="en_US.UTF-8"
 export PYTHONPYCACHEPREFIX="/var/cache/python"

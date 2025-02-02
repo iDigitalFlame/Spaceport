@@ -48,7 +48,7 @@ profile xdg-document-portal /usr/lib/xdg-document-portal flags=(enforce, attach_
     capability                    sys_ptrace,
     capability                    sys_resource,
 
-    signal receive set=(term hup) peer=unconfined,
+    signal receive set=(hup, term) peer=unconfined,
 
     ptrace read,
 

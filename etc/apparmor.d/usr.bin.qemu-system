@@ -1,0 +1,105 @@
+################################
+### iDigitalFlame  2016-2025 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2025 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile qemu-system /usr/bin/qemu-system-* flags=(enforce) {
+    include <abstractions/dri>
+    include <abstractions/base>
+    include <abstractions/mesa>
+    include <abstractions/audio>
+    include <abstractions/video>
+    include <abstractions/vulkan>
+    include <abstractions/dri-common>
+    include <abstractions/nameservice>
+    include <abstractions/nss-systemd>
+
+    capability                                                             setgid,
+    capability                                                             setuid,
+    capability                                                             perfmon,
+    capability                                                             ipc_lock,
+    capability                                                             net_admin,
+    capability                                                             sys_admin,
+    capability                                                             dac_override,
+    capability                                                             dac_read_search,
+
+    /etc/machine-id                                                        r,
+    /usr/share/qemu/**                                                     r,
+    /etc/sasl2/qemu.conf                                                   r,
+    /usr/share/edk2/**/*.{fd,img,raw}                                      rk,
+
+    /dev/shm/                                                              r,
+
+    /sys/devices/system/node/                                              r,
+    /sys/module/vhost/parameters/max_mem_regions                           r,
+
+    /proc/sys/vm/max_map_count                                             r,
+    /proc/sys/kernel/random/boot_id                                        r,
+
+    /opt/hydra/*/**/*.{disk,fd,img,raw,qcow,qcow2,vdmk}                    rwk,
+
+    /dev/kvm                                                               rw,
+    /dev/net/tun                                                           rw,
+    /dev/vhost-net                                                         rw,
+    /dev/dri/renderD128                                                    rw,
+
+    @{run}/smd/hydra/*.swtpm                                               rw,
+    @{run}/smd/hydra/*.{pid,qga,spice,sock,vnc}                            rwk,
+
+    owner /proc/@{pid}/task/@{tid}/comm rw,
+
+    owner /var/cache/root/                                                 r,
+    owner /var/cache/root/mesa_shader_cache/                               rw,
+    owner /var/cache/root/mesa_shader_cache/index                          rw,
+    owner /var/cache/root/mesa_shader_cache/[a-f0-9][a-f0-9]/              rw,
+    owner /var/cache/root/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*     rw,
+    owner /var/cache/root/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp rwk,
+
+    owner /var/cache/root/mesa_shader_cache_db/                            rw,
+    owner /var/cache/root/mesa_shader_cache_db/{index,marker,part*/}       rwk,
+    owner /var/cache/root/mesa_shader_cache_db/part*/mesa_cache.{db,idx}   rwk,
+
+    # Read CDs and ISOs
+    /**/*.{bin,cd,disk,img,iso}                                            rk,
+    /opt/hydra/*/**/*.{bin,cd,disk,img,iso}                                rk,
+
+    # NOTE(dij): Prevent QEMU from executing applications
+    deny /**                                                               x,
+
+    deny network,
+
+    include if exists <local/usr.bin.qemu-system>
+}

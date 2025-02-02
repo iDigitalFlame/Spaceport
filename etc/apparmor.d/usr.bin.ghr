@@ -79,8 +79,5 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     deny @{CACHE_TMP}/mesa{,_db}/**            rw,
     deny @{CACHE}/mesa_shader_cache{,_db}/**   rw,
 
-    # Disconnected path
-    deny /apparmor/.null                       rw,
-
     include if exists <local/usr.bin.ghr>
 }

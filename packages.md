@@ -181,6 +181,7 @@ swayidle
 swayimg
 swaync
 swig
+swtpm
 sysfsutils
 tcpdump
 telegram-desktop

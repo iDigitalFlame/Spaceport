@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## DBus AppArmor Override
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,13 +34,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After           = apparmor.service
-Wants           = apparmor.service
+include <tunables/spaceport>
 
-[Service]
-PrivateTmp      = true
-LimitNOFILE     = 16384
-ProtectSystem   = full
-PrivateDevices  = true
-AppArmorProfile = dbus
+profile swtpm /usr/bin/swtpm flags=(enforce) {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+
+    capability                      fsetid,
+    capability                      fowner,
+    capability                      dac_override,
+    capability                      dac_read_search,
+
+    signal receive set=(int, cont, stop, term) peer=smd-daemon,
+
+    /usr/bin/swtpm                  rm,
+
+    /opt/hydra/**                   rwk,
+
+    @{run}/smd/hydra/*.swtpm{,.pid} rw,
+
+    unix (bind, listen)          type=stream addr="@/tmp/dbus-*",
+    unix (send, receive, accept) type=stream addr="@/tmp/dbus-*",
+
+    include if exists <local/usr.bin.swtpm>
+}

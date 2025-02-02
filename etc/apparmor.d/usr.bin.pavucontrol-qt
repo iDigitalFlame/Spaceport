@@ -57,8 +57,5 @@ profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(enforce, attach_disconnect
 
     deny @{CONFIG}/pavucontrol-qt/pavucontrol-qt.conf  w,
 
-    # Disconnected path
-    deny /apparmor/.null                               rw,
-
     include if exists <local/usr.bin.pavucontrol-qt>
 }

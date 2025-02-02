@@ -36,36 +36,25 @@
 
 include <tunables/spaceport>
 
-profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce, attach_disconnected) {
-    include <abstractions/qt>
-    include <abstractions/dri>
-    include <abstractions/audio>
-    include <abstractions/dconf>
-    include <abstractions/gnome>
-    include <abstractions/video>
-    include <abstractions/vulkan>
-    include <abstractions/openssl>
-    include <abstractions/p11-kit>
-    include <abstractions/user-home>
-    include <abstractions/dbus-strict>
-    include <abstractions/nameservice>
-    include <abstractions/dbus-session-strict>
-    include <abstractions/dbus-accessibility-strict>
+profile smd-convert-picture /{,opt/spaceport/}usr/lib/smd/libexec/smd-convert-picture flags=(enforce) {
+    include <abstractions/base>
+    include <abstractions/private-files>
 
-    /usr/bin/vlc                        rm,
-    /usr/lib/vlc/**                     rm,
-    /usr/share/vlc/**                   r,
-    /usr/share/hwdata/pnp.ids           r,
+    @{sysconfig}/usr/lib/smd/libexec/smd-convert-picture r,
 
-    /dev/                               r,
-    /dev/sr*                            r,
-    /dev/dvb/**                         r,
+    /usr/lib/smd/libexec/smd-convert-picture             r,
 
-    owner @{CONFIG}/vlc{,/,/*}          r,
+    # NOTE(dij): For pictures and backgrounds.
+    owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic}  r,
 
-    deny @{CONFIG}/vlc{,/,/*}           w,
-    deny /usr/bin/xdg-screensaver       xr,
-    deny @{HOME}/.local/share/vlc{,/**} w,
+    owner @{HOME}/.cache/smd{,/}                         rw,
+    owner @{HOME}/.cache/smd/*.{jp,pn}g                  rw,
 
-    include if exists <local/usr.bin.vlc>
+    /usr/bin/cp                                          ix,
+    /usr/bin/dash                                        ixr,
+    /usr/bin/convert                                     ixr,
+
+    deny network,
+
+    include if exists <local/usr.lib.smd.smd-convert-picture>
 }

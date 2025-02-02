@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #
@@ -110,6 +110,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-p",
+        "--payload",
         type=str,
         dest="payload",
         help="payload to send in JSON format",
@@ -119,6 +120,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-w",
+        "--wait",
         type=str,
         dest="wait",
         help="wait for a response with this header",
@@ -128,6 +130,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-t",
+        "--timeout",
         type=int,
         dest="timeout",
         help="wait time (in seconds) for sending and response",
@@ -137,6 +140,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-s",
+        "--socket",
         type=str,
         dest="socket",
         help="socket to use for messages",
@@ -146,6 +150,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-u",
+        "--translate",
         dest="translate",
         help="specify header by it's name",
         action="store_true",
@@ -154,6 +159,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-e",
+        "--exit",
         type=int,
         dest="exit",
         help="exit code to always exit with, regardless of errors",

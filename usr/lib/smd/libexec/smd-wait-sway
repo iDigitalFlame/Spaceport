@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #

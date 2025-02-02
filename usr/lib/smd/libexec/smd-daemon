@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -X pycache_prefix=/var/cache/python -u -OO
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #
@@ -51,15 +51,56 @@ import sys
 
 sys.path.insert(0, "/usr/lib/smd")
 
-from sys import exit
 from os import getuid
+from sys import exit, stderr
 from lib import Server, print_error
 from argparse import ArgumentParser
-from lib.constants import LOG_LEVELS
+from lib.constants import LOG_LEVELS, VERSION
 from lib.constants.config import LOG_PATH_SERVER, LOG_LEVEL, SOCKET, CONFIG_SERVER
 
 
+HELP_TEXT = """System Management Daemon (v{version})
+
+System-level service process for the System Management Daemon. This must be only
+run under a SystemD service as the root user.
+
+Usage:
+  smd-daemon [-s socket] [-l log] [-n log_level] [-c config] [-j] [-r]
+
+Command Line Options:
+  -s           <socket>    Path to the SMD control socket to listen on.
+  --socket                  Defaults to "{socket}".
+  -l           <log_file>  Path to the log output file. Defaults to
+  --log                     "{log}".
+  -n           <log_level> The log level to use. (The values [0-4] or DEBUG,
+  --log-level               INFO, WARNING, ERROR or CRITICAL). Defaults to "{level}".
+  -c           <config>    Path to the SMD Daemon configuration file. Defaults
+  --config                  to "{config}".
+  -j                       Omit the status values "time" and "name" in console
+  --journal                 output. Prevents duplication of these values when
+                            running as a SystemD service.
+  -r                       Do not write to the configuration file.
+  --read-only
+"""
+
+
+def _help(*_):
+    print(
+        HELP_TEXT.format(
+            socket=SOCKET,
+            version=VERSION,
+            log=LOG_PATH_SERVER,
+            config=CONFIG_SERVER,
+            level=f"{LOG_LEVEL}".upper(),
+        ),
+        file=stderr,
+    )
+    exit(2)
+
+
 def _main(args):
+    if getuid() != 0:
+        return print_error("Cannot run the daemon as a non-root user!")
     try:
         s = Server(
             args.config,
@@ -85,12 +126,10 @@ def _main(args):
 
 
 if __name__ == "__main__":
-    if getuid() != 0:
-        print_error("Cannot run the daemon as a non-root user!")
-
     p = ArgumentParser(description="System Management Daemon Server")
     p.add_argument(
         "-s",
+        "--socket",
         type=str,
         dest="socket",
         help="socket to use for messages",
@@ -101,6 +140,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-l",
+        "--log",
         type=str,
         dest="log_file",
         help="log file to output to",
@@ -111,6 +151,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-n",
+        "--log-level",
         type=str,
         dest="log_level",
         help="log level for logging",
@@ -122,6 +163,7 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-c",
+        "--config",
         type=str,
         dest="config",
         help="path to the client configuration file",
@@ -132,14 +174,19 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-j",
+        "--journal",
         dest="journal",
         help="format stdout log for journal/syslog",
         action="store_true",
     )
     p.add_argument(
-        "-r", dest="read_only", help="do not write to config files", action="store_true"
+        "-r",
+        "--read-only",
+        dest="read_only",
+        help="do not write to config files",
+        action="store_true",
     )
-
+    p.print_help = _help
     if not _main(p.parse_args()):
         exit(1)
     exit(0)

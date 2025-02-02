@@ -41,7 +41,7 @@ profile swayidle /usr/bin/swayidle flags=(enforce) {
     include <abstractions/wayland>
     include <abstractions/private-files>
 
-    signal receive set=(int quit kill term cont usr1 stop),
+    signal receive set=(cont, int, kill, quit, term, stop, usr1),
 
     @{sysconfig}/usr/lib/smd/libexec/smd-locker Px -> smd-locker,
 

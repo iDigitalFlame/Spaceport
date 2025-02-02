@@ -148,6 +148,9 @@ HYDRA_EXEC_SMB = "/usr/bin/smbd"
 HYDRA_EXEC_DNS = "/usr/bin/dnsmasq"
 HYDRA_EXEC_VNC = "/usr/bin/vncviewer"
 HYDRA_EXEC_SPICE = "/usr/bin/spicy"
+HYDRA_EXEC_SWTPM = "/usr/bin/swtpm"
+
+HYDRA_TPM_SIZE = 0x40C0
 
 HYDRA_VM_ARCH = {
     "x64": "/usr/bin/qemu-system-x86_64",

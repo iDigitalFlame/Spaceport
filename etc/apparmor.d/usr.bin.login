@@ -60,7 +60,7 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
 
     network                                netlink raw,
 
-    signal send set=(hup term),
+    signal send set=(hup, term),
 
     ptrace read,
 

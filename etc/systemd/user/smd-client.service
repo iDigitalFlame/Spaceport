@@ -42,7 +42,7 @@ Description     = System Management Usermode Client
 [Service]
 Type            = simple
 UMask           = 0027
-ExecStart       = /usr/lib/smd/libexec/smd-client -f -w 1 -j
+ExecStart       = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
 KillSignal      = SIGINT
 Environment     = PYTHONPYCACHEPREFIX="/var/cache/python"
 ExecStartPre    = /usr/lib/smd/libexec/smd-wait-sway

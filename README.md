@@ -48,6 +48,7 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - swaybg
 - swayfx (or sway)
 - swayidle
+- swtpm
 - tar
 - vimix-cursors
 - waybar

@@ -36,36 +36,13 @@
 
 include <tunables/spaceport>
 
-profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce, attach_disconnected) {
-    include <abstractions/qt>
-    include <abstractions/dri>
-    include <abstractions/audio>
-    include <abstractions/dconf>
-    include <abstractions/gnome>
-    include <abstractions/video>
-    include <abstractions/vulkan>
-    include <abstractions/openssl>
-    include <abstractions/p11-kit>
-    include <abstractions/user-home>
-    include <abstractions/dbus-strict>
-    include <abstractions/nameservice>
-    include <abstractions/dbus-session-strict>
-    include <abstractions/dbus-accessibility-strict>
+profile swtpm_ioctl /usr/bin/swtpm_ioctl flags=(enforce) {
+    include <abstractions/base>
 
-    /usr/bin/vlc                        rm,
-    /usr/lib/vlc/**                     rm,
-    /usr/share/vlc/**                   r,
-    /usr/share/hwdata/pnp.ids           r,
+    capability           dac_override,
+    capability           dac_read_search,
 
-    /dev/                               r,
-    /dev/sr*                            r,
-    /dev/dvb/**                         r,
+    /usr/bin/swtpm_ioctl rm,
 
-    owner @{CONFIG}/vlc{,/,/*}          r,
-
-    deny @{CONFIG}/vlc{,/,/*}           w,
-    deny /usr/bin/xdg-screensaver       xr,
-    deny @{HOME}/.local/share/vlc{,/**} w,
-
-    include if exists <local/usr.bin.vlc>
+    include if exists <local/usr.bin.swtpm_ioctl>
 }

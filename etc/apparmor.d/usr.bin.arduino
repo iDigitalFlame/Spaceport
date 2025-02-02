@@ -160,8 +160,5 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     deny @{HOME}/.arduino15/preferences.txt                   w,
     deny @{HOME}/.dotfiles/.arduino15/preferences.txt         w,
 
-    # Disconnected path
-    deny /apparmor/.null                                      rw,
-
     include if exists <local/usr.bin.arduino>
 }

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile spicy /usr/bin/spicy flags=(enforce) {
+profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/mesa>
     include <abstractions/audio>
@@ -61,9 +61,9 @@ profile spicy /usr/bin/spicy flags=(enforce) {
     /sys/{bu,clas}s/                              r,
 
     /proc/@{pid}/stat                             r,
+    /proc/@{pid}/fdinfo/@{tid}{,/,/comm}          r,
 
     owner /proc/@{pid}/fd/                        r,
-    owner /proc/@{pid}/fdinfo/@{tid}{,/,/comm}    r,
 
     owner @{CONFIG}/user-dirs.dirs                r,
     owner @{CONFIG}/spicy/settings                r,
@@ -81,6 +81,8 @@ profile spicy /usr/bin/spicy flags=(enforce) {
     /tmp/orcexec.*                                rwm,
 
     owner @{CACHE}/gstreamer-1.0/registry.*       rw,
+
+    owner /dev/pts/*                              rw,
 
     /usr/bin/spicy-s{creenshot,tats}              ix,
     /usr/lib/gstreamer-1.0/gst-plugin-scanner     ix,

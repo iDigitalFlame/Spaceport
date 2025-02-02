@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -X pycache_prefix=/var/cache/python -u -OO
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #
@@ -38,7 +38,7 @@
 #   Entrypoint for the SMD client daemon.
 #
 # Usage:
-#   smd-client [-s socket_file] [-l log_file] [-n log_level] [-f] [-c config_file] [-r]
+#   smd-client [-s socket] [-l log] [-n log_level] [-c config] [-w seconds] [-j] [-r] [-f]
 #
 #   Starts the system management client. Recommended to be only used by systemd-user
 #   or the workspace manager.
@@ -52,12 +52,54 @@ import sys
 sys.path.insert(0, "/usr/lib/smd")
 
 from os import fork
-from sys import exit
 from time import sleep
+from sys import exit, stderr
 from lib import Client, print_error
 from argparse import ArgumentParser
-from lib.constants import LOG_LEVELS
+from lib.constants import LOG_LEVELS, VERSION
 from lib.constants.config import LOG_PATH_CLIENT, LOG_LEVEL, SOCKET, CONFIG_CLIENT
+
+HELP_TEXT = """System Management Client (v{version})
+
+User-level service process for the System Management Daemon. This can be ran using
+a SystemD user-level daemon or forked in the background.
+
+Usage:
+  smd-client [-s socket] [-l log_file] [-n log_level] [-c config] [-w seconds] [-j] [-r] [-f]
+
+Command Line Options:
+  -s           <socket>    Path to the SMD control socket to connect to.
+  --socket                  Defaults to "{socket}".
+  -l           <log_file>  Path to the log output file. Defaults to
+  --log                     "{log}".
+  -n           <log_level> The log level to use. (The values [0-4] or DEBUG,
+  --log-level               INFO, WARNING, ERROR or CRITICAL). Defaults to "{level}".
+  -c           <config>    Path to the SMD Client configuration file. Defaults
+  --config                  to "{config}".
+  -w           <seconds>   Number of seconds to wait before initialization.
+  --wait                    Defaults to zero (0).
+  -j                       Omit the status values "time" and "name" in console
+  --journal                 output. Prevents duplication of these values when
+                            running as a SystemD service.
+  -r                       Do not write to the configuration file.
+  --read-only
+  -f                       Do not fork to the background.
+  --foreground
+"""
+
+
+def _help(*_):
+    print(
+        HELP_TEXT.format(
+            socket=SOCKET,
+            version=VERSION,
+            log=LOG_PATH_CLIENT,
+            config=CONFIG_CLIENT,
+            level=f"{LOG_LEVEL}".upper(),
+        ),
+        file=stderr,
+    )
+    exit(2)
 
 
 def _fork(args):
@@ -100,12 +142,12 @@ def _main(args):
 
 
 if __name__ == "__main__":
-    p = ArgumentParser(description="System Management Daemon Client")
+    p = ArgumentParser(description="System Management Client")
     p.add_argument(
         "-s",
+        "--socket",
         type=str,
         dest="socket",
-        help="socket to use for messages",
         action="store",
         metavar="socket",
         default=SOCKET,
@@ -113,9 +155,9 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-l",
+        "--log",
         type=str,
         dest="log_file",
-        help="log file to output to",
         action="store",
         metavar="log_file",
         default=LOG_PATH_CLIENT,
@@ -123,9 +165,9 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-n",
+        "--log-level",
         type=str,
         dest="log_level",
-        help="log level for logging",
         action="store",
         metavar="log_level",
         default=LOG_LEVEL.lower(),
@@ -134,9 +176,9 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-c",
+        "--config",
         type=str,
         dest="config",
-        help="path to the client configuration file",
         action="store",
         metavar="config",
         default=CONFIG_CLIENT,
@@ -144,27 +186,18 @@ if __name__ == "__main__":
     )
     p.add_argument(
         "-w",
+        "--wait",
         type=int,
         dest="wait",
-        help="seconds to wait before startup",
         action="store",
         metavar="wait",
         default=0,
         required=False,
     )
-    p.add_argument(
-        "-j",
-        dest="journal",
-        help="format stdout log for journal/syslog",
-        action="store_true",
-    )
-    p.add_argument(
-        "-r", dest="read_only", help="do not write to config files", action="store_true"
-    )
-    p.add_argument(
-        "-f", dest="fork", help="do not fork to the background", action="store_false"
-    )
-
+    p.add_argument("-j", "--journal", dest="journal", action="store_true")
+    p.add_argument("-f", "--foreground", dest="fork", action="store_false")
+    p.add_argument("-r", "--read-only", dest="read_only", action="store_true")
+    p.print_help = _help
     if not _fork(p.parse_args()):
         exit(1)
     exit(0)

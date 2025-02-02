@@ -40,7 +40,7 @@ Description             = System Management Daemon
 [Service]
 Type                    = simple
 UMask                   = 0027
-ExecStart               = /usr/lib/smd/libexec/smd-daemon -j
+ExecStart               = /usr/lib/smd/libexec/smd-daemon --journal
 ProcSubset              = all
 KillSignal              = SIGINT
 PrivateTmp              = true

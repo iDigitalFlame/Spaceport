@@ -55,10 +55,10 @@ profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_dis
     network                                          bluetooth stream,
     network                                          bluetooth seqpacket,
 
-    signal receive set=(term hup)      peer=gdm{,-*},
-    signal send    set=(term hup kill) peer=xdg-*,
-    signal send    set=(term hup kill) peer=dbus-*,
-    signal send    set=(term hup kill) peer=dconf-service,
+    signal send    set=(term, hup, kill) peer=xdg-*,
+    signal send    set=(term, hup, kill) peer=dbus-*,
+    signal send    set=(term, hup, kill) peer=dconf-service,
+    signal receive set=(term, hup)       peer=gdm{,-*},
 
     ptrace read,
 
