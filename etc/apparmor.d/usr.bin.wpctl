@@ -36,14 +36,23 @@
 
 include <tunables/spaceport>
 
-profile smd-wait-sway /{,opt/spaceport/}usr/lib/smd/libexec/smd-wait-sway flags=(enforce) {
-    include <abstractions/smd>
-    include <abstractions/wayland>
-    include <abstractions/private-files>
+profile wpctl /usr/bin/{pa,wp}ctl flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/audio>
+    include <abstractions/nameservice>
+    include <abstractions/user-data-ro>
 
-    @{run}/user/@{uid}{,/} r,
+    /etc/machine-id                                     r,
+    /usr/bin/{pa,wp}ctl                                 r,
+
+    /sys/devices/virtual/dmi/id/product_name            r,
+    /sys/devices/virtual/dmi/id/{bios,board,sys}_vendor r,
+
+    /proc/@{pid}/fd/                                    r,
+
+    owner /dev/pts/*                                    rw,
 
     deny network,
 
-    include if exists <local/usr.lib.smd.smd-wait-sway>
+    include if exists <local/usr.bin.wpctl>
 }

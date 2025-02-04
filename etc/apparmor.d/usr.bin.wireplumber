@@ -86,8 +86,8 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     /sys/devices/**/sound/**/pcm_class                  r,
     /sys/devices/system/node/node*/meminfo              r,
     /sys/devices/virtual/dmi/id/product_name            r,
-    /sys/devices/virtual/dmi/id/{bios,sys}_vendor       r,
     /sys/devices/**/video4linux/video*/uevent           r,
+    /sys/devices/virtual/dmi/id/{bios,sys}_vendor       r,
 
     @{run}/systemd/users/{*,*/}                         r,
     @{run}/udev/data/{c*,+sound:card*,+usb:*}           r,
