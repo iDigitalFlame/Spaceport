@@ -53,7 +53,6 @@ go
 grim
 gtklock
 hunspell-en_us
-hyperfine
 imagemagick
 inetutils
 intel-media-driver

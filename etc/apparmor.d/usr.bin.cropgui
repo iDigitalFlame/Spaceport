@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile cropgui /usr/bin/cropgui flags=(enforce) {
+profile cropgui /usr/bin/cropgui flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/perl>
     include <abstractions/dconf>
@@ -53,6 +53,8 @@ profile cropgui /usr/bin/cropgui flags=(enforce) {
     /usr/share/ImageMagick-*/{english,locale}.xml r,
 
     owner /proc/@{pid}/mount{s,info}              r,
+
+    owner /dev/pts/*                              rw,
 
     /usr/bin/nice                                 ix,
     /usr/bin/magick                               ix,
