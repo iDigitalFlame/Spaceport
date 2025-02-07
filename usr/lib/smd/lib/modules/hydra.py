@@ -102,19 +102,26 @@ from lib.constants import (
     HYDRA_USB_ADD,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
+    HYDRA_KEYS_MAP,
+    HYDRA_KEYS_CTRL,
+    HYDRA_USB_QUERY,
     HYDRA_USB_CLEAN,
     HYDRA_HIBERNATE,
     HYDRA_SNAP_LIST,
     HYDRA_SNAP_TAKE,
+    HYDRA_SEND_INPUT,
     HYDRA_USB_DELETE,
     HYDRA_STATE_DONE,
     HYDRA_STATE_SNAP,
+    HYDRA_KEYS_NAMED,
+    HYDRA_KEYS_SIMPLE,
     HYDRA_SNAP_DELETE,
     HYDRA_STATE_FAILED,
     HYDRA_SNAP_RESTORE,
     HYDRA_STATE_RUNNING,
     HYDRA_STATE_STOPPED,
     HYDRA_STATE_WAITING,
+    HYDRA_KEYS_CTRL_MAP,
     HYDRA_STATE_SNAP_DEL,
     HYDRA_STATE_SLEEPING,
     HYDRA_USER_ADD_ALIAS,
@@ -304,6 +311,7 @@ class VM(Storage):
         "_state",
         "_event",
         "_agent",
+        "_debug",
         "_output",
         "_adapters",
     )
@@ -343,6 +351,7 @@ class VM(Storage):
         self._stpm = None
         self._state = HYDRA_STATE_STOPPED
         self._event = None
+        self._debug = False
         self._agent = False
         self._output = None
         self._adapters = list()
@@ -677,6 +686,29 @@ class VM(Storage):
         )
         server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
 
+    def _input(self, server, data, caps):
+        if self._state != HYDRA_STATE_RUNNING:
+            raise Error("invalid state to add USB devices")
+        if not nes(data):
+            return
+        x, b = 0, data.encode("UTF-8")
+        _, s = self._cmd(server, "input-send-event", {"events": []}, close=False)
+        try:
+            while x < len(b):
+                (z, i, c, k) = _key_next(b, x, len(b))
+                if z:
+                    _key_send(s, {"type": "qcode", "data": c.lower()}, False, caps)
+                else:
+                    _key_send(s, c, k, caps)
+                x = i
+                del z, i, c, k
+            del b, x
+        except (OSError, UnicodeError) as err:
+            raise Error(err)
+        finally:
+            s.close()
+            del s
+
     def _usb_clean(self, server, manager):
         if self._running:
             for k, v in list(self._usb.items()):
@@ -796,7 +828,7 @@ class VM(Storage):
             try:
                 u = getpwuid(uid)
                 copy(
-                    HYDRA_FILE_UEFI_VARS[int(self.get("bios.secure_boot"))],
+                    HYDRA_FILE_UEFI_VARS[int(self.get("bios.secure_boot", False))],
                     v,
                     uid,
                     u.pw_gid,
@@ -1158,7 +1190,8 @@ class VM(Storage):
             ]
         r += a + d
         del a, d, b
-        if self.get("vm.debug", False) or opts.debug:
+        self._debug = self.get("vm.debug", False) or opts.debug
+        if self._debug:
             server.dump(f'[m/hydra/VM({self.vmid})]: Runtime command: [{" ".join(r)}]')
         return r
 
@@ -1191,7 +1224,7 @@ class VM(Storage):
             self._init_adapters(server)
         self._wait = 0
         try:
-            self._proc = run(x, out=self.get("vm.debug", False))
+            self._proc = run(x, out=self._debug)
         except OSError as err:
             server.notify(
                 "Hydra VM Status", f"VM({self.vmid}) failed to start!", "virt-viewer"
@@ -1585,13 +1618,13 @@ class VM(Storage):
                         f'[m/hydra/VM({self.vmid})]: Removing drive "{n}" "index" value as its invalid!'
                     )
                     del d["index"]
-                    v = max(b) + 1
+                    v = max(b) + 1 if len(b) > 0 else 0
                     d["index"] = v
                     b.append(v)
                 else:
                     b.append(v)
             else:
-                v = max(b) + 1
+                v = max(b) + 1 if len(b) > 0 else 0
                 d["index"] = v
                 b.append(v)
             del v
@@ -1608,12 +1641,15 @@ class VM(Storage):
             if i > 4:
                 raise Error("max limit of 4 IDE devices reached")
             if "format" not in d:
-                # NOTE(dij): Try to guess based on extension.
-                _, k = splitext(p)
-                if nes(k) and len(k) >= 2:
-                    d["format"] = k[1:]
-                else:
+                if d["type"] == "cd" or d["type"] == "iso":
                     d["format"] = "raw"
+                else:
+                    # NOTE(dij): Try to guess based on extension.
+                    _, k = splitext(p)
+                    if nes(k) and len(k) >= 2:
+                        d["format"] = k[1:]
+                    else:
+                        d["format"] = "raw"
             w[n] = d
             del d, p
         del i, b
@@ -1712,7 +1748,13 @@ class VM(Storage):
             server.debug(
                 f'[m/hydra/VM({self.vmid})]: "Tapping" the power button for ACPI shutdown.'
             )
-            return self._cmd(server, "guest-shutdown", ga=True)
+            if self._agent:
+                return self._cmd(server, "guest-shutdown", ga=True)
+            try:
+                self._cmd(server, "guest-shutdown", ga=True, timeout=1)
+            except Error:
+                self._cmd(server, "system_powerdown")
+            return
         if not force and self._state == HYDRA_STATE_WAITING:
             raise Error("cannot non-force stop while waiting")
         if not force and self._running():
@@ -1753,7 +1795,7 @@ class VM(Storage):
         if isinstance(e, int) and e != 0:
             server.warning(f"[m/hydra/VM({self.vmid})]: Exit was non-zero ({e}).")
         # NOTE(dij): If debugging is enabled check the output of the process.
-        if self._output is None and self.get("vm.debug", False):
+        if self._output is None and self._debug:
             try:
                 o = self._proc.stdout.read().replace(NEWLINE, ";")
                 v = self._proc.stderr.read().replace(NEWLINE, ";")
@@ -1820,7 +1862,7 @@ class VM(Storage):
             raise Error(f'device "{i}" is already mounted as "usb-dev-{self._usb[i]}"!')
         if i in manager._usb:
             raise Error(f'device "{i}" is already mounted to VM({manager._usb[i]})!')
-        n = 1 if len(self._usb) == 0 else max(self._usb.keys()) + 1
+        n = 1 if len(self._usb) == 0 else max(self._usb.values()) + 1
         nulexec(
             ["/usr/bin/chown", "-R", HYDRA_USER, HYDRA_DIR_DEVICES],
             wait=True,
@@ -1835,8 +1877,8 @@ class VM(Storage):
                     "id": f"usb-dev-{n}",
                     "bus": b,
                     "driver": "usb-host",
-                    "vendorid": f"0x{vendor}",
-                    "productid": f"0x{product}",
+                    "vendorid": int(vendor, 16),
+                    "productid": int(product, 16),
                 },
             )
         except OSError as err:
@@ -1848,7 +1890,7 @@ class VM(Storage):
         server.notify(
             "Hydra USB Device Connected",
             f'USB Device "{i}" was connected to VM({self.vmid}).',
-            "usb-creator",
+            "uos-installtool",
         )
         del b, i
         return n
@@ -1860,12 +1902,15 @@ class VM(Storage):
             except ValueError:
                 raise Error("device ID must be a non-zero positive number")
             if i not in self._usb.values():
-                raise Error(f'device ID "{i}" is not connected')
-            n = f"{i}"
+                raise Error(f'cannot find device with ID "{i}"')
+            n = None
             for k, v in self._usb.items():
+                # Grab the device vendor:product from the ID
                 if v == i:
                     n = k
                     break
+            if n is None:
+                raise Error(f'cannot find device with ID "{i}"')
         elif nes(vendor) and nes(product):
             n = f"{vendor}:{product}".lower()
             i = self._usb.get(n)
@@ -2382,6 +2427,11 @@ class HydraServer(object):
                 return as_error(f"cannot start VM {x.vmid}: {err}")
             return x._status()
         del i
+        # Can run without the VM in the running state.
+        if message.type == HYDRA_USB_QUERY:
+            s = x._status()
+            s["usb"] = x._usb
+            return s
         if not x._running() or x._state == HYDRA_STATE_STOPPED:
             return as_error(f"VM {x.vmid} is not running!")
         if message.type == HYDRA_SLEEP or message.type == HYDRA_WAKE:
@@ -2472,7 +2522,7 @@ class HydraServer(object):
                 return as_error(f"cannot check the GA for VM {x.vmid}: {err}")
         if message.type == HYDRA_TAP:
             try:
-                x._stop(server, self, False, tap=True)
+                x._stop(server, self, False, message.get("timeout", 90), tap=True)
             except Error as err:
                 server.error(f'[m/hydra/VM({x.vmid})]: Cannot ACPI "tap" the VM!', err)
                 return as_error(f"cannot ACPI tap VM {x.vmid}: {err}")
@@ -2521,6 +2571,15 @@ class HydraServer(object):
                 )
                 return as_error(f"cannot remove device from VM {x.vmid}: {err}")
             return x._status()
+        if message.type == HYDRA_SEND_INPUT:
+            try:
+                x._input(server, message.input, message.caps)
+            except Error as err:
+                server.error(
+                    f"[m/hydra/VM({x.vmid})]: Cannot send input to the VM!", err
+                )
+                return as_error(f"cannot send input to VM {x.vmid}: {err}")
+            return True
         return as_error("unknown or invalid command")
 
     def _get_vm(self, server, message):
@@ -2604,3 +2663,76 @@ class HydraServer(object):
             f"[m/hydra/VM({vm.vmid})]: Registered a Snapper with FD({f}) and Job({job})."
         )
         del f, v
+
+
+def _key_translate(v):
+    if v == 0xA:
+        return ({"type": "qcode", "data": "RET"}, False)
+    if v == 0xD:
+        return ({"type": "qcode", "data": "LF"}, False)
+    if v == 0x20:
+        return ({"type": "qcode", "data": "spc"}, False)
+    if v in HYDRA_KEYS_SIMPLE:
+        return ({"type": "qcode", "data": f"{v:c}"}, False)
+    if 0x41 <= v <= 0x5A:
+        return ({"type": "qcode", "data": f"{v + 0x20:c}"}, True)
+    if v in HYDRA_KEYS_NAMED:
+        return ({"type": "qcode", "data": HYDRA_KEYS_NAMED[v]}, False)
+    try:
+        return ({"type": "qcode", "data": HYDRA_KEYS_MAP[v]}, True)
+    except KeyError:
+        pass
+    return (None, None)
+
+
+def _key_next(buf, x, n):
+    if buf[x] == 0x3C:
+        i = buf.find(0x3E, x)
+        if i > x and i + 1 <= n:
+            v = buf[x + 1 : i].decode("UTF-8")
+            if v in HYDRA_KEYS_CTRL_MAP:
+                v = HYDRA_KEYS_CTRL_MAP[v]
+            if v in HYDRA_KEYS_CTRL:
+                return (True, i + 1, v.lower(), False)
+            del v
+        del i
+    (c, k) = _key_translate(buf[x])
+    return (False, x + 1, c, k)
+
+
+def _key_send(s, c, k, m):
+    b, e = "shift", [{"type": "key", "data": {"down": True, "key": c}}]
+    if k and m:
+        b = "caps_lock"
+    if k:
+        e.insert(
+            0,
+            {
+                "type": "key",
+                "data": {"down": True, "key": {"type": "qcode", "data": b}},
+            },
+        )
+    s.sendall(
+        dumps({"execute": "input-send-event", "arguments": {"events": e}}).encode(
+            "UTF-8"
+        )
+    )
+    del e
+    s.sendall(b"\r\n")
+    _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
+    e = [{"type": "key", "data": {"down": False, "key": c}}]
+    if k:
+        e.append(
+            {
+                "type": "key",
+                "data": {"down": False, "key": {"type": "qcode", "data": b}},
+            }
+        )
+    s.sendall(
+        dumps({"execute": "input-send-event", "arguments": {"events": e}}).encode(
+            "UTF-8"
+        )
+    )
+    del e, b
+    s.sendall(b"\r\n")
+    _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))

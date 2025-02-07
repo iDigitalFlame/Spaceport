@@ -75,10 +75,9 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /dev/bus/usb/                                             r,
     /dev/bus/usb/*/                                           r,
 
-    /sys/bus/                                                 r,
-    /sys/class/                                               r,
     /sys/bus/usb/                                             r,
     /sys/class/tty/                                           r,
+    /sys/{bu,clas}s/                                          r,
     /sys/class/usbmisc/                                       r,
     /sys/fs/cgroup/{,**}                                      r,
     /sys/kernel/mm/hugepages/                                 r,

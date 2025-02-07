@@ -63,6 +63,7 @@ from lib.constants import (
     HYDRA_USB_CLEAN,
     HYDRA_SNAP_LIST,
     HYDRA_SNAP_TAKE,
+    HYDRA_SEND_INPUT,
     HYDRA_USB_DELETE,
     HYDRA_SNAP_DELETE,
     HYDRA_SNAP_RESTORE,
@@ -691,6 +692,10 @@ def tokenize(args):
         return vm_ip(args, vm)
     if c == "ping" or args.ga_ping:
         return vm_ping(args, vm)
+    if c == "input" or c == "type" or args.input:
+        if len(args.args) > 1:
+            args.input = args.args[1].lower()
+        return vm_input(args, vm)
     if c == "snap" or args.snap:
         if len(args.args) == 1:
             return vm_snap_list(args, vm)
@@ -787,6 +792,20 @@ def vm_stop(args, vm=None):
         return print_error("Cannot stop the VM!", err)
     check_error(r, "Cannot stop the VM")
     print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    del r, vm
+    return True
+
+
+def vm_input(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"], vm["input"], vm["caps"] = HYDRA_SEND_INPUT, args.input, args.use_caps
+    try:
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, True), TIMEOUT_SEC_MESSAGE, vm
+        )
+    except OSError as err:
+        return print_error("Cannot send input to the VM!", err)
+    check_error(r, "Cannot send input to the VM")
     del r, vm
     return True
 
@@ -939,10 +958,13 @@ def vm_usb(args, remove=False, vm=None):
         if args.usb_name == "all" and (remove or args.usb_delete):
             return vm_usb_clean(args, vm)
         # NOTE(dij): We already checked the name so we're good.
-        _usb_vet(args)
+        try:
+            args.usb_id = int(args.usb_name)
+        except ValueError:
+            _usb_vet(args)
     elif nes(args.usb_vendor) and nes(args.usb_product):
         pass
-    elif not (remove or args.usb_delete) or isinstance(args.usb_id, int):
+    elif not (remove or args.usb_delete) and not isinstance(args.usb_id, int):
         return print_error("USB name, ID or vendor and product must be specified!")
     if remove or args.usb_delete:
         if not isinstance(args.usb_id, int):

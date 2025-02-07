@@ -56,8 +56,6 @@ profile kitty /usr/bin/kitty flags=(enforce) {
 
     owner @{HOME}/.cache/kitty{,/,/**} rw,
 
-    owner /dev/pts/*                   rw,
-
     /usr/bin/kitten                    ix,
     /usr/bin/{ba,da,z}sh               Ux,
 

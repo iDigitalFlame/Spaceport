@@ -770,6 +770,28 @@ ARGS = {
             },
         ),
         (
+            "-k",
+            {
+                "type": str,
+                "dest": "input",
+                "help": "keyboard input to send to the VM",
+                "action": "store",
+                "metavar": "keys",
+                "required": False,
+            },
+            "vm_input",
+        ),
+        (
+            "--caps",
+            {
+                "dest": "use_caps",
+                "help": "use the caps_lock key instead of shift for uppercase characters",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_all",
+        ),
+        (
             "-c",
             {
                 "dest": "connect",

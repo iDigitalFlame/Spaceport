@@ -50,8 +50,6 @@ profile wpctl /usr/bin/{pa,wp}ctl flags=(enforce, attach_disconnected) {
 
     /proc/@{pid}/fd/                                    r,
 
-    owner /dev/pts/*                                    rw,
-
     deny network,
 
     include if exists <local/usr.bin.wpctl>

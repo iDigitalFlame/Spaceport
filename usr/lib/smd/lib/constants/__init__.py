@@ -127,12 +127,13 @@ HYDRA_STATUS = MSG_STATUS
 HYDRA_RESTART = 0x25
 HYDRA_GA_PING = 0x23
 HYDRA_USB_ADD = 0x15
-HYDRA_USB_QUERY = HYDRA_STATUS
+HYDRA_USB_QUERY = 0x32
 HYDRA_USB_CLEAN = 0x21
 HYDRA_HIBERNATE = 0x26
 HYDRA_SNAP_LIST = 0x27
 HYDRA_SNAP_TAKE = 0x28
 HYDRA_USB_DELETE = 0x17
+HYDRA_SEND_INPUT = 0x31
 HYDRA_SNAP_DELETE = 0x29
 HYDRA_SNAP_RESTORE = 0x30
 
@@ -224,3 +225,117 @@ BACKUP_STATE_UPLOADING = 0x9
 BACKUP_STATE_HASHING_P1 = 0x6
 BACKUP_STATE_HASHING_P2 = 0x7
 BACKUP_STATE_ENCRYPT_COMPRESS = 0x4
+
+HYDRA_KEYS_MAP = {
+    0x29: "0",
+    0x21: "1",
+    0x40: "2",
+    0x23: "3",
+    0x24: "4",
+    0x25: "5",
+    0x5E: "6",
+    0x26: "7",
+    0x2A: "8",
+    0x28: "9",
+    0x22: "apostrophe",
+    0x7C: "backslash",
+    0x7B: "bracket_left",
+    0x7D: "bracket_right",
+    0x3C: "comma",
+    0x3E: "dot",
+    0x2B: "equal",
+    0x7E: "grave_accent",
+    0x5F: "minus",
+    0x3A: "semicolon",
+    0x3F: "slash",
+}
+HYDRA_KEYS_CTRL = [
+    "AGAIN",
+    "ALT",
+    "AUDIOMUTE",
+    "AUDIONEXT",
+    "AUDIOPLAY",
+    "AUDIOPREV",
+    "AUDIOSTOP",
+    "BACKSPACE",
+    "CALCULATOR",
+    "CAPS_LOCK",
+    "COMPOSE",
+    "COMPUTER",
+    "COPY",
+    "CTRL",
+    "CUT",
+    "DOWN",
+    "END",
+    "ESC",
+    "FIND",
+    "HELP",
+    "HOME",
+    "INSERT",
+    "LEFT",
+    "LESS",
+    "MAIL",
+    "MEDIASELECT",
+    "MENU",
+    "META_L",
+    "META_R",
+    "NUM_LOCK",
+    "PASTE",
+    "PAUSE",
+    "PGDN",
+    "PGUP",
+    "POWER",
+    "PRINT",
+    "PROPS",
+    "RET",
+    "RIGHT",
+    "SCROLL_LOCK",
+    "SHIFT",
+    "SLEEP",
+    "STOP",
+    "TAB",
+    "UNDO",
+    "UP",
+    "VOLUMEDOWN",
+    "VOLUMEUP",
+    "WAKE",
+]
+HYDRA_KEYS_NAMED = {
+    0x27: "apostrophe",
+    0x5C: "backslash",
+    0x5B: "bracket_left",
+    0x5D: "bracket_right",
+    0x2C: "comma",
+    0x2E: "dot",
+    0x3D: "equal",
+    0x60: "grave_accent",
+    0x2D: "minus",
+    0x3B: "semicolon",
+    0x2F: "slash",
+}
+HYDRA_KEYS_SIMPLE = b"abcdefghijklmnopqrstuvwxyz12345678901234567890"
+HYDRA_KEYS_CTRL_MAP = {
+    "audio_mute": "AUDIOMUTE",
+    "audio_play": "AUDIOPLAY",
+    "audio_stop": "AUDIOSTOP",
+    "calc": "CALCULATOR",
+    "caps": "CAPS_LOCK",
+    "capslock": "CAPS_LOCK",
+    "media_select": "MEDIASELECT",
+    "media": "MEDIASELECT",
+    "super": "META_L",
+    "win": "META_L",
+    "meta": "META_L",
+    "numlock": "NUM_LOCK",
+    "page_down": "PGDN",
+    "pagedown": "PGDN",
+    "page_up": "PGUP",
+    "pageup": "PGUP",
+    "enter": "RET",
+    "return": "RET",
+    "scrolllock": "SCROLL_LOCK",
+    "volume_down": "VOLUMEDOWN",
+    "vol_down": "VOLUMEDOWN",
+    "volume_up": "VOLUMEUP",
+    "vol_up": "VOLUMEUP",
+}

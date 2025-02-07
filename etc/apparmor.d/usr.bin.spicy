@@ -82,8 +82,6 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
 
     owner @{CACHE}/gstreamer-1.0/registry.*       rw,
 
-    owner /dev/pts/*                              rw,
-
     /usr/bin/spicy-s{creenshot,tats}              ix,
     /usr/lib/gstreamer-1.0/gst-plugin-scanner     ix,
     /usr/lib/spice-client-glib-usb-acl-helper     ix,

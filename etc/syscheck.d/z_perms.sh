@@ -207,6 +207,7 @@ chmod 0400 /usr/share/applications/arduino.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/onboard.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/qvidcap.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/firefox.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/cropgui.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/VSCodium.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/checkers.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/gtk-lshw.desktop 2> /dev/null

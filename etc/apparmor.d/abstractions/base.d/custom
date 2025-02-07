@@ -39,6 +39,7 @@
 
 /var/cache/ld.so.cache          rm,
 
+owner /dev/pts/*                rw,
 owner /dev/tty{,*}              rw,
 
 audit deny /opt/secureboot/{,*} rw,

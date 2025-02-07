@@ -55,7 +55,5 @@ profile reflector /usr/bin/reflector flags=(enforce) {
 
     /var/cache/pacman/mirror{list,status.json} rw,
 
-    /dev/pts/*                                 rw,
-
     include if exists <local/usr.bin.reflector>
 }

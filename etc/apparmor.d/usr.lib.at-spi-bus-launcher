@@ -83,8 +83,6 @@ profile at-spi-bus-launcher /usr/lib/at-spi-bus-launcher flags=(enforce, attach_
     @{run}/user/@{uid}/at-spi{,/*}                   rw,
     @{run}/systemd/users/{,@{uid}}{,/}               rw,
 
-    owner /dev/pts/*                                 rw,
-
     owner /tmp/dbus-*                                rw,
 
     /usr/lib/at-spi2-registryd                       Px -> at-spi2-registryd,

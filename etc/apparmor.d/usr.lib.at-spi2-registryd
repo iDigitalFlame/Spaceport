@@ -60,8 +60,6 @@ profile at-spi2-registryd /usr/lib/at-spi2-registryd flags=(enforce, attach_disc
     /tmp/.X*-lock                                   rw,
     /tmp/.{ICE,X11}-unix/*                          rw,
 
-    owner /dev/pts/*                                rw,
-
     owner @{run}/user/@{uid}/bus                    rw,
     owner @{run}/user/@{uid}/at-spi/{,bus,bus_*}    rw,
 

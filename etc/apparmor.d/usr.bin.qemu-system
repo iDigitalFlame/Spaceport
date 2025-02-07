@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile qemu-system /usr/bin/qemu-system-* flags=(enforce) {
+profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) {
     include <abstractions/dri>
     include <abstractions/base>
     include <abstractions/mesa>
@@ -61,20 +61,34 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce) {
     /etc/sasl2/qemu.conf                                                   r,
     /usr/share/edk2/**/*.{fd,img,raw}                                      rk,
 
+    /dev/                                                                  r,
     /dev/shm/                                                              r,
+    /dev/bus/{,usb/}                                                       r,
 
+    /sys/bus/usb/                                                          r,
+    /sys/class/tty/                                                        r,
+    /sys/{bu,clas}s/                                                       r,
+    /sys/class/usbmisc/                                                    r,
     /sys/devices/system/node/                                              r,
+    /sys/bus/usb/devices/{,**}                                             r,
+    /sys/devices/**/usb*/**/{idVendor,idProduct}                           r,
     /sys/module/vhost/parameters/max_mem_regions                           r,
+    /sys/devices/**/usb*/**/{manufacturer,serial,product}                  r,
 
     /proc/sys/vm/max_map_count                                             r,
     /proc/sys/kernel/random/boot_id                                        r,
+
+    @{run}/udev/data/c1*:*                                                 r,
+    @{run}/udev/data/+usb:*                                                r,
 
     /opt/hydra/*/**/*.{disk,fd,img,raw,qcow,qcow2,vdmk}                    rwk,
 
     /dev/kvm                                                               rw,
     /dev/net/tun                                                           rw,
     /dev/vhost-net                                                         rw,
+    /dev/bus/usb/**                                                        rw,
     /dev/dri/renderD128                                                    rw,
+    /dev/hugepages/*.ram                                                   rwk,
 
     @{run}/smd/hydra/*.swtpm                                               rw,
     @{run}/smd/hydra/*.{pid,qga,spice,sock,vnc}                            rwk,

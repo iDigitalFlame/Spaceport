@@ -54,8 +54,6 @@ profile cropgui /usr/bin/cropgui flags=(enforce, attach_disconnected) {
 
     owner /proc/@{pid}/mount{s,info}              r,
 
-    owner /dev/pts/*                              rw,
-
     /usr/bin/nice                                 ix,
     /usr/bin/magick                               ix,
     /usr/bin/jpegtran                             ix,

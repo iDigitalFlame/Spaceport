@@ -67,8 +67,6 @@ owner @{CONFIG}/smd.json                          r,
 
 @{run}/smd/*.sock                                 rw,
 
-owner /dev/pts/*                                  rw,
-
 /usr/lib/smd/lib/smd-message                      ixr,
 
 unix (connect, receive, send) type=stream peer=(addr="@{run}/smd/*.sock"),

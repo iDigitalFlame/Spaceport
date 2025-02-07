@@ -43,6 +43,7 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
     signal send set=(alrm, cont, int, kill, quit, term, stop, usr1),
 
     @{sysconfig}/usr/lib/smd/libexec/*                      Px,
+    @{sysconfig}/usr/lib/smd/bin/powerctl                   Px -> powerctl,
 
     /usr/share/icons/**                                     r,
 
@@ -71,6 +72,7 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
     /usr/bin/*                                              Pix,
     /usr/local/bin/*                                        Pix,
     /usr/lib/smd/libexec/*                                  Pix,
+    /usr/lib/smd/bin/powerctl                               Px -> powerctl,
 
     @{HOME}/.local/{apps,bin,lib}/**                        Pixr,
     @{HOME}/.dotfiles/.local/{apps,bin,lib}/**              Pixr,

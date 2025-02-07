@@ -64,7 +64,6 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected)
 
     deny ptrace read,
 
-    deny /dev/pts/*                                          rw,
     deny /usr/bin/ldd                                        rx,
     deny /usr/bin/{,ba,da}sh                                 rx,
     deny /usr/bin/xdg-settings                               rx,

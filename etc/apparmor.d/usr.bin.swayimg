@@ -48,7 +48,6 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
 
     @{CONFIG}/swayimg/config r,
 
-    owner /dev/pts/*         rw,
     owner /dev/shm/swayimg_* rwk,
 
     deny network,

@@ -69,7 +69,6 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     /usr/lib/signal-desktop/signal-desktop                   ixr,
     /usr/lib/signal-desktop/electron*/chrome-sandbox         ix,
 
-    deny /dev/pts/*                                          rw,
     deny /usr/bin/xdg-settings                               rx,
 
     include if exists <local/usr.lib.signal-desktop>

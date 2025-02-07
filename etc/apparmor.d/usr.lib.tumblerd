@@ -52,6 +52,9 @@ profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
     /usr/share/backgrounds/xfce/{,**}                                               r,
     /usr/share/gstreamer-1.0/presets/Gst*Enc.prs                                    r,
 
+    # Device wide thumbnails for picture formats.
+    /**/*.{jpg,png,ico,svg,jpeg,heic,bmp,gif,HEIC}                                  r,
+
     /dev/                                                                           r,
     /dev/dri/                                                                       r,
     /dev/bus/usb/                                                                   r,

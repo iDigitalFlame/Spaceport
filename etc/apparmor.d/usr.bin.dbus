@@ -99,8 +99,6 @@ profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_dis
     @{run}/systemd/inhibit/*.ref                     rw,
     @{run}/systemd/sessions/{,*}.ref                 rw,
 
-    owner /dev/pts/*                                 rw,
-
     owner @{run}/user/@{uid}/bus                     rw,
     owner @{run}/user/@{uid}/dbus-1/{,*}             rw,
     owner @{run}/user/@{uid}/systemd/notify          w,
