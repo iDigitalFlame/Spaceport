@@ -115,11 +115,11 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner /proc/@{pid}/coredump_filter                        rw,
     owner /proc/@{pid}/task/@{tid}/comm                       rw,
 
-    owner /tmp/*.tmp                                          rw,
+    owner /tmp/*.tmp                                          rwm,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
 
-    owner @{CACHE}/JNA/**                               rmwkl,
+    owner @{CACHE}/JNA{,/**}                                  rmwkl,
     owner @{HOME}/.java/fonts/*/                              rw,
     owner @{HOME}/.config/java/fonts/*/                       rw,
     owner @{HOME}/Documents/Minecraft/**                      rmwkl,

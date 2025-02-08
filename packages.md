@@ -1,4 +1,5 @@
 7zip
+android-tools
 apparmor
 archlinuxcn-keyring
 archstrike-keyring

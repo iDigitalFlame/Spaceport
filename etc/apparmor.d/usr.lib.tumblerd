@@ -87,6 +87,7 @@ profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
     owner @{CACHE}/thumbnails/{fail,*large,normal}/gnome-thumbnail-factory/{,*.png} rw,
 
     owner /tmp/tumbler-*                                                            rw,
+    owner /tmp/gsf-thumbnailer-*                                                    rw,
 
     /usr/bin/*{,-}thumbnailer                                                       ix,
     /usr/lib/{,gstreamer1.0}gstreamer1.0/gstreamer-1.0/gst-plugin-scanner           ix,
