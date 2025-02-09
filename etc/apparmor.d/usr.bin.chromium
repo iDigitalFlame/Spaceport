@@ -60,6 +60,8 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
 
     owner @{CONFIG}/chrom{e,ium}-flags.conf                  r,
 
+    /dev/tty{ACM,S,USB}*                                     rw,
+
     /sys/{bus,class}/usb{,-serial}/{,devices/**}             rw,
 
     owner @{CACHE_TMP}/chromium_cache/**                     rw,

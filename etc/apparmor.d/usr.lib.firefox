@@ -55,6 +55,8 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
 
     owner /proc/@{pid}/task/@{tid}/stat                                r,
 
+    /dev/tty{ACM,S,USB}*                                               rw,
+
     owner /dev/shm/wayland.mozilla.ipc.[0-9]*                          rw,
 
     owner @{run}/user/*/wayland-proxy-*                                rwk,
