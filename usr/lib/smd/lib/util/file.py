@@ -75,30 +75,30 @@ class Stat(NamedTuple):
 
     def no_dir(self, hide=False):
         if not self.isdir:
-            return
+            return self
         if hide:
-            raise FileNotFoundError()
+            raise FileNotFoundError(f'"{self.path}" does not exist')
         raise PermissionError(f'"{self.path}" cannot be a directory')
 
     def no_link(self, hide=False):
         if not self.islink:
-            return
+            return self
         if hide:
-            raise FileNotFoundError()
+            raise FileNotFoundError(f'"{self.path}" does not exist')
         raise PermissionError(f'"{self.path}" cannot be a symlink')
 
     def no_char_dev(self, hide=False):
         if not self.ischardev:
-            return
+            return self
         if hide:
-            raise FileNotFoundError()
+            raise FileNotFoundError(f'"{self.path}" does not exist')
         raise PermissionError(f'"{self.path}" cannot be a character device')
 
     def no_block_dev(self, hide=False):
         if not self.isblockdev:
-            return
+            return self
         if hide:
-            raise FileNotFoundError()
+            raise FileNotFoundError(f'"{self.path}" does not exist')
         raise PermissionError(f'"{self.path}" cannot be a block device')
 
     def no(self, file=None, dir=None, char=None, block=None, link=None, hide=False):
@@ -188,32 +188,26 @@ class Stat(NamedTuple):
             )
         if own_gid:
             g = getpwuid(self.uid).pw_gid
-            if g != self.gid:
-                if hide:
-                    raise FileNotFoundError(f'"{self.path}" does not exist')
-                if self.gid == 0:
-                    n = "root"
-                else:
-                    try:
-                        n = getgrgid(self.gid).gr_name
-                    except KeyError:
-                        n = gid
+            if g == self.gid:
+                return self
+            if hide:
+                raise FileNotFoundError(f'"{self.path}" does not exist')
+            if self.gid == 0:
+                n = "root"
+            else:
                 try:
-                    s = getgrgid(g).gr_name
+                    n = getgrgid(self.gid).gr_name
                 except KeyError:
-                    s = g
-                raise PermissionError(
-                    f'"{self.path}" group "{n}" is not the user primary group "{s}"'
-                )
+                    n = gid
+            try:
+                s = getgrgid(g).gr_name
+            except KeyError:
+                s = g
             del g
+            raise PermissionError(
+                f'"{self.path}" group "{n}" is not the user primary group "{s}"'
+            )
         return self
-
-    def check_if(
-        self, cond, mask=None, uid=None, gid=None, req=None, hide=False, own_gid=False
-    ):
-        if not cond:
-            return self
-        return self.check(mask, uid, gid, req, hide, own_gid)
 
     def check_if_owner(
         self, owner_uid, mask=None, uid=None, gid=None, req=None, hide=False
@@ -230,10 +224,19 @@ class Stat(NamedTuple):
     ):
         return self.no(file, dir, char, block, link, hide)
 
+    def check_if(
+        self, cond, mask=None, uid=None, gid=None, req=None, hide=False, own_gid=False
+    ):
+        if not cond:
+            return self
+        return self.check(mask, uid, gid, req, hide, own_gid)
 
-def remove_file(path):
+
+def remove_file(path, sym=False):
     if not isinstance(path, str) or len(path) == 0 or not isfile(path):
         return
+    if not sym and islink(path):
+        raise PermissionError(f'cannot delete link "{path}"')
     try:
         remove(path)
     except OSError:
@@ -241,17 +244,17 @@ def remove_file(path):
 
 
 def import_file(path):
-    i = info(path, no_fail=True)
+    i = info(path, sym=False, no_fail=True)
     if not i.isfile:
         return
     try:
         # NOTE(dij): Prevent loading insecure config files.
-        i.check(0o7133, 0, 0, req=0o0400)
+        i.check(0o7133, 0, 0, req=0o0400).only(file=True)
     except OSError:
         return
     finally:
         del i
-    v = read_json(path, errors=False)
+    v = read_json(path, False)
     if isinstance(v, dict) and len(v) > 0:
         g = _getframe(1).f_globals
         for n, d in v.items():
@@ -278,38 +281,6 @@ def expand(path, env=None):
         return None
     except ValueError:
         return path
-
-
-def read_json(path, errors=True):
-    d = read(path, binary=False, errors=errors)
-    if not isinstance(d, str):
-        if errors:
-            raise OSError(f'file "{path}" was empty')
-        return None
-    if len(d) == 0:
-        return None
-    try:
-        j = loads(d)
-    except JSONDecodeError as err:
-        if errors:
-            raise OSError(f'file "{path}" is not properly formatted: {err}')
-        return None
-    finally:
-        del d
-    return j
-
-
-def ensure_dir(file, mode=0o0755):
-    try:
-        d = dirname(file)
-    except TypeError:
-        return
-    if exists(d):
-        return
-    try:
-        makedirs(d, exist_ok=True, mode=mode)
-    finally:
-        del d
 
 
 def clean(path, root, links=False):
@@ -414,33 +385,38 @@ def _expand_custom(path, env=None):
     return r
 
 
-def read(path, binary=False, errors=True, strip=False):
-    if not isinstance(path, str) or len(path) == 0:
+def read_json(path, errors=True, sym=False):
+    d = read(path, False, errors, False, sym)
+    if not isinstance(d, str):
         if errors:
-            raise ValueError('"path" must be a non-empty string!')
+            raise OSError(f'file "{path}" was empty')
         return None
-    if not isfile(path):
-        if errors:
-            raise OSError(f'file "{path}" does not exist or is not a file')
+    if len(d) == 0:
         return None
     try:
-        with open(path, "rb" if binary else "r") as f:
-            d = f.read()
-            if binary or not strip:
-                return d
-            v = d.strip()
-            del d
-            if len(v) <= 2:
-                return v
-            if v[-1] == "\n":
-                return v[0:-2] if v[-2] == "\r" else v[0:-1]
-            if v[-1] == "\r":
-                return v[0:-2] if v[-2] == "\n" else v[0:-1]
-            return v
-    except (OSError, UnicodeDecodeError) as err:
+        j = loads(d)
+    except JSONDecodeError as err:
         if errors:
-            raise err
-    return None
+            raise OSError(f'file "{path}" is not properly formatted: {err}')
+        return None
+    finally:
+        del d
+    return j
+
+
+def ensure_dir(file, mode=0o0755, sym=False):
+    try:
+        d = dirname(file)
+    except TypeError:
+        return
+    if exists(d):
+        return
+    if not sym and islink(d):
+        raise PermissionError(f'cannot make dirs at link "{d}"')
+    try:
+        makedirs(d, mode, True)
+    finally:
+        del d
 
 
 def hash_file(path, block=4096, errors=True, hasher=md5):
@@ -483,7 +459,7 @@ def info(path, sym=True, st=None, no_fail=False, hide=False):
             s = stat(path, follow_symlinks=sym)
         except OSError as err:
             if hide:
-                raise FileNotFoundError()
+                raise FileNotFoundError(f'"{path}" does not exist')
             if no_fail:
                 return Stat(None, None, None, False, False, False, False, False, path)
             raise err
@@ -503,7 +479,42 @@ def info(path, sym=True, st=None, no_fail=False, hide=False):
     )
 
 
-def copy(src, dst, uid=None, gid=None, perms=None, errors=True):
+def read(path, binary=False, errors=True, strip=False, sym=False):
+    if not isinstance(path, str) or len(path) == 0:
+        if errors:
+            raise ValueError('"path" must be a non-empty string!')
+        return None
+    if not isfile(path):
+        if errors:
+            raise OSError(f'file "{path}" does not exist or is not a file')
+        return None
+    if not sym and islink(path):
+        raise PermissionError(f'cannot read link "{path}"')
+    try:
+        with open(path, "rb" if binary else "r") as f:
+            d = f.read()
+            if binary or not strip:
+                return d
+            v = d.strip()
+            del d
+            if len(v) <= 2:
+                return v
+            if v[-1] == "\n":
+                return v[0:-2] if v[-2] == "\r" else v[0:-1]
+            if v[-1] == "\r":
+                return v[0:-2] if v[-2] == "\n" else v[0:-1]
+            return v
+    except (OSError, UnicodeDecodeError) as err:
+        if errors:
+            raise err
+    return None
+
+
+def perm_check(path, mask=None, uid=None, gid=None, sym=True, st=None):
+    info(path, sym=sym, st=st).check(mask, uid, gid)
+
+
+def copy(src, dst, uid=None, gid=None, perms=None, errors=True, sym=False):
     if not isinstance(src, str) or len(src) == 0:
         if errors:
             raise ValueError('"src" must be a non-empty string!')
@@ -513,32 +524,30 @@ def copy(src, dst, uid=None, gid=None, perms=None, errors=True):
             raise ValueError('"dst" must be a non-empty string!')
         return False
     try:
-        copyfile(src, dst, follow_symlinks=False)
+        copyfile(src, dst, follow_symlinks=sym)
         if isinstance(uid, int) and isinstance(gid, int):
-            chown(dst, uid, gid, follow_symlinks=True)
+            chown(dst, uid, gid, follow_symlinks=sym)
         if isinstance(perms, int):
-            chmod(dst, perms, follow_symlinks=True)
+            chmod(dst, perms, follow_symlinks=sym)
     except OSError as err:
         if errors:
             raise err
         return False
 
 
-def perm_check(path, mask=None, uid=None, gid=None, sym=True, st=None):
-    info(path, sym=sym, st=st).check(mask, uid, gid)
-
-
-def write(path, data, binary=False, errors=True, append=False, perms=None):
+def write(path, data, binary=False, errors=True, append=False, perms=None, sym=False):
     if not isinstance(path, str) or len(path) == 0:
         if errors:
             raise ValueError('"path" must be a non-empty string')
         return False
     try:
-        ensure_dir(path)
+        ensure_dir(path, sym=sym)
     except OSError as err:
         if errors:
             raise err
         return False
+    if not sym and islink(path):
+        raise PermissionError(f'cannot write link "{path}"')
     m = ("ab" if binary else "a") if append else ("wb" if binary else "w")
     try:
         with open(path, m) as f:
@@ -562,7 +571,7 @@ def write(path, data, binary=False, errors=True, append=False, perms=None):
     return True
 
 
-def write_json(path, obj, errors=True, indent=None, sort=False, perms=None):
+def write_json(path, obj, errors=True, indent=None, sort=False, perms=None, sym=False):
     if obj is None:
         if errors:
             raise ValueError('"obj" must not be None')
@@ -574,7 +583,9 @@ def write_json(path, obj, errors=True, indent=None, sort=False, perms=None):
             raise ValueError(f'cannot convert "obj" to JSON: {err}')
         return False
     try:
-        return write(path, d, binary=False, errors=errors, append=False, perms=perms)
+        return write(
+            path, d, binary=False, errors=errors, append=False, perms=perms, sym=sym
+        )
     except OSError as err:
         if errors:
             raise err

@@ -236,7 +236,7 @@ class DispatchExecuter(Thread):
 
     def start(self):
         if self._hooks is not None and len(self._hooks) == 0:
-            raise RuntimeError()
+            raise RuntimeError("cannot start Dispatcher without hooks")
         if self._hooks is None:
             self._hooks = list()
         super(__class__, self).start()

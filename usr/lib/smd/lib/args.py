@@ -43,7 +43,7 @@ from lib.constants import BOOLEANS
 ARGS = {
     "cpu": [
         (
-            "-a",
+            ("-a", "--advanced"),
             {
                 "dest": "advanced",
                 "help": "display detailed CPU information",
@@ -52,7 +52,7 @@ ARGS = {
             },
         ),
         (
-            "-g",
+            ("-g", "--governor"),
             {
                 "type": str,
                 "dest": "governor",
@@ -64,7 +64,7 @@ ARGS = {
             "config",
         ),
         (
-            "-m",
+            ("-m", "--min"),
             {
                 "type": str,
                 "dest": "minimum",
@@ -76,7 +76,7 @@ ARGS = {
             "config",
         ),
         (
-            "-x",
+            ("-x", "--max"),
             {
                 "type": str,
                 "dest": "maximum",
@@ -88,7 +88,7 @@ ARGS = {
             "config",
         ),
         (
-            "-p",
+            ("-p", "--power"),
             {
                 "type": str,
                 "dest": "power_governor",
@@ -100,7 +100,7 @@ ARGS = {
             "config",
         ),
         (
-            "-t",
+            ("-t", "--turbo"),
             {
                 "type": str,
                 "dest": "turbo",
@@ -113,7 +113,7 @@ ARGS = {
             "config",
         ),
         (
-            "-tm",
+            ("-tm", "--turbo-min"),
             {
                 "type": str,
                 "dest": "turbo_minimum",
@@ -125,7 +125,7 @@ ARGS = {
             "config",
         ),
         (
-            "-tx",
+            ("-tx", "--turbo-max"),
             {
                 "type": str,
                 "action": "store",
@@ -137,7 +137,7 @@ ARGS = {
             "config",
         ),
         (
-            "-s",
+            ("-s", "--step"),
             {
                 "dest": "step",
                 "help": "set the maximum CPU frequency after setting turbo (implies -t)",
@@ -146,7 +146,7 @@ ARGS = {
             },
         ),
         (
-            "-n",
+            ("-n", "--select"),
             {
                 "type": str,
                 "dest": "selector",
@@ -157,7 +157,7 @@ ARGS = {
             },
         ),
         (
-            "-w",
+            ("-w", "--wait"),
             {
                 "dest": "wait",
                 "help": "display CPU details after setting",
@@ -168,7 +168,7 @@ ARGS = {
     ],
     "log": [
         (
-            "-l",
+            ("-l", "--level"),
             {
                 "type": str,
                 "dest": "level",
@@ -181,7 +181,7 @@ ARGS = {
     ],
     "blue": [
         (
-            "-d",
+            ("-d", "--disable"),
             {
                 "dest": "disable",
                 "help": "disable Bluetooth",
@@ -191,7 +191,7 @@ ARGS = {
             "config",
         ),
         (
-            "-e",
+            ("-e", "--enable"),
             {
                 "dest": "enable",
                 "help": "enable Bluetooth",
@@ -201,7 +201,7 @@ ARGS = {
             "config",
         ),
         (
-            "-t",
+            ("-t", "--toggle"),
             {
                 "dest": "toggle",
                 "help": "toggle Bluetooth",
@@ -211,7 +211,7 @@ ARGS = {
             "config",
         ),
         (
-            "-b",
+            ("-b", "--boot"),
             {
                 "type": str,
                 "dest": "boot",
@@ -224,7 +224,7 @@ ARGS = {
             "config",
         ),
         (
-            "-f",
+            ("-f", "--force"),
             {
                 "dest": "force",
                 "help": "force enable/disable Bluetooth regardless of current state",
@@ -233,7 +233,7 @@ ARGS = {
             },
         ),
         (
-            "-s",
+            ("-s", "--status"),
             {
                 "dest": "status",
                 "help": "show the current Bluetooth boot and enabled state",
@@ -265,7 +265,7 @@ ARGS = {
     ],
     "wifi": [
         (
-            "-d",
+            ("-d", "--disable"),
             {
                 "dest": "disable",
                 "help": "disable Wireless",
@@ -275,7 +275,7 @@ ARGS = {
             "config",
         ),
         (
-            "-e",
+            ("-e", "--enable"),
             {
                 "dest": "enable",
                 "help": "enable Wireless",
@@ -285,7 +285,7 @@ ARGS = {
             "config",
         ),
         (
-            "-t",
+            ("-t", "--toggle"),
             {
                 "dest": "toggle",
                 "help": "toggle Wireless",
@@ -295,7 +295,7 @@ ARGS = {
             "config",
         ),
         (
-            "-b",
+            ("-b", "--boot"),
             {
                 "type": str,
                 "dest": "boot",
@@ -308,7 +308,7 @@ ARGS = {
             "config",
         ),
         (
-            "-f",
+            ("-f", "--force"),
             {
                 "dest": "force",
                 "help": "force enable/disable Wireless regardless of current state",
@@ -317,7 +317,7 @@ ARGS = {
             },
         ),
         (
-            "-s",
+            ("-s", "--status"),
             {
                 "dest": "status",
                 "help": "show the current Wireless boot and enabled state",
@@ -349,7 +349,7 @@ ARGS = {
     ],
     "lock": [
         (
-            "-f",
+            ("-f", "--force"),
             {
                 "dest": "force",
                 "help": "force Lockscreen and override lockers",
@@ -358,7 +358,7 @@ ARGS = {
             },
         ),
         (
-            "-t",
+            ("-t", "--suspend"),
             {
                 "type": str,
                 "dest": "suspend",
@@ -369,7 +369,7 @@ ARGS = {
             },
         ),
         (
-            "-kt",
+            ("-kt", "--suspend-force"),
             {
                 "type": str,
                 "dest": "suspend_force",
@@ -380,7 +380,7 @@ ARGS = {
             },
         ),
         (
-            "-z",
+            ("-z", "--hibernate"),
             {
                 "type": str,
                 "dest": "hibernate",
@@ -391,7 +391,7 @@ ARGS = {
             },
         ),
         (
-            "-kz",
+            ("-kz", "--hibernate-force"),
             {
                 "type": str,
                 "dest": "hibernate_force",
@@ -413,7 +413,7 @@ ARGS = {
     ],
     "hydra": [
         (
-            "-l",
+            ("-l", "--list"),
             {
                 "dest": "list",
                 "help": "list running VMs",
@@ -423,7 +423,7 @@ ARGS = {
             "vm_list",
         ),
         (
-            "-i",
+            ("-i", "--id"),
             {
                 "type": int,
                 "dest": "vmid",
@@ -434,7 +434,7 @@ ARGS = {
             },
         ),
         (
-            "-n",
+            ("-n", "--name"),
             {
                 "type": str,
                 "dest": "name",
@@ -445,7 +445,7 @@ ARGS = {
             },
         ),
         (
-            "-d",
+            ("-d", "--dir"),
             {
                 "dest": "directory",
                 "type": str,
@@ -457,7 +457,7 @@ ARGS = {
             "user_directory",
         ),
         (
-            "-a",
+            ("-a", "--alias-add"),
             {
                 "dest": "alias_add",
                 "type": str,
@@ -469,7 +469,7 @@ ARGS = {
             "user_alias",
         ),
         (
-            "-ar",
+            ("-ar", "--alias-del"),
             {
                 "dest": "alias_delete",
                 "type": str,
@@ -481,7 +481,7 @@ ARGS = {
             "user_alias",
         ),
         (
-            "-T",
+            ("-T", "--tap"),
             {
                 "dest": "tap",
                 "help": "tap the VM power button",
@@ -491,7 +491,7 @@ ARGS = {
             "vm_tap",
         ),
         (
-            "-sl",
+            ("-sl", "--snaps"),
             {
                 "dest": "snaps",
                 "help": "list the Snapshots for the selected VM",
@@ -501,7 +501,7 @@ ARGS = {
             "vm_snap_list",
         ),
         (
-            "-st",
+            ("-st", "--snap-take"),
             {
                 "dest": "snap",
                 "type": str,
@@ -513,7 +513,7 @@ ARGS = {
             "vm_snap",
         ),
         (
-            "-sr",
+            ("-sr", "--snap-restore"),
             {
                 "dest": "snap_restore",
                 "type": str,
@@ -525,7 +525,7 @@ ARGS = {
             "vm_snap_restore",
         ),
         (
-            "-sd",
+            ("-sd", "--snap-del"),
             {
                 "dest": "snap_delete",
                 "type": str,
@@ -537,7 +537,7 @@ ARGS = {
             "vm_snap_delete",
         ),
         (
-            "-x",
+            ("-x", "--stop"),
             {
                 "dest": "stop",
                 "help": "softly stop the VM",
@@ -547,7 +547,7 @@ ARGS = {
             "vm_stop",
         ),
         (
-            "-xa",
+            ("-xa", "--stop-all"),
             {
                 "dest": "all_stop",
                 "help": "stop all running VMs",
@@ -557,7 +557,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-f",
+            ("-f", "--stop-force"),
             {
                 "dest": "stop_force",
                 "help": "force poweroff (halt) the VM",
@@ -567,7 +567,7 @@ ARGS = {
             "vm_stop",
         ),
         (
-            "-fa",
+            ("-fa", "--stop-force-all"),
             {
                 "dest": "all_force",
                 "help": "force poweroff (halt) all running VMs",
@@ -577,7 +577,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-t",
+            ("-t", "--timeout"),
             {
                 "type": int,
                 "dest": "timeout",
@@ -589,7 +589,7 @@ ARGS = {
             },
         ),
         (
-            "-s",
+            ("-s", "--start"),
             {
                 "dest": "start",
                 "help": "start the VM",
@@ -617,7 +617,7 @@ ARGS = {
             },
         ),
         (
-            "-r",
+            ("-r", "--restart"),
             {
                 "dest": "restart",
                 "help": "restart the VM",
@@ -627,7 +627,7 @@ ARGS = {
             "vm_restart",
         ),
         (
-            "-ra",
+            ("-ra", "--restart-all"),
             {
                 "dest": "all_restart",
                 "help": "restart all running VMs",
@@ -637,7 +637,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-R",
+            ("-R", "--reset"),
             {
                 "dest": "reset",
                 "help": "force reset the VM",
@@ -647,7 +647,7 @@ ARGS = {
             "vm_restart",
         ),
         (
-            "-Ra",
+            ("-Ra", "--reset-all"),
             {
                 "dest": "all_reset",
                 "help": "force reset all running VMs",
@@ -657,7 +657,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-q",
+            ("-q", "--hibernate"),
             {
                 "dest": "hibernate",
                 "help": "hibernate (suspend to disk) the VM",
@@ -667,7 +667,7 @@ ARGS = {
             "vm_hibernate",
         ),
         (
-            "-qa",
+            ("-qa", "--hibernate-all"),
             {
                 "dest": "all_hibernate",
                 "help": "hibernate (suspend to disk) all running VMs",
@@ -677,7 +677,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-ul",
+            ("-ul", "--usbs"),
             {
                 "dest": "usb_list",
                 "help": "list USB devices connected to the VM",
@@ -687,7 +687,7 @@ ARGS = {
             "vm_usb_list",
         ),
         (
-            "-u",
+            ("-u", "--usb-add"),
             {
                 "dest": "usb_add",
                 "help": "connect a USB device to the VM",
@@ -697,7 +697,7 @@ ARGS = {
             "vm_usb",
         ),
         (
-            "-ur",
+            ("-ur", "--usb-del"),
             {
                 "dest": "usb_delete",
                 "help": "disconnect a USB device from the VM",
@@ -707,7 +707,7 @@ ARGS = {
             "vm_usb",
         ),
         (
-            "-un",
+            ("-un", "--usb-name"),
             {
                 "type": str,
                 "dest": "usb_name",
@@ -718,7 +718,7 @@ ARGS = {
             },
         ),
         (
-            "-ui",
+            ("-ui", "--usb-id"),
             {
                 "type": int,
                 "dest": "usb_id",
@@ -729,7 +729,7 @@ ARGS = {
             },
         ),
         (
-            "-uv",
+            ("-uv", "--vendor"),
             {
                 "type": str,
                 "dest": "usb_vendor",
@@ -740,7 +740,7 @@ ARGS = {
             },
         ),
         (
-            "-up",
+            ("-up", "--product"),
             {
                 "type": str,
                 "dest": "usb_product",
@@ -751,7 +751,7 @@ ARGS = {
             },
         ),
         (
-            "-uc",
+            ("-uc", "--usb-clean"),
             {
                 "dest": "usb_clean",
                 "help": "remove all USB devices connected to the VM",
@@ -770,7 +770,7 @@ ARGS = {
             },
         ),
         (
-            "-k",
+            ("-k", "--input"),
             {
                 "type": str,
                 "dest": "input",
@@ -792,7 +792,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-c",
+            ("-c", "--connect"),
             {
                 "dest": "connect",
                 "help": "connect to the selected VM",
@@ -802,7 +802,7 @@ ARGS = {
             "vm_connect",
         ),
         (
-            "-cv",
+            ("-cv", "--vnc"),
             {
                 "dest": "connect_vnc",
                 "help": "connect to the selected VM (using VNC)",
@@ -821,7 +821,7 @@ ARGS = {
             },
         ),
         (
-            "-w",
+            ("-w", "--wake"),
             {
                 "dest": "wake",
                 "help": "resume the VM",
@@ -831,7 +831,7 @@ ARGS = {
             "vm_sleep",
         ),
         (
-            "-wa",
+            ("-wa", "--wake-all"),
             {
                 "dest": "all_wake",
                 "help": "resume all suspended VMs",
@@ -841,7 +841,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-z",
+            ("-z", "--suspend"),
             {
                 "dest": "sleep",
                 "help": "suspend the VM",
@@ -851,7 +851,7 @@ ARGS = {
             "vm_sleep",
         ),
         (
-            "-za",
+            ("-za", "--suspend-all"),
             {
                 "dest": "all_sleep",
                 "help": "suspend all running VMs",
@@ -861,7 +861,7 @@ ARGS = {
             "vm_all",
         ),
         (
-            "-es",
+            ("-es", "--schema"),
             {
                 "dest": "schema",
                 "help": "output the VM config file schema",
@@ -871,7 +871,7 @@ ARGS = {
             "example",
         ),
         (
-            "-e",
+            ("-e", "--example"),
             {
                 "dest": "example",
                 "help": "output a VM config file example",
@@ -881,7 +881,7 @@ ARGS = {
             "example",
         ),
         (
-            "-p",
+            ("-p", "--ping"),
             {
                 "dest": "ga_ping",
                 "help": "check the status of the QEMU Guest Agent",
@@ -891,7 +891,7 @@ ARGS = {
             "vm_ping",
         ),
         (
-            "-I",
+            ("-I", "--ifconfig"),
             {
                 "dest": "ga_ip",
                 "help": "retrive the VM IP addresses using the QEMU Guest Agent",
@@ -932,7 +932,7 @@ ARGS = {
     ],
     "locker": [
         (
-            "-b",
+            ("-b", "--blank"),
             {
                 "type": str,
                 "dest": "blank",
@@ -944,7 +944,7 @@ ARGS = {
             "config",
         ),
         (
-            "-kb",
+            ("-kb", "--blank-force"),
             {
                 "type": str,
                 "dest": "blank_force",
@@ -956,7 +956,7 @@ ARGS = {
             "config",
         ),
         (
-            "-l",
+            ("-l", "--lockscreen"),
             {
                 "type": str,
                 "dest": "lockscreen",
@@ -968,7 +968,7 @@ ARGS = {
             "config",
         ),
         (
-            "-kl",
+            ("-kl", "--lockscreen-force"),
             {
                 "type": str,
                 "dest": "lockscreen_force",
@@ -980,7 +980,7 @@ ARGS = {
             "config",
         ),
         (
-            "-s",
+            ("-s", "--suspend"),
             {
                 "type": str,
                 "dest": "suspend",
@@ -992,7 +992,7 @@ ARGS = {
             "config",
         ),
         (
-            "-ks",
+            ("-ks", "--suspend-force"),
             {
                 "type": str,
                 "dest": "suspend_force",
@@ -1004,7 +1004,7 @@ ARGS = {
             "config",
         ),
         (
-            "-z",
+            ("-z", "--hibernate"),
             {
                 "type": str,
                 "dest": "hibernate",
@@ -1016,7 +1016,7 @@ ARGS = {
             "config",
         ),
         (
-            "-kz",
+            ("-kz", "--hibernate-force"),
             {
                 "type": str,
                 "dest": "hibernate_force",
@@ -1028,7 +1028,7 @@ ARGS = {
             "config",
         ),
         (
-            "-d",
+            ("-d", "--lid"),
             {
                 "type": str,
                 "dest": "lid",
@@ -1040,7 +1040,7 @@ ARGS = {
             "config",
         ),
         (
-            "-kd",
+            ("-kd", "--lid-force"),
             {
                 "type": str,
                 "dest": "lid_force",
@@ -1052,7 +1052,7 @@ ARGS = {
             "config",
         ),
         (
-            "-y",
+            ("-y", "--key"),
             {
                 "type": str,
                 "dest": "key",
@@ -1064,7 +1064,7 @@ ARGS = {
             "config",
         ),
         (
-            "-ky",
+            ("-ky", "--key-force"),
             {
                 "type": str,
                 "dest": "key_force",
@@ -1076,7 +1076,7 @@ ARGS = {
             "config",
         ),
         (
-            "-f",
+            ("-f", "--freeze"),
             {
                 "type": str,
                 "dest": "freeze",
@@ -1088,7 +1088,7 @@ ARGS = {
             "config",
         ),
         (
-            "-kf",
+            ("-kf", "--freeze-force"),
             {
                 "type": str,
                 "dest": "freeze_force",
@@ -1100,7 +1100,7 @@ ARGS = {
             "config",
         ),
         (
-            "-C",
+            ("-C", "--clean"),
             {
                 "dest": "clear",
                 "help": "clear all current inhibitors",
@@ -1112,7 +1112,7 @@ ARGS = {
     ],
     "backup": [
         (
-            "-l",
+            ("-l", "--list"),
             {
                 "dest": "list",
                 "help": "list backup plans",
@@ -1122,7 +1122,7 @@ ARGS = {
             "default",
         ),
         (
-            "-a",
+            ("-a", "--advanced"),
             {
                 "dest": "advanced",
                 "help": "display detailed backup plan information",
@@ -1131,7 +1131,7 @@ ARGS = {
             },
         ),
         (
-            "-s",
+            ("-s", "--start"),
             {
                 "dest": "start",
                 "help": "start a backup",
@@ -1141,7 +1141,7 @@ ARGS = {
             "config",
         ),
         (
-            "-F",
+            ("-F", "--full"),
             {
                 "dest": "full",
                 "help": "force a full backup instead of the current state",
@@ -1150,7 +1150,7 @@ ARGS = {
             },
         ),
         (
-            "-x",
+            ("-x", "--stop"),
             {
                 "dest": "stop",
                 "help": "stop a backup",
@@ -1160,7 +1160,7 @@ ARGS = {
             "config",
         ),
         (
-            "-p",
+            ("-p", "--pause"),
             {
                 "dest": "pause",
                 "help": "pause a running backup",
@@ -1170,7 +1170,7 @@ ARGS = {
             "config",
         ),
         (
-            "-r",
+            ("-r", "--resume"),
             {
                 "dest": "resume",
                 "help": "resume a paused backup",
@@ -1180,7 +1180,7 @@ ARGS = {
             "config",
         ),
         (
-            "-f",
+            ("-f", "--force"),
             {
                 "dest": "force",
                 "help": "force a backup to start, even on battery",
@@ -1190,7 +1190,7 @@ ARGS = {
             "config",
         ),
         (
-            "-C",
+            ("-C", "--clear"),
             {
                 "dest": "clear",
                 "help": "clear backup database cache",
@@ -1200,7 +1200,7 @@ ARGS = {
             "config",
         ),
         (
-            "-d",
+            ("-d", "--dir"),
             {
                 "type": str,
                 "dest": "dir",
@@ -1224,7 +1224,7 @@ ARGS = {
     ],
     "reload": [
         (
-            "-a",
+            ("-a", "--all"),
             {
                 "dest": "all",
                 "help": "reload all system and user services",
@@ -1233,7 +1233,7 @@ ARGS = {
             },
         ),
         (
-            "-f",
+            ("-f", "--force"),
             {
                 "dest": "force",
                 "help": "do not prompt for conrifmation",
@@ -1244,7 +1244,7 @@ ARGS = {
     ],
     "brightness": [
         (
-            "-i",
+            ("-i", "--increase"),
             {
                 "dest": "increase",
                 "help": "increase the current Brightness level by 5%",
@@ -1253,7 +1253,7 @@ ARGS = {
             },
         ),
         (
-            "-d",
+            ("-d", "--decrease"),
             {
                 "dest": "decrease",
                 "help": "decrease the current Brightness level by 5%",
@@ -1262,7 +1262,7 @@ ARGS = {
             },
         ),
         (
-            "-s",
+            ("-s", "--set"),
             {
                 "type": str,
                 "dest": "brightness",

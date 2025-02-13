@@ -37,12 +37,14 @@
 # PowerCTL Module: Hydra
 #   Command line user module to configure and control Hydra VMs.
 
+from uuid import uuid4
 from time import sleep
 from os import fork, execl
 from os.path import basename
 from lib.util import nes, num
 from datetime import datetime
 from lib.util.file import read_json, expand
+from socket import socket, AF_UNIX, SOCK_STREAM
 from lib import print_error, send_message, check_error
 from lib.shared.hydra import load_vm, get_devices, valid_snap_name
 from lib.constants import (
@@ -80,248 +82,377 @@ from lib.constants.config import (
 )
 
 _CACHE = dict()
-# TODO(dij): Update this
-_SCHEMA = """# HydraVM Schema v2-release
+_SCHEMA = """# HydraVM Schema v3-release
+{
+    [BIOS Information, Section is Optional but Recommended]
+    "bios": {
+        "file"           <String[File Path], Optional>
+                          Supported values: Any valid file path.
 
-bios {
-    file            <String[File Path], Optional>
-        Supported values: Any valid file path
+                          This value allows for supplying a BIOS ROM file that can
+                          be used as the BIOS instead of the default QEMU BIOS.
 
-        This value allows for supplying a BIOS ROM file that can be
-        used as the BIOS instead of the default QEMU BIOS.
+                          This file must exist or the VM will fail during startup
+                          and must have the permissions 0o0644 if not owned, or
+                          0o0600 if owned.
 
-        This file must exist or the VM will fail during startup.
+        "secure_boot"    <Boolean, Optional[Default = false]>
+                          Enables the secure boot enabled UEFI vars file, if
+                          avaliable. Does nothing if "bios.file" is specified or
+                          if "uefi" is false.
 
-    version         <Integer, Optional[default= 1>
-        Supported values: 0 | 1 | 2
+        "type"           <Integer, Optional[Default = 1]>
+                          Supported values: Integer in the range 0 - 41.
 
-        This value indicates the version of the BIOS used for the
-        Virtual Machine. The primary usage of this is to enable or
-        disable UEFI boot, which by default is disabled.
+                          Specify the BIOS information type. Rarely needed for
+                          anything but specific VMs such as MacOS.
 
-    uefi            <Boolean, Optional[default= false]>
-        Supported values: false | true
+        "uefi"           <Boolean, Optional[Default = false]>
+                          Enables/Diasables the UEFI BIOS. If false, this disables
+                          the ability for secure boot and the "bios.vars" data.
 
-        Enables or Disables UEFI mode for the Virtual Machine. This
-        config option only is ONLY applicable if the setting
-        "bios.version" == 0.
-}
-cpu {
-    options         <List[string], Optional>
-        The value contains a string list of CPU flags that will be
-        added during the Virtual Machine building process. Each value
-        in the list can be prefixed with a '+' or '-' to indicate
-        enabled status. Omitting the prefix infers '+' or enabled.
-        The plus '+' sign can be used to enable a flag (which is the
-        same as omitting the prefix), while the minus '-' sign will
-        disable a flag.
+        "vars"           <String[File Path], Optional>
+                          Supported values: Any valid file path.
 
-        Supplied flags that are not valid for the CPU or host will
-        cause the VM to fail during startup.
+                          This value allows for supplying a UEFI BIOS variable
+                          storage file. If not present and UEFI is enabled, this
+                          file will be created and added automatically.
 
-    sockets         <Integer[default= 1]>
-        Supported values: Integer greater than zero (> 0)
+                          This file must exist or the VM will fail during startup
+                          and must have the permissions 0o0600 and must be directly
+                          owned by the user.
+    },
+    [CPU Information, Required]
+    "cpu": {
+        "auto_options"   <Boolean, Optional[Default = true]
+                          If true, basic CPU flags for maximum performance will be
+                          added. This may be modified by "cpu.saveable". The values
+                          in "cpu.options" will still be respected when true. For
+                          greater control of the CPU flags, this may be set to false
+                          to prevent any flags from being added automatically.
 
-    type            <String[default= "host"]>
-        Supported values: "host" | "kvm32" | "kvm64" | "qemu32" | "qemu64" |
-            "base" | "Broadwell" | "EPYC" | "Haswell" | [etc...]
-}
-dev {
-    bus             <String, Optional[default= "pci"]>
-        Supported values: "pci" | "pcie"
+        "options"        <List[String], Optional>
+                          The value contains a string list of CPU flags that will be
+                          added during the Virtual Machine building process.
 
-        Determines the underlying BUS technology type. It is recommended
-        to let Hydra pick this one based on the VM type.
+                          Each value in the list can be prefixed with a '+' or '-'
+                          to indicate enabled status. Omitting the prefix infers
+                          '+' or enabled. The plus '+' sign can be used to enable
+                          a flag (which is the same as omitting the prefix), while
+                          the minus '-' sign will disable a flag.
 
-    display         <String, Optional[default= "virtio"]>
-        Supported values: "std" | "cirrus" | "vmware" | "qxl" | "virtio" | "none"
+                          Supplied flags that are not valid for the CPU or host will
+                          cause the VM to fail during startup.
+        "saveable"       <Boolean, Optional[Default = false]>
+                          If true, any automatic CPU flags added that prevent snapshots
+                          of restoring a VM will be removed and will allow for snapshots
+                          of to be created. If false, the VM cannot be snapshotted,
+                          but will allow the incompatible CPU flags to be set.
 
-        Changes the specific type of VGA graphics driver used. This only
-        affects how the display is rendered and rendered. This may affect
-        resolution and performance. Setting this to "none" does NOT disable
-        the VNC or spice viewers.
+                          This option may be disabled depending on the "cpu.type"
+                          value.
 
-    input           <String, Optional[default= "standard"]>
-        Supported values: "standard" | "virtio" | "tablet" | "usb" | "mouse"
+        "sockets"        <Integer, Required[Default = 1]>
+                          Supported values: Integer greater than zero.
 
-    iommu           <Boolean, Optional[default= true]>
-        Supported values: false | true
+                          Specify the amount of CPU sockets avaliable for the VM.
 
-    sound           <Boolean, Optional[default= true]>
-        Supported values: false | true
+        "type"           <String, Required[Default = "host"]>
+                          Supported values: "host" | "kvm32" | "kvm64" | "qemu32" | "qemu64" |
+                           "base" | "Broadwell" | "EPYC" | "Haswell" | [etc...]
 
-    tpm             <String[File Path], Optional>
-        Supported values: Any valid file path
-}
-drives {
-    <String[name of disk]> {
-        file        <String[File Path]>
-            Supported values: Any valid file (non-executable, non-suid/guid) path
+                          Type/Model of CPU to use. This may have an impact on performance
+                          and the CPU flags that can be used.
+    },
+    [Device Information, Required]
+    "dev": {
+        "accel"          <String, Optional[Default = "kvm"]>
+                          Supported values: "kvm" | "xen" | "hax" | "hvf" | "nvmm" |
+                           "whpx" | "tcg"
 
-        index       <Integer, Optional[default= 0]>
-            Supported values: Any non-negative Integer
+                          Specify the accelerator used for the VM. The default value
+                          "kvm" will work for most configurations depending on the
+                          host hardware and kernel configuration.
 
-        type        <String, Optional[default= "ide"]>
-            Supported values: "ide" | "cd" | "iso" | "sata" | "scsi" | "virtio"
+        "bus"            <String, Optional[Default = "pcie"]>
+                          Supported values: "pci" | "pcie"
 
-        format      <String, Optional[default= "raw"]>
-            Supported values: "raw" | "qcow" | "qcow2" | "vmdk"
+                          Specify the underlying BUS technology type. It is recommended
+                          to let Hydra pick this one based on the "dev.type" value.
 
-        readonly    <Boolean, Optional[default= false]>
-            Supported values: false | true
+        "display"        <String, Optional[Default = virtio]>
+                          Supported values: "std" | "cirrus" | "vmware" | "qxl" | "virtio" |
+                           "none"
 
-        discard     <Boolean, Optional[default= false]>
-            Supported values: false | true
+                          Changes the specific type of graphics driver used. This
+                          only affects how the display is rendered. This may affect
+                          resolution and performance. Setting this to "none" does NOT
+                          disable the VNC or spice viewers.
 
-        direct      <Boolean, Optional[default= true]>
-            Supported values: false | true
-    }
-}
-memory {
-    size            <Integer, Optional[default= 1024]>
-        Supported values: Integer greater than zero (> 0)
+                          Some display drivers may cause issues with some hosts. The
+                          "gxl" driver for example, may cause BSODs in Windows VMs.
 
-        Size of memory allocated for the Virtual Machine in megabytes.
-        This defaults to 1024MB (1GB) if omitted.
+        "display_count"  <Integer, Optional[Default = 1]>
+                          Supported values: Integer greater than zero.
 
-        Values less than or equal to zero or values larger than the
-        host memory will cause the VM to fail during startup.
+                          Specify the number of virtual displays attached to the
+                          VM.
 
-    reserve         <Boolean, Optional[default= false]>
-        Supported values: false | true
+        "input"          <String, Optional[Default = "virtio"]>
+                          Supported values: "virtio" | "tablet" | "usb" | "mouse"
 
-        If true, this will indicate that the Virtual Machine ram "file"
-        will be preallocated in the "/dev/hugepages" memory mount (if
-        enabled). If preallocation fails, the VM will fail during startup.
-}
-network {
-    <String[name of interface]> {
-        mac     <String, Optional> = [mac address, 'aa:bb:cc:dd:ee:ff' format]
-            Supported values: Mac address in hexadecimal format.
+                          Specify the input device driver used. The default "virtio"
+                          driver will work for most VMs, but the "usb" or "tablet"
+                          driver may work better in some specific configurations.
 
-        type    <String, Optional[default= "intel"]>
-            Supported values: "intel" | "virtio" | "vmware" | [other]
+        "iommu"          <Boolean, Optional[Default = true]>
+                          If IOMMU is enabled on the host, setting this value to
+                          true will expose the native graphics device to the VM.
 
-        bridge  <String, Optional>
-            Supported values: Name of system bridge interface as String.
+        "osk"            <String, Optional>
+                          The OSK is the "magic" string value used when running
+                          a MacOS VM. Setting this value to a non-empty string will
+                          add an apple-smc device to the VM with the specified OSK.
 
-            This option can be used to bound the Virtual Machine interface
-            to a specific device instead of the default "vmi0" interface.
-            Hydra will be only responsible for adding the connection as the
-            bridge client, it is the caller's responsibility to ensure it is
-            configured and ready to use.
-    }
-}
-vm {
-    accel       <String, Optional[default= "kvm"]>
-        Supported values: "kvm" | "xen" | "hax" | "hvf" | "nvmm" | "whpx" | "tcg"
+        "sound"          <String | Boolean, Optional[Default = "usb"]>
+                          Supported values: true | false | "usb" | "virtio" | "intel" |
+                           "intel-duplex" | "none"
 
-        Specify the accelerator used for the Virtual Machine. Multiple
-        values may be provided (seperated by a comma) which will
-        attempt each one until one works properly. Default value is "kvm".
+                          Specify the sound driver used. The default "usb" represents
+                          a USB connected sound card. Other drivers may have better
+                          performance dependent on the VM OS and hardware. Every driver
+                          will connect to the launching user's audio session bus on
+                          startup.
 
-    binary      <String[File Path], Optional>
-        Supported values: Any valid file path
+                          This setting can have a String or Boolean value. The false
+                          value is the same as "none", otherwise true is the "usb" value.
 
-        Specify the path of the Virtual Machine Emulator to use. This
-        can be supplied to emulate different architecture or platform
-        types.
+        [TPM Information, Optional]
+        "tpm": {
+            "path":      <String[File Path], Optional>
+                          Supported values: Any valid file or device path.
 
-        If specified, the "hydra.unsafe" server config option
-        must be set to true and the provided path must exist in
-        the "hydra.allowed" server config option.
+                          Specify a path to a TPM device or an emulated TPM storage
+                          file.
 
-        Paths supplied must have root owner and group, cannot be
-        writable by group or other and must have execute permissions
-        for owner and group (ie: chmod 0755) in order to be executed.
+                          This path must exist or the VM will fail during startup.
+                          If the path is a file, it must be owned with the permissions
+                          0o0600, otherwise if this is a device the user must be in
+                          owning group for the device and it must have the permissions
+                          0o0640.
 
-    debug       <Bool, Optional>
-        Supported values: false | true
+            "software"   <Boolean, Optional[Default = false]>
+                          Indicate the "dev.tpm.path" value is a file that represents
+                          an emulated TPM device. If this value is not set when the
+                          path is a file, VM startup may fail.
+        }
+        "type"           <String, Required[Default = "q35"]>
+                          Supported values: "pc" | "microvm" | "q35" | "pc-i440fx-*" |
+                           "pc-q35-*" | "x-remote"
 
-    extra       <List[String], Optional> = [extra QEMU arguments]
-        Supported values: List of string command arguments to be added
+                          Specify the underlying VM hardware type. This value affects
+                          the hardware and devices that can be used. Changing this
+                          value may cause hardware changes and reconfigurations in
+                          VM OS's, especially Windows.
+    },
+    [Drive Information, Section is Optional but Recommended]
+    "drives": {
+        <String[Disk ID]>: {
+            "direct"     <Boolean, Optional[Default = true]>
+                          Specify if access to the underlying backing file or disk
+                          can be accessed directly by the VM. Setting this to true
+                          will increase the access speed of the selected disk, but
+                          may require more resources.
 
-        Extra arguments to be added to the command string for
-        QEMU. These are parsed directly and will are NOT shell
-        expanded.
+            "discard"    <Boolean, Optional[Default = true]>
+                          Specify if the "discard" command may be used on the backing
+                          file or disk. This is recommended if the backing store is,
+                          or is on a SSD device.
 
-        Requires the "hydra.unsafe" server config option to be
-        used. Extra lines are written to the system log under the
-        "info" level.
+            "file"       <String[File Path], Required>
+                          Supported values: Any valid file or device path.
 
-    name        <String, Optional>
-        Supported values: Virtual Machine name as a String
+            "format"     <String, Required[Default = "raw"]>
+                          Supported values: "raw" | "qcow" | "qcow2" | "vmdk"
 
-    spice       <Bool, Optional[default= true]>
-        Supported values: false | true
+                          Specify the disk format type. This will determine the
+                          featureset and read/write speeds avaliable.
 
-        This setting will enable/disable the SPICE client connector, which
-        allows for separate USB connectivity and full copy/paste between
-        the host and client.
+                          QCOW/QCOW2 disks have the ability to capture and restore
+                          snapshots, but are slower than "raw", which has no
+                          snapshot operations.
 
-    type        <String[default= "q35"]>
-        Supported values: "pc" | "microvm" | "q35" | "pc-i440fx-*" | "pc-q35-*" | "x-remote"
+            "index"      <Integer, Optional[Default = 0]>
+                          Supported values: Integer greater than zero.
 
-    uuid        <String[UUID], Optional>
-        Supported values: UUID String in a valid UUID4 format.
-}
-vmid        <Integer>
-        Supported values: Unique Integer greater than zero (> 0)
+                          Specify the boot order of this drive. The boot order
+                          starts from zero (0) and moves upward. Multiple drives
+                          may have the same boot order, but their evaluation order
+                          will differ depending on VM hardware.
 
-        ID value for the Virtual Machine. This value must be unique
-        across all local VMs and cannot be less than zero.
+                          If not specified, this value will be calculated to be
+                          the last valid boot index.
 
-        This value is used to indicate the VM in operations or via the
-        command line.
-"""
+            "readonly"   <Boolean, Optional[Default = false]>
+                          Specify if the backing file or disk is readonly. If
+                          the disk type is "iso", "cd" or does not have sufficient
+                          permission restrictions, it will automatically be mounted
+                          readonly.
+
+            "temp"       <Boolean, Optional[Default = false]>
+                          Specify if writes to the disk should be considered temporary.
+                          If true, this setting will make any writes to this disk only
+                          persist for the VM's running session. Once the VM is completely
+                          powered off an removed from the Hydra server state, the disk
+                          will still be the same state before launch.
+
+            "type"       <String, Required[Default = "ide"]>
+                          Supported values: "ide" | "cd" | "iso" | "sata" | "scsi" |
+                           "virtio" | "flash"
+
+                          Specify the bus connection type for this disk. Some bus
+                          connection types will not have support without an installed
+                          driver.
+
+                          The "iso" and "cd" values are special and will specifically
+                          mount the drive as an IDE disk drive in read only mode.
+
+                          The "flash" type will mounted as a "plash" disk instead of
+                          a "drive" type.
+        }
+    },
+    [Memory Information, Required]
+    "memory": {
+        "reserve"        <Boolean, Optional[Default = false]>
+                          If true, this will preallocate the VM memory backing "file"
+                          in "/dev/hugepages".
+
+                          This provides an increase in memory performance, but
+                          requires setup and kernel configuration of the "HugePages"
+                          driver. If preallocation fails, the VM will fail during
+                          startup.
+
+        "size"           <Integer, Required[Default= 1024]>
+                          Supported values: Integer greater than zero.
+
+                          Size of memory allocated for the Virtual Machine in MB.
+
+                          Values larger than the host memory will cause the VM
+                          to fail during startup.
+    },
+    [Network Information, Optional]
+    "network": {
+        <String[Disk ID]>: {
+            "mac"        <String[Mac Address (aa:bb:cc:dd:ee:ff)], Optional[Default = Random]>
+                          Supported values: Valid Mac Address in hexadecimal format.
+
+                          Specify the Mac (hardware) Address of this network interface.
+                          If not specified, this will be randomally generated.
+
+            "type"       <String, Required[Default = "intel"]>
+                          Supported values: "intel" | "virtio" | "vmware" | [other]
+
+                          Specify the network interface driver used. Some interface
+                          types will not have support without an installed driver.
+
+                          The "virtio" driver is a para-virtualized driver and provides
+                          the best network speed overall, but is the least compatible.
+        }
+    },
+    [Metadata Information, Section is Optional but Recommended]
+     "vm": {
+        "debug"          <Boolean, Optional[Default = true]>
+                          Sets the "debug" flag for the VM. This can be used for
+                          debugging VM startup problems. When enabled, the built
+                          configuration will be logged before runtime and the
+                          stderr/stdout logs will be capture and returned when
+                          the VM shuts down.
+
+                          The "--debug" command line flag, enables this option only
+                          for the specific VM runtime.
+
+        "name"           <String, Optional>
+                          Specify a well-known name to be used by this VM that
+                          can be used to identify and select it.
+
+        "spice"          <Boolean, Optional[Default = true]>
+                          Enable or diasable the Spice display protocol. If
+                          enabled, the Spice viewer can be used, which provides
+                          smoother display operation, Host<>VM Copy/Paste and
+                          easy USB connectivity. If this is disabled, attempting
+                          to use the Spice connection option will fail.
+
+        "uuid"           <String, Optional[Default = Random]>
+                          Specify a UUID for internal VM sorting and identification.
+
+                          This does not have to be a valid UUID string, but is
+                          recommended to be unique.
+    },
+    "vmid"               <Integer, Required>
+                          Supported values: Unique Integer greater than zero.
+
+                          Callable ID value for the VM. This value must be unique
+                          across all local VMs and cannot be less than zero.
+
+                          Similar to the "vm.name" option, this can be used to
+                          identify and select the VM.
+}"""
 _EXAMPLE = """{{
     "bios": {{
-        "uefi": false,
-        "version": 1
+        "secure_boot": true,
+        "uefi": true,
+        "vars": "uefi_vars.fd"
     }},
     "cpu": {{
+        "auto_options": false,
         "options": [],
+        "saveable": true,
         "sockets": 2,
         "type": "host"
     }},
     "dev": {{
         "bus": "pcie",
-        "display": "virtio",
-        "input": "standard",
+        "display": "qxl",
+        "display_count": 1,
+        "input": "virtio",
         "iommu": true,
-        "sound": true
+        "sound": true,
+        "tpm": {{
+            "path": "tpm.raw",
+            "software": true
+        }}
     }},
     "drives": {{
         "disk0": {{
-            "file": "disk0.raw",
-            "format": "raw",
+            "file": disk0.qcow2",
+            "format": "qcow2",
             "index": 0,
             "type": "virtio"
         }}
     }},
     "memory": {{
         "reserve": false,
-        "size": 1024
+        "size": 2048
     }},
     "network": {{
-        "eth0": {{
+        "en0": {{
             "type": "virtio"
         }}
     }},
     "vm": {{
         "accel": "kvm",
         "debug": false,
-        "spice": false,
-        "name": "ExampleVM",
-        "type": "q35"
+        "name": "My New VM",
+        "spice": true,
+        "type": "q35",
+        "uuid": "{uuid}"
     }},
     "vmid": {vmid}
-}}
-"""
+}}"""
 
 
 def _usb(e):
-    print(f'{"ID":>4} {"Device ID":12}{"Description":20}\n{"=" * 50}')
+    print(f'{"ID":>4} {"Device ID":12}{"Description":20}\n{"=" * 60}')
     if not isinstance(e, dict) or len(e) == 0:
         return
     d = get_devices()
@@ -331,25 +462,6 @@ def _usb(e):
         else:
             print(f"{v:4} {k:<12}{d[k].name:<20}")
     del d
-
-
-def _vm(x, p):
-    global _CACHE
-    if len(_CACHE) == 0:
-        d = read_json(expand(CONFIG_CLIENT), errors=False)
-        if isinstance(d, dict) and "hydra" in d and isinstance(d["hydra"], dict):
-            i = d["hydra"].get("aliases")
-            if isinstance(i, dict) and len(i) > 0:
-                for k, v in i.items():
-                    _CACHE[v.lower()] = k.title()
-            del i
-        _CACHE["__loaded"] = True
-        del d
-    if nes(p):
-        n = _CACHE.get(p.lower())
-        if isinstance(n, str) and len(n) > 0:
-            return f"{n} ({x})"
-    return f"VM({x})"
 
 
 def _time(n, s):
@@ -374,6 +486,31 @@ def _time(n, s):
     if m > 0:
         return f"{m}m {y}s"
     return f"{y}s"
+
+
+def _vm(x, n, p):
+    if nes(n):
+        if len(n) > 25:
+            return n[0:25]
+        return n
+    global _CACHE
+    if len(_CACHE) == 0:
+        d = read_json(expand(CONFIG_CLIENT), False, True)
+        if isinstance(d, dict) and "hydra" in d and isinstance(d["hydra"], dict):
+            i = d["hydra"].get("aliases")
+            if isinstance(i, dict) and len(i) > 0:
+                for k, v in i.items():
+                    _CACHE[v.lower()] = k.title()
+            del i
+        _CACHE["__loaded"] = True
+        del d
+    if nes(p):
+        v = _CACHE.get(p.lower())
+        if nes(v):
+            if len(v) > 25:
+                return v[0:25]
+            return v
+    return f"VM({x})"
 
 
 def _usb_vet(args):
@@ -490,7 +627,7 @@ def _usb_prompt(name, matches):
     print(f'Multiple devices match "{name}", please select from the list:')
     try:
         while True:
-            print(f'{"#":>4} {"Device ID":12}{"Description":20}\n{"=" * 50}')
+            print(f'{"#":>4} {"Device ID":12}{"Description":20}\n{"=" * 60}')
             for x in range(0, len(matches)):
                 v = f"{matches[x].vendor}:{matches[x].product}"
                 print(f"{x:4} {v:<12}{matches[x].name:<20}")
@@ -528,12 +665,12 @@ def _all(args, cmd, force=False):
         return print_error('Cannot perform a "set all" operation!', err)
     del p
     check_error(r, 'Cannot perform a "set all" operation')
-    print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 50}')
+    print(f'{"Name":26}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 60}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
         return True
     for x in r.vms:
         print(
-            f'{_vm(x["vmid"], x.get("path")):20}{x["vmid"]:<8}'
+            f'{_vm(x["vmid"], x["name"], x.get("path")):26}{x["vmid"]:<8}'
             f'{x["pid"] if x["pid"] is not None else EMPTY:<12}{x["status"].title():<12}'
         )
     del r
@@ -586,7 +723,7 @@ def example(args, schema=False):
             n = args.command
         if not nes(n):
             n = "[vmid]"
-        print(_EXAMPLE.format(vmid=n))
+        print(_EXAMPLE.format(vmid=n, uuid=str(uuid4())))
         del n
     return True
 
@@ -624,16 +761,18 @@ def vm_list(args):
         return print_error("Cannot retrive the VM list!", err)
     check_error(r, "Cannot retrive the VM list!")
     if not args.dmenu:
-        print(f'{"Name":20}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 50}')
+        print(f'{"Name":26}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 60}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
         return
     r.vms.sort(key=lambda x: x["vmid"])
     for x in r.vms:
         if args.dmenu:
-            print(f'{x["vmid"]}|{x["status"].title()}|{_vm(x["vmid"], x["file"])}')
+            print(
+                f'{x["vmid"]}|{x["status"].title()}|{_vm(x["vmid"], x["name"], x["file"])}'
+            )
             continue
         print(
-            f'{_vm(x["vmid"], x["file"]):20}{x["vmid"]:<8}'
+            f'{_vm(x["vmid"], x["name"], x["file"]):26}{x["vmid"]:<8}'
             f'{x["pid"] if x["pid"] is not None else EMPTY:<12}{x["status"].title()}'
         )
     del r
@@ -757,7 +896,7 @@ def vm_ip(args, vm=None):
         return print_error("Cannot retrive the IP from the VM!", err)
     check_error(r, "Cannot retrive the IP from the VM")
     print(
-        f'{_vm(r.vmid, r.file)} - {r.status.title()}\n\n{"Interface":16}IP Address\n{"=" * 32}'
+        f'{_vm(r.vmid, r.name, r.file)} - {r.status.title()}\n\n{"Interface":16}IP Address\n{"=" * 32}'
     )
     a = r.get("ips")
     del r
@@ -791,7 +930,7 @@ def vm_stop(args, vm=None):
     except OSError as err:
         return print_error("Cannot stop the VM!", err)
     check_error(r, "Cannot stop the VM")
-    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    print(f"{_vm(r.vmid, r.name, r.file)} - {r.status.title()}!")
     del r, vm
     return True
 
@@ -822,7 +961,7 @@ def vm_snap(args, vm=None):
     except OSError as err:
         return print_error("Cannot take Snapshot!", err)
     check_error(r, "Cannot take Snapshot")
-    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    print(f"{_vm(r.vmid, r.name, r.file)} - {r.status.title()}!")
     del r, vm
     return True
 
@@ -836,7 +975,7 @@ def vm_ping(args, vm=None):
         return print_error("Cannot ping the VM!", err)
     check_error(r, "Cannot ping the VM")
     print(
-        f'{_vm(r.vmid, r.file)} - Guest Agent {"" if r.get("ping", False) else "not "}Running!'
+        f'{_vm(r.vmid, r.name, r.file)} - Guest Agent {"" if r.get("ping", False) else "not "}Running!'
     )
     del r, vm
     return True
@@ -850,7 +989,7 @@ def vm_start(args, vm=None):
     except OSError as err:
         return print_error("Cannot start the VM!", err)
     check_error(r)
-    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    print(f"{_vm(r.vmid, r.name, r.file)} - {r.status.title()}!")
     del r, vm
     return True
 
@@ -876,7 +1015,7 @@ def vm_usb_clean(args, vm=None):
     except OSError as err:
         return print_error("Cannot remove all USB devices!", err)
     check_error(r, "Cannot remove all USB devices")
-    print(f"Removed all USB devices from {_vm(r.vmid, r.file)}.")
+    print(f"Removed all USB devices from {_vm(r.vmid, r.name, r.file)}.")
     del r, vm
     return True
 
@@ -930,7 +1069,7 @@ def vm_snap_delete(args, vm=None):
     except OSError as err:
         return print_error("Cannot delete Snapshot!", err)
     check_error(r, "Cannot delete Snapshot")
-    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    print(f"{_vm(r.vmid, r.name, r.file)} - {r.status.title()}!")
     del r, vm
     return True
 
@@ -947,7 +1086,7 @@ def vm_snap_restore(args, vm=None):
     except OSError as err:
         return print_error("Cannot restore Snapshot!", err)
     check_error(r, "Cannot restore Snapshot")
-    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}!")
+    print(f"{_vm(r.vmid, r.name, r.file)} - {r.status.title()}!")
     del r, vm
     return True
 
@@ -992,7 +1131,9 @@ def vm_usb(args, remove=False, vm=None):
         return print_error("Cannot perform USB operation!", err)
     check_error(r, "Cannot perform USB operation")
     if remove or args.usb_delete:
-        print(f'USB Device "ID-{args.usb_id}" was removed from {_vm(r.vmid, r.file)}!')
+        print(
+            f'USB Device "ID-{args.usb_id}" was removed from {_vm(r.vmid, r.name, r.file)}!'
+        )
     else:
         _usb(r.usb)
     del r, vm
@@ -1014,7 +1155,7 @@ def vm_sleep(args, wake=False, vm=None):
     except OSError as err:
         return print_error(f'Cannot {"resume" if w else "suspend"} the VM!', err)
     check_error(r, f'Cannot {"resume" if w else "suspend"} the VM')
-    print(f"{_vm(r.vmid, r.file)} - {r.status.title()}")
+    print(f"{_vm(r.vmid, r.name, r.file)} - {r.status.title()}")
     del r, w, vm
     return True
 
@@ -1032,6 +1173,20 @@ def vm_connect(args, vm=None, vnc=False):
         return True
     if r.status == "waiting":
         sleep(2)
+    v = f"{HYDRA_DIR}/{r.vmid}.{'vnc' if args.connect_vnc or vnc else 'spice'}"
+    for _ in range(0, 20):
+        # Try to open the socket up to 20 times to wait for the permissions to
+        # be fixed.
+        try:
+            s = socket(AF_UNIX, SOCK_STREAM)
+            s.connect(v)
+            s.close()
+            break
+        except OSError:
+            pass
+        finally:
+            del s
+        sleep(1)
     if args.connect_vnc or vnc:
         try:
             execl(
@@ -1039,7 +1194,7 @@ def vm_connect(args, vm=None, vnc=False):
                 basename(HYDRA_EXEC_VNC),
                 "FullscreenSystemKeys=0",
                 "Shared=1",
-                f"{HYDRA_DIR}/{r.vmid}.vnc",
+                v,
             )
         except OSError as err:
             return print_error("Cannot connect to the VM via VNC!", err)
@@ -1050,11 +1205,11 @@ def vm_connect(args, vm=None, vnc=False):
             HYDRA_EXEC_SPICE,
             basename(HYDRA_EXEC_SPICE),
             f"--title=VM{r.vmid}",
-            f"--uri=spice+unix:///var/run/smd/hydra/{r.vmid}.spice",
+            f"--uri=spice+unix://{v}",
         )
     except OSError as err:
         return print_error("Cannot connect to the VM via Spice!", err)
-    del r
+    del r, v
     return True
 
 

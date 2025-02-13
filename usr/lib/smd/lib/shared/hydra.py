@@ -158,7 +158,7 @@ def load_vm(path, config_path=None, server=False):
                 f'config file "{config_path}" has improper permissions: {err}'
             )
         del i
-        p, _ = _load_user_config(path, read_json(config_path))
+        p, _ = _load_user_config(path, read_json(config_path, sym=True))
         if nes(p):
             return p
         del p

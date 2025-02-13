@@ -212,7 +212,7 @@ class Background(object):
                     f'[m/background]: Cannot unlink the symlink path "{self._lockscreen}"!',
                     err,
                 )
-        remove_file(self._lockscreen)
+        remove_file(self._lockscreen, True)
         try:
             symlink(image, self._lockscreen)
         except OSError as err:

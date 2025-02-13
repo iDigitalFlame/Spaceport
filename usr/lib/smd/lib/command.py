@@ -239,7 +239,10 @@ def _load_powerctl(parser, directory):
                 for v in a:
                     if len(v) < 2:
                         continue
-                    r.add_argument(v[0], **v[1])
+                    if isinstance(v[0], (list, tuple)):
+                        r.add_argument(*v[0], **v[1])
+                    else:
+                        r.add_argument(v[0], **v[1])
                     if len(v) != 3:
                         continue
                     g = v[2]

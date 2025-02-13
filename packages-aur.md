@@ -1,5 +1,6 @@
 arduino
 cropgui
+dmg2img
 firefox-extension-canvasblocker-bin
 firefox-extension-foxyproxy
 firefox-extension-multi-account-containers

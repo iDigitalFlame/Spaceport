@@ -145,7 +145,7 @@ HOOKS_SERVER = {
 def _on_power():
     s = None
     try:
-        s = read(LOCKER_PATH_BATTERY, binary=True)
+        s = read(LOCKER_PATH_BATTERY, True)
     except OSError:
         return False
     else:
@@ -879,8 +879,8 @@ class LockerServer(object):
         write(
             LOCKER_PATH_STATUS,
             NEWLINE.join(self._lockers.keys()),
-            perms=0o0644,
             errors=False,
+            perms=0o0644,
         )
         if len(self._lockers) > 0:
             v = time()
@@ -1029,7 +1029,7 @@ class LockerServer(object):
         return True
 
     def setup_server(self, server):
-        write(LOCKER_PATH_STATUS, EMPTY, perms=0o0644, errors=False)
+        write(LOCKER_PATH_STATUS, EMPTY, errors=False, perms=0o0644)
         self._lid_path, self._lid = _find_lid_switch(server), None
         if not nes(self._lid_path):
             server.error(

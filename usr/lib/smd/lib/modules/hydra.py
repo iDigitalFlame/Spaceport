@@ -49,10 +49,10 @@ from signal import SIGCONT, SIGSTOP
 from lib.structs.storage import Storage
 from lib.structs.message import as_error
 from lib.util import nes, num, cancel_nul
-from os import chown, mkdir, chmod, remove
 from lib.util.exec import stop, nulexec, run
 from json import dumps, loads, JSONDecodeError
 from socket import socket, AF_UNIX, SOCK_STREAM
+from os import chown, mkdir, chmod, remove, stat
 from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
 from lib.shared.hydra import load_vm, get_devices, valid_snap_name
 from lib.constants.files import HYDRA_CONFIG_DNS, HYDRA_CONFIG_SMB
@@ -308,6 +308,7 @@ class VM(Storage):
         "_proc",
         "_wait",
         "_stpm",
+        "_name",
         "_state",
         "_event",
         "_agent",
@@ -332,10 +333,12 @@ class VM(Storage):
         # NOTE(dij): We don't wrap these as they're the same as an Error
         #            and they already provide context.
         #            Must be owner with exclusive access.
-        i.only(file=True).check(0o7177, uid, own_gid=True)
+        i.only(file=True).check(0o7177, uid, req=0o600, own_gid=True)
         # NOTE(dij): Verify that the host directory is also owned by the user
         #            and has write permissions.
-        info(dirname(path), sym=False).check(0o7027, uid, own_gid=True).only(dir=True)
+        info(dirname(path), sym=False).check(0o7027, uid, req=0o700, own_gid=True).only(
+            dir=True
+        )
         del i
         Storage.__init__(self, path, load=True)
         if not nes(self.get("vm.uuid")):
@@ -349,6 +352,7 @@ class VM(Storage):
         self._proc = None
         self._wait = 0
         self._stpm = None
+        self._name = self.get("vm.name")
         self._state = HYDRA_STATE_STOPPED
         self._event = None
         self._debug = False
@@ -403,6 +407,7 @@ class VM(Storage):
             "usb": self._usb,
             "vmid": self.vmid,
             "file": self.path(),
+            "name": self._name,
             "guest": self._agent,
             "status": s,
         }
@@ -464,7 +469,15 @@ class VM(Storage):
             chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
         except OSError:
             return False
-        return True
+        try:
+            a, b = stat(f"{self._path}.vnc"), stat(f"{self._path}.spice")
+            if a.st_mode & 0o0762 == 0o0762 and b.st_mode & 0o0762 == 0o0762:
+                return True
+        except OSError:
+            return False
+        finally:
+            del a, b
+        return False
 
     def _hibernate(self, server):
         if self._state == HYDRA_STATE_STOPPED:
@@ -672,12 +685,11 @@ class VM(Storage):
             server.error(f"[m/hydra/VM({self.vmid})]: Wait time reached, stopping VM!")
             self._stop(server, manager, True)
             self._state = HYDRA_STATE_STOPPED
-            server.notify(
+            return server.notify(
                 "Hydra VM Status",
                 f"VM({self.vmid}) failed to start!",
                 "virt-viewer",
             )
-            return
         if not self._socket_perms_set():
             return
         self._state = HYDRA_STATE_RUNNING
@@ -808,8 +820,13 @@ class VM(Storage):
             )
 
     def _build_bios(self, server, info, uid):
+        t = self.get("bios.type", 1)
+        if not isinstance(t, int):
+            t = 1
+        elif t > 0x29 or t < 0:
+            t = 1
         if not self.get("bios.uefi"):
-            return ["type=1"]
+            return [f"type={t}"]
         if nes(info.bios):
             f = info.bios
         else:
@@ -840,7 +857,7 @@ class VM(Storage):
             else:
                 self.bios["vars"] = v
         return [
-            f'type=1,uuid={self.get("vm.uuid")}',
+            f'type={t},uuid={self.get("vm.uuid")}',
             "-drive",
             f"if=pflash,id=efi0-bios,bus=0,format=raw,unit=0,readonly=on,file={f}",
             "-drive",
@@ -905,7 +922,7 @@ class VM(Storage):
         # NOTE(dij): Do stuff that requires a bunch of checking first.
         x = self._build_restriced(server, manager, uid)
         # NOTE(dij): If the above passes, we should be good!
-        b, t = self.get("dev.bus"), self.get("vm.type", "q35")
+        b, t = self.get("dev.bus"), self.get("dev.type", "q35")
         if not nes(b):
             if nes(t) and "q35" in t:
                 b = self.set("dev.bus", "pcie")
@@ -921,8 +938,13 @@ class VM(Storage):
             )
             if m:
                 c += ",migratable=yes,-invtsc"
-            else:
+            elif i or c == "max" or c.startswith("kvm") or c.startswith("qemu"):
+                # TODO(dij): Should we expand this list? ^
+                #            There might be more CPUs that can support this value, but
+                #            we'd need a test criteria.
                 c += ",migratable=no,hv_passthrough"
+            else:
+                c += ",hv_passthrough"
         if i:
             c = f"{c},l3-cache=on"
         del i
@@ -952,6 +974,7 @@ class VM(Storage):
             f"user={HYDRA_USER}",
             "-smbios",
         ] + self._build_bios(server, x, uid)
+        w = self._name if nes(self._name) else f"hydra-vm-{self.vmid}"
         r += [
             "-enable-kvm",
             "-nographic",
@@ -963,7 +986,7 @@ class VM(Storage):
             "base=localtime,clock=host",
             "-machine",
             f'type={t},mem-merge=on,dump-guest-core=off,nvdimm=off,{"hpet=off,vmport=on," if x.intel else ""}'
-            f'hmat=off,suppress-vmdesc=on,accel={self.get("vm.accel", "kvm")}',
+            f'hmat=off,suppress-vmdesc=on,accel={self.get("dev.accel", "kvm")}',
             "-m",
             f"size={x.memory}",
             "-cpu",
@@ -973,7 +996,7 @@ class VM(Storage):
             "-uuid",
             self.get("vm.uuid"),
             "-name",
-            f'"{self.get("vm.name", f"hydra-vm-{self.vmid}")}",debug-threads=off',
+            f'"{w}",debug-threads=off',
             "-pidfile",
             f"{self._path}.pid",
             "-display",
@@ -1010,6 +1033,7 @@ class VM(Storage):
             "-sandbox",
             "on,obsolete=deny,spawn=deny",
         ]
+        del w
         if x.reserve is not None:
             r += ["-mem-path", x.reserve, "-mem-prealloc"]
         if x.bios is not None:
@@ -1107,7 +1131,7 @@ class VM(Storage):
         s = self.get("dev.sound", True)
         # "dev.sound" = false will disable this.
         # When it's true, we use the default sound device.
-        if s is not None and s:
+        if s is not None and s and s != "none":
             r += [
                 "-audiodev",
                 f"driver=pa,id=audio0,server=/var/run/user/{uid}/pulse/native",
@@ -1139,25 +1163,25 @@ class VM(Storage):
         del m
         i = self.get("dev.input", "virtio")
         if i == "tablet":
-            r += ["-device", "usb-tablet,id=tablet0,bus=usb-bus2.0,port=1"]
+            r += ["-device", "usb-tablet,id=input0,bus=usb-bus2.0,port=1"]
         elif i == "mouse":
             r += [
                 "-device",
-                f"virtio-mouse-pci,id=tablet0,bus={b}.0,addr=0x0a",
+                f"virtio-mouse-pci,id=input0,bus={b}.0,addr=0x0a",
             ]
         elif i == "usb":
             r += [
                 "-device",
-                "usb-mouse,id=tablet0,bus=usb-bus2.0,port=1",
+                "usb-mouse,id=input0,bus=usb-bus2.0,port=1",
                 "-device",
-                "usb-kbd,id=tablet1,bus=usb-bus2.0,port=2",
+                "usb-kbd,id=input1,bus=usb-bus2.0,port=2",
             ]
         else:
             if i != "virtio":
                 self.set("dev.input", "virtio")
             r += [
                 "-device",
-                f"virtio-tablet-pci,id=tablet0,bus={b}.0,addr=0x0a",
+                f"virtio-tablet-pci,id=input0,bus={b}.0,addr=0x0a",
             ]
         del i
         if self.get("vm.spice", True):
@@ -1168,7 +1192,8 @@ class VM(Storage):
             r += [
                 "-spice",
                 f"unix=on,addr={self._path}.spice,disable-ticketing=on,playback-compression=off,"
-                "image-compression=off,gl=on,agent-mouse=on",
+                "image-compression=off,gl=on,agent-mouse=on,disable-copy-paste=off,seamless-migration=on,"
+                "disable-agent-file-xfer=off",
                 "-chardev",
                 "spicevmc,id=spice0,name=vdagent",
                 "-device",
@@ -1357,10 +1382,10 @@ class VM(Storage):
         f = expand(self.get("bios.file"))
         if nes(f):
             # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0640
+            #            Can only be a file owned by the calling user that has 0o0400
             #            permissions.
             info(f, False, hide=True).check_if_owner(
-                0o7137, uid, hide=True
+                0o7177, uid=uid, req=0o0400, hide=True
             ).check_if_not_owner(uid, 0o7133, req=0o0644, hide=True).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
@@ -1368,9 +1393,11 @@ class VM(Storage):
         q = expand(self.get("bios.vars"))
         if nes(q):
             # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0640
+            #            Can only be a file owned by the calling user that has 0o0600
             #            permissions.
-            info(q, False, hide=True).check(0o7137, uid, hide=True).only(file=True)
+            info(q, False, hide=True).check(
+                0o7137, uid, hide=True, req=0o600, own_gid=True
+            ).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
             q = None
@@ -1401,7 +1428,9 @@ class VM(Storage):
                 # NOTE(dij): Security Check
                 #            Virtual TPM file. Can only be a file owned by the
                 #            calling user that has 0o0600 permissions.
-                i.check(0o7177, uid, hide=True, own_gid=True).only(file=True)
+                i.check(0o7177, uid, hide=True, req=0o0600, own_gid=True).only(
+                    file=True
+                )
             else:
                 # NOTE(dij): Security Check
                 #            Can only be a TPM chardev device that is not owned by
@@ -1437,9 +1466,9 @@ class VM(Storage):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0600
             #            permissions. The file must also be owned by the user's primary group.
-            info(k, False, hide=True).check(0o7177, uid, hide=True, own_gid=True).only(
-                file=True
-            )
+            info(k, False, hide=True).check(
+                0o7177, uid, hide=True, req=0o600, own_gid=True
+            ).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
             k = None
@@ -1448,9 +1477,9 @@ class VM(Storage):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0600
             #            permissions. The file must also be owned by the user's primary group.
-            info(d, False, hide=True).check(0o7177, uid, hide=True, own_gid=True).only(
-                file=True
-            )
+            info(d, False, hide=True).check(
+                0o7177, uid, hide=True, req=0o0600, own_gid=True
+            ).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
             d = None
@@ -1459,9 +1488,9 @@ class VM(Storage):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0600
             #            permissions. The file must also be owned by the user's primary group.
-            info(o, False, hide=True).check(0o7177, uid, hide=True, own_gid=True).only(
-                file=True
-            )
+            info(o, False, hide=True).check(
+                0o7177, uid, hide=True, req=0o0600, own_gid=True
+            ).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
             o = None
@@ -1552,7 +1581,7 @@ class VM(Storage):
             v.no(dir=False, link=False, char=False, hide=True)
             if v.isfile:
                 if d["type"] == "cd" or d["type"] == "iso":
-                    v.check(0o7133, req=0o0640)
+                    v.check(0o7133, req=0o0400)
                 elif v.uid == uid:
                     v.check_if(d.get("readonly", False), 0o7133, req=0o0440).check_if(
                         not d.get("readonly", False),

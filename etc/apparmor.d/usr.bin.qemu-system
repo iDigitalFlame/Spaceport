@@ -75,6 +75,7 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
     /sys/module/vhost/parameters/max_mem_regions                           r,
     /sys/devices/**/usb*/**/{manufacturer,serial,product}                  r,
 
+    /proc/1/cmdline                                                        r,
     /proc/sys/vm/max_map_count                                             r,
     /proc/sys/kernel/random/boot_id                                        r,
 

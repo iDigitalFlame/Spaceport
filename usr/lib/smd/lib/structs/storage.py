@@ -154,8 +154,17 @@ class Flex(object):
             pass
         return self._data.get(name)
 
-    def load(self, path, errors=True):
-        d = read_json(path, errors=errors)
+    def __setitem__(self, name, value):
+        if Flex.__reserved(name):
+            # NOTE(dij): Let's raise an error so we can catch anything attempting
+            #            to add an invalid attribute.
+            raise ValueError(f'cannot use reserved name "{name}"')
+        if not isinstance(name, str):
+            return self._data.__setitem__(name, value)
+        return self.__get(name, value, True, False)
+
+    def load(self, path, errors=True, sym=True):
+        d = read_json(path, errors, sym)
         try:
             if not isinstance(d, dict):
                 if not errors:
@@ -165,15 +174,6 @@ class Flex(object):
         finally:
             del d
         return True
-
-    def __setitem__(self, name, value):
-        if Flex.__reserved(name):
-            # NOTE(dij): Let's raise an error so we can catch anything attempting
-            #            to add an invalid attribute.
-            raise ValueError(f'cannot use reserved name "{name}"')
-        if not isinstance(name, str):
-            return self._data.__setitem__(name, value)
-        return self.__get(name, value, True, False)
 
     def __get(self, name, value, set, set_non_exist):
         if "." not in name:
@@ -217,8 +217,8 @@ class Flex(object):
             return self._data.get(name, default)
         return self.__get(name, default, False, set_non_exist)
 
-    def save(self, path, errors=True, indent=4, sort=True, perms=None):
-        write_json(path, self._data, errors, indent, sort, perms)
+    def save(self, path, errors=True, indent=4, sort=True, perms=None, sym=True):
+        write_json(path, self._data, errors, indent, sort, perms, sym)
 
 
 class Storage(Flex):
@@ -239,7 +239,7 @@ class Storage(Flex):
     def load(self, path=None, errors=True):
         super(__class__, self).load(path if nes(path) else self._file, errors)
 
-    def save(self, path=None, errors=True, indent=4, sort=True, perms=None):
+    def save(self, path=None, errors=True, indent=4, sort=True, perms=None, sym=True):
         super(__class__, self).save(
-            path if nes(path) else self._file, errors, indent, sort, perms
+            path if nes(path) else self._file, errors, indent, sort, perms, sym
         )

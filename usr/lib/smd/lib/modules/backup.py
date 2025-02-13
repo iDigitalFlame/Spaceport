@@ -203,6 +203,7 @@ class Plan(object):
         "id",
         "dir",
         "key",
+        "vars",
         "keep",
         "uuid",
         "path",
@@ -265,6 +266,9 @@ class Plan(object):
             self.keep = False
         elif not isinstance(self.keep, (bool, int)):
             self.keep = boolean(self.keep)
+        self.vars = data.get("vars")
+        if self.vars is not None and not isinstance(self.vars, dict):
+            self.vars = None
         self.debug = boolean(data.get("debug"))
         self.description = data.get("description")
         self.cmd_pre, self.cmd_post = data.get("command_pre"), data.get("command_post")
@@ -530,7 +534,7 @@ class Multi(object):
 
 
 class Plans(object):
-    __slots__ = ("dir", "key", "upload", "entries", "storage", "updated")
+    __slots__ = ("dir", "key", "vars", "upload", "entries", "storage", "updated")
 
     def __init__(self, file):
         self.updated, self.entries = False, list()
@@ -559,12 +563,15 @@ class Plans(object):
             self.dir = BACKUP_DEFAULT_DIR
         self.upload = Upload(u) if isinstance(u, dict) and len(u) > 0 else None
         del u
+        self.vars = self.storage.get("vars")
+        if self.vars is not None and not isinstance(self.vars, dict):
+            self.vars = None
         self.key = self.storage.get("public_key")
         if not nes(self.key):
             return
         if not isabs(self.key):
             raise ValueError('plan "public_key" value must be a full path')
-        info(self.key).only(file=True).check(0o01377, 0, 0)
+        info(self.key).only(file=True).check(0o01377, 0, 0, 0o400)
 
     def save(self, server):
         if self.storage is None:
@@ -577,7 +584,7 @@ class Plans(object):
 
     def status(self, server, queue, current):
         try:
-            s = read_json(BACKUP_STATE, errors=False)
+            s = read_json(BACKUP_STATE, False)
             if not isinstance(s, dict):
                 s = dict()
         except OSError as err:
@@ -716,6 +723,7 @@ class Backup(object):
         "id",
         "_key",
         "_dir",
+        "_vars",
         "_plan",
         "_proc",
         "_last",
@@ -732,10 +740,11 @@ class Backup(object):
         "_increment",
     )
 
-    def __init__(self, work, key, upload, plan, inc):
+    def __init__(self, work, key, upload, vars, plan, inc):
         self.id = plan.id
         self._key = plan.key if nes(plan.key) else key
         self._dir = plan.dir if nes(plan.dir) else work
+        self._vars = vars.copy() if isinstance(vars, dict) else dict()
         self._plan = plan
         self._proc = None
         self._last = None
@@ -752,6 +761,11 @@ class Backup(object):
         self._upload = plan.upload if plan.upload is not None else upload
         self._timeout = None
         self._increment = inc
+        if isinstance(plan.vars, dict):
+            self._vars.update(plan.vars)
+        self._vars["BACKUP_ID"] = self.id
+        self._vars["BACKUP_DIR"] = self._dir
+        self._vars["BACKUP_PATH"] = self._path
 
     def paused(self):
         return self._paused.is_set()
@@ -764,7 +778,7 @@ class Backup(object):
 
     def start(self, server):
         if self._upload and not self._upload.check():
-            raise ConnectionError()
+            raise ConnectionError("invalid upload configuration")
         if isdir(self._path):
             try:
                 rmtree(self._path)
@@ -924,7 +938,7 @@ class Backup(object):
 
     def save(self, server, file):
         try:
-            s = read_json(file, errors=True)
+            s = read_json(file)
         except OSError as err:
             server.warning(
                 f"[m/backup/job/{self.id}]: Cannot read the Backup state file!", err
@@ -1236,14 +1250,7 @@ class Backup(object):
     def _step_pre_cmd(self, server):
         if not self._update(server, BACKUP_STATE_PRE_CMD):
             return
-        c = split(
-            self._plan.cmd_pre,
-            env={
-                "BACKUP_ID": self.id,
-                "BACKUP_DIR": self._dir,
-                "BACKUP_PATH": self._path,
-            },
-        )
+        c = split(self._plan.cmd_pre, env=self._vars)
         if c is None:
             server.warning(
                 f'[m/backup/job/{self.id}]: Ignoring pre-start command type "{type(self._plan.cmd_pre)}"!'
@@ -1476,14 +1483,7 @@ class Backup(object):
     def _start_post_cmd(self, server):
         if self._plan.cmd_post is None:
             return self._next(server)
-        c = split(
-            self._plan.cmd_post,
-            env={
-                "BACKUP_ID": self.id,
-                "BACKUP_DIR": self._dir,
-                "BACKUP_PATH": self._path,
-            },
-        )
+        c = split(self._plan.cmd_post, env=self._vars)
         if c is None:
             server.warning(
                 f'[m/backup/job/{self.id}]: Ignoring post-backup command type "{type(self._plan.cmd_pre)}"!'
@@ -2019,7 +2019,7 @@ class BackupServer(object):
         except (OSError, ValueError) as err:
             server.error("[m/backup]: Cannot read the Backup config!", err)
             return as_error("Cannot load the Backup config!")
-        s = read_json(BACKUP_STATE, errors=False)
+        s = read_json(BACKUP_STATE, False)
         if not isinstance(s, dict):
             server.warning(
                 "[m/backup]: Cannot read/parse the Backup state file, using empty state!"
@@ -2058,7 +2058,7 @@ class BackupServer(object):
             return as_error("Cannot write the Backup state")
         finally:
             del s
-        self._current = Backup(p.dir, p.key, p.upload, n, i)
+        self._current = Backup(p.dir, p.key, p.upload, p.vars, n, i)
         server.info(
             f'[m/backup]: Starting Backup {n} as a{"n incremental" if i else " full"} backup!'
         )
