@@ -80,10 +80,10 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     deny network,
 
     deny /dev/tty                                              rw,
-    deny @{HOME}/.private/keepassxc.ini                        w,
-    deny @{HOME}/.local/lib/keepassxc.ini                      w,
-    deny @{CONFIG}/keepassxc/keepassxc.ini                     w,
-    deny @{HOME}/.c{ache,onfig}/keepassxc/keepassxc.ini        w,
+    deny @{HOME}/.private/keepassxc.{conf,ini}                 w,
+    deny @{HOME}/.local/lib/keepassxc.{conf,ini}               w,
+    deny @{CONFIG}/keepassxc/keepassxc.{conf,ini}              w,
+    deny @{HOME}/.c{ache,onfig}/keepassxc/keepassxc.{conf,ini} w,
 
     include if exists <local/usr.bin.keepassxc>
 }

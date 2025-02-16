@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
+    include <abstractions/fonts>
     include <abstractions/nameservice>
     include <abstractions/user-data-ro>
 
