@@ -9,27 +9,36 @@ The System Management Daemon (SMD) is a system that allows for management of man
 Including brightness, networking, bluetooth, wireless, sleep, cpu and virtual machines.
 SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec directories.
 
-## Required Packages (Arch Specific)
+## Packages
 
+### System Required
+
+- apparmor
+- bluez
+- bluez-utilsutil-linux
 - dash
+- dhcpcd
 - dnsmasq
 - edk2-ovmf
-- flatery-icon-theme-git
-- git
-- git-lfs
-- gnome-keyring
-- imagemagick
+- fakeroot
 - iproute2
 - iptables-nft
-- kora-icon-theme
 - logrotate
+- mkinitcpio
+- networkmanager
+- openssh
 - openssl
 - pacman-contrib
-- pipewire
+- pam-u2f
+- pipewire-alsa
 - pipewire-pulse
+- pipewire-v4l2
+- polkit
 - python
 - python-gobject
-- qemu-audio-pipewire
+- python-notify2python-psutilefitools
+- qemu-audio-alsa
+- qemu-audio-pa
 - qemu-audio-spice
 - qemu-base
 - qemu-chardev-spice
@@ -40,30 +49,67 @@ SMD is located in usr/lib and can be invoked from the bin and usr/lib/libexec di
 - qemu-hw-usb-host
 - qemu-hw-usb-redirect
 - qemu-vhost-user-gpu
+- reflector
 - rsync
 - samba
 - sbsigntools
-- spice-gtk
-- sudo
-- swaybg
-- swayfx (or sway)
-- swayidle
+- spice
 - swtpm
+- systemd
 - tar
-- vimix-cursors
-- waybar
+- wireless-regdb
 - wireplumber
+- zstd
 
-## Recommended Packages
+#### Optional
 
-- blueman
-- bluez
+- btrfs-progs
+- lvm2
+- xfsprogs
+
+### Optional Intel Drivers
+
+- intel-media-driver
+- intel-ucode
+- libva-intel-driver
+- linux-firmware
+- mesa
+- vulkan-intel
+
+### User Required
+
+- gnome-keyring
+- grim
+- gtklock
+- imagemagick
 - libsecret
-- NetworkManager
 - network-manager-applet
-- yay
+- qt5-wayland
+- qt6-wayland
+- rofi-wayland
+- slurp
+- spice-gtk
+- swaybg
+- swayfx
+- swayidle
+- swaync
+- tigervnc
+- waybar
+- wl-clipboard
+- xdg-desktop-portal-wlr
+- xdg-utils
+- xorg-xwayland
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z4121TDS)
+### Theme Optional
+
+- flatery-icon-theme-git
+- kora-icon-theme
+- noto-fonts-emoji
+- otf-fira-mono
+- otf-font-awesome-4
+- ttf-hack-nerd
+- ttf-roboto
+- vimix-cursors
 
 ### Hydra Secureboot Config
 
@@ -79,3 +125,5 @@ and extract it to get the `OVMF_VARS_4M.ms.fd` file, which can then be copied to
 
 You can also just copy that over your VM specific `bios.vars` file (defaults to
 `uefi_vars.fd` in the VM folder) if you want it VM specific.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z4121TDS)

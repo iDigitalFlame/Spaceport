@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <title>New Tab</title>
+        <style type="text/css">
+            body {
+                margin: 0;
+                padding: 0;
+                background: transparent;
+            }
+            #time {
+                color: #FFF;
+                font-size: 64px;
+                font-weight: bold;
+                text-align: center;
+                font-family: monospace;
+                padding: 50px 0 20px 0;
+                text-shadow: 5px 5px 5px #000
+            }
+            #quote {
+                color: #FFF;
+                font-size: 12px;
+                text-align: center;
+                font-style: italic;
+                padding: 0 10px 20px 10px;
+                text-shadow: 2px 2px 2px #000;
+                font-family: Arial, Helvetica, sans-serif
+            }
+            #center {
+                width: 30%;
+                min-width: 300px;
+                border-radius: 15px;
+                margin: 250px auto 0;
+                background: rgba(10, 0, 10, 0.25)
+            }
+        </style>
+        <script type="text/javascript">
+            const quotes = [
+                "Don't Panic.",
+                "Be the Light in the Darkness.",
+                "Problems end up in the the hospital, prison or the morgue. Everything else is just an inconvenience.",
+                "If you get tired, learn to rest, not to quit.",
+                "Hard work many not always result in success, but it will never result in regret.",
+                "Don't cling to a mistake just because you spent a lot of time making it.",
+                "The best revenge is massive success.",
+                "A river cuts through rock, not because of its power, but because of its persistence.",
+                "Just because you haven't got it all figured out, doesn't mean you never will. Some day you may even look back and wonder why you were ever worried.",
+                "Just because you took longer than others, doesn't mean you failed. Remember that.",
+                "Just because you took longer than others, doesn't mean you failed. Remember that.",
+                "Don't give up, you've still got a couple of motherfuckers to prove wrong.",
+                "For what it's worth: It's never too late to be whoever you want to be. I hope you live a life you're proud of and if you find that you're not, I hope you have the strength to startover.",
+                "Sometimes it takes 10 years to get that 1 year that will change your life.",
+                "If you look for the light, you can often find it. But if you look for the dark, that is all you will ever see.",
+                "Accept your past without regret, handle your present with confidence, and face your future without fear.",
+                "If you're having a bad day, Take a deep breath. Remember.. It's just a bad day, not a badlife.",
+                "Don't ever let somebody tell you that you can't do something. You got a dream, you gotta protect it. People can't do something themselves, they wanna tell you you can't do it. If you want something, go get it. Period.",
+                "After all these years I've started to feel better about myself, and so can you.",
+                "One day you'll wake up and there won't be any more time to do the things you've always wanted. Do it now.",
+                "It's easy to do permanent damage, when you're temporarily upset.",
+                "Live the life YOU wanna live, not the life other people want you to live.",
+                "You don't have to burn yourself to warm others.",
+                "Life is unethical, if you're trying to be ethical, you're playing with a disability.",
+                "Life is 10% what happens to you, and 90% of how you react to it.",
+                "They walked across the bridge that their parents built to the promised land, burned it down behind them, then judged millennials for not being able to fly.",
+                "Don't take advice from anyone you wouldn't want to look like.",
+                "If you try, you risk failure. If you don't, you ensure it.",
+                "One day you will be grateful that things didn't work out the way you once wanted them to.Never give up, work hard, dream big.",
+                "Your value doesn't decrease based on someone's inability to see your worth.",
+                "Sometimes I feel like giving up, then I remember I have a lot of motherfuckers to prove wrong.",
+                "You can lie down for people to walk on you and you they will on you and they will still complain that you're not flat enough. Live your life.",
+                "Sometimes, you're going to be the villain in someone elses story.",
+                "If you wait until you're ready, you'll be waiting the rest of your life.",
+                "If you can't do anything about it, then let it go. Don't be a prisoner to the things you can't change.",
+                "If you want to fly, you must give up everything that weighs you down.",
+                "You get in life what you have the courage to ask for.",
+                "Don't be scared to be ambitious. It's not a humiliation to have a high target and to fail. The real humiliation is to have a target and not give everything to reach it.",
+                "A winner is a loser who tried one more time.",
+                "There are no shortcuts to real success, you have to choose the hard road, because the easy one will not get you exactly where you were aiming to land.",
+                "Give Yourself Time.",
+                "It's supposed to be hard. If it wasn't hard, everyone would do it. The hard is what makes it great.",
+                "There is nothing noble in being superior to your fellow men. True nobility lies in being superior to your former self.",
+                "Fear stops us from trying. We psych ourselves out by saying it needs to be perfect. But thats a lie.",
+                "Pain is inevitable. You either suffer the pain of discipline or the pain of regret. The difference is the pain of discipline is temporary while that of regret is permanent.",
+                "The best time to plant a tree was 20 years ago. The second best time is now.",
+                "The secret of change is to focus all of your energy not on fighting thr old, but on building the new.",
+                "I'm slowly becoming the person I should've been a long time ago.",
+                "Don't compare your life to others. There's no comparison between the sun and the moon. They shine when it's their time.",
+                "You're not a loser. You know what a loser is? A real loser is somebody that's so afraid of not winning, they don't even try.",
+                "Do not be afraid of dying, be afraid of living with nothing to die for.",
+                "The most important things aren't things.",
+                "It is the unemotional, reserved, calm, detached warrior who wins, not the hothead seeking vengeance and not the ambitious seeker of fortune.",
+                "Some people will never like you because your spirit irritates their demons.",
+                "Make peace with your past, so it won't disturb your future,",
+                "Don't compare your life to others, comparison is the thief of joy.",
+                "Stop thinking so much, it's alright not to know all the answers.",
+                "That night, I chose to live-not because I feared death, but because I had yet to conquer life.",
+                "The older I get, the more I understand that it's okay to live a life others don't understand.",
+                "Don't let the internet rush you. No one is posting their failures.",
+                "You look wonderful today.",
+            ];
+            function clock() {
+                let d = document.getElementById("time");
+                if (d !== null) {
+                    let v = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
+                    let s = (v.getSeconds() % 2 == 0) ? ":" : " "
+                    d.innerHTML = v.getHours().toString().padStart(2, "0") + "<span>" + s +"</span>" + v.getMinutes().toString().padStart(2, "0");
+                    setInterval(clock, 1000);
+                }
+            }
+            window.onload = function() {
+                let e = document.getElementById("quote");
+                if (e !== null) {
+                    e.innerText = quotes[Math.floor(Math.random() * quotes.length)];
+                }
+                clock();
+            };
+        </script>
+    </head>
+    <body>
+        <div id="center">
+            <div id="time"></div>
+            <div id="quote"></div>
+        </div>
+    </body>
+</html>

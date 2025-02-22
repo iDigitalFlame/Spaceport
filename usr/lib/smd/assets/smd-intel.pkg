@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## AppArmor Configuration
+## Pacman Base "container" package for SMD
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -33,9 +33,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+# Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
-/var/cache/python/{,**}            rw,
+pkgrel=1
+pkgver=1.2.0
+pkgname="smd-intel"
+pkgdesc="System Management Daemon driver packages for Intel devices"
 
-# Prevent saving any cache files outside of the cache dir, but allow var
-deny /[^var]*/**/*.pyc             rw,
-deny /[^var]*/**/__pycache__/*.pyc rw,
+url="https://github.com/iDigitalFlame/spaceport"
+arch=( "any" )
+license=( "GPL-3.0" )
+
+source=()
+noextract=()
+sha256sums=()
+
+depends=(
+    "intel-media-driver"
+    "intel-ucode"
+    "libva-intel-driver"
+    "linux-firmware"
+    "mesa"
+    "vulkan-intel"
+)

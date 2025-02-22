@@ -153,10 +153,10 @@ HYDRA_EXEC_SWTPM = "/usr/bin/swtpm"
 HYDRA_TPM_SIZE = 0x40C0
 
 HYDRA_VM_ARCH = {
-    "x64": "/usr/bin/qemu-system-x86_64",
-    "x86": "/usr/bin/qemu-system-i386",
     "arm": "/usr/bin/qemu-system-arm",
     "aarch64": "/usr/bin/qemu-system-aarch64",
+    "x64": "/usr/bin/qemu-system-x86_64",
+    "x86": "/usr/bin/qemu-system-i386",
 }
 
 HYDRA_FILE_SMB = f"{HYDRA_DIR}/smb.conf"
@@ -202,10 +202,10 @@ BRIGHTNESS_PATH_MAX = "/sys/class/backlight/intel_backlight/max_brightness"
 # Notification Module Constants
 NOTIFY_ICONS = {
     "error": "dialog-error.png",
-    "warn": "dialog-warning.png",
-    "warning": "dialog-warning.png",
     "info": "dialog-information.svg",
     "question": "dialog-question.png",
+    "warn": "dialog-warning.png",
+    "warning": "dialog-warning.png",
 }
 NOTIFY_EXTENSIONS = [".png", ".svg", ".jpg", ".gif", ".ico"]
 
@@ -243,14 +243,7 @@ BACKUP_DEFAULT_PORT = 22
 BACKUP_BATTERY_PATH = "/sys/class/power_supply/AC/online"
 BACKUP_BACKOFF_TIME = 900  # 15Min
 
-BACKUP_EXCLUDE = [
-    "/dev",
-    "/sys",
-    "/tmp",
-    "/run",
-    "/proc",
-    "/var/run",
-]
+BACKUP_EXCLUDE = ["/dev", "/proc", "/run", "/sys", "/tmp", "/var/run"]
 
 # Background Module Constants
 BACKGROUND_PATH_CACHE = "${HOME}/.cache/smd"

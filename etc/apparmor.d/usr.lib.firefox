@@ -40,12 +40,14 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     include <abstractions/chromium>
     include <abstractions/user-home>
 
+    @{sysconfig}/usr/lib/smd/assets/start.html                         r,
     @{sysconfig}/usr/lib/firefox/defaults/pref/*.{js,cfg}              r,
     @{sysconfig}/usr/lib/librewolf/defaults/pref/*.{js,cfg}            r,
 
     /                                                                  r,
     /etc/fstab                                                         r,
     /etc/mailcap                                                       r,
+    /usr/lib/smd/assets/start.html                                     r,
     /usr/lib/{firefox,librewolf}/{,**}                                 r,
 
     /sys/devices/pci*/**/                                              r,

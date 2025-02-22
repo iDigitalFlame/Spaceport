@@ -1,0 +1,124 @@
+################################
+### iDigitalFlame  2016-2025 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Pacman Base "container" package for SMD
+#
+# Copyright (C) 2016 - 2025 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# Maintainer: iDigitalFlame <idf@idigitalflame.com>
+
+pkgrel=1
+pkgver=1.2.0
+pkgname="smd"
+pkgdesc="System Management Daemon base packages"
+
+url="https://github.com/iDigitalFlame/spaceport"
+arch=( "any" )
+license=( "GPL-3.0" )
+
+source=()
+noextract=()
+sha256sums=()
+
+depends=(
+    ## Base
+    "dash"
+    "fakeroot"
+    "logrotate"
+    "mkinitcpio"
+    "pacman-contrib"
+    "polkit"
+    "python"
+    "python-gobject"
+    "reflector"
+    "systemd"
+
+    ## Backup
+    "openssh"
+    "rsync"
+    "tar"
+    "zstd"
+
+    ## Hydra
+    "dhcpcd"
+    "dnsmasq"
+    "edk2-ovmf"
+    "iproute2"
+    "qemu-audio-alsa"
+    "qemu-audio-pa"
+    "qemu-audio-spice"
+    "qemu-base"
+    "qemu-chardev-spice"
+    "qemu-hw-display-qxl"
+    "qemu-hw-display-virtio-gpu"
+    "qemu-hw-display-virtio-gpu-pci"
+    "qemu-hw-display-virtio-vga"
+    "qemu-hw-usb-host"
+    "qemu-hw-usb-redirect"
+    "qemu-vhost-user-gpu"
+    "samba"
+    "spice"
+    "swtpm"
+
+    ## Security / Hardening
+    "apparmor"
+    "iptables-nft"
+    "python-notify2" # aa-notify
+    "python-psutil"  # aa-notify
+
+    ## Secure Boot
+    "efitools"
+    "openssl"
+    "sbsigntools"
+
+    ## Wireless / Bluetooth
+    "bluez"
+    "bluez-utils"    # bluetoothctl
+    "util-linux"
+    "wireless-regdb"
+
+    ## Audio / Video
+    "pipewire-alsa"
+    "pipewire-pulse"
+    "pipewire-v4l2"
+    "wireplumber"
+
+    ## File System Utilities
+    "btrfs-progs"
+    "lvm2"
+    "xfsprogs"
+
+    ## Networking
+    "networkmanager"
+
+    ## Authentication
+    "pam-u2f" # YubiKey Login / Unlock
+)
