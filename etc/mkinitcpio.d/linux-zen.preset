@@ -38,7 +38,7 @@
 ALL_config="/etc/mkinitcpio.conf"
 ALL_kver="/boot/vmlinuz-linux-zen"
 
-PRESETS=("default" "fallback")
+PRESETS=( "default" "fallback" )
 
 default_uki="/boot/EFI/Linux/$(hostname)-zen.efi"
 default_options="--splash /usr/lib/smd/assets/boot-logo.bmp"

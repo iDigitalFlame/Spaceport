@@ -1,3 +1,4 @@
+#!/usr/bin/dash
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #
@@ -16,7 +17,6 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Pacman Group for Userspace Packages
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -33,54 +33,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-# Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
-pkgrel=1
-pkgver=1.2.0
-pkgname="smd-user"
-pkgdesc="System Management Daemon base userspace and client packages"
-
-url="https://github.com/iDigitalFlame/spaceport"
-arch=( "any" )
-license=( "GPL-3.0" )
-
-source=()
-noextract=()
-sha256sums=()
-
-depends=(
-    ## Wayland
-    "qt5-wayland"
-    "qt6-wayland"
-    "swayfx"                 # "sway"
-    "swaybg"
-    "swayidle"
-    "swaync"
-    "wl-clipboard"
-    "xorg-xwayland"
-    "xdg-desktop-portal-wlr"
-    "xdg-utils"
-
-    ## Screenshots / Clipping
-    "grim"
-    "slurp"
-
-    ## Hydra
-    "spice-gtk"
-    "tigervnc"
-
-    ## Lockscreen
-    "gtklock"
-    "imagemagick"
-
-    ## Networking
-    "network-manager-applet"
-
-    ## Keyring
-    "gnome-keyring"
-    "libsecret"
-
-    ## Navigation / UI
-    "rofi-wayland"
-    "waybar"
-)
+cat "/proc/sys/kernel/hostname"
