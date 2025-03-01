@@ -43,6 +43,8 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
+    /usr/bin/xdg-email                                     r,
+
     /proc/version                                          r,
 
     owner @{CONFIG}/mimeapps.list                          r,

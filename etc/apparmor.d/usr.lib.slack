@@ -56,6 +56,7 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected)
 
     owner @{HOME}/.config/Slack/{,**}                        rwkl,
 
+    /proc/self/exe                                           ixr,
     /usr/bin/xdg-open                                        Pix -> xdg-open,
     /usr/bin/electron*                                       ixr,
     /usr/bin/xdg-email                                       Pix -> xdg-email,

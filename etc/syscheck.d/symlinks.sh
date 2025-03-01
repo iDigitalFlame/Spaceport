@@ -72,7 +72,7 @@ linkcheck "/etc/fonts/conf.d/10-sub-pixel-rgb.conf" "/usr/share/fontconfig/conf.
 linkcheck "/etc/fonts/conf.d/11-lcdfilter-light.conf" "/usr/share/fontconfig/conf.avail/11-lcdfilter-light.conf"
 
 # Setup Links for Bin
-for module in $(/usr/bin/python3 ${BASE_DIR}/usr/lib/smd/bin/powerctl modules 2> /dev/null | grep -v log); do
+for module in $(/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO ${BASE_DIR}/usr/lib/smd/bin/powerctl modules 2> /dev/null | grep -v log); do
     linkcheck "/usr/local/bin/${module}" "${BASE_DIR}/usr/lib/smd/bin/powerctl"
     linkcheck "/usr/local/bin/${module}ctl" "${BASE_DIR}/usr/lib/smd/bin/powerctl"
     chown root:root "/usr/local/bin/${module}"

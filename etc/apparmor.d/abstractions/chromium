@@ -85,6 +85,7 @@ network                                                              inet6 strea
 /proc/sys/fs/inotify/max_user_watches                                r,
 /proc/sys/net/ipv6/conf/all/disable_ipv6                             r,
 
+owner /proc/@{pid}/exe                                               r,
 owner /proc/@{pid}/fd/                                               r,
 owner /proc/@{pid}/cgroup                                            r,
 owner /proc/@{pid}/cmdline                                           r,
