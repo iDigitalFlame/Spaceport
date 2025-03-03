@@ -34,15 +34,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/etc/timezone                   r,
-/etc/gnutls/config              r,
+@{sysconfig}/etc/ld.so.preload      r,
 
-/var/cache/ld.so.cache          rm,
+/etc/timezone                       r,
+/etc/gnutls/config                  r,
+/etc/ld.so.preload                  r,
 
-owner /dev/pts/*                rw,
-owner /dev/tty{,*}              rw,
+/var/cache/ld.so.cache              rm,
 
-audit deny /opt/secureboot/{,*} rw,
+owner /dev/pts/*                    rw,
+owner /dev/tty{,*}                  rw,
+
+audit deny /opt/secureboot/{,*}     rw,
 
 # NOTE(dij): Allow confined processes to signal they are shutting down to
 #            smd-client and smd-daemon.
@@ -53,4 +56,7 @@ signal         peer=@{profile_name},
 deny signal send peer=unconfined,
 
 # Disconnected Paths
-deny /apparmor/.null            rw,
+deny /apparmor/.null                rw,
+
+deny /etc/ld.so.preload             w,
+deny @{sysconfig}/etc/ld.so.preload w,

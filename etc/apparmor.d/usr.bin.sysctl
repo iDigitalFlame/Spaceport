@@ -41,10 +41,12 @@ profile sysctl /usr/bin/sysctl flags=(enforce) {
     include <abstractions/consoles>
     include <abstractions/private-files>
 
+    capability                      mac_admin,
     capability                      net_admin,
     capability                      sys_admin,
     capability                      sys_ptrace,
     capability                      sys_resource,
+    capability                      checkpoint_restore,
 
     @{sysconfig}/etc/sysctl.d/{,**} r,
 

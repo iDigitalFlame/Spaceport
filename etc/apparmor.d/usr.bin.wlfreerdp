@@ -1,4 +1,3 @@
-#!/usr/bin/dash
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #
@@ -17,6 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,16 +34,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if ! [ "$USER" = "root" ]; then
-    echo "Error: root is required!"
-    exit 1
-fi
+include <tunables/spaceport>
 
-set -e
+profile wlfreerdp /usr/bin/{wl,x}freerdp flags=(enforce) {
+    include <abstractions/gui>
+    include <abstractions/ssl_certs>
+    include <abstractions/user-home>
+    include <abstractions/nameservice>
 
-export PYTHONOPTIMIZE=2
-export PYTHONPYCACHEPREFIX=/var/cache/python
+    /usr/bin/wlfreerdp                            rm,
 
-env SYSUPDATE=1 pacman -Syu
+    /dev/tty*                                     rw,
 
-[ ${SYSBATCH:-0} -eq 0 ] && syslink || true
+    @{run}/user/@{uid}/#*                         rw,
+
+    owner @{HOME}/.config/freerdp/                rw,
+    owner @{HOME}/.config/freerdp/known_hosts{,2} rw,
+
+    include if exists <local/usr.bin.wlfreerdp>
+}
