@@ -111,6 +111,7 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ix,
     /opt/ghidra/{Extensions,Features,Framework,GPL}/**        ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk/j{dk,re}/bin/java        ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ix,
     /opt/ghidra/Ghidra/{Extensions,Features,Framework,GPL}/** ix,
 
