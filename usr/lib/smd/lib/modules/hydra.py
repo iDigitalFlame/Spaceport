@@ -930,11 +930,12 @@ class VM(Storage):
                 b = self.set("dev.bus", "pci")
         o, c = self.get("cpu.options", list()), self.get("cpu.type", "host")
         i, m = c == "host", self.get("cpu.saveable", False)
+        h = self.get("cpu.hide_vm", False)
         if x.intel and self.get("cpu.auto_options", True):
             c = (
-                f"{c},kvm=on,pdpe1gb,+kvm_pv_unhalt,+kvm_pv_eoi,+kvmclock,hv_relaxed,"
-                "hv_frequencies,hv_synic,hv_reenlightenment,hv_vpindex,hv_spinlocks=0x1FFF,hv_vapic,hv_time,"
-                "hv_stimer"
+                f"{c},kvm={'off' if h else 'on'},+kvm_pv_unhalt,+kvm_pv_eoi,+hv-evmcs,+hv-tlbflush,+kvmclock,+aes,"
+                "+pdpe1gb,hv_ipi,hv_relaxed,hv_frequencies,hv_synic,hv_reenlightenment,hv_vpindex,hv_spinlocks=0x1FFF,"
+                "hv_vapic,hv_time,hv_stimer,hv_reset,hv_runtime"
             )
             if m:
                 c += ",migratable=yes,-invtsc"
@@ -945,9 +946,11 @@ class VM(Storage):
                 c += ",migratable=no,hv_passthrough"
             else:
                 c += ",hv_passthrough"
+        if h:
+            c = f"{c},-hypervisor"
         if i:
             c = f"{c},l3-cache=on"
-        del i
+        del h, i
         try:
             if isinstance(o, list) and len(o) > 0:
                 c = f'{c},{",".join(o)}'

@@ -38,4 +38,7 @@
 #   Script used by systemd before the system hibernates to inform SMD to start the
 #   pre-hibernate process. Can only be called by systemd.
 
+export PYTHONOPTIMIZE=2
+export PYTHONPYCACHEPREFIX="/var/cache/python"
+
 exec /usr/lib/smd/libexec/smd-message --translate hibernate --wait ok --timeout 5 --exit 0 --payload '{"type": 0}' 1> /dev/null
