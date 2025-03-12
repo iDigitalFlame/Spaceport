@@ -37,7 +37,7 @@
 include <tunables/spaceport>
 
 profile cropgui /usr/bin/cropgui flags=(enforce, attach_disconnected) {
-    include <abstractions/gtk>
+    include <abstractions/qt>
     include <abstractions/perl>
     include <abstractions/dconf>
     include <abstractions/python>

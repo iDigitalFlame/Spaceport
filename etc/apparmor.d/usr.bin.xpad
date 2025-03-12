@@ -47,9 +47,9 @@ profile xpad /usr/bin/xpad flags=(enforce) {
 
     owner @{CONFIG}/xpad/{,*}               rw,
 
-    deny @{CONFIG}/xpad/default-style       w,
-
     deny network,
+
+    deny @{CONFIG}/xpad/default-style       w,
 
     include if exists <local/usr.bin.xpad>
 }

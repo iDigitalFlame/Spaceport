@@ -45,23 +45,25 @@ profile corepdf /usr/bin/corepdf flags=(enforce) {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
-    /usr/bin/corepdf                       r,
-    /usr/share/poppler/**                  r,
-    /usr/share/texmf/{,**}                 r,
-    /usr/local/texlive/{,**}               r,
-    /usr/share/hwdata/pnp.ids              r,
+    /usr/bin/corepdf                         r,
+    /usr/share/poppler/**                    r,
+    /usr/share/texmf/{,**}                   r,
+    /usr/local/texlive/{,**}                 r,
+    /usr/share/hwdata/pnp.ids                r,
 
-    owner /proc/@{pid}/mountinfo           r,
+    owner /proc/@{pid}/mountinfo             r,
 
-    owner /tmp/**                          r,
+    owner /tmp/**                            r,
 
-    owner @{CONFIG}/cubocore/coreapps.conf r,
+    owner @{CONFIG}/cubocore/coreapps.conf   r,
 
     deny network,
 
-    deny /dev/tty                          rw,
-    deny /dev/disk/by-label/               r,
-    deny @{CONFIG}/cubocore/coreapps.conf  w,
+    deny /dev/tty                            rw,
+    deny /dev/disk/by-label/                 r,
+    deny @{CONFIG}/QtProject.conf            w,
+    deny @{CONFIG}/cubocore/coreapps.conf    w,
+    deny @{CONFIG}/cubocore/{,coreapps.conf} w,
 
     include if exists <local/usr.bin.corepdf>
 }

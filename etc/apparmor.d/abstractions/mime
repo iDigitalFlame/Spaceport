@@ -42,6 +42,7 @@ abi <abi/4.0>,
 
 /etc/mime.types                                                            r,
 /usr/share/mime/types                                                      r,
+/usr/share/mime/*/*.xml                                                    r,
 /usr/share/mime/mime.cache                                                 r,
 /usr/share/file/misc/magic.mgc                                             r,
 /usr/share/mime/inode/directory.xml                                        r,

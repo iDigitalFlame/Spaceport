@@ -49,6 +49,7 @@ profile wpctl /usr/bin/{pa,wp}ctl flags=(enforce, attach_disconnected) {
     /sys/devices/virtual/dmi/id/{bios,board,sys}_vendor r,
 
     /proc/@{pid}/fd/                                    r,
+    /proc/@{pid}/task/@{tid}/comm                       r,
 
     deny network,
 
