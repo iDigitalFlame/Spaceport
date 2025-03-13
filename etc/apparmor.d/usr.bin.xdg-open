@@ -46,13 +46,17 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
+    @{sysconfig}/bin/hostname                              ixr,
+
     /proc/version                                          r,
+    /proc/sys/kernel/hostname                              r,
 
     owner @{CONFIG}/mimeapps.list                          r,
 
     @{sysconfig}/bin/ghr                                   Pix -> ghr,
     @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
 
+    /usr/bin/cat                                           ix,
     /usr/bin/env                                           ix,
     /usr/bin/file                                          ix,
     /usr/bin/gawk                                          ix,

@@ -51,6 +51,8 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     network                                                        inet  stream,
     network                                                        inet6 stream,
 
+    @{sysconfig}/bin/hostname                                      ix,
+
     # NOTE(dij): This is here to allow for in-memory blob locking
     /**                                                            lk,
 
@@ -59,6 +61,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     /sys/devices/system/node/                                      r,
     /sys/devices/virtual/block/{,*/dev}                            r,
 
+    /proc/sys/kernel/hostname                                      r,
     /proc/{,partitions,uptime}                                     r,
 
     owner /proc/@{pid}/fd/                                         r,
@@ -91,8 +94,10 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     #            code on the fly.
     /usr/bin/df                                                    ix, # df -T
     /usr/bin/ld                                                    ix,
+    /usr/bin/cat                                                   ix,
     /usr/bin/gcc                                                   ix,
     /usr/bin/dash                                                  ix, # only needed for launching main
+    /usr/bin/hostname                                              ix,
     /usr/bin/ldconfig                                              ix, # ldconfig -p
     /usr/bin/xdg-open                                              Pix -> xdg-open,
     /usr/bin/dbus-send                                             ix,
@@ -104,8 +109,8 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     deny /usr/bin/pmap                                             x,
     deny /usr/bin/tail                                             x,
     deny /usr/bin/xprop                                            x,
+    deny /usr/bin/uname                                            x,
     deny /usr/bin/realpath                                         x,
-    deny /usr/bin/{u,host}name                                     x,
 
     include if exists <local/local.apps.workdrived>
 }

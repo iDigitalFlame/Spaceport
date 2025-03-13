@@ -43,14 +43,17 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
+    @{sysconfig}/bin/ghr                                   Pix -> ghr,
+    @{sysconfig}/bin/hostname                              ixr,
+
     /usr/bin/xdg-email                                     r,
 
     /proc/version                                          r,
+    /proc/sys/kernel/hostname                              r,
 
     owner @{CONFIG}/mimeapps.list                          r,
 
-    @{sysconfig}/bin/ghr                                   Pix -> ghr,
-
+    /usr/bin/cat                                           ix,
     /usr/bin/env                                           ix,
     /usr/bin/file                                          ix,
     /usr/bin/gawk                                          ix,

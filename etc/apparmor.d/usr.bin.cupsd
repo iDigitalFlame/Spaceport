@@ -66,6 +66,8 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
 
     @{sysconfig}/etc/cups/{,**}               r,
 
+    @{sysconfig}/bin/hostname                 ix,
+
     /usr/bin/cupsd                            rm,
     /etc/cups/{,**}                           r,
     /etc/paper{size,specs}                    r,
@@ -75,6 +77,8 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
 
     /sys/bus/usb/devices/{,**}                r,
     /sys/module/apparmor/parameters/enabled   r,
+
+    /proc/sys/kernel/hostname                 r,
 
     owner /proc/@{pid}/fd/                    r,
     owner /proc/@{pid}/mounts                 r,
