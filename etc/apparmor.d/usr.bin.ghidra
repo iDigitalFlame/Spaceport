@@ -47,6 +47,7 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     include <abstractions/freedesktop.org>
 
     /etc/fstab                                                r,
+    /usr/{bin,lib}/                                           r,
     /opt/ghidra{,/**}                                         r,
     /usr/share/java/*.jar                                     r,
     /etc/ssl/certs/java/cacerts                               r,
