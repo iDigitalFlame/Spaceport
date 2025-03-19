@@ -55,12 +55,14 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     /usr/lib/                                                 r,
     /etc/fstab                                                r,
     /usr/bin/dash                                             rm,
+    /etc/machine-id                                           r,
     /etc/modprobe.d/                                          r,
     /etc/udev/hwdb.bin                                        r,
     /usr/share/java/*.jar                                     r,
     /usr/share/hwdata/pci.ids                                 r,
     /etc/ssl/certs/java/cacerts                               r,
     /etc/java-[0-9]*-openjdk/**                               r,
+    /usr/share/pipewire/jack.conf                             r,
     /etc/java-openjdk/net.properties                          r,
     /etc/java-openjdk/jaxp.properties                         r,
     /etc/java-openjdk/logging.properties                      r,
@@ -68,6 +70,9 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     /etc/java-openjdk/security/policy/unlimited/              r,
     /etc/java-openjdk/security/policy/**/*.policy             r,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa rm,
+
+    /dev/input/                                               r,
+    /dev/input/event*                                         r,
 
     /sys/bus/pci/**                                           r,
     /sys/{bu,clas}s/                                          r,
@@ -116,8 +121,11 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner /proc/@{pid}/task/@{tid}/comm                       rw,
 
     owner /tmp/*.tmp                                          rwm,
+    owner /tmp/jna-*/*                                        rwm,
+    owner /tmp/lwjgldij/*                                     rwm,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
+    owner /tmp/libnetty_transport_native_epoll_*.so           rwm,
 
     owner @{CACHE}/JNA{,/**}                                  rmwkl,
     owner @{HOME}/.java/fonts/*/                              rw,
