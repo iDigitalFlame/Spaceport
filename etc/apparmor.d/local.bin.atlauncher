@@ -60,6 +60,7 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     /etc/udev/hwdb.bin                                        r,
     /usr/share/java/*.jar                                     r,
     /usr/share/hwdata/pci.ids                                 r,
+    /etc/pipewire/jack.conf.d/                                r,
     /etc/ssl/certs/java/cacerts                               r,
     /etc/java-[0-9]*-openjdk/**                               r,
     /usr/share/pipewire/jack.conf                             r,
@@ -121,8 +122,8 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner /proc/@{pid}/task/@{tid}/comm                       rw,
 
     owner /tmp/*.tmp                                          rwm,
-    owner /tmp/jna-*/*                                        rwm,
-    owner /tmp/lwjgldij/*                                     rwm,
+    owner /tmp/jna-*/{,*}                                     rwm,
+    owner /tmp/lwjgldij/{,*}                                  rwm,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
     owner /tmp/libnetty_transport_native_epoll_*.so           rwm,
