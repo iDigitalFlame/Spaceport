@@ -37,6 +37,10 @@
 
 umask 0027
 
+if [ $USER = "root" ]; then
+    export PS1="\[\e[31m\][\[\e[m\]\[\e[38;5;172m\]\u\[\e[m\] ~ ᐅ \[\e[38;5;214m\]\W\[\e[m\]\[\e[31m\]]\[\e[m\]\\$ "
+fi
+
 export ERRFILE="/dev/null"
 
 # Disable Telemetry
@@ -59,9 +63,9 @@ export ELECTRON_OZONE_PLATFORM_HINT="wayland"
 export PYTHONUTF8=1
 export PYTHON_COLORS=1
 export PYTHONOPTIMIZE=2
-export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export PYTHONCOERCECLOCALE="en_US.UTF-8"
 export PYTHONPYCACHEPREFIX="/var/cache/python"
+export PYTHONUSERBASE="${HOME}/.local/lib/python"
 
 # XDG User Items Export
 export XDG_DESKTOP_DIR="${HOME}"
@@ -100,7 +104,7 @@ if ! [ -d "/tmp/.usercache/${USER}/mesa" ]; then
 fi
 if ! [ -d "/tmp/.usercache/${USER}/screen" ]; then
     mkdir "/tmp/.usercache/${USER}/screen" 2> /dev/null
-    chmod 700 "/tmp/.usercache/${USER}/screen" 2> /dev/null
+    chmod 0700 "/tmp/.usercache/${USER}/screen" 2> /dev/null
 fi
 if ! [ -d "/tmp/.usercache/${USER}/mesa_db" ]; then
     mkdir "/tmp/.usercache/${USER}/mesa_db" 2> /dev/null

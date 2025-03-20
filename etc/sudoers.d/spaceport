@@ -37,9 +37,12 @@
 Cmnd_Alias  UTILITIES = /usr/bin/nmap, /usr/bin/umount -t cifs, /usr/bin/sync, /usr/lib/smd/sbin/smb, /usr/bin/netstat
 Cmnd_Alias  SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
 
+Defaults    env_reset
 Defaults    env_keep += "LANG LANGUAGE LC_* _XKB_CHARSET"
 Defaults    env_keep += "HOME"
 Defaults    env_keep += "LESSSECURE=1"
+Defaults    env_keep -= "PS1"
+Defaults    env_delete += "PS1"
 Defaults    tty_tickets
 Defaults    log_allowed
 Defaults    log_denied
