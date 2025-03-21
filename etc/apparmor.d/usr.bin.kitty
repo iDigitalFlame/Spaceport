@@ -46,8 +46,8 @@ profile kitty /usr/bin/kitty flags=(enforce) {
 
     capability                         sys_ptrace,
 
-    ptrace read  peer=/usr/bin/kitty,
-    ptrace trace peer=/usr/lib/kitty,
+    ptrace read  peer=kitty,
+    ptrace trace peer=kitty,
 
     /proc/                             r,
 
@@ -68,7 +68,7 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     /usr/bin/xdg-open                  Px -> xdg-open,
     /usr/bin/{ba,da,z}sh               Ux,
 
-    deny ptrace peer=^/usr/bin/kitty,
+    deny ptrace read,
 
     include if exists <local/usr.bin.kitty>
 }
