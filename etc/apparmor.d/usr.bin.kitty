@@ -44,11 +44,14 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     include <abstractions/vulkan>
     include <abstractions/consoles>
 
+    capability                         sys_ptrace,
+
     ptrace read  peer=/usr/bin/kitty,
     ptrace trace peer=/usr/lib/kitty,
 
     /proc/                             r,
 
+    owner /proc/@{pid}/stat            r,
     owner /proc/@{pid}/cgroup          r,
 
     owner @{run}/user/@{uid}/          r,
@@ -64,6 +67,8 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     /usr/bin/kitten                    ix,
     /usr/bin/xdg-open                  Px -> xdg-open,
     /usr/bin/{ba,da,z}sh               Ux,
+
+    deny ptrace peer=^/usr/bin/kitty,
 
     include if exists <local/usr.bin.kitty>
 }

@@ -123,7 +123,7 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
 
     owner /tmp/*.tmp                                          rwm,
     owner /tmp/jna-*/{,*}                                     rwm,
-    owner /tmp/lwjgldij/{,*}                                  rwm,
+    owner /tmp/lwjgldij/{,*,*/}                               rwm,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
     owner /tmp/libnetty_transport_native_epoll_*.so           rwm,
