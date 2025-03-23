@@ -76,7 +76,9 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
     deny ptrace trace peer=unconfined,
 
     # NOTE(dij): Stop the "no new privs" errors in electron.
-    deny /usr/bin/xdg-settings x,
+    deny /sys/class/*/                          r,
+    deny /sys/bus/*/devices/                    r,
+    deny /usr/bin/xdg-settings                  x,
 
     include if exists <local/usr.lib.vesktop>
 }
