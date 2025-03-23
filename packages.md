@@ -4,5 +4,6 @@ archstrike-mirrorlist
 chaotic-keyring
 chaotic-mirrorlist
 cups
+freerdp
 hunspell-en_us
 jdk-openjdk
