@@ -42,11 +42,13 @@ profile wlfreerdp /usr/bin/{wl,x}freerdp flags=(enforce) {
     include <abstractions/user-home>
     include <abstractions/nameservice>
 
-    /usr/bin/wlfreerdp                            rm,
+    /usr/bin/{x,wl}freerdp                        rm,
 
     /dev/tty*                                     rw,
 
     @{run}/user/@{uid}/#*                         rw,
+
+    owner /dev/shm/com.freerdp.xfreerdp.*         rw,
 
     owner @{HOME}/.config/freerdp/                rw,
     owner @{HOME}/.config/freerdp/known_hosts{,2} rw,

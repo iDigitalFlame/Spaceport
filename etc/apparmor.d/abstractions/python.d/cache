@@ -38,7 +38,7 @@
 
 # Prevent saving any cache files outside of the cache dir, but allow var
 deny /[^var]*/**/*.pyc             rw,
-deny /usr/lib/**/__pycache__/      rw,
-deny /[^var]*/**/__pycache__/      rw,
+deny /usr/lib/**/__pycache__{,/}   rw,
+deny /[^var]*/**/__pycache__{,/}   rw,
 deny /usr/lib/**/__pycache__/*.pyc rw,
 deny /[^var]*/**/__pycache__/*.pyc rw,

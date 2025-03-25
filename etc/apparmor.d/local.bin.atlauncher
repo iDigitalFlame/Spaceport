@@ -83,22 +83,30 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     /sys/kernel/mm/hugepages/                                 r,
     /sys/devices/system/node/                                 r,
     /sys/devices/system/cpu/cpu*/                             r,
+    /sys/devices/system/cpu/offline                           r,
     /sys/devices/system/cpu/cpu*/uevent                       r,
+    /sys/devices/system/cpu/hotplug/states                    r,
     /sys/devices/virtual/dmi/id/bios_vendor                   r,
     /sys/devices/system/cpu/cpu*/topology/*                   r,
     /sys/devices/system/cpu/cpu*/cache/{,**}                  r,
     /sys/devices/system/cpu/vulnerabilities/                  r,
+    /sys/devices/system/node/node[0-9]/cpumap                 r,
+    /sys/kernel/mm/transparent_hugepage/defrag                r,
     /sys/devices/system/cpu/{kernel_max,present}              r,
     /sys/devices/system/cpu/cpu0/microcode/version            r,
     /sys/devices/system/cpu/cpufreq/policy*/*_freq            r,
+    /sys/devices/system/cpu/cpu[0-9]/hotplug/state            r,
     /sys/kernel/mm/transparent_hugepage/{,shmem_}enabled      r,
 
     /proc/                                                    r,
     /proc/bus/pci/devices                                     r,
     /proc/c{groups,mdline}                                    r,
     /proc/{version,uptime}                                    r,
+    /proc/sys/kernel/pid_max                                  r,
+    /proc/sys/vm/max_map_count                                r,
     /proc/sys/kernel/osrelease                                r,
     /proc/sys/net/core/somaxconn                              r,
+    /proc/sys/kernel/threads-max                              r,
     /proc/sys/net/ipv4/tcp_fastopen                           r,
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
@@ -123,9 +131,9 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
 
     owner /tmp/*.tmp                                          rwm,
     owner /tmp/jna-*/{,*}                                     rwm,
-    owner /tmp/lwjgl*/{,*/,*/*.so}                            rwm,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
+    owner /tmp/lwjgl*/{,*/,*/*.so,*/.lwjgl.test}              rwmk,
     owner /tmp/libnetty_transport_native_epoll_*.so           rwm,
 
     owner @{CACHE}/JNA{,/**}                                  rmwkl,
@@ -140,6 +148,7 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
     /usr/bin/uname                                            ix,
+    /usr/bin/getconf                                          ix,
     /usr/bin/ldconfig                                         ix,
     /usr/bin/xdg-open                                         Pix -> xdg-open,
     /usr/bin/ls{cpu,pci}                                      ix,
@@ -153,6 +162,7 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     deny ptrace read peer=xdg-{open,settings},
 
     deny @{HOME}/lwjgl{,/}                                    rw,
+    deny /sys/devices/system/cpu/vulnerabilities/*            r,
 
     include if exists <local/local.bin.atlauncher>
 }
