@@ -57,7 +57,7 @@ from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
 from lib.shared.hydra import load_vm, get_devices, valid_snap_name
 from lib.constants.files import HYDRA_CONFIG_DNS, HYDRA_CONFIG_SMB
 from os.path import isdir, isfile, exists, isabs, dirname, splitext
-from lib.util.file import read, write, remove_file, expand, info, copy
+from lib.util.file import read, write, remove_file, info, copy, expand_abs
 from lib.constants.config import (
     NAME,
     HYDRA_DIR,
@@ -1382,7 +1382,8 @@ class VM(Storage):
         info(x, False, hide=True).only(file=True, hide=True).check(
             0o7022, 0, 0, req=0o0755, hide=True
         )
-        f = expand(self.get("bios.file"))
+        d = dirname(self.path())
+        f = expand_abs(self.get("bios.file"), d)
         if nes(f):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0400
@@ -1393,7 +1394,7 @@ class VM(Storage):
         else:
             # NOTE(dij): Set to None to remove anything else.
             f = None
-        q = expand(self.get("bios.vars"))
+        q = expand_abs(self.get("bios.vars"), d)
         if nes(q):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0600
@@ -1404,11 +1405,9 @@ class VM(Storage):
         else:
             # NOTE(dij): Set to None to remove anything else.
             q = None
-        t, c = self.get("dev.tpm.path"), self.get("dev.tpm.software")
-        if nes(t) and not isabs(t):
-            t = f"{dirname(self.path())}/{t}"
+        t, c = expand_abs(self.get("dev.tpm.path"), d), self.get("dev.tpm.software")
         if c and not nes(t):
-            t = self.set("dev.tpm.path", f"{dirname(self.path())}/tpm.raw")
+            t = self.set("dev.tpm.path", f"{d}/tpm.raw")
         if nes(t):
             if c and not exists(t):
                 # NOTE(dij): Security Check
@@ -1464,7 +1463,7 @@ class VM(Storage):
             # NOTE(dij): Set to None to remove anything else.
             t = None
         del c
-        k = expand(self.get("dev.kernel"))
+        k = expand_abs(self.get("dev.kernel"), d)
         if nes(k):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0600
@@ -1475,18 +1474,18 @@ class VM(Storage):
         else:
             # NOTE(dij): Set to None to remove anything else.
             k = None
-        d = expand(self.get("dev.initrd"))
-        if nes(d):
+        y = expand_abs(self.get("dev.initrd"), d)
+        if nes(y):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0600
             #            permissions. The file must also be owned by the user's primary group.
-            info(d, False, hide=True).check(
+            info(y, False, hide=True).check(
                 0o7177, uid, hide=True, req=0o0600, own_gid=True
             ).only(file=True)
         else:
             # NOTE(dij): Set to None to remove anything else.
             d = None
-        o = expand(self.get("dev.devicetree"))
+        o = expand_abs(self.get("dev.devicetree"), d)
         if nes(o):
             # NOTE(dij): Security Check
             #            Can only be a file owned by the calling user that has 0o0600
@@ -1497,6 +1496,7 @@ class VM(Storage):
         else:
             # NOTE(dij): Set to None to remove anything else.
             o = None
+        del d
         n = self.get("memory.size", 1024)
         if not isinstance(n, int) or n <= 0:
             raise Error("memory size must be a non-zero positive number")
@@ -1513,7 +1513,7 @@ class VM(Storage):
             # NOTE(dij): Set to None to remove anything else.
             r = None
         return Restricted(
-            x, e, n, r, f, q, t, k, d, o, u.pw_name, x.endswith("-x86_64")
+            x, e, n, r, f, q, t, k, y, o, u.pw_name, x.endswith("-x86_64")
         )
 
     def _build_drives(self, server, uid, user, bus, machine, opts):
@@ -1526,7 +1526,7 @@ class VM(Storage):
             return server.debug(
                 f"[m/hydra/VM({self.vmid})]: Drives value was empty, skipping drive setup."
             )
-        w, i, b = dict(), 0, list()
+        w, i, b, z = dict(), 0, list(), dirname(self.path())
         for n, d in self.drives.items():
             if not isinstance(d, dict) or len(d) == 0:
                 server.warning(
@@ -1537,29 +1537,18 @@ class VM(Storage):
                 raise Error(f'drive "{n}" is missing the "type" value')
             # NOTE(dij): Expanded forms do NOT get re-saved back to the file so
             #            they can be evaluated again.
-            p = expand(d.get("file"))
+            p = expand_abs(d.get("file"), z)
             if not nes(p):
                 server.warning(
                     f'[m/hydra/VM({self.vmid})]: Skipping drive "{n}" with a missing "file" entry!'
                 )
                 continue
-            if not isabs(p):
-                p = f"{dirname(self.path())}/{p}"
-                try:
-                    v = info(p, False, hide=True)
-                except OSError as err:
-                    raise Error(
-                        f'drive "{n}" file "{p}" does not exist or is not a file: {err}'
-                    )
-                # NOTE(dij): Relative paths do get saved over.
-                d["file"] = p
-            else:
-                try:
-                    v = info(p, False, hide=True)
-                except OSError as err:
-                    raise Error(
-                        f'drive "{n}" file "{p}" does not exist or is not a file: {err}'
-                    )
+            try:
+                v = info(p, False, hide=True)
+            except OSError as err:
+                raise Error(
+                    f'drive "{n}" file "{p}" does not exist or is not a file: {err}'
+                )
             # NOTE(dij): Security Check
             #            Can only be a file or block device. If the target is
             #            a block device, it must be owned by root and the
@@ -1865,11 +1854,36 @@ class VM(Storage):
         self._close_adapters(server)
         self._event = cancel_nul(server, self._event)
         self._usb_clean(server, manager)
-        remove_file(f"{self._path}.pid")
-        remove_file(f"{self._path}.vnc")
-        remove_file(f"{self._path}.sock")
-        remove_file(f"{self._path}.swtpm")
-        remove_file(f"{self._path}.swtpm.pid")
+        # NOTE(dij): For some reason, using "remove_file" prevents the files from
+        #            being deleted, but this works *shrug*
+        try:
+            remove(f"{self._path}.pid")
+        except OSError:
+            pass
+        try:
+            remove(f"{self._path}.vnc")
+        except OSError:
+            pass
+        try:
+            remove(f"{self._path}.qga")
+        except OSError:
+            pass
+        try:
+            remove(f"{self._path}.sock")
+        except OSError:
+            pass
+        try:
+            remove(f"{self._path}.spice")
+        except OSError:
+            pass
+        try:
+            remove(f"{self._path}.swtpm")
+        except OSError:
+            pass
+        try:
+            remove(f"{self._path}.swtpm.pid")
+        except OSError:
+            pass
         try:
             if self.get("memory.reserve", True):
                 manager.pages(server, self.vmid, None, True)

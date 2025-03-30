@@ -50,6 +50,7 @@ from string import ascii_letters, digits
 from json import loads, dumps, JSONDecodeError
 from os import chown, environ, makedirs, stat, chmod, remove, fspath
 from os.path import (
+    isabs,
     isfile,
     exists,
     islink,
@@ -383,6 +384,15 @@ def _expand_custom(path, env=None):
     b.close()
     del b, e
     return r
+
+
+def expand_abs(path, dir, env=None):
+    if not nes(path):
+        return None
+    v = expand(path, env)
+    if not isabs(v):
+        return f"{dir}/{v}"
+    return v
 
 
 def read_json(path, errors=True, sym=False):
