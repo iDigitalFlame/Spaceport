@@ -41,7 +41,9 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
+    capability                    setuid,
     capability                    sys_admin,
+    capability                    dac_override,
     capability                    dac_read_search,
 
     mount options=(ro, nosuid, nodev) /dev/fuse   -> /tmp/.mount_**,
@@ -68,6 +70,8 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     /tmp/com.freerdp.client.cliprdr.* rw,
 
     owner @{run}/user/@{uid}/doc/     rw,
+
+    /usr/bin/mount                    ix,
 
     unix (send receive) type=stream peer=(label=xdg-document-portal),
 
