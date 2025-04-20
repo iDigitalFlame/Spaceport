@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/dconf>
+    include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
@@ -72,6 +73,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa rm,
 
     /dev/                                                     r,
+    /dev/udmabuf                                              rw,
     /dev/bus/usb/                                             r,
     /dev/bus/usb/*/                                           r,
 
@@ -82,10 +84,12 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /sys/fs/cgroup/{,**}                                      r,
     /sys/kernel/mm/hugepages/                                 r,
     /sys/bus/usb/devices/{,**}                                r,
+    /sys/devices/pci*/*/{device,uevent,vendor}                r,
     /sys/devices/**/usb*/**/{idVendor,idProduct}              r,
     /sys/devices/system/cpu/cpu0/microcode/version            r,
     /sys/kernel/mm/transparent_hugepage/{,shmem_}enabled      r,
     /sys/devices/**/usb*/**/{manufacturer,serial,product}     r,
+    /sys/devices/pci*/*/{config,revision,subsystem_vendor}    r,
 
     /proc/cgroups                                             r,
     /proc/@{pid}/stat                                         r,
