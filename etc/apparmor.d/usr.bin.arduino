@@ -151,7 +151,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ix,
-    /usr/lib/jvm/java-[0-9]+-openjdk/j{dk,re}/bin/java        ix,
+    /usr/lib/jvm/java-[0-9]*-openjdk/j{dk,re}/bin/java        ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ix,
 
     owner @{HOME}/.arduino*/packages/arduino/tools/**         ixr,
