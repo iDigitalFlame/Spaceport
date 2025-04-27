@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
+    include <abstractions/mesa>
     include <abstractions/dconf>
     include <abstractions/vulkan>
     include <abstractions/consoles>
@@ -87,9 +88,9 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /sys/devices/pci*/*/{device,uevent,vendor}                r,
     /sys/devices/**/usb*/**/{idVendor,idProduct}              r,
     /sys/devices/system/cpu/cpu0/microcode/version            r,
+    /sys/devices/pci*/*/{config,revision,subsystem_*}         r,
     /sys/kernel/mm/transparent_hugepage/{,shmem_}enabled      r,
     /sys/devices/**/usb*/**/{manufacturer,serial,product}     r,
-    /sys/devices/pci*/*/{config,revision,subsystem_vendor}    r,
 
     /proc/cgroups                                             r,
     /proc/@{pid}/stat                                         r,
@@ -127,10 +128,10 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
     owner /{tmp,var/run}/cc*.{s,res,c,o,ld,le}                rw,
     owner /{tmp,var/run}/build[0-9]*.tmp/{,**}                rw,
+    owner /{tmp,var/run}/{library,package}*.tmp*              rw,
     owner /{tmp,var/run}/console[0-9]*.tmp/{,**}              rw,
     owner /{tmp,var/run}/untitled[0-9]*.tmp/{,**}             rw,
     owner /{tmp,var/run}/arduino_{build,cache}_[0-9]*/{,**}   rw,
-    owner /{tmp,var/run}/{library,package}_index.json*.tmp*   rw,
     owner /{tmp,var/run}/arduino_modified_sketch_[0-9]*/{,**} rw,
 
     owner @{HOME}/.java/fonts/*/                              rw,
@@ -141,6 +142,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
+    /usr/bin/ln                                               ix,
     /usr/bin/groups                                           ix,
     /usr/bin/{i,se}d                                          ix,
     /usr/bin/readlink                                         ix,

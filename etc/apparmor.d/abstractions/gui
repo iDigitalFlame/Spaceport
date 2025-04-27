@@ -57,6 +57,8 @@ include <abstractions/wayland>
 /var/cache/fontconfig/{,**}        r,
 /usr/share/gtk-{2,3,4}.0/{,*}      r,
 
+/opt/**/icons/*.{pn,sv}g           r,
+
 owner @{CONFIG}/theme/**           r,
 owner @{CONFIG}/gtk-{2,3,4}.0/{,*} r,
 
