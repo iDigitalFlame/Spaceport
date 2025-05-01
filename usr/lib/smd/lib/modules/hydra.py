@@ -1151,17 +1151,17 @@ class VM(Storage):
                     "-device",
                     "hda-output,audiodev=audio0,mixer=true",
                 ]
-            elif s == "intel-duplex" or isinstance(s, bool) and m:
+            elif s == "usb" and not m:
+                r += [
+                    "-device",
+                    "usb-audio,id=sound1,audiodev=audio0,bus=usb-bus3.0,port=1",
+                ]
+            else:
                 r += [
                     "-device",
                     f"intel-hda,id=sound1,bus={b}.0,addr=0x0b",
                     "-device",
                     "hda-duplex,audiodev=audio0,mixer=true",
-                ]
-            else:
-                r += [
-                    "-device",
-                    "usb-audio,id=sound1,audiodev=audio0,bus=usb-bus3.0,port=1",
                 ]
         del m
         i = self.get("dev.input", "virtio")

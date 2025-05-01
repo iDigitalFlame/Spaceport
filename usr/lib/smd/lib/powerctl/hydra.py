@@ -493,7 +493,9 @@ def _vm(x, n, p):
         if len(n) > 25:
             return n[0:25]
         return n
-    global _CACHE
+    # Ignore the F824 rule for this, as it's being modified but Flake8 can't
+    # understand that.
+    global _CACHE  # noqa: F824
     if len(_CACHE) == 0:
         d = read_json(expand(CONFIG_CLIENT), False, True)
         if isinstance(d, dict) and "hydra" in d and isinstance(d["hydra"], dict):
@@ -507,9 +509,9 @@ def _vm(x, n, p):
     if nes(p):
         v = _CACHE.get(p.lower())
         if nes(v):
-            if len(v) > 25:
-                return v[0:25]
-            return v
+            if len(v) > 23:
+                return f"{v[0:23]} ({x})"
+            return f"{v} ({x})"
     return f"VM({x})"
 
 
@@ -761,7 +763,7 @@ def vm_list(args):
         return print_error("Cannot retrive the VM list!", err)
     check_error(r, "Cannot retrive the VM list!")
     if not args.dmenu:
-        print(f'{"Name":26}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 60}')
+        print(f'{"Name":30}{"VMID":8}{"Process ID":12}{"Status":12}\n{"=" * 60}')
     if not isinstance(r.vms, list) or len(r.vms) == 0:
         return
     r.vms.sort(key=lambda x: x["vmid"])
@@ -772,7 +774,7 @@ def vm_list(args):
             )
             continue
         print(
-            f'{_vm(x["vmid"], x["name"], x["file"]):26}{x["vmid"]:<8}'
+            f'{_vm(x["vmid"], x["name"], x["file"]):30}{x["vmid"]:<8}'
             f'{x["pid"] if x["pid"] is not None else EMPTY:<12}{x["status"].title()}'
         )
     del r
