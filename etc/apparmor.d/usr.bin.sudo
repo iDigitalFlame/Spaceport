@@ -50,7 +50,6 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
     capability                                               fowner,
     capability                                               setgid,
     capability                                               setuid,
-    capability                                               net_admin,
     capability                                               sys_ptrace,
     capability                                               audit_write,
     capability                                               sys_resource,
