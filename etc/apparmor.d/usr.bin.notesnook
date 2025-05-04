@@ -46,7 +46,7 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce, attach_disc
     /etc/fstab                            r,
     /opt/notesnook/{,**}                  rm,
 
-    owner /{tmp,mnt}/**/*.nnbackup{,z},   rw, # For Backups
+    owner /{tmp,mnt}/**/*.nnbackup{,z}    rw,
 
     owner @{HOME}/.config/Notesnook/{,**} rwkl,
 
