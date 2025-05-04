@@ -76,6 +76,7 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**/{#*,*.kdbx,*.kdbx.*} rwkl,
 
     /usr/bin/wl-copy                                           ix,
+    /usr/bin/xdg-open                                          Px -> xdg-open,
 
     deny network,
 
