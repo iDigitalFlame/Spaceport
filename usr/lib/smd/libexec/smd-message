@@ -84,7 +84,7 @@ def _main(args):
         r = send_message(args.socket, args.header, w, args.timeout, args.payload)
         del w
     except Exception as err:
-        return print_error("Cannot send message!", err)
+        return print_error("Cannot send message!", err, exit_code=args.exit)
     if args.wait is None:
         return args.exit
     if r is not None:
