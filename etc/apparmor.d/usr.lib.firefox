@@ -103,5 +103,8 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     dbus receive bus=session interface=org.a11y.atspi**,
     dbus receive bus=system path=/org/freedesktop/NetworkManager,
 
+    # You don't need this
+    deny /sys/devices/virtual/dmi/id/product_sku                       r,
+
     include if exists <local/usr.lib.firefox>
 }

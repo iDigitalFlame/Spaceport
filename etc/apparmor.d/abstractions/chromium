@@ -90,6 +90,7 @@ owner /proc/@{pid}/fd/                                               r,
 owner /proc/@{pid}/cgroup                                            r,
 owner /proc/@{pid}/cmdline                                           r,
 owner /proc/@{pid}/mountinfo                                         r,
+owner /proc/@{pid}/smaps_rollup                                      r,
 owner /proc/@{pid}/task/{,@{tid}}                                    r,
 owner /proc/@{pid}/task/@{tid}/{comm,status}                         r,
 
