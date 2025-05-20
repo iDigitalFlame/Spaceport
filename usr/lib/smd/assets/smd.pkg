@@ -36,7 +36,7 @@
 # Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
 pkgrel=1
-pkgver=1.2.0
+pkgver=1.3.0
 pkgname="smd"
 pkgdesc="System Management Daemon base packages"
 
@@ -93,6 +93,7 @@ depends=(
     "iptables-nft"
     "python-notify2" # aa-notify
     "python-psutil"  # aa-notify
+    "tk" # aa-notify
 
     ## Secure Boot
     "efitools"

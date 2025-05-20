@@ -6,4 +6,3 @@ chaotic-mirrorlist
 cups
 hunspell-en_us
 jdk-openjdk
-libxml2-legacy
