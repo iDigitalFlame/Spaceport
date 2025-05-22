@@ -1111,26 +1111,32 @@ class VM(Storage):
                     f"[m/hydra/VM({self.vmid})]: The drivers for the VirtIO VGA device have compatibility issues with"
                     " Windows, your VM may BSOD."
                 )
-                s, v = (
-                    "virtio-vga,disable-modern=false,disable-legacy=auto,iommu_platform=true,hostmem=32M",
-                    True,
-                )
+                s = "virtio-vga,disable-modern=false,disable-legacy=auto,iommu_platform=true,hostmem=32M"
+                v = True
             elif g == "qxl":
-                s, v = "qxl-vga,vram_size_mb=32,ram_size_mb=32", True
+                s, v = "vram_size_mb=32,ram_size_mb=32", True
             else:
-                v, s = False, g
+                s, v = g, False
         else:
             v, s = False, "std"
-        n = self.set("dev.display_count", 1)
+        q, n = v and g == "qxl", self.get("dev.display_count", 1)
         if not isinstance(n, int) or n <= 0 or n > 4:
             self.set("dev.display_count", 1)
             n = 1
-        for _ in range(0, n):
-            if v:
+        for i in range(0, n):
+            if q:
+                r.append("-device")
+                # NOTE(dij): Multiple QXL displays must use "qxl" instead of "qxl-vga"
+                #            when they are NOT the first display.
+                if i == 0:
+                    r.append(f"qxl-vga,{s},bus={b}.0")
+                else:
+                    r.append(f"qxl,{s},bus={b}.0")
+            elif v:
                 r += ["-device", f"{s},bus={b}.0"]
             else:
                 r += ["-vga", s]
-        del g, s, v
+        del g, q, s, v
         s = self.get("dev.sound", True)
         # "dev.sound" = false will disable this.
         # When it's true, we use the default sound device.
@@ -1215,6 +1221,10 @@ class VM(Storage):
                 "spicevmc,name=usbredir,id=spice-usb3-c",
                 "-device",
                 "usb-redir,chardev=spice-usb3-c,id=spice-usb3",
+                "-chardev",
+                "spicevmc,name=usbredir,id=spice-usb4-c",
+                "-device",
+                "usb-redir,chardev=spice-usb4-c,id=spice-usb4",
             ]
         r += a + d
         del a, d, b

@@ -42,5 +42,5 @@ Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/sed -i'' 's/newpid = os.fork()/newpid = 0/g' /usr/bin/aa-notify
+Exec        = /usr/bin/dash -c "sed -i'' 's/newpid = os.fork()/newpid = 0/g' /usr/bin/aa-notify; sed -i'' 's/aa.read_profiles()//g' /usr/bin/aa-notify"
 Description = Patching aa-notify..

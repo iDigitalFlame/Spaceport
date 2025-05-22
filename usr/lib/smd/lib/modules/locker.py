@@ -958,7 +958,8 @@ class LockerServer(object):
             or LOCKER_TYPE_LID in self._lockers
         ):
             try:
-                self._lid.seek(2, 0)
+                if self._lid is not None:
+                    self._lid.seek(2, 0)
             except OSError:
                 pass  # We're only seeking to prevent backlogged lid actions.
             return
