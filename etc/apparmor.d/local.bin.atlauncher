@@ -162,6 +162,7 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     deny ptrace read peer=xdg-{open,settings},
 
     deny @{HOME}/lwjgl{,/}                                    rw,
+    deny @{HOME}/.cache/resourcefullib{,/}                    rw,
     deny /sys/devices/system/cpu/vulnerabilities/*            r,
 
     include if exists <local/local.bin.atlauncher>

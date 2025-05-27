@@ -54,10 +54,10 @@ from json import dumps, loads, JSONDecodeError
 from socket import socket, AF_UNIX, SOCK_STREAM
 from os import chown, mkdir, chmod, remove, stat
 from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
-from lib.shared.hydra import load_vm, get_devices, valid_snap_name
 from lib.constants.files import HYDRA_CONFIG_DNS, HYDRA_CONFIG_SMB
 from os.path import isdir, isfile, exists, isabs, dirname, splitext
 from lib.util.file import read, write, remove_file, info, copy, expand_abs
+from lib.shared.hydra import load_vm, get_devices, valid_snap_name, get_device_name
 from lib.constants.config import (
     NAME,
     HYDRA_DIR,
@@ -674,7 +674,7 @@ class VM(Storage):
             self._stop(server, manager, True)
             self._state == HYDRA_STATE_STOPPED
             server.notify(
-                "Hydra VM Status", f"VM({self.vmid}) failed to start!", "virt-viewer"
+                "Hydra VM Status", f"VM({self.vmid}) failed to start!", "variety"
             )
         if self._state != HYDRA_STATE_WAITING:
             return
@@ -688,7 +688,7 @@ class VM(Storage):
             return server.notify(
                 "Hydra VM Status",
                 f"VM({self.vmid}) failed to start!",
-                "virt-viewer",
+                "variety",
             )
         if not self._socket_perms_set():
             return
@@ -696,7 +696,7 @@ class VM(Storage):
         server.debug(
             f"[m/hydra/VM({self.vmid})]: Socket became active, bootstrap complete!"
         )
-        server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
+        server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "variety")
 
     def _input(self, server, data, caps):
         if self._state != HYDRA_STATE_RUNNING:
@@ -905,7 +905,7 @@ class VM(Storage):
             return server.notify(
                 "Hydra VM Snapshot",
                 f"VM({self.vmid}) {s} complete!",
-                "virt-viewer",
+                "variety",
             )
         del p
         server.error(
@@ -914,7 +914,7 @@ class VM(Storage):
         server.notify(
             "Hydra VM Snapshot",
             f"VM({self.vmid}) {s} failed!\n{err}",
-            "virt-viewer",
+            "variety",
         )
         del s
 
@@ -1265,7 +1265,7 @@ class VM(Storage):
             self._proc = run(x, out=self._debug)
         except OSError as err:
             server.notify(
-                "Hydra VM Status", f"VM({self.vmid}) failed to start!", "virt-viewer"
+                "Hydra VM Status", f"VM({self.vmid}) failed to start!", "variety"
             )
             self._state = HYDRA_STATE_STOPPED
             self._stop(manager, server, True)
@@ -1280,7 +1280,7 @@ class VM(Storage):
             server.info(
                 f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}!"
             )
-            server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "virt-viewer")
+            server.notify("Hydra VM Status", f"VM({self.vmid}) started!", "variety")
         else:
             self._state = HYDRA_STATE_WAITING
             server.info(
@@ -1435,7 +1435,7 @@ class VM(Storage):
             if i.isfile:
                 if not c:
                     raise Error(
-                        f'tmp device "{t}" is a file but "dev.tpm.software" is not set as "true"'
+                        f'TPM device "{t}" is a file but "dev.tpm.software" is not set as "true"'
                     )
                 # NOTE(dij): Security Check
                 #            Virtual TPM file. Can only be a file owned by the
@@ -1909,15 +1909,20 @@ class VM(Storage):
         if not nes(vendor) or not nes(product):
             raise Error("device vendor and product cannot be empty")
         d, i = get_devices(), f"{vendor}:{product}".lower()
-        if i not in d:
+        k = d.get(i)
+        if k is None:
             raise Error(f'device "{i}" not found')
         del d
         if not self._running():
             raise Error("cannot add a device while stopped")
         if i in self._usb:
-            raise Error(f'device "{i}" is already mounted as "usb-dev-{self._usb[i]}"!')
+            raise Error(
+                f'device "{k.name}" is already mounted as "usb-dev-{self._usb[i]}"'
+            )
         if i in manager._usb:
-            raise Error(f'device "{i}" is already mounted to VM({manager._usb[i]})!')
+            raise Error(
+                f'device "{k.name}" is already mounted to VM({manager._usb[i]})'
+            )
         n = 1 if len(self._usb) == 0 else max(self._usb.values()) + 1
         nulexec(
             ["/usr/bin/chown", "-R", HYDRA_USER, HYDRA_DIR_DEVICES],
@@ -1937,18 +1942,20 @@ class VM(Storage):
                     "productid": int(product, 16),
                 },
             )
-        except OSError as err:
-            raise Error(f'cannot add device "{i}": {err}')
+        except (ValueError, OSError) as err:
+            raise Error(f'cannot add device "{k.name}": {err}')
         self._usb[i], manager._usb[i] = n, self.vmid
+        v = get_device_name(i, k.name)
+        del i, k
         server.debug(
-            f'[m/hydra/VM({self.vmid})]: Connected USB device "{i}" to bus "{b}" with ID {n}.'
+            f'[m/hydra/VM({self.vmid})]: Connected USB device "{v}" to bus "{b}" with ID {n}.'
         )
         server.notify(
             "Hydra USB Device Connected",
-            f'USB Device "{i}" was connected to VM({self.vmid}).',
+            f'USB Device "{v}" was connected to VM({self.vmid}).',
             "uos-installtool",
         )
-        del b, i
+        del b, v
         return n
 
     def _usb_remove(self, server, manager, vendor=None, product=None, usb=None):
@@ -1979,15 +1986,16 @@ class VM(Storage):
                 self._cmd(server, "device_del", {"id": f"usb-dev-{i}"})
             except OSError as err:
                 raise Error(f'cannot remove device "{i}": {err}')
+        v = get_device_name(n, n)
         server.debug(
             f'[m/hydra/VM({self.vmid})]: Removed USB device "{n}" with ID {i}.'
         )
         server.notify(
             "Hydra USB Device Removed",
-            f'USB Device "{self._usb[n]}" was disconnected from VM({self.vmid}).',
+            f'USB Device "{v}" was disconnected from VM({self.vmid}).',
             "usb-creator",
         )
-        del self._usb[n], manager._usb[n], i
+        del self._usb[n], manager._usb[n], i, v
         del n
 
     def _cmd(self, server, command, args=None, ga=False, timeout=2.5, close=True):
@@ -2316,7 +2324,7 @@ class HydraServer(object):
                 continue
             server.debug(f"[m/hydra/VM({v})]: Removing shutdown VM.")
             server.notify(
-                "Hydra VM Status", f"VM({v}) has shutdown{x._msg()}", "virt-viewer"
+                "Hydra VM Status", f"VM({v}) has shutdown{x._msg()}", "variety"
             )
             x._stop(server, self, True)
             if len(self._snaps) > 0:
@@ -2489,7 +2497,7 @@ class HydraServer(object):
             s["usb"] = x._usb
             return s
         if not x._running() or x._state == HYDRA_STATE_STOPPED:
-            return as_error(f"VM {x.vmid} is not running!")
+            return as_error(f"VM {x.vmid} is not running")
         if message.type == HYDRA_SLEEP or message.type == HYDRA_WAKE:
             try:
                 x._sleep(server, message.type == HYDRA_SLEEP)

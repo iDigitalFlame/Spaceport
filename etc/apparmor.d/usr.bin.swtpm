@@ -42,6 +42,7 @@ profile swtpm /usr/bin/swtpm flags=(enforce) {
 
     capability                      fsetid,
     capability                      fowner,
+    capability                      sys_admin,
     capability                      dac_override,
     capability                      dac_read_search,
 

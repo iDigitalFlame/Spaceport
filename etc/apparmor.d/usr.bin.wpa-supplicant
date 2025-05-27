@@ -48,6 +48,7 @@ profile wpa-supplicant /usr/bin/wpa_supplicant flags=(enforce) {
     capability                           fsetid,
     capability                           net_raw,
     capability                           net_admin,
+    capability                           sys_admin,
     capability                           sys_module,
     capability                           dac_override,
     capability                           dac_read_search,

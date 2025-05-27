@@ -46,7 +46,7 @@ from datetime import datetime
 from lib.util.file import read_json, expand
 from socket import socket, AF_UNIX, SOCK_STREAM
 from lib import print_error, send_message, check_error
-from lib.shared.hydra import load_vm, get_devices, valid_snap_name
+from lib.shared.hydra import load_vm, get_devices, valid_snap_name, get_device_name
 from lib.constants import (
     EMPTY,
     HYDRA_TAP,
@@ -458,7 +458,7 @@ def _usb(e):
     d = get_devices()
     for k, v in e.items():
         if k not in d:
-            print(f'{v:4} {k:<12}{"USB Device":<20}')
+            print(f'{v:4} {k:<12}{get_device_name(k, "USB Device"):<20}')
         else:
             print(f"{v:4} {k:<12}{d[k].name:<20}")
     del d
@@ -535,9 +535,7 @@ def _usb_vet(args):
     else:
         return print_error(f'Cannot find any USB devices matching "{n}"!')
     del m, n
-    print(
-        f'\nSelected Device "{c.vendor}:{c.product} - {c.name}" based on search results.\n'
-    )
+    print(f'\nSelected Device "{c.name}" based on search results.\n')
     args.usb_vendor, args.usb_product = c.vendor, c.product
     del c
 

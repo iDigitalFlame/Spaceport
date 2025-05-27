@@ -123,7 +123,8 @@ chmod -R 0755 "/usr/share/themes/MoonlightSky"
 find "/usr/share/icons/MoonlightSky" -xdev -type f -exec chmod 0644 {} \;
 find "/usr/share/themes/MoonlightSky" -xdev -type f -exec chmod 0644 {} \;
 
-# Fix Notesnook Icons
+# Fix Application Icons
+linkcheck "/usr/share/icons/hicolor/scalable/apps/spicy.svg" "/usr/share/icons/kora/apps/scalable/variety.svg"
 linkcheck "/usr/share/icons/hicolor/16x16/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/16x16.png"
 linkcheck "/usr/share/icons/hicolor/24x24/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/24x24.png"
 linkcheck "/usr/share/icons/hicolor/32x32/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/32x32.png"
@@ -133,6 +134,8 @@ linkcheck "/usr/share/icons/hicolor/128x128/apps/notesnook.png" "/opt/notesnook/
 linkcheck "/usr/share/icons/hicolor/256x256/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/256x256.png"
 linkcheck "/usr/share/icons/hicolor/512x512/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/512x512.png"
 linkcheck "/usr/share/icons/hicolor/1024x1024/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/1024x1024.png"
+linkcheck "/usr/share/icons/hicolor/scalable/apps/xfreerdp.svg" "/usr/share/icons/kora/apps/scalable/preferences-system-windows-actions.svg"
+linkcheck "/usr/share/icons/hicolor/scalable/apps/wlfreerdp.svg" "/usr/share/icons/kora/apps/scalable/preferences-system-windows-actions.svg"
 
 # SMD Permissions
 chmod 0640 /var/cache/smd/*.json

@@ -47,10 +47,10 @@ profile gpg-agent /usr/bin/gpg-agent flags=(enforce) {
     /usr/share/gnupg/*                                    r,
     /usr/bin/gpg-agent                                    rm,
 
+    /proc/@{pid}/fd/                                      r,
+
     owner @{GPG_SYS_DIR}/.gpg-*                           r,
     owner @{GPG_SYS_DIR}/*.conf                           r,
-
-    owner /proc/@{pid}/fd/                                r,
 
     owner @{run}/user/@{uid}/gnupg/.gpg-*                 r,
     owner @{run}/user/@{uid}/gnupg/*.conf                 r,

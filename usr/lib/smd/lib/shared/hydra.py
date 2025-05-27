@@ -43,7 +43,9 @@ from collections import namedtuple
 from os import getuid, environ, getcwd
 from lib.util.file import read, read_json, expand, info
 from os.path import isfile, exists, basename, isabs, dirname
-from lib.constants.config import HYDRA_VM_CONFIGS, HYDRA_DIR_USB
+from lib.constants.config import HYDRA_FILE_USB_DEVICES, HYDRA_VM_CONFIGS, HYDRA_DIR_USB
+
+_DEVICES = None
 
 Device = namedtuple("Device", ["name", "path", "vendor", "product"])
 
@@ -68,9 +70,12 @@ def get_devices():
             m = None
         if nes(m):
             n = f"{m} {n}"
+        k = f"{v}:{p}".lower()
+        # Try to get the device name from the USB devices dictionary first
+        n = get_device_name(k, n)
         del m
-        r[f"{v}:{p}".lower()] = Device(f"{n} ({v}:{p})", b, v, p)
-        del n, v, p, b
+        r[k] = Device(f"{n} ({v}:{p})", b, v, p)
+        del k, n, v, p, b
     del d
     return r
 
@@ -90,6 +95,37 @@ def valid_snap_name(v):
             continue
         return False
     return True
+
+
+def _load_usb_device_names():
+    global _DEVICES
+    if isinstance(_DEVICES, dict):
+        return
+    _DEVICES = dict()
+    if not isfile(HYDRA_FILE_USB_DEVICES):
+        return
+    try:
+        with open(HYDRA_FILE_USB_DEVICES) as f:
+            b = f.read().split("\n")
+    except OSError:
+        return
+    n, m = None, None
+    for i in b:
+        if len(i) <= 5 or i[0] == "#" or i[0] == " ":
+            continue
+        if i[1] == " " or i[2] == " " or i[3] == " " or i[0] == "C" or i[0] == "R":
+            continue
+        if i[0] == "\t" and m is not None and i[4] != " ":
+            _DEVICES[f"{m}:{i[1:5]}"] = f"{n} {i[7:].strip()}"
+            continue
+        if i[5] == " ":
+            n, m = i[6:].strip(), i[0:4]
+    del b, n, m
+
+
+def get_device_name(d, opt=None):
+    _load_usb_device_names()
+    return _DEVICES.get(d, opt)
 
 
 def _load_user_config(path, config):

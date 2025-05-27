@@ -171,6 +171,7 @@ HYDRA_FILE_UEFI_VARS = [
     "/usr/share/edk2/x64/OVMF_VARS.4m.fd",
     "/usr/share/edk2/x64/OVMF_VARS.ms.4m.fd",
 ]
+HYDRA_FILE_USB_DEVICES = "/usr/share/hwdata/usb.ids"
 
 HYDRA_RESERVE = "/proc/sys/vm/nr_hugepages"
 HYDRA_RESERVE_SIZE = 2
