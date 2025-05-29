@@ -134,6 +134,7 @@ linkcheck "/usr/share/icons/hicolor/128x128/apps/notesnook.png" "/opt/notesnook/
 linkcheck "/usr/share/icons/hicolor/256x256/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/256x256.png"
 linkcheck "/usr/share/icons/hicolor/512x512/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/512x512.png"
 linkcheck "/usr/share/icons/hicolor/1024x1024/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/1024x1024.png"
+linkcheck "/usr/share/icons/hicolor/scalable/apps/com.obsproject.studio.svg" "/usr/share/icons/kora/apps/scalable/obs.svg"
 linkcheck "/usr/share/icons/hicolor/scalable/apps/xfreerdp.svg" "/usr/share/icons/kora/apps/scalable/preferences-system-windows-actions.svg"
 linkcheck "/usr/share/icons/hicolor/scalable/apps/wlfreerdp.svg" "/usr/share/icons/kora/apps/scalable/preferences-system-windows-actions.svg"
 
