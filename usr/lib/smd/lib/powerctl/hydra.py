@@ -214,18 +214,25 @@ _SCHEMA = """# HydraVM Schema v3-release
                           a MacOS VM. Setting this value to a non-empty string will
                           add an apple-smc device to the VM with the specified OSK.
 
-        "sound"          <String | Boolean, Optional[Default = "usb"]>
-                          Supported values: true | false | "usb" | "virtio" | "intel" |
-                           "intel-duplex" | "none"
+        "sound"          <String | Boolean, Optional[Default = true]>
+                          Supported values: true | false | "virtio" | "output" |
+                           "old" / "compat" | "none"
 
-                          Specify the sound driver used. The default "usb" represents
-                          a USB connected sound card. Other drivers may have better
-                          performance dependent on the VM OS and hardware. Every driver
-                          will connect to the launching user's audio session bus on
-                          startup.
+                          Specify the sound driver used. The default true (boolean)
+                          value represents the Intel ICH9 HDA Audio device. Using the
+                          "old" or "compat" values will switch the device to use the
+                          Intel ICH6 HDA Audio device, for older Operating Systems.
+                          The "output" value can be used to disable Line-In (Microphone)
+                          input and will only provide an output device. The "virtio"
+                          device is a VirtIO audio device that currently does not
+                          have Windows driver support, but can used in Linux VMs
+                          without additional drivers.
+
+                          Every driver will connect to the launching user's audio
+                          session bus on startup.
 
                           This setting can have a String or Boolean value. The false
-                          value is the same as "none", otherwise true is the "usb" value.
+                          value is the same as "none".
 
         [TPM Information, Optional]
         "tpm": {

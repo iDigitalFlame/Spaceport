@@ -950,7 +950,7 @@ class VM(Storage):
             c = f"{c},-hypervisor"
         if i:
             c = f"{c},l3-cache=on"
-        del h, i
+        del h, i, m
         try:
             if isinstance(o, list) and len(o) > 0:
                 c = f'{c},{",".join(o)}'
@@ -1141,35 +1141,41 @@ class VM(Storage):
         # "dev.sound" = false will disable this.
         # When it's true, we use the default sound device.
         if s is not None and s and s != "none":
+            # NOTE(dij): Even though we use PipeWire, the Pulse driver is
+            #            nicer as we can priv separate and just allow QEMU to
+            #            open a handle to the user's PA socket before dropping
+            #            privs.
             r += [
                 "-audiodev",
                 f"driver=pa,id=audio0,server=/var/run/user/{uid}/pulse/native",
             ]
             if s == "virtio":
+                # NOTE(dij): Untested, does NOT work on Windows, audio driver
+                #            is Linux only!
                 r += [
                     "-device",
                     f"virtio-sound-pci,audiodev=audio0,id=sound1,bus={b}.0,addr=0x0b",
                 ]
-            elif s == "intel":
+            elif s == "output":
+                # NOTE(dij): Use Intel ich6 (older chipset) for output only.
                 r += [
                     "-device",
-                    f"intel-hda,id=sound1,bus={b}.0,addr=0x0b",
+                    f"intel-hda,id=sound1,bus={b}.0,addr=0x0b,multifunction=on",
                     "-device",
                     "hda-output,audiodev=audio0,mixer=true",
                 ]
-            elif s == "usb" and not m:
-                r += [
-                    "-device",
-                    "usb-audio,id=sound1,audiodev=audio0,bus=usb-bus3.0,port=1",
-                ]
             else:
+                if s == "compat" or s == "old":
+                    v = ""
+                else:
+                    v = "ich9-"
                 r += [
                     "-device",
-                    f"intel-hda,id=sound1,bus={b}.0,addr=0x0b",
+                    f"{v}intel-hda,id=sound1,bus={b}.0,addr=0x0b,multifunction=on",
                     "-device",
                     "hda-duplex,audiodev=audio0,mixer=true",
                 ]
-        del m
+                del v
         i = self.get("dev.input", "virtio")
         if i == "tablet":
             r += ["-device", "usb-tablet,id=input0,bus=usb-bus2.0,port=1"]
@@ -2465,6 +2471,9 @@ class HydraServer(object):
         if message.type == HYDRA_STATUS:
             return x._status()
         if message.type == HYDRA_START:
+            if message.uid() == 0:
+                server.error(f"[m/hydra/VM({x.vmid})]: Refusing to start a VM as root!")
+                return as_error("root cannot start VMs")
             if not i:
                 if x._state == HYDRA_STATE_SLEEPING:
                     # Wake VM if we're attempting to start a sleeping VM.
