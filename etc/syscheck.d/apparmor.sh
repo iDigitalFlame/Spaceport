@@ -36,7 +36,6 @@
 #
 
 chmod 0555 "/etc/apparmor"
-chmod 0500 "/etc/apparmor.d"
 chmod 0500 "/var/cache/apparmor"
 chmod 0544 "/opt/spaceport/etc/apparmor"
 chmod 0500 "/opt/spaceport/etc/apparmor.d"
@@ -45,9 +44,14 @@ chown -R root:root "/etc/apparmor"
 chown -R root:root "/etc/apparmor.d"
 chown -R root:root "/var/cache/apparmor"
 
+
 chmod 500 "/etc/audit"
 chmod 400 "/etc/audit/audit.rules"
 chmod 400 "/etc/audit/auditd.conf"
+
+chmod 0500 -R "/etc/apparmor.d"
+
+find "/etc/apparmor.d" -type f -exec chmod 0400 {} \;
 
 ln -sT "/etc/apparmor.d/rpm" "/etc/apparmor.d/disable/rpm" 2> /dev/null
 ln -sT "/etc/apparmor.d/tup" "/etc/apparmor.d/disable/tup" 2> /dev/null

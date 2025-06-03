@@ -80,7 +80,7 @@ chmod 2700 "/var/cache/ldconfig"
 chown -R root:root "/var/cache/ldconfig"
 
 chmod 3775 "/var/cache/makepkg"
-chmod 3660 /var/cache/makepkg/*
+chmod 3640 /var/cache/makepkg/*
 chown root:makepkg -R "/var/cache/makepkg"
 
 chmod 3777 "/var/cache/python"

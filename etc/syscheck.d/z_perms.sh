@@ -135,8 +135,10 @@ linkcheck "/usr/share/icons/hicolor/256x256/apps/notesnook.png" "/opt/notesnook/
 linkcheck "/usr/share/icons/hicolor/512x512/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/512x512.png"
 linkcheck "/usr/share/icons/hicolor/1024x1024/apps/notesnook.png" "/opt/notesnook/resources/assets/icons/1024x1024.png"
 linkcheck "/usr/share/icons/hicolor/scalable/apps/com.obsproject.studio.svg" "/usr/share/icons/kora/apps/scalable/obs.svg"
+linkcheck "/usr/share/icons/hicolor/scalable/apps/mcpelauncher-client.svg" "/usr/share/icons/kora/apps/scalable/mcpelauncher-ui-qt.svg"
 linkcheck "/usr/share/icons/hicolor/scalable/apps/xfreerdp.svg" "/usr/share/icons/kora/apps/scalable/preferences-system-windows-actions.svg"
 linkcheck "/usr/share/icons/hicolor/scalable/apps/wlfreerdp.svg" "/usr/share/icons/kora/apps/scalable/preferences-system-windows-actions.svg"
+linkcheck "/usr/share/icons/hicolor/scalable/apps/io.mrarm.mcpelauncher-ui-qt.svg" "/usr/share/icons/kora/apps/scalable/mcpelauncher-ui-qt.svg"
 
 # SMD Permissions
 chmod 0640 /var/cache/smd/*.json
@@ -251,6 +253,7 @@ chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/codium-uri-handler.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/com.ultimaker.cura.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/*.cubocore.CorePDF.desktop 2> /dev/null
+chmod 0400 /usr/share/applications/mcpelauncher-ui-qt.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/rofi-theme-selector.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/jshell-java-openjdk.desktop 2> /dev/null
 chmod 0400 /usr/share/applications/pcmanfm-desktop-pref.desktop 2> /dev/null

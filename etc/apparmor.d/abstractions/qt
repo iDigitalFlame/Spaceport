@@ -44,7 +44,7 @@ include <abstractions/vulkan>
 /usr/share/qt{,*}/translations/**                     r,
 /usr/share/qt{,*}/qtwebengine_dictionaries/{,**}      r,
 
-owner @{CACHE_TMP}/qr/{,**}                           rwkl,
+owner @{CACHE_TMP}/qt/{,**}                           rwkl,
 
 owner @{CACHE}/#[0-9]*[0-9]                           rw,
 owner @{CACHE}/qtshadercache-*/{,**}                  rwkl,
