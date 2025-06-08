@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile telegram-desktop /usr/bin/telegram-desktop flags=(enforce) {
+profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/dri>
     include <abstractions/audio>
@@ -77,7 +77,7 @@ profile telegram-desktop /usr/bin/telegram-desktop flags=(enforce) {
     /usr/bin/xdg-open                               Pix -> xdg-open,
     /usr/bin/xdg-email                              Pix -> xdg-email,
     /usr/bin/xdg-settings                           Pix -> xdg-settings,
-    /usr/bin/telegram-desktop                       ixr,
+    /usr/bin/{T,t}elegram{,-desktop}                ixr,
 
     deny /sys/class/power_supply/                   r,
     deny @{HOME}/.local/share/applications/**       w,

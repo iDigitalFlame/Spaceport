@@ -52,7 +52,7 @@ if [ $# -ne 5 ]; then
     exit 1
 fi
 
-if [ "$1" = "fit" ]; then
+if [ "$1" = "center" ]; then
     convert -quality 100 -resize "${2}x${3}!" -gravity center "$4" "$5" 2> /dev/null 1> /dev/null
 else
     cp -nPTx  --sparse=auto --update=none --no-preserve=all "$4" "$5"

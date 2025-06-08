@@ -43,26 +43,27 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
     include <abstractions/authentication>
     include <abstractions/freedesktop.org>
 
-    /etc/shells                                  r,
-    /usr/bin/gtklock                             r,
+    /etc/shells                                                             r,
+    /usr/bin/gtklock                                                        r,
 
-    /sys/{bu,clas}s/                             r,
-    /sys/class/hidraw/                           r,
-    /sys/devices/**/manufacturer                 r,
-    /sys/devices/**/{produc,ueven}t              r,
+    /sys/{bu,clas}s/                                                        r,
+    /sys/class/hidraw/                                                      r,
+    /sys/devices/**/manufacturer                                            r,
+    /sys/devices/**/{produc,ueven}t                                         r,
 
-    owner @{CACHE}/smd/*                         r,
+    owner @{CACHE}/smd/*                                                    r,
 
-    owner @{HOME}/.config/Yubico/u2f_keys        r,
+    owner @{HOME}/.config/Yubico/u2f_keys                                   r,
+    owner @{HOME}/Pictures/Backgrounds/*.{jpg,jpeg,png,bmp,tiff,tga,heic}   r,
 
-    /dev/hidraw*                                 rwk,
+    /dev/hidraw*                                                            rwk,
 
-    owner @{run}/faillock/*                      rwk,
-    owner @{run}/user/@{uid}/pam-u2f-authpending rw,
+    owner @{run}/faillock/*                                                 rwk,
+    owner @{run}/user/@{uid}/pam-u2f-authpending                            rw,
 
     # NOTE(dij): Trying to directly choose the profile transition will cause
     #            this profile to not load correctly (weird).
-    /usr/bin/unix_chkpwd                         Px,
+    /usr/bin/unix_chkpwd                                                    Px,
 
     deny network,
 

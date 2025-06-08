@@ -64,7 +64,7 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
 
     # NOTE(dij): GHR is SUID so it's not an owner.
     @{HOME}/.private/*                          PUx,
-    @{HOME}/.config/rust/**                     PUx,
+    @{HOME}/.local/lib/rust/**                  PUx,
     @{HOME}/.local/lib/go/bin/**                PUx,
     @{HOME}/Documents/Utilities/**              PUx,
     @{HOME}/.dotfiles/.local/bin/**             PUx,

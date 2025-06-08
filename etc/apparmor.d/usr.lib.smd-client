@@ -40,7 +40,8 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
     include <abstractions/smd>
     include <abstractions/wayland>
 
-    signal send set=(alrm, cont, int, kill, quit, term, stop, usr1),
+    signal send                 set=(alrm, cont, int, kill, quit, term, stop, usr1),
+    signal send peer=unconfined set=(alrm, cont, int, kill, quit, term, stop, usr1),
 
     @{sysconfig}/usr/lib/smd/libexec/*                      Px,
     @{sysconfig}/usr/lib/smd/bin/powerctl                   Px -> powerctl,

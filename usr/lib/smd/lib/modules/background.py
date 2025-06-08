@@ -58,9 +58,10 @@ from lib.constants.config import (
     BACKGROUND_PATH_EXTENSIONS,
 )
 from lib.constants.defaults import (
-    DEFAULT_BACKGROUND_FIT,
     DEFAULT_BACKGROUND_PATH,
+    DEFAULT_BACKGROUND_METHOD,
     DEFAULT_BACKGROUND_SWITCH,
+    DEFAULT_BACKGROUND_METHODS,
     DEFAULT_BACKGROUND_LOCKSCREEN,
 )
 
@@ -77,13 +78,13 @@ class Background(object):
     __slots__ = (
         "_dir",
         "_src",
-        "_fit",
         "_lock",
         "_rand",
         "_proc",
         "_size",
         "_auto",
         "_handle",
+        "_method",
         "_enabled",
         "_lockscreen",
     )
@@ -91,13 +92,13 @@ class Background(object):
     def __init__(self):
         self._dir = expand(BACKGROUND_PATH_CACHE)
         self._src = None
-        self._fit = False
         self._auto = None
         self._lock = False
         self._rand = Random()
         self._size = None
         self._proc = None
         self._handle = None
+        self._method = None
         self._enabled = None
         self._lockscreen = None
 
@@ -134,7 +135,17 @@ class Background(object):
             server.warning(
                 f'[m/background]: Background source path "{self._src}" does not exist or is is not a directory!'
             )
-        self._fit = boolean(server.get("background.fit", DEFAULT_BACKGROUND_FIT, True))
+        self._method = server.get("background.method", DEFAULT_BACKGROUND_METHOD, True)
+        if not nes(self._method):
+            self._method = None
+        else:
+            self._method = self._method.lower()
+        if self._method not in DEFAULT_BACKGROUND_METHODS:
+            server.warning(
+                '[m/background]: Config value "background.method" is invalid (must be one of the following values '
+                f"{DEFAULT_BACKGROUND_METHODS}) using the default value!"
+            )
+            self._method = None
 
     def reload(self, server):
         self._handle = cancel_nul(server, self._handle)
@@ -296,6 +307,11 @@ class Background(object):
             return server.error(
                 f'[m/background]: Background cache path "{self._dir}" cannot be a symlink!'
             )
+        # NOTE(dij): If "self._method" is the "native" method, then we don't need to convert the
+        #            background file, we can just directly symlink it.
+        if self._method is None or self._method == "native":
+            # This explicitly returns "None" so it won't lock.
+            return self._link(server, bg)
         try:
             h = hash_file(bg)
         except OSError as err:
@@ -307,13 +323,15 @@ class Background(object):
             return server.debug(
                 f'[m/background]: Created a symlink from "{t}" to "{self._lockscreen}" set!'
             )
-        server.debug(f'[m/background]: Created a Task to convert "{bg}" to "{t}".')
+        server.debug(
+            f'[m/background]: Created a Task to convert "{bg}" to "{t}" using method "{self._method}".'
+        )
         try:
             server.watch(
                 nulexec(
                     [
                         f"{DIRECTORY_LIBEXEC}/smd-convert-picture",
-                        "fit" if self._fit else "center",
+                        self._method,
                         f"{self._size[0]}",
                         f"{self._size[1]}",
                         bg,
