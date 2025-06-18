@@ -40,14 +40,14 @@
 #   used through powerctl as "powerctl log".
 
 from lib import print_error, send_message
-from lib.constants import HOOK_LOG, LOG_INDEX, LOG_LEVELS
+from lib.constants import HOOK_LOG, LOG_LEVELS, LOG_LEVELS_PREFIX
 
 
 def default(args):
     if not args.level:
         return
     if isinstance(args.level, int):
-        if args.level not in LOG_INDEX:
+        if args.level not in LOG_LEVELS_PREFIX:
             return print_error(f'Log level "{args.level}" is invalid!')
         n = args.level
     elif isinstance(args.level, str):

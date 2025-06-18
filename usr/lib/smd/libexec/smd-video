@@ -35,10 +35,10 @@
 #
 
 # smd-video
-#   Script used by udev to inform SMD that a video adapter was attached/detached.
-#   Can only be called by udev as root.
+#   Script used by Udev to inform SMD that a video adapter was attached/detached.
+#   Can only be called by Udev.
 
 export PYTHONOPTIMIZE=2
 export PYTHONPYCACHEPREFIX="/var/cache/python"
 
-exec /usr/lib/smd/libexec/smd-message --translate monitor --exit 0
+exec /usr/lib/smd/libexec/smd-message --root --translate monitor --exit 0

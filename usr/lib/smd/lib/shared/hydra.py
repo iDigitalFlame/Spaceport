@@ -40,10 +40,10 @@
 from glob import glob
 from lib.util import nes
 from collections import namedtuple
-from os import getuid, environ, getcwd
-from lib.util.file import read, read_json, expand, info
-from os.path import isfile, exists, basename, isabs, dirname
-from lib.constants.config import HYDRA_FILE_USB_DEVICES, HYDRA_VM_CONFIGS, HYDRA_DIR_USB
+from os import getcwd, getuid, environ
+from lib.util.file import info, read, expand, read_json
+from os.path import isabs, exists, isfile, dirname, basename
+from lib.constants.config import HYDRA_DIR_USB, HYDRA_VM_CONFIGS, HYDRA_FILE_USB_DEVICES
 
 _DEVICES = None
 

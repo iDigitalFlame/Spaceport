@@ -39,15 +39,15 @@
 #   using the Locker framework.
 
 from lib.shared.locker import pase_locker
-from lib.util import time_to_str, seconds
-from lib import send_message, print_error, check_error
+from lib.util import seconds, time_to_str
+from lib import check_error, print_error, send_message
 from lib.constants.config import LOCKER_TYPE_NAMES, TIMEOUT_SEC_MESSAGE
 from lib.constants import (
-    MSG_STATUS,
     MSG_ACTION,
+    MSG_STATUS,
     HOOK_LOCKER,
-    LOCKER_TYPE_LID,
     LOCKER_TYPE_KEY,
+    LOCKER_TYPE_LID,
     LOCKER_TYPE_LOCK,
     LOCKER_TYPE_BLANK,
     LOCKER_TYPE_BACKUP,

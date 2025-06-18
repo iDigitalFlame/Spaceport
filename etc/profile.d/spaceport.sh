@@ -44,8 +44,8 @@ fi
 export ERRFILE="/dev/null"
 
 # Disable Telemetry
-export POWERSHELL_TELEMETRY_OPTOUT=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export POWERSHELL_TELEMETRY_OPTOUT=1
 
 export NO_AT_BRIDGE=1
 export SCREENRC="${HOME}/.screen/screenrc"

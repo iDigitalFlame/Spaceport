@@ -42,10 +42,10 @@ from signal import alarm
 from sched import scheduler
 from time import time, sleep
 from lib.util.exec import stop
-from threading import Thread, Event
 from lib.loader import load_modules
+from threading import Event, Thread
 from lib.structs.message import Message
-from lib.constants.config import LOG_LEVEL, TIMEOUT_SEC_STOP, TIMEOUT_SEC_HOOK
+from lib.constants.config import LOG_LEVEL, TIMEOUT_SEC_HOOK, TIMEOUT_SEC_STOP
 from lib.constants import (
     HOOK_OK,
     HOOK_LOG,
@@ -88,7 +88,10 @@ class Dispatcher(Thread):
             del self._hooks[HOOK_DAEMON]
         if HOOK_STARTUP in self._hooks:
             self._service.debug("[dispatch]: Running Startup Hooks..")
-            r = self._hooks[HOOK_STARTUP].run(self._service, Message(HOOK_STARTUP))
+            r = self._hooks[HOOK_STARTUP].run(
+                self._service,
+                Message(HOOK_STARTUP, pid=self._service._pid, uid=self._service._uid),
+            )
             if len(r) > 0:
                 self._service.send(None, r)
             del r
@@ -104,7 +107,10 @@ class Dispatcher(Thread):
         self._service.debug("[dispatch]: Stopping processing Thread..")
         if HOOK_SHUTDOWN in self._hooks:
             self._service.debug("[dispatch]: Running shutdown Hooks..")
-            self._hooks[HOOK_SHUTDOWN].run(self._service, Message(HOOK_SHUTDOWN))
+            self._hooks[HOOK_SHUTDOWN].run(
+                self._service,
+                Message(HOOK_SHUTDOWN, pid=self._service._pid, uid=self._service._uid),
+            )
         self._service.save()
         self._executer.stop()
         self._complete.set()

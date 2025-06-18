@@ -37,16 +37,21 @@
 # Module: User/Notifier
 #   Manages and sends notifications to the User.
 
+# isort please don't lint this
+"""
+isort:skip_file
+"""
+
 import gi
 
 gi.require_version("Notify", "0.7")
 
 from lib.util.file import expand
-from lib.util import boolean, nes
-from gi.repository import GObject, Notify
-from os.path import isdir, isfile, isabs, splitext
+from lib.util import nes, boolean
+from gi.repository import Notify, GObject
+from os.path import isabs, isdir, isfile, splitext
 from lib.constants.config import NAME_CLIENT, NOTIFY_ICONS, NOTIFY_EXTENSIONS
-from lib.constants import EMPTY, HOOK_RELOAD, HOOK_NOTIFICATION, HOOK_SHUTDOWN
+from lib.constants import EMPTY, HOOK_RELOAD, HOOK_SHUTDOWN, HOOK_NOTIFICATION
 from lib.constants.defaults import (
     DEFAULT_NOTIFY_DIRS,
     DEFAULT_NOTIFY_ICON,
@@ -133,7 +138,10 @@ class Notifier(GObject.Object):
         server.debug("[m/notify]: Un-registering notification client.")
         self._dirs.clear()
         self._cache.clear()
-        Notify.uninit()
+        try:
+            Notify.uninit()
+        except Exception as err:
+            server.error("[m/notify]: Cannot shutdown notification subsystem!", err)
 
     def _icon_search(self, icon):
         for i in self._dirs:

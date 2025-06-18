@@ -47,6 +47,7 @@ from lib.util.file import import_file
 from lib.constants import (
     HOOK_OK,
     HOOK_LOG,
+    HOOK_USB,
     HOOK_LOCK,
     HOOK_POWER,
     HOOK_BACKUP,
@@ -59,24 +60,24 @@ from lib.constants import (
     LOCKER_TYPE_KEY,
     LOCKER_TYPE_LID,
     LOCKER_TYPE_LOCK,
-    LOCKER_TYPE_BLANK,
     HOOK_NOTIFICATION,
+    LOCKER_TYPE_BLANK,
     LOCKER_TYPE_BACKUP,
     LOCKER_TYPE_FREEZE,
     LOCKER_TYPE_SUSPEND,
     LOCKER_TYPE_HIBERNATE,
 )
 
-## Default Configuration Constants
+# Default Configuration Constants
 # Overrides are loaded from disk from "CUSTOM_CONFIG".
 
-# Naming Conventions
+## Naming Conventions
 NAME = gethostname().lower()
 NAME_CLIENT = "smd-client"
 NAME_SERVER = "smd-daemon"
 NAME_POWERCTL = "powerctl"
 
-# Directory Path Constants
+## Directory Path Constants
 DIRECTORY_BASE = "/usr/lib/smd"
 DIRECTORY_LIB = f"{DIRECTORY_BASE}/lib"
 DIRECTORY_TEMP = "/var/run/smd"
@@ -85,22 +86,22 @@ DIRECTORY_MODULES = f"{DIRECTORY_LIB}/modules"
 DIRECTORY_LIBEXEC = f"{DIRECTORY_BASE}/libexec"
 DIRECTORY_POWERCTL = f"{DIRECTORY_LIB}/powerctl"
 
-# Socket Constants
+## Socket Constants
 SOCKET = f"{DIRECTORY_TEMP}/{NAME}.sock"
 SOCKET_GROUP = "smd"
 SOCKET_BACKLOG = 512
 
-# Waiting/Timeout Constants
+## Waiting/Timeout Constants
 TIMEOUT_SEC_STOP = 15
 TIMEOUT_SEC_HOOK = 15
 TIMEOUT_SEC_MESSAGE = 5
 
-# Configuration Path Constants
+## Configuration Path Constants
 CONFIG_CLIENT = "${HOME}/.config/smd.json"
 CONFIG_SERVER = f"{DIRECTORY_CONFIG}/config.json"
 CONFIG_BACKUP = f"{DIRECTORY_CONFIG}/backup.json"
 
-# Log Constants
+## Logging Constants
 LOG_TICKS = True
 LOG_LEVEL = "warning"
 LOG_PAYLOAD = False
@@ -112,9 +113,11 @@ LOG_FORMAT_JOURNAL = "[%(levelname)s]: %(message)s"
 LOG_PATH_SERVER = f"/var/run/log/smd-{NAME}.log"
 LOG_PATH_CLIENT = "/var/run/user/{uid}/smd-client-{pid}.log"
 
+## Hook Name Constants
 HOOK_TRANSLATIONS = {
     "ok": HOOK_OK,
     "log": HOOK_LOG,
+    "usb": HOOK_USB,
     "lock": HOOK_LOCK,
     "power": HOOK_POWER,
     "notify": HOOK_NOTIFICATION,
@@ -126,7 +129,7 @@ HOOK_TRANSLATIONS = {
     "background": HOOK_BACKGROUND,
 }
 
-# Hydra Module Constants
+## Hydra Module Constants
 HYDRA_USER = "qemu"
 HYDRA_WAIT_TIME = 10
 HYDRA_SOCK_BUF_SIZE = 4096
@@ -176,7 +179,7 @@ HYDRA_FILE_USB_DEVICES = "/usr/share/hwdata/usb.ids"
 HYDRA_RESERVE = "/proc/sys/vm/nr_hugepages"
 HYDRA_RESERVE_SIZE = 2
 
-# CPU Module Constants
+## CPU Module Constants
 CPU_PATH = "/sys/devices/system/cpu"
 CPU_PATH_MIN = "cpufreq/cpuinfo_min_freq"
 CPU_PATH_MAX = "cpufreq/cpuinfo_max_freq"
@@ -196,11 +199,11 @@ CPU_PATH_TURBO_MIN = "/sys/devices/system/cpu/intel_pstate/min_perf_pct"
 CPU_PATH_TURBO_MAX = "/sys/devices/system/cpu/intel_pstate/max_perf_pct"
 CPU_PATH_TURBO_CURRENT = "/sys/devices/system/cpu/intel_pstate/turbo_pct"
 
-# Brightess Module Constants
+## Brightess Module Constants
 BRIGHTNESS_PATH = "/sys/class/backlight/intel_backlight/brightness"
 BRIGHTNESS_PATH_MAX = "/sys/class/backlight/intel_backlight/max_brightness"
 
-# Notification Module Constants
+## Notification Module Constants
 NOTIFY_ICONS = {
     "error": "dialog-error.png",
     "info": "dialog-information.svg",
@@ -210,7 +213,7 @@ NOTIFY_ICONS = {
 }
 NOTIFY_EXTENSIONS = [".png", ".svg", ".jpg", ".gif", ".ico"]
 
-# Radio Module Constants
+## Radio Module Constants
 RADIO_PATH_WIFI = "/sys/class/net"
 RADIO_PATH_BLUE = "/sys/class/bluetooth/*/rfkill*/state"
 
@@ -231,7 +234,7 @@ RADIO_NAMES = [
     "wireless",
 ]
 
-# Backup Module Constants
+## Backup Module Constants
 BACKUP_STATE = f"{DIRECTORY_CONFIG}/backup-state.json"
 BACKUP_HOSTS = "/etc/smd/backup-hosts.ssh"
 BACKUP_TIMEOUT = 14400  # 4Hrs
@@ -246,7 +249,7 @@ BACKUP_BACKOFF_TIME = 900  # 15Min
 
 BACKUP_EXCLUDE = ["/dev", "/proc", "/run", "/sys", "/tmp", "/var/run"]
 
-# Background Module Constants
+## Background Module Constants
 BACKGROUND_PATH_CACHE = "${HOME}/.cache/smd"
 BACKGROUND_PATH_EXTENSIONS = [".jpg", ".png", ".jpeg", ".bmp"]
 
@@ -273,10 +276,10 @@ LOCKER_EXEC_SUSPEND = ["/usr/bin/systemctl", "suspend"]
 LOCKER_EXEC_HIBERNATE = ["/usr/bin/systemctl", "hibernate"]
 LOCKER_EXEC_LOCK_KEYRING = ["/usr/bin/secret-tool", "lock"]
 
-# Screen Constants
+## Screen Constants
 DISPLAY_BUILTIN = "eDP-1"
 
-# Screen Utility Paths
+## Screen Utility Paths
 DISPLAY_PATH_LID = "/proc/acpi/button/lid/LID0/state"
 DISPLAY_PATH_ACTIVE = "/sys/class/graphics/fb0/device/drm/card*/card*/enabled"
 DISPLAY_PATH_DEFAULT = (

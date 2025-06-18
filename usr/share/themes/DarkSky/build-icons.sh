@@ -54,33 +54,33 @@ if ! [ -d "/usr/share/icons/Vimix-cursors" ]; then
 fi
 
 THEME_DIR="/usr/share/icons/DarkSky"
-if [ -e "$THEME_DIR" ]; then
-    rm -rf "$THEME_DIR"
+if [ -e "${THEME_DIR}" ]; then
+    rm -rf "${THEME_DIR}"
 fi
 
-if ! cp -R "/usr/share/icons/Flatery-Dark" "$THEME_DIR"; then
+if ! cp -R "/usr/share/icons/Flatery-Dark" "${THEME_DIR}"; then
     exit 0
 fi
 
 rm -rf "${THEME_DIR}/apps"
-rm -f "${THEME_DIR}/index.theme"
-rm -f "${THEME_DIR}/icon-theme.cache"
-find "${THEME_DIR}/actions" -type l -name "go-*" -delete
-find "${THEME_DIR}/actions" -type f -name "go-*" -delete
+rm -f  "${THEME_DIR}/index.theme"
+rm -f  "${THEME_DIR}/icon-theme.cache"
+find   "${THEME_DIR}/actions" -type l -name "go-*" -delete
+find   "${THEME_DIR}/actions" -type f -name "go-*" -delete
 
-ln -sT "/usr/share/icons/kora/apps" "${THEME_DIR}/apps"
+ln -sT "/usr/share/icons/kora/apps"             "${THEME_DIR}/apps"
+ln -sT "/usr/share/themes/DarkSky/icons.theme"  "${THEME_DIR}/index.theme"
 ln -sT "/usr/share/icons/Vimix-cursors/cursors" "${THEME_DIR}/cursors" 2> /dev/null
-ln -sT "/usr/share/themes/DarkSky/icons.theme" "${THEME_DIR}/index.theme"
 
-for icon in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | awk '{print $11}'); do
+for i in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | awk '{print $11}'); do
     for d in "${THEME_DIR}"/actions/*; do
         if [ -d "${THEME_DIR}/actions/${d}" ]; then
-            ln -sT "$icon" "${THEME_DIR}/actions/${d}/" 2> /dev/null
+            ln -sT "$i" "${THEME_DIR}/actions/${d}/" 2> /dev/null
         fi
     done
 done
 
-chown -R root:root "$THEME_DIR"
-find "$THEME_DIR" -type d -exec chmod 0755 {} \;
-find "$THEME_DIR" -type f -exec chmod 0644 {} \;
+chown -R root:root "${THEME_DIR}"
+find "${THEME_DIR}" -type d -exec chmod 0755 {} \;
+find "${THEME_DIR}" -type f -exec chmod 0644 {} \;
 exit 0

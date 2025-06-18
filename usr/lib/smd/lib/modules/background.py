@@ -40,22 +40,22 @@
 
 from random import Random
 from lib.sway import displays
-from lib.util.exec import nulexec, stop
-from os import listdir, mkdir, symlink, unlink
-from lib.util import num, boolean, nes, cancel_nul
-from lib.util.file import hash_file, remove_file, expand
-from os.path import isfile, isdir, lexists, islink, splitext
+from lib.util.exec import stop, nulexec
+from os import mkdir, unlink, listdir, symlink
+from lib.util import nes, num, boolean, cancel_nul
+from lib.util.file import expand, hash_file, remove_file
+from os.path import isdir, isfile, islink, lexists, splitext
+from lib.constants.config import (
+    DIRECTORY_LIBEXEC,
+    BACKGROUND_PATH_CACHE,
+    BACKGROUND_PATH_EXTENSIONS,
+)
 from lib.constants import (
     HOOK_RELOAD,
     HOOK_DISPLAY,
     HOOK_STARTUP,
     HOOK_SHUTDOWN,
     HOOK_BACKGROUND,
-)
-from lib.constants.config import (
-    DIRECTORY_LIBEXEC,
-    BACKGROUND_PATH_CACHE,
-    BACKGROUND_PATH_EXTENSIONS,
 )
 from lib.constants.defaults import (
     DEFAULT_BACKGROUND_PATH,
@@ -240,17 +240,17 @@ class Background(object):
             self._lock = False
 
     def hook(self, server, message):
-        if message.header() == HOOK_SHUTDOWN:
-            if self._proc is not None:
-                stop(self._proc)
-            self._handle = cancel_nul(server, self._handle)
-            return
         if message.header() == HOOK_DISPLAY:
             if self._size is not None:
                 self._size = None
                 server.debug(
                     "[m/background]: Clearing the size cache due to a Display change."
                 )
+        elif message.header() == HOOK_SHUTDOWN:
+            if self._proc is not None:
+                stop(self._proc)
+            self._handle = cancel_nul(server, self._handle)
+            return
         if not self._enabled:
             return
         self._background(server)

@@ -41,11 +41,11 @@
 from uuid import uuid4
 from os.path import exists
 from lib.util.file import expand
-from lib.structs import Service, Message
+from lib.structs import Message, Service
 from lib.constants import VERSION, HOOK_NOTIFICATION
-from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
-from lib.constants.config import NAME_CLIENT, LOG_PAYLOAD, DIRECTORY_MODULES
-from socket import socket, AF_UNIX, SHUT_RDWR, SOL_SOCKET, SOCK_STREAM, SO_REUSEADDR
+from select import EPOLLIN, EPOLLERR, EPOLLHUP, epoll
+from lib.constants.config import LOG_PAYLOAD, NAME_CLIENT, DIRECTORY_MODULES
+from socket import AF_UNIX, SHUT_RDWR, SOL_SOCKET, SOCK_STREAM, SO_REUSEADDR, socket
 
 
 class Client(Service):
@@ -132,7 +132,7 @@ class Client(Service):
             self._send_one(i)
 
     def _send_one(self, message):
-        message["id"] = self._uuid
+        message["id"], message["client_pid"] = self._uuid, self._pid
         try:
             message.send(self._socket)
             self.debug(f"[conn]: Message 0x{message.header():02X} was sent.")
@@ -156,7 +156,7 @@ class Client(Service):
             self._dispatcher.add(None, m)
             self.debug(f"[conn]: Received Message 0x{m.header():02X}.")
             if LOG_PAYLOAD:
-                self.dump(f"  IN < {m}")
+                self.dump(f" IN < {m}")
             del m
         except OSError as err:
             if err.errno == 0x3E8 or err.errno == 0x68:

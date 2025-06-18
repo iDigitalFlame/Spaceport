@@ -34,5 +34,5 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-ACTION=="add", SUBSYSTEM=="pci", ATTR{power/control}="auto"
+ACTION=="add", SUBSYSTEM=="pci",                                                                 ATTR{power/control}="auto"
 ACTION=="add", SUBSYSTEM=="scsi_host", ATTR{link_power_management_policy}=="*", KERNEL=="host*", ATTR{link_power_management_policy}="med_power_with_dipm"

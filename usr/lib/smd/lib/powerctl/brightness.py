@@ -37,7 +37,7 @@
 # PowerCTL Module: Brightness
 #   Command line user module to configure Screen Brightness options.
 
-from math import floor, ceil
+from math import ceil, floor
 from lib.util.file import read
 from lib.util import num, boolean
 from lib import print_error, send_message

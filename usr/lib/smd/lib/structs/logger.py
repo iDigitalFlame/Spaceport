@@ -42,11 +42,11 @@ from os import chmod
 from lib.util import nes
 from traceback import format_exc
 from lib.util.file import ensure_dir
-from lib.constants import LOG_INDEX, LOG_LEVELS, LOG_LEVELS_REVERSE
-from logging import getLogger, Formatter, StreamHandler, FileHandler, addLevelName
+from lib.constants import LOG_LEVELS, LOG_LEVELS_PREFIX, LOG_LEVELS_REVERSE
+from logging import Formatter, FileHandler, StreamHandler, getLogger, addLevelName
 from lib.constants.config import (
-    LOG_FORMAT,
     LOG_LEVEL,
+    LOG_FORMAT,
     LOG_FRAME_LIMIT,
     LOG_FORMAT_JOURNAL,
 )
@@ -60,7 +60,7 @@ class Logger(object):
 
     def __init__(self, name, level=LOG_LEVEL, file=None, journal=False):
         if isinstance(level, int):
-            if level not in LOG_INDEX:
+            if level not in LOG_LEVELS_PREFIX:
                 raise ValueError(f'level "{level}" is invalid')
             v = level
         elif isinstance(level, str):
@@ -73,7 +73,7 @@ class Logger(object):
             )
         # NOTE(dij): Change the names to be more "readable" in log output.
         #            This is safe to be called multiple times if needed.
-        for i, n in LOG_INDEX.items():
+        for i, n in LOG_LEVELS_PREFIX.items():
             addLevelName(i, n)
         self._log = getLogger(name)
         self._log.setLevel(v)
@@ -136,7 +136,7 @@ class Logger(object):
         if log_level is None:
             return self.error("[log]: Log level cannot be None!")
         if isinstance(log_level, int):
-            if log_level not in LOG_INDEX:
+            if log_level not in LOG_LEVELS_PREFIX:
                 return self.error(f'[log]: Log level "{log_level}" is invalid!')
             n = log_level
         elif isinstance(log_level, str):

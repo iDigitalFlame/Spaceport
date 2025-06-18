@@ -43,6 +43,11 @@
 #   Discouraged for general usage. The only paramater used may be specified to
 #   indicate that this is not a Lockscreen Trigger.
 
+# isort please don't lint this
+"""
+isort:skip_file
+"""
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
@@ -51,7 +56,7 @@ from argparse import ArgumentParser
 from lib.sway import swaymsg, displays
 from lib.constants.config import SOCKET
 from lib import print_error, send_message
-from lib.constants import HOOK_LOCK, MSG_PRE, MSG_POST, MSG_STATUS
+from lib.constants import MSG_PRE, MSG_POST, HOOK_LOCK, MSG_STATUS
 
 
 def _main(args):

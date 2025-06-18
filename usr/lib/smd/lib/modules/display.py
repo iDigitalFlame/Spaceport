@@ -41,9 +41,9 @@
 from lib import Message
 from lib.util import boolean
 from lib.util.file import read
-from lib.sway import displays, swaymsg
+from lib.sway import swaymsg, displays
 from lib.constants.config import DISPLAY_BUILTIN, DISPLAY_PATH_LID
-from lib.constants import HOOK_DISPLAY, HOOK_MONITOR, HOOK_POWER, HOOK_RELOAD
+from lib.constants import HOOK_POWER, HOOK_RELOAD, HOOK_DISPLAY, HOOK_MONITOR
 
 HOOKS = {
     HOOK_POWER: "Display.display",

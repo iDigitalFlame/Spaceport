@@ -57,5 +57,7 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce, attach_disc
 
     deny /home/                           r,
 
+    deny ptrace,
+
     include if exists <local/usr.bin.notesnook>
 }

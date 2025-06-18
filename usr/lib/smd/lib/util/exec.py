@@ -37,11 +37,11 @@
 # exec.py
 #   Python execution-based utility functions.
 
-from os import environ, kill
+from os import kill, environ
 from lib.util.file import expand
 from signal import SIGINT, SIGKILL
-from shlex import split as shell_split, join
-from subprocess import Popen, SubprocessError, DEVNULL, PIPE
+from shlex import join, split as shell_split
+from subprocess import PIPE, DEVNULL, Popen, SubprocessError
 
 
 def stop(proc, valid=True):

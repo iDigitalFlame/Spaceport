@@ -42,64 +42,14 @@
 from glob import glob
 from json import dumps
 from os import O_NONBLOCK
-from time import time, sleep
 from lib.sway import swaymsg
+from time import time, sleep
 from lib.structs import Message, as_error
 from signal import SIGCONT, SIGSTOP, SIGUSR1
 from lib.util.file import read, write, expand
-from lib.util.exec import stop, nulexec, split
-from fcntl import ioctl, fcntl, F_GETFL, F_SETFL
-from lib.util import boolean, num, nes, cancel_nul, seconds, time_to_str
-from lib.constants import (
-    EMPTY,
-    HOOK_OK,
-    NEWLINE,
-    MSG_PRE,
-    MSG_POST,
-    HOOK_LOCK,
-    HOOK_POWER,
-    MSG_CONFIG,
-    MSG_ACTION,
-    MSG_STATUS,
-    MSG_UPDATE,
-    HOOK_LOCKER,
-    HOOK_DAEMON,
-    HOOK_RELOAD,
-    TRIGGER_KEY,
-    TRIGGER_LOCK,
-    HOOK_MONITOR,
-    HOOK_STARTUP,
-    HOOK_SUSPEND,
-    TRIGGER_BLANK,
-    HOOK_SHUTDOWN,
-    HOOK_HIBERNATE,
-    LOCKER_TYPE_LID,
-    TRIGGER_TIMEOUT,
-    LOCKER_TYPE_KEY,
-    LOCKER_TYPE_LOCK,
-    LOCKER_TYPE_BLANK,
-    LOCKER_TIME_BLANK,
-    LOCKER_TYPE_BACKUP,
-    LOCKER_TIME_BACKOFF,
-    LOCKER_TYPE_SUSPEND,
-    LOCKER_TYPE_HIBERNATE,
-)
-from lib.constants.config import (
-    LOCKER_PATH_DIR,
-    LOCKER_EXEC_LOCK,
-    LOCKER_TYPE_NAMES,
-    LOCKER_PATH_STATUS,
-    LOCKER_EXEC_DND_ON,
-    LOCKER_EXEC_SUSPEND,
-    DISPLAY_PATH_ACTIVE,
-    LOCKER_PATH_BATTERY,
-    LOCKER_EXEC_DND_OFF,
-    DISPLAY_PATH_DEFAULT,
-    LOCKER_PATH_WAKEALARM,
-    LOCKER_EXEC_HIBERNATE,
-    DISPLAY_PATH_CONNECTED,
-    LOCKER_EXEC_LOCK_KEYRING,
-)
+from lib.util.exec import stop, split, nulexec
+from fcntl import F_GETFL, F_SETFL, fcntl, ioctl
+from lib.util import nes, num, boolean, seconds, cancel_nul, time_to_str
 from lib.constants.defaults import (
     DEFAULT_LOCKER_LID,
     DEFAULT_LOCKER_LOCK,
@@ -109,7 +59,56 @@ from lib.constants.defaults import (
     DEFAULT_LOCKER_KEY_LOCK,
     DEFAULT_LOCKER_HIBERNATE,
 )
-
+from lib.constants.config import (
+    LOCKER_PATH_DIR,
+    LOCKER_EXEC_LOCK,
+    LOCKER_TYPE_NAMES,
+    LOCKER_EXEC_DND_ON,
+    LOCKER_PATH_STATUS,
+    DISPLAY_PATH_ACTIVE,
+    LOCKER_EXEC_DND_OFF,
+    LOCKER_EXEC_SUSPEND,
+    LOCKER_PATH_BATTERY,
+    DISPLAY_PATH_DEFAULT,
+    LOCKER_EXEC_HIBERNATE,
+    LOCKER_PATH_WAKEALARM,
+    DISPLAY_PATH_CONNECTED,
+    LOCKER_EXEC_LOCK_KEYRING,
+)
+from lib.constants import (
+    EMPTY,
+    HOOK_OK,
+    MSG_PRE,
+    NEWLINE,
+    MSG_POST,
+    HOOK_LOCK,
+    HOOK_POWER,
+    MSG_ACTION,
+    MSG_CONFIG,
+    MSG_STATUS,
+    MSG_UPDATE,
+    HOOK_DAEMON,
+    HOOK_LOCKER,
+    HOOK_RELOAD,
+    TRIGGER_KEY,
+    HOOK_MONITOR,
+    HOOK_STARTUP,
+    HOOK_SUSPEND,
+    TRIGGER_LOCK,
+    HOOK_SHUTDOWN,
+    TRIGGER_BLANK,
+    HOOK_HIBERNATE,
+    LOCKER_TYPE_KEY,
+    LOCKER_TYPE_LID,
+    TRIGGER_TIMEOUT,
+    LOCKER_TYPE_LOCK,
+    LOCKER_TIME_BLANK,
+    LOCKER_TYPE_BLANK,
+    LOCKER_TYPE_BACKUP,
+    LOCKER_TIME_BACKOFF,
+    LOCKER_TYPE_SUSPEND,
+    LOCKER_TYPE_HIBERNATE,
+)
 
 HOOKS = {
     HOOK_LOCK: "LockerClient.trigger",
@@ -135,8 +134,8 @@ HOOKS_SERVER = {
 }
 
 # NOTE(dij): Point to note here is that the SMD Locker does NOT integrate with
-#            the systemd-logind inhibitor. This is intentional as we don't stop the
-#            system from sleeping/hibernating, but trigger those events instead.
+#            the systemd-logind inhibitor. This is intentional as we don't stop
+#            the system from sleeping/hibernating, but trigger those events instead.
 #
 #            As long as IdleAction=ignore in logind.conf, I don't think an issue
 #            will ever arise, but good to note just in case.
@@ -181,7 +180,7 @@ def _connected_displays(server):
     g = glob(DISPLAY_PATH_CONNECTED)
     for i in g:
         # NOTE(dij): Force detection of monitors first to see if any are
-        #            connected but the kernel didn't enable them correctly.
+        #            connected if the kernel didn't enable them correctly.
         write(i, "detect", errors=False)
     c = 0
     for i in g:
@@ -234,7 +233,7 @@ def _connected_displays(server):
         return True
     finally:
         del g
-    return v[0] != 0x65
+    return isinstance(v, (bytes, bytearray)) and v[0] != 0x65
 
 
 def _notify_control(server, enable):
@@ -579,7 +578,7 @@ class LockerClient(object):
     def _wake_attempt(self, server):
         self._sleeper = cancel_nul(server, self._sleeper)
         self._lock(server, True)
-        server.info("[m/locker]: Lockscreen timeout was hit, triggering Suspend!")
+        server.debug("[m/locker]: Lockscreen timeout reached, triggering Suspend!")
         server.send(None, Message(HOOK_LOCK, {"trigger": TRIGGER_TIMEOUT}))
         if self._backoff is not None:
             server.cancel(self._backoff)
@@ -897,20 +896,10 @@ class LockerServer(object):
         del m
         self._update = False
 
-    def shutdown(self, server):
-        if self._lid is None:
-            return
-        server.debug("[m/locker]: Closing the Lid switch file.")
-        try:
-            self._lid.close()
-        except OSError:
-            pass
-        self._lid = None
-
     def _wake_set(self, server):
         if not self._ability.can_hibernate():
-            return server.info(
-                "[m/locker]: Ignoring wake alarm request as the client lacks the Hibernate ability."
+            return server.debug(
+                "[m/locker]: Ignoring wake alarm request as client lacks the Hibernate ability."
             )
         b = self._lockers.get(LOCKER_TYPE_HIBERNATE)
         if b is not None:
@@ -1062,6 +1051,10 @@ class LockerServer(object):
         self.screen(server, None)
 
     def update(self, server, message):
+        if message.type == MSG_STATUS:
+            if isinstance(message.locker, str) and message.locker in self._lockers:
+                return {"type": MSG_STATUS, "time": self._lockers[message.lower].expire}
+            return {"type": MSG_STATUS, "lockers": self._ability.status(self._lockers)}
         if message.type == MSG_UPDATE or message.type == MSG_CONFIG:
             if message.abilities is None:
                 return
@@ -1069,12 +1062,15 @@ class LockerServer(object):
             server.debug(
                 f"[m/locker]: Updated client capabilities. {self._ability.to_dict()}"
             )
-            if message.type == MSG_CONFIG:
-                return
-        if message.type == MSG_UPDATE or message.type == MSG_STATUS:
-            if isinstance(message.locker, str) and message.locker in self._lockers:
-                return {"type": MSG_STATUS, "time": self._lockers[message.lower].expire}
-            return {"type": MSG_STATUS, "lockers": self._ability.status(self._lockers)}
+            # NOTE(dij): The client uses MSG_UPDATE to signal it's abilities and
+            #            gather the server-side abilities. So if we have an UPDATE
+            #            type, send back the current Lockers. (like a STATUS type).
+            if message.type == MSG_UPDATE:
+                return {
+                    "type": MSG_STATUS,
+                    "lockers": self._ability.status(self._lockers),
+                }
+            return
         if message.type != MSG_ACTION:
             return
         if nes(message.name):
@@ -1117,27 +1113,17 @@ class LockerServer(object):
             return message.multicast()
         if message.type is not None:
             return
-        if message.trigger == TRIGGER_BLANK:
-            if not self._ability.can_blank():
-                return server.debug(
-                    "[m/locker]: Ignoring Blank request as the client lacks the Blank ability."
-                )
-            if LOCKER_TYPE_BLANK in self._lockers:
-                return server.debug(
-                    "[m/locker]: Ignoring Blank request due to Blank Locker!"
-                )
-            return message.multicast()
         if message.trigger == TRIGGER_TIMEOUT:
             server.debug("[m/locker]: Received a Lockscreen timeout request!")
             return self._suspend(server)
         if message.trigger == TRIGGER_KEY:
             if message.uid() != 0:
                 return server.warning(
-                    "[m/locker]: Ignoring a Key request from a non-root user."
+                    "[m/locker]: Ignoring Key request from a non-root user."
                 )
             if not self._ability.key:
                 return server.debug(
-                    "[m/locker]: Ignoring Key request as the client lacks the Key ability."
+                    "[m/locker]: Ignoring Key request as client lacks the Key ability."
                 )
             if LOCKER_TYPE_KEY in self._lockers:
                 return server.debug(
@@ -1146,21 +1132,30 @@ class LockerServer(object):
         elif message.trigger == TRIGGER_LOCK:
             if not self._ability.can_lock():
                 return server.debug(
-                    "[m/locker]: Ignoring non-force Lockscreen request as the client lacks the Lockscreen ability."
+                    "[m/locker]: Ignoring non-force Lockscreen request as client lacks the Lockscreen ability."
                 )
             if LOCKER_TYPE_LOCK in self._lockers and not message.force:
                 return server.debug(
                     "[m/locker]: Ignoring non-force Lockscreen request due to Lockscreen Locker!"
                 )
+        elif message.trigger == TRIGGER_BLANK:
+            if not self._ability.can_blank():
+                return server.debug(
+                    "[m/locker]: Ignoring Blank request as client lacks the Blank ability."
+                )
+            if LOCKER_TYPE_BLANK in self._lockers:
+                return server.debug(
+                    "[m/locker]: Ignoring Blank request due to Blank Locker!"
+                )
         else:
             return as_error("invalid trigger type")
-        server.debug("[m/locker]: Forwarding Lockscreen request..")
+        server.debug(f"[m/locker]: Forwarding Locker trigger 0x{message.trigger:X}..")
         return message.multicast()
 
     def suspend(self, server, message):
         if message.uid() != 0:
             return server.warning(
-                "[m/locker]: Ignoring a Suspend request from a non-root user."
+                "[m/locker]: Ignoring Suspend request from a non-root user."
             )
         if message.type == MSG_PRE:
             self._wake_alarm, self._hibernating = False, False
@@ -1194,10 +1189,24 @@ class LockerServer(object):
             self.screen(server, None)
         return message.multicast()
 
+    def shutdown(self, server, message):
+        if message.uid() != 0:
+            return server.warning(
+                "[m/locker]: Ignoring Shutdown request from a non-root user."
+            )
+        if self._lid is None:
+            return
+        server.debug("[m/locker]: Closing the Lid switch file.")
+        try:
+            self._lid.close()
+        except OSError:
+            pass
+        self._lid = None
+
     def hibernate(self, server, message):
         if message.uid() != 0:
             return server.warning(
-                "[m/locker]: Ignoring a Hibernate request from a non-root user."
+                "[m/locker]: Ignoring Hibernate request from a non-root user."
             )
         if message.type == MSG_PRE:
             self._wake_alarm, self._suspending = False, False
@@ -1232,10 +1241,10 @@ class LockerServer(object):
         if not self._ability.can_suspend():
             if not self._ability.can_hibernate():
                 return server.debug(
-                    "[m/locker]: Ignoring Suspend request as the client lacks the Suspend and Hibernate abilities."
+                    "[m/locker]: Ignoring Suspend request as client lacks the Suspend and Hibernate abilities."
                 )
             server.debug(
-                "[m/locker]: Changing Suspend request to Hibernate as the client lacks the Suspend ability."
+                "[m/locker]: Changing Suspend request to Hibernate as client lacks the Suspend ability."
             )
             if LOCKER_TYPE_HIBERNATE in self._lockers:
                 return server.debug(
@@ -1250,16 +1259,16 @@ class LockerServer(object):
             except OSError as err:
                 server.error("[m/locker]: Hibernation command failed!", err)
             return
-        if LOCKER_TYPE_SUSPEND in self._lockers and not is_lid:
-            return server.debug(
-                "[m/locker]: Ignoring Suspend request due to Suspend Locker!"
-            )
         if LOCKER_TYPE_BACKUP in self._lockers and not is_lid:
             # NOTE(dij): We still lock on lid closure as we want to ensure the
             #            lockscreen is enabled. If the screen was already closed
             #            this won't take effect.
             return server.debug(
                 "[m/locker]: Ignoring Suspend request due to Backup Locker!"
+            )
+        if LOCKER_TYPE_SUSPEND in self._lockers and not is_lid:
+            return server.debug(
+                "[m/locker]: Ignoring Suspend request due to Suspend Locker!"
             )
         try:
             nulexec(LOCKER_EXEC_SUSPEND, wait=True)
@@ -1269,7 +1278,7 @@ class LockerServer(object):
     def screen(self, server, message, close=True):
         if message is not None and message.uid() != 0:
             return server.warning(
-                "[m/locker]: Ignoring a Screen request from a non-root user."
+                "[m/locker]: Ignoring Screen request from a non-root user."
             )
         if self._backoff is not None:
             # NOTE(dij): We use a backoff period to prevent back-n-forth switches

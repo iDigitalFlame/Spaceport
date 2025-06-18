@@ -42,7 +42,7 @@ from lib.util import nes
 from lib import print_error
 from lib.util.file import read
 from lib.constants.config import RADIO_PATH_BLUE
-from lib.shared.radio import set_command, set_config, get_status
+from lib.shared.radio import get_status, set_config, set_command
 
 
 def default(_):

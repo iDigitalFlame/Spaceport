@@ -41,4 +41,4 @@
 
 from lib.structs.service import Service
 from lib.structs.storage import Storage
-from lib.structs.message import Message, as_exception, as_error, send_message
+from lib.structs.message import Message, as_error, as_exception, send_message

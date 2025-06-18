@@ -51,6 +51,8 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
 
     @{sysconfig}/etc/sysless{,key}    r,
 
+    /dev/pts/*                        rk,
+
     /etc/sysless{,key}                r,
     /usr/bin/{head,tail}              rm,
     /usr/share/terminfo/{,**}         r,

@@ -53,6 +53,11 @@
 #  1 - Permissions issue, incorrect arguments used or error in command.
 #  N - Custom exit codes may be implemented by specific modules.
 
+# isort please don't lint this
+"""
+isort:skip_file
+"""
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")

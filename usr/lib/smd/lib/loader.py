@@ -45,7 +45,7 @@ from importlib import import_module
 from os.path import isdir, basename
 from lib.util.file import perm_check
 from lib.structs.hook import Hook, HookList
-from lib.command import try_get_attr, module_base
+from lib.command import module_base, try_get_attr
 
 
 def _hooks_to_str(hooks):

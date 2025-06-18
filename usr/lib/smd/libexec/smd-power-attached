@@ -35,10 +35,10 @@
 #
 
 # smd-power-attached
-#   Script used by udev to inform SMD that a power adapter was attached. Can only
-#   be called by udev.
+#   Script used by Udev to inform SMD that a power adapter was attached. Can only
+#   be called by Udev.
 
 export PYTHONOPTIMIZE=2
 export PYTHONPYCACHEPREFIX="/var/cache/python"
 
-exec /usr/lib/smd/libexec/smd-message --translate power --exit 0 --payload '{"type": 1}'
+exec /usr/lib/smd/libexec/smd-message --root --translate power --exit 0 --payload '{"type": 1}'

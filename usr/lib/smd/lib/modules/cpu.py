@@ -40,7 +40,7 @@
 
 from os.path import exists
 from lib.util import boolean
-from lib.util.file import write, clean
+from lib.util.file import clean, write
 from lib.shared.cpu import cpu, validate
 from lib.structs import Message, as_error
 from lib.constants import (
@@ -55,11 +55,11 @@ from lib.constants.config import (
     CPU_PATH,
     CPU_PATH_TURBO,
     CPU_PATH_GOVERNOR,
-    CPU_PATH_TURBO_MIN,
     CPU_PATH_TURBO_MAX,
-    CPU_PATH_SCALING_MIN,
-    CPU_PATH_SCALING_MAX,
+    CPU_PATH_TURBO_MIN,
     CPU_PATH_PERFORMANCE,
+    CPU_PATH_SCALING_MAX,
+    CPU_PATH_SCALING_MIN,
 )
 
 HOOKS_SERVER = {
@@ -206,6 +206,8 @@ def config(server, message):
 
 
 def startup(server, message):
+    if message.uid() != 0:
+        return server.warning("[m/cpu]: Ignoring request from a non-root user.")
     if message.header() == HOOK_HIBERNATE and message.type == MSG_PRE:
         return shutdown(server)
     d = server.get("cpu")

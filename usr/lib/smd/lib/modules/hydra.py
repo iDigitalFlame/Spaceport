@@ -49,36 +49,36 @@ from signal import SIGCONT, SIGSTOP
 from lib.structs.storage import Storage
 from lib.structs.message import as_error
 from lib.util import nes, num, cancel_nul
-from lib.util.exec import stop, nulexec, run
-from json import dumps, loads, JSONDecodeError
-from socket import socket, AF_UNIX, SOCK_STREAM
-from os import chown, mkdir, chmod, remove, stat
-from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
+from lib.util.exec import run, stop, nulexec
+from json import JSONDecodeError, dumps, loads
+from socket import AF_UNIX, SOCK_STREAM, socket
+from os import stat, chmod, chown, mkdir, remove
+from select import EPOLLIN, EPOLLERR, EPOLLHUP, epoll
 from lib.constants.files import HYDRA_CONFIG_DNS, HYDRA_CONFIG_SMB
-from os.path import isdir, isfile, exists, isabs, dirname, splitext
-from lib.util.file import read, write, remove_file, info, copy, expand_abs
-from lib.shared.hydra import load_vm, get_devices, valid_snap_name, get_device_name
+from os.path import isabs, isdir, exists, isfile, dirname, splitext
+from lib.util.file import copy, info, read, write, expand_abs, remove_file
+from lib.shared.hydra import load_vm, get_devices, get_device_name, valid_snap_name
 from lib.constants.config import (
     NAME,
     HYDRA_DIR,
     HYDRA_USER,
     HYDRA_BRIDGE,
+    HYDRA_EXEC_VM,
     HYDRA_RESERVE,
     HYDRA_VM_ARCH,
-    HYDRA_EXEC_VM,
-    HYDRA_TPM_SIZE,
-    HYDRA_FILE_DNS,
-    HYDRA_EXEC_DNS,
-    HYDRA_FILE_SMB,
     HYDRA_DIR_DHCP,
+    HYDRA_EXEC_DNS,
     HYDRA_EXEC_SMB,
-    HYDRA_WAIT_TIME,
-    HYDRA_FILE_UEFI,
+    HYDRA_FILE_DNS,
+    HYDRA_FILE_SMB,
+    HYDRA_TPM_SIZE,
     HYDRA_DIR_SNAPS,
+    HYDRA_FILE_UEFI,
+    HYDRA_WAIT_TIME,
     HYDRA_EXEC_SWTPM,
-    HYDRA_PATH_MOUNTS,
-    HYDRA_DIR_DEVICES,
     HYDRA_BRIDGE_NAME,
+    HYDRA_DIR_DEVICES,
+    HYDRA_PATH_MOUNTS,
     HYDRA_RESERVE_SIZE,
     HYDRA_SOCK_BUF_SIZE,
     HYDRA_BRIDGE_NETWORK,
@@ -87,51 +87,55 @@ from lib.constants.config import (
 from lib.constants import (
     MSG_PRE,
     NEWLINE,
+    HOOK_USB,
+    MSG_POST,
     HYDRA_TAP,
     HOOK_HYDRA,
-    HYDRA_WAKE,
     HYDRA_STOP,
-    HYDRA_SLEEP,
-    HYDRA_START,
+    HYDRA_WAKE,
     HOOK_DAEMON,
     HYDRA_GA_IP,
-    HYDRA_STATUS,
+    HYDRA_SLEEP,
+    HYDRA_START,
     HOOK_SUSPEND,
-    HYDRA_RESTART,
-    HYDRA_GA_PING,
-    HYDRA_USB_ADD,
+    HYDRA_STATUS,
     HOOK_SHUTDOWN,
+    HYDRA_GA_PING,
+    HYDRA_RESTART,
+    HYDRA_USB_ADD,
     HOOK_HIBERNATE,
     HYDRA_KEYS_MAP,
-    HYDRA_KEYS_CTRL,
-    HYDRA_USB_QUERY,
-    HYDRA_USB_CLEAN,
     HYDRA_HIBERNATE,
+    HYDRA_KEYS_CTRL,
     HYDRA_SNAP_LIST,
     HYDRA_SNAP_TAKE,
+    HYDRA_USB_CLEAN,
+    HYDRA_USB_QUERY,
+    HYDRA_KEYS_NAMED,
     HYDRA_SEND_INPUT,
-    HYDRA_USB_DELETE,
     HYDRA_STATE_DONE,
     HYDRA_STATE_SNAP,
-    HYDRA_KEYS_NAMED,
+    HYDRA_USB_DELETE,
     HYDRA_KEYS_SIMPLE,
     HYDRA_SNAP_DELETE,
-    HYDRA_STATE_FAILED,
+    HYDRA_USER_RESULT,
     HYDRA_SNAP_RESTORE,
+    HYDRA_STATE_FAILED,
+    HYDRA_KEYS_CTRL_MAP,
     HYDRA_STATE_RUNNING,
     HYDRA_STATE_STOPPED,
     HYDRA_STATE_WAITING,
-    HYDRA_KEYS_CTRL_MAP,
-    HYDRA_STATE_SNAP_DEL,
     HYDRA_STATE_SLEEPING,
+    HYDRA_STATE_SNAP_DEL,
     HYDRA_USER_ADD_ALIAS,
     HYDRA_USER_DIRECTORY,
     HYDRA_STATE_SNAP_LOAD,
     HYDRA_USER_DELETE_ALIAS,
 )
 
-HOOKS = {HOOK_HYDRA: "user_alias"}
+HOOKS = {HOOK_HYDRA: "user_mode"}
 HOOKS_SERVER = {
+    HOOK_USB: "HydraServer.hook",
     HOOK_HYDRA: "HydraServer.hook",
     HOOK_DAEMON: "HydraServer.thread",
     HOOK_SUSPEND: "HydraServer.hibernate",
@@ -189,6 +193,41 @@ def _parse_mounted():
     return r
 
 
+def _key_translate(v):
+    if v == 0xA:
+        return ({"type": "qcode", "data": "RET"}, False)
+    if v == 0xD:
+        return ({"type": "qcode", "data": "LF"}, False)
+    if v == 0x20:
+        return ({"type": "qcode", "data": "spc"}, False)
+    if v in HYDRA_KEYS_SIMPLE:
+        return ({"type": "qcode", "data": f"{v:c}"}, False)
+    if 0x41 <= v <= 0x5A:
+        return ({"type": "qcode", "data": f"{v + 0x20:c}"}, True)
+    if v in HYDRA_KEYS_NAMED:
+        return ({"type": "qcode", "data": HYDRA_KEYS_NAMED[v]}, False)
+    try:
+        return ({"type": "qcode", "data": HYDRA_KEYS_MAP[v]}, True)
+    except KeyError:
+        pass
+    return (None, None)
+
+
+def _key_next(buf, x, n):
+    if buf[x] == 0x3C:
+        i = buf.find(0x3E, x)
+        if i > x and i + 1 <= n:
+            v = buf[x + 1 : i].decode("UTF-8")
+            if v in HYDRA_KEYS_CTRL_MAP:
+                v = HYDRA_KEYS_CTRL_MAP[v]
+            if v in HYDRA_KEYS_CTRL:
+                return (True, i + 1, v.lower(), False)
+            del v
+        del i
+    (c, k) = _key_translate(buf[x])
+    return (False, x + 1, c, k)
+
+
 def _command_response(v):
     if not isinstance(v, (bytes, bytearray)) or len(v) == 0:
         return None
@@ -218,6 +257,44 @@ def _command_response(v):
             return r[0]["return"]
         return r[0]
     return r
+
+
+def _key_send(s, c, k, m):
+    b, e = "shift", [{"type": "key", "data": {"down": True, "key": c}}]
+    if k and m:
+        b = "caps_lock"
+    if k:
+        e.insert(
+            0,
+            {
+                "type": "key",
+                "data": {"down": True, "key": {"type": "qcode", "data": b}},
+            },
+        )
+    s.sendall(
+        dumps({"execute": "input-send-event", "arguments": {"events": e}}).encode(
+            "UTF-8"
+        )
+    )
+    del e
+    s.sendall(b"\r\n")
+    _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
+    e = [{"type": "key", "data": {"down": False, "key": c}}]
+    if k:
+        e.append(
+            {
+                "type": "key",
+                "data": {"down": False, "key": {"type": "qcode", "data": b}},
+            }
+        )
+    s.sendall(
+        dumps({"execute": "input-send-event", "arguments": {"events": e}}).encode(
+            "UTF-8"
+        )
+    )
+    del e, b
+    s.sendall(b"\r\n")
+    _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
 
 
 def _read_full(sock, size):
@@ -257,31 +334,68 @@ def _is_snapshotable(drive):
     )
 
 
-def user_alias(server, message):
+def user_mode(server, message):
+    if not message.user:
+        return
     if message.type == HYDRA_USER_DIRECTORY:
+        if server.is_read_only():
+            return {
+                "type": HYDRA_USER_RESULT,
+                "user": True,
+                "error": "client config is read-only",
+            }
         if nes(message.directory):
             server.debug(
                 f'[m/hydra/user]: Updated Hydra user directory to "{message.directory}".'
             )
             server.set("hydra.directory", message.directory)
             server.save()
-        return
-    if not nes(message.name) or message.vmid is None:
-        return
+        return {"dir": message.directory, "type": HYDRA_USER_RESULT, "user": True}
     if message.type != HYDRA_USER_ADD_ALIAS and message.type != HYDRA_USER_DELETE_ALIAS:
         return
     if message.type == HYDRA_USER_ADD_ALIAS and not nes(message.file):
-        return
+        return {
+            "type": HYDRA_USER_RESULT,
+            "user": True,
+            "error": "VM path is required",
+        }
+    if message.type == HYDRA_USER_DELETE_ALIAS and not nes(message.name):
+        return {
+            "type": HYDRA_USER_RESULT,
+            "user": True,
+            "error": "VM alias is required",
+        }
+    if server.is_read_only():
+        return {
+            "type": HYDRA_USER_RESULT,
+            "user": True,
+            "error": "client config is read-only",
+        }
     a, n = server.get("hydra.aliases", dict(), True), message.name.lower()
     if message.type == HYDRA_USER_ADD_ALIAS:
         server.debug(f'[m/hydra/user]: Added user alias "{n}" to VM "{message.vmid}".')
         a[n] = message.file
     else:
-        server.debug(f'[m/hydra/user]: Removed user alias "{n}" from VM "{a[n]}".')
-        del a[n]
+        try:
+            del a[n]
+        except KeyError:
+            return {
+                "type": HYDRA_USER_RESULT,
+                "user": True,
+                "error": f'alias "{n}" does not exist',
+            }
+        server.debug(
+            f'[m/hydra/user]: Removed user alias "{n}" from VM "{message.vmid}".'
+        )
     server.set("hydra.aliases", a)
     server.save()
     del n, a
+    return {
+        "vmid": message.vmid,
+        "name": message.name,
+        "type": HYDRA_USER_RESULT,
+        "user": True,
+    }
 
 
 def _is_snapshot_done(last, jobs):
@@ -1290,7 +1404,7 @@ class VM(Storage):
         else:
             self._state = HYDRA_STATE_WAITING
             server.info(
-                f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}, but waiting for sockets!"
+                f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}, waiting for sockets!"
             )
         # NOTE(dij): Last chance effort, as some get caught in this quasi-state.
         self._socket_perms_set()
@@ -1964,46 +2078,6 @@ class VM(Storage):
         del b, v
         return n
 
-    def _usb_remove(self, server, manager, vendor=None, product=None, usb=None):
-        if usb is not None:
-            try:
-                i = num(usb, False)
-            except ValueError:
-                raise Error("device ID must be a non-zero positive number")
-            if i not in self._usb.values():
-                raise Error(f'cannot find device with ID "{i}"')
-            n = None
-            for k, v in self._usb.items():
-                # Grab the device vendor:product from the ID
-                if v == i:
-                    n = k
-                    break
-            if n is None:
-                raise Error(f'cannot find device with ID "{i}"')
-        elif nes(vendor) and nes(product):
-            n = f"{vendor}:{product}".lower()
-            i = self._usb.get(n)
-            if i is None:
-                raise Error(f'device "{n}" is not connected')
-        else:
-            raise Error("device ID or device vendor/product must be specified")
-        if self._running():
-            try:
-                self._cmd(server, "device_del", {"id": f"usb-dev-{i}"})
-            except OSError as err:
-                raise Error(f'cannot remove device "{i}": {err}')
-        v = get_device_name(n, n)
-        server.debug(
-            f'[m/hydra/VM({self.vmid})]: Removed USB device "{n}" with ID {i}.'
-        )
-        server.notify(
-            "Hydra USB Device Removed",
-            f'USB Device "{v}" was disconnected from VM({self.vmid}).',
-            "usb-creator",
-        )
-        del self._usb[n], manager._usb[n], i, v
-        del n
-
     def _cmd(self, server, command, args=None, ga=False, timeout=2.5, close=True):
         if not self._running():
             # NOTE(dij): I don't see this path being called, but I'm
@@ -2058,6 +2132,55 @@ class VM(Storage):
             #            so we know to use it again.
             self._agent = True
         return (r, s)
+
+    def _usb_remove(self, server, manager, vendor=None, prod=None, usb=None, full=None):
+        if usb is not None:
+            try:
+                i = num(usb, False)
+            except ValueError:
+                raise Error("device ID must be a non-zero positive number")
+            if i not in self._usb.values():
+                raise Error(f'cannot find device with ID "{i}"')
+            n = None
+            for k, v in self._usb.items():
+                # Grab the device vendor:product from the ID
+                if v == i:
+                    n = k
+                    break
+            if n is None:
+                raise Error(f'cannot find device with ID "{i}"')
+        elif nes(vendor) and nes(prod):
+            n = f"{vendor}:{prod}".lower()
+            i = self._usb.get(n)
+            if i is None:
+                raise Error(f'device "{n}" is not connected')
+        elif nes(full):
+            n = full.lower()
+            i = self._usb.get(n)
+            if i is None:
+                raise Error(f'device "{n}" is not connected')
+        else:
+            raise Error("device ID or device vendor/product must be specified")
+        if self._running():
+            try:
+                self._cmd(server, "device_del", {"id": f"usb-dev-{i}"})
+            except OSError as err:
+                raise Error(f'cannot remove device "{i}": {err}')
+        v = get_device_name(n, n)
+        server.debug(
+            f'[m/hydra/VM({self.vmid})]: Removed USB device "{n}" with ID {i}.'
+        )
+        server.notify(
+            "Hydra USB Device Removed",
+            f'USB Device "{v}" was disconnected from VM({self.vmid}).',
+            "usb-creator",
+        )
+        del self._usb[n], i, v
+        try:
+            del manager._usb[n]
+        except KeyError:
+            pass
+        del n
 
 
 class Snapper(object):
@@ -2413,15 +2536,46 @@ class HydraServer(object):
 
     def hook(self, server, message):
         if message.header() == HOOK_SHUTDOWN:
+            if message.uid() != 0:
+                return server.warning(
+                    "[m/hydra]: Ignoring request from a non-root user."
+                )
             if self._poll is not None:
                 self._poll.close()
                 self._poll = None
             return self.stop(server, False)
         if not isinstance(message.type, int):
             return
+        if message.header() == HOOK_USB:
+            if message.uid() != 0:
+                return server.warning("[m/hydra]: Ignoring non-root USB command.")
+            if message.type != MSG_POST:
+                return
+            i = self._usb.get(message.dev)
+            if not isinstance(i, int) or i <= 0:
+                return
+            x = self._vms.get(i)
+            if x is not None:
+                server.debug(
+                    f'[m/hydra/VM({x.vmid})]: Detected attached USB device "{message.dev}" was disconnected, '
+                    "attempting auto remove.."
+                )
+                try:
+                    x._usb_remove(server, self, full=message.dev)
+                except Error as err:
+                    server.error(
+                        f'[m/hydra/VM({x.vmid})]: Cannot auto remove USB device "{message.dev}"!',
+                        err,
+                    )
+            del i, x
+            return
         if message.type == HYDRA_STATUS and len(message) <= 2:
             return {"vms": [vm._status() for vm in self._vms.values()]}
+        if message.user and message.type == HYDRA_USER_RESULT:
+            return message.multicast()
         if message.user and message.type == HYDRA_USER_DIRECTORY:
+            return message.multicast()
+        if message.user and message.type == HYDRA_USER_DELETE_ALIAS:
             return message.multicast()
         if message.all:
             for i in self._vms.values():
@@ -2430,12 +2584,12 @@ class HydraServer(object):
                 try:
                     if message.type == HYDRA_STOP:
                         i._stop(server, self, message.force)
-                    elif message.type == HYDRA_WAKE or message.type == HYDRA_SLEEP:
-                        i._sleep(server, message.type == HYDRA_SLEEP)
-                    elif message.type == HYDRA_HIBERNATE:
-                        i._hibernate(server)
                     elif message.type == HYDRA_RESTART:
                         i._restart(server, message.force)
+                    elif message.type == HYDRA_HIBERNATE:
+                        i._hibernate(server)
+                    elif message.type == HYDRA_WAKE or message.type == HYDRA_SLEEP:
+                        i._sleep(server, message.type == HYDRA_SLEEP)
                 except Error as err:
                     if message.type == HYDRA_STOP:
                         server.error(
@@ -2449,13 +2603,13 @@ class HydraServer(object):
                         server.error(
                             f"[m/hydra/VM({i.vmid})]: Cannot suspend the VM!", err
                         )
-                    elif message.type == HYDRA_HIBERNATE:
-                        server.error(
-                            f"[m/hydra/VM({i.vmid})]: Cannot hibernate the VM!", err
-                        )
                     elif message.type == HYDRA_RESTART:
                         server.error(
                             f"[m/hydra/VM({i.vmid})]: Cannot restart/reset the VM!", err
+                        )
+                    elif message.type == HYDRA_HIBERNATE:
+                        server.error(
+                            f"[m/hydra/VM({i.vmid})]: Cannot hibernate the VM!", err
                         )
             return {"vms": [vm._status() for vm in self._vms.values()]}
         try:
@@ -2468,8 +2622,6 @@ class HydraServer(object):
             message.set("file", x.path())
             del x, i
             return message.multicast()
-        if message.type == HYDRA_STATUS:
-            return x._status()
         if message.type == HYDRA_START:
             if message.uid() == 0:
                 server.error(f"[m/hydra/VM({x.vmid})]: Refusing to start a VM as root!")
@@ -2499,6 +2651,8 @@ class HydraServer(object):
                 server.error(f"[m/hydra/VM({x.vmid})]: Cannot start the VM!", err)
                 return as_error(f"cannot start VM {x.vmid}: {err}")
             return x._status()
+        if message.type == HYDRA_STATUS:
+            return x._status()
         del i
         # Can run without the VM in the running state.
         if message.type == HYDRA_USB_QUERY:
@@ -2507,74 +2661,14 @@ class HydraServer(object):
             return s
         if not x._running() or x._state == HYDRA_STATE_STOPPED:
             return as_error(f"VM {x.vmid} is not running")
-        if message.type == HYDRA_SLEEP or message.type == HYDRA_WAKE:
+        # NOTE(dij): These commands return "non-standard" results.
+        if message.type == HYDRA_TAP:
             try:
-                x._sleep(server, message.type == HYDRA_SLEEP)
+                x._stop(server, self, False, message.get("timeout", 90), tap=True)
             except Error as err:
-                if message.type == HYDRA_SLEEP:
-                    server.error(f"[m/hydra/VM({x.vmid})]: Cannot suspend the VM!", err)
-                    return as_error(f"cannot suspend VM {x.vmid}: {err}")
-                server.error(f"[m/hydra/VM({x.vmid})]: Cannot resume the VM!", err)
-                return as_error(f"cannot resume VM {x.vmid}: {err}")
-            return x._status()
-        if message.type == HYDRA_SNAP_LIST:
-            v = x._status()
-            try:
-                v["snaps"] = x._snap_list(server)
-                v["snap_current"] = x._snap_last(server)
-            except Error as err:
-                server.error(
-                    f"[m/hydra/VM({x.vmid})]: Cannot read the Snapshot data!", err
-                )
-                return as_error(f"cannot read Snapshots for VM {x.vmid}: {err}")
-            return v
-        if message.type == HYDRA_SNAP_TAKE:
-            if not valid_snap_name(message.name):
-                server.error(
-                    f'[m/hydra/VM({x.vmid})]: Invalid Snapshot name "{message.name}" supplied!'
-                )
-                return as_error("invalid Snapshot name")
-            try:
-                x._snap_capture(server, self, message.name)
-            except Error as err:
-                server.error(f"[m/hydra/VM({x.vmid})]: Cannot Snapshot the VM!", err)
-                return as_error(f"cannot take Snapshot for VM {x.vmid}: {err}")
-            return x._status()
-        if message.type == HYDRA_SNAP_DELETE:
-            if not valid_snap_name(message.name):
-                server.error(
-                    f'[m/hydra/VM({x.vmid})]: Invalid Snapshot name "{message.name}" supplied!'
-                )
-                return as_error("invalid Snapshot name")
-            try:
-                x._snap_delete(server, self, message.name)
-            except Error as err:
-                server.error(
-                    f"[m/hydra/VM({x.vmid})]: Cannot delete the VM Snapshot!", err
-                )
-                return as_error(f"cannot delete Snapshot for VM {x.vmid}: {err}")
-            return x._status()
-        if message.type == HYDRA_SNAP_RESTORE:
-            if not valid_snap_name(message.name):
-                server.error(
-                    f'[m/hydra/VM({x.vmid})]: Invalid Snapshot name "{message.name}" supplied!'
-                )
-                return as_error("invalid Snapshot name")
-            try:
-                x._snap_restore(server, self, message.name)
-            except Error as err:
-                server.error(
-                    f"[m/hydra/VM({x.vmid})]: Cannot restore the VM Snapshot!", err
-                )
-                return as_error(f"cannot restore Snapshot for VM {x.vmid}: {err}")
-            return x._status()
-        if message.type == HYDRA_STOP:
-            try:
-                x._stop(server, self, message.force, message.get("timeout", 90))
-            except Error as err:
-                server.error(f"[m/hydra/VM({x.vmid})]: Cannot stop the VM!", err)
-                return as_error(f"cannot stop VM {x.vmid}: {err}")
-            return x._status()
+                server.error(f'[m/hydra/VM({x.vmid})]: Cannot ACPI "tap" the VM!', err)
+                return as_error(f"cannot ACPI tap VM {x.vmid}: {err}")
+            return True
         if message.type == HYDRA_GA_IP:
             try:
                 return x._ip(server)
@@ -2593,13 +2687,6 @@ class HydraServer(object):
                     err,
                 )
                 return as_error(f"cannot check the GA for VM {x.vmid}: {err}")
-        if message.type == HYDRA_TAP:
-            try:
-                x._stop(server, self, False, message.get("timeout", 90), tap=True)
-            except Error as err:
-                server.error(f'[m/hydra/VM({x.vmid})]: Cannot ACPI "tap" the VM!', err)
-                return as_error(f"cannot ACPI tap VM {x.vmid}: {err}")
-            return True
         if message.type == HYDRA_RESTART:
             try:
                 x._restart(server, message.force)
@@ -2616,14 +2703,34 @@ class HydraServer(object):
                 server.error(f"[m/hydra/VM({x.vmid})]: Cannot Hibernate the VM!", err)
                 return as_error(f"cannot Hibernate VM {x.vmid}: {err}")
             return True
-        if message.type == HYDRA_USB_CLEAN:
+        if message.type == HYDRA_SNAP_LIST:
+            v = x._status()
             try:
-                x._usb_clean(server, self)
+                v["snaps"] = x._snap_list(server)
+                v["snap_current"] = x._snap_last(server)
             except Error as err:
-                server.error(f"[m/hydra/VM({x.vmid})]: Cannot remove USB devices!", err)
-                return as_error(f"cannot remove USB devices from VM {x.vmid}: {err}")
-            return x._status()
-        if message.type == HYDRA_USB_ADD:
+                server.error(
+                    f"[m/hydra/VM({x.vmid})]: Cannot read the Snapshot data!", err
+                )
+                return as_error(f"cannot read Snapshots for VM {x.vmid}: {err}")
+            return v
+        if message.type == HYDRA_SEND_INPUT:
+            try:
+                x._input(server, message.input, message.caps)
+            except Error as err:
+                server.error(
+                    f"[m/hydra/VM({x.vmid})]: Cannot send input to the VM!", err
+                )
+                return as_error(f"cannot send input to VM {x.vmid}: {err}")
+            return True
+        # NOTE(dij): The commands below all return "x._status()"
+        if message.type == HYDRA_STOP:
+            try:
+                x._stop(server, self, message.force, message.get("timeout", 90))
+            except Error as err:
+                server.error(f"[m/hydra/VM({x.vmid})]: Cannot stop the VM!", err)
+                return as_error(f"cannot stop VM {x.vmid}: {err}")
+        elif message.type == HYDRA_USB_ADD:
             try:
                 x._usb_add(server, self, message.vendor, message.product, message.slow)
             except Error as err:
@@ -2631,8 +2738,24 @@ class HydraServer(object):
                     f"[m/hydra/VM({x.vmid})]: Cannot add USB device to the VM!", err
                 )
                 return as_error(f"cannot add device to VM {x.vmid}: {err}")
-            return x._status()
-        if message.type == HYDRA_USB_DELETE:
+        elif message.type == HYDRA_USB_CLEAN:
+            try:
+                x._usb_clean(server, self)
+            except Error as err:
+                server.error(f"[m/hydra/VM({x.vmid})]: Cannot remove USB devices!", err)
+                return as_error(f"cannot remove USB devices from VM {x.vmid}: {err}")
+        elif message.type == HYDRA_SNAP_TAKE:
+            if not valid_snap_name(message.name):
+                server.error(
+                    f'[m/hydra/VM({x.vmid})]: Invalid Snapshot name "{message.name}" supplied!'
+                )
+                return as_error("invalid Snapshot name")
+            try:
+                x._snap_capture(server, self, message.name)
+            except Error as err:
+                server.error(f"[m/hydra/VM({x.vmid})]: Cannot Snapshot the VM!", err)
+                return as_error(f"cannot take Snapshot for VM {x.vmid}: {err}")
+        elif message.type == HYDRA_USB_DELETE:
             try:
                 x._usb_remove(
                     server, self, message.vendor, message.product, message.usb
@@ -2643,17 +2766,44 @@ class HydraServer(object):
                     err,
                 )
                 return as_error(f"cannot remove device from VM {x.vmid}: {err}")
-            return x._status()
-        if message.type == HYDRA_SEND_INPUT:
+        elif message.type == HYDRA_SNAP_DELETE:
+            if not valid_snap_name(message.name):
+                server.error(
+                    f'[m/hydra/VM({x.vmid})]: Invalid Snapshot name "{message.name}" supplied!'
+                )
+                return as_error("invalid Snapshot name")
             try:
-                x._input(server, message.input, message.caps)
+                x._snap_delete(server, self, message.name)
             except Error as err:
                 server.error(
-                    f"[m/hydra/VM({x.vmid})]: Cannot send input to the VM!", err
+                    f"[m/hydra/VM({x.vmid})]: Cannot delete the VM Snapshot!", err
                 )
-                return as_error(f"cannot send input to VM {x.vmid}: {err}")
-            return True
-        return as_error("unknown or invalid command")
+                return as_error(f"cannot delete Snapshot for VM {x.vmid}: {err}")
+        elif message.type == HYDRA_SNAP_RESTORE:
+            if not valid_snap_name(message.name):
+                server.error(
+                    f'[m/hydra/VM({x.vmid})]: Invalid Snapshot name "{message.name}" supplied!'
+                )
+                return as_error("invalid Snapshot name")
+            try:
+                x._snap_restore(server, self, message.name)
+            except Error as err:
+                server.error(
+                    f"[m/hydra/VM({x.vmid})]: Cannot restore the VM Snapshot!", err
+                )
+                return as_error(f"cannot restore Snapshot for VM {x.vmid}: {err}")
+        elif message.type == HYDRA_SLEEP or message.type == HYDRA_WAKE:
+            try:
+                x._sleep(server, message.type == HYDRA_SLEEP)
+            except Error as err:
+                if message.type == HYDRA_SLEEP:
+                    server.error(f"[m/hydra/VM({x.vmid})]: Cannot suspend the VM!", err)
+                    return as_error(f"cannot suspend VM {x.vmid}: {err}")
+                server.error(f"[m/hydra/VM({x.vmid})]: Cannot resume the VM!", err)
+                return as_error(f"cannot resume VM {x.vmid}: {err}")
+        else:
+            return as_error("unknown or invalid command")
+        return x._status()
 
     def _get_vm(self, server, message):
         if message.vmid is not None:
@@ -2681,6 +2831,10 @@ class HydraServer(object):
         return v, True
 
     def hibernate(self, server, message):
+        if message.uid() != 0:
+            return server.warning(
+                "[m/hydra]: Ignoring Hibernate request from a non-root user."
+            )
         if message.type != MSG_PRE or len(self._vms) == 0:
             return
         server.info("[m/hydra]: Suspending VMS for due to Hibernation/Suspend!")
@@ -2736,76 +2890,3 @@ class HydraServer(object):
             f"[m/hydra/VM({vm.vmid})]: Registered a Snapper with FD({f}) and Job({job})."
         )
         del f, v
-
-
-def _key_translate(v):
-    if v == 0xA:
-        return ({"type": "qcode", "data": "RET"}, False)
-    if v == 0xD:
-        return ({"type": "qcode", "data": "LF"}, False)
-    if v == 0x20:
-        return ({"type": "qcode", "data": "spc"}, False)
-    if v in HYDRA_KEYS_SIMPLE:
-        return ({"type": "qcode", "data": f"{v:c}"}, False)
-    if 0x41 <= v <= 0x5A:
-        return ({"type": "qcode", "data": f"{v + 0x20:c}"}, True)
-    if v in HYDRA_KEYS_NAMED:
-        return ({"type": "qcode", "data": HYDRA_KEYS_NAMED[v]}, False)
-    try:
-        return ({"type": "qcode", "data": HYDRA_KEYS_MAP[v]}, True)
-    except KeyError:
-        pass
-    return (None, None)
-
-
-def _key_next(buf, x, n):
-    if buf[x] == 0x3C:
-        i = buf.find(0x3E, x)
-        if i > x and i + 1 <= n:
-            v = buf[x + 1 : i].decode("UTF-8")
-            if v in HYDRA_KEYS_CTRL_MAP:
-                v = HYDRA_KEYS_CTRL_MAP[v]
-            if v in HYDRA_KEYS_CTRL:
-                return (True, i + 1, v.lower(), False)
-            del v
-        del i
-    (c, k) = _key_translate(buf[x])
-    return (False, x + 1, c, k)
-
-
-def _key_send(s, c, k, m):
-    b, e = "shift", [{"type": "key", "data": {"down": True, "key": c}}]
-    if k and m:
-        b = "caps_lock"
-    if k:
-        e.insert(
-            0,
-            {
-                "type": "key",
-                "data": {"down": True, "key": {"type": "qcode", "data": b}},
-            },
-        )
-    s.sendall(
-        dumps({"execute": "input-send-event", "arguments": {"events": e}}).encode(
-            "UTF-8"
-        )
-    )
-    del e
-    s.sendall(b"\r\n")
-    _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
-    e = [{"type": "key", "data": {"down": False, "key": c}}]
-    if k:
-        e.append(
-            {
-                "type": "key",
-                "data": {"down": False, "key": {"type": "qcode", "data": b}},
-            }
-        )
-    s.sendall(
-        dumps({"execute": "input-send-event", "arguments": {"events": e}}).encode(
-            "UTF-8"
-        )
-    )
-    del e, b
-    s.sendall(b"\r\n")
-    _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))

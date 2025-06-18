@@ -37,22 +37,22 @@
 # file.py
 #   Python file-based utility functions.
 
-from io import StringIO
 from hashlib import md5
+from io import StringIO
 from grp import getgrgid
-from pwd import getpwuid
 from lib.util import nes
+from pwd import getpwuid
 from sys import _getframe
 from shutil import copyfile
 from typing import NamedTuple
 from lib.constants import EMPTY
-from string import ascii_letters, digits
-from json import loads, dumps, JSONDecodeError
-from os import chown, environ, makedirs, stat, chmod, remove, fspath
+from string import digits, ascii_letters
+from json import JSONDecodeError, dumps, loads
+from os import stat, chmod, chown, fspath, remove, environ, makedirs
 from os.path import (
     isabs,
-    isfile,
     exists,
+    isfile,
     islink,
     dirname,
     relpath,

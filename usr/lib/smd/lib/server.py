@@ -42,22 +42,22 @@ from grp import getgrnam
 from threading import Event
 from os.path import exists, dirname
 from lib.util.file import ensure_dir
-from lib.structs import Service, Message
-from os import remove, chmod, chown, stat
-from select import epoll, EPOLLERR, EPOLLHUP, EPOLLIN
+from lib.structs import Message, Service
+from os import stat, chmod, chown, remove
+from select import EPOLLIN, EPOLLERR, EPOLLHUP, epoll
 from lib.constants import VERSION, HOOK_SHUTDOWN, HOOK_NOTIFICATION
 from socket import (
-    socket,
     AF_UNIX,
     SHUT_RDWR,
     SOL_SOCKET,
     SOCK_STREAM,
     SO_PEERCRED,
     SO_REUSEADDR,
+    socket,
 )
 from lib.constants.config import (
-    NAME_SERVER,
     LOG_PAYLOAD,
+    NAME_SERVER,
     SOCKET_GROUP,
     SOCKET_BACKLOG,
     TIMEOUT_SEC_STOP,
@@ -215,7 +215,7 @@ class Server(Service):
         return True
 
     def _stop(self):
-        self._send_one(None, Message(HOOK_SHUTDOWN))
+        self._send_one(None, Message(HOOK_SHUTDOWN, pid=self._pid, uid=self._uid))
         self._dispatcher.stop()
         self.info("[main]: Stopping System Management Daemon Server..")
         self._running.set()
@@ -263,7 +263,7 @@ class Server(Service):
                 f"PID({m.pid()})/UID({m.uid()})/FD({file})."
             )
             if LOG_PAYLOAD:
-                self.dump(f"  IN < {m}")
+                self.dump(f" IN < {m}")
             del m
             return
         except OSError as err:

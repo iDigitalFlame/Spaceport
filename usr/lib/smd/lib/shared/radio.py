@@ -39,7 +39,7 @@
 
 from lib.util import boolean
 from lib.constants.config import TIMEOUT_SEC_MESSAGE
-from lib import send_message, print_error, check_error
+from lib import check_error, print_error, send_message
 from lib.constants import BOOLEANS, HOOK_RADIO, MSG_ACTION, MSG_CONFIG, MSG_STATUS
 
 

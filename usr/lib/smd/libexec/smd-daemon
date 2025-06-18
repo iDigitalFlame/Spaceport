@@ -47,17 +47,21 @@
 #   0 - Completed successfully
 #   1 - Error occurred or syntax error
 
+# isort please don't lint this
+"""
+isort:skip_file
+"""
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
 
 from os import getuid
 from sys import exit, stderr
-from lib import Server, print_error
 from argparse import ArgumentParser
-from lib.constants import LOG_LEVELS, VERSION
-from lib.constants.config import LOG_PATH_SERVER, LOG_LEVEL, SOCKET, CONFIG_SERVER
-
+from lib import Server, print_error
+from lib.constants import VERSION, LOG_LEVELS
+from lib.constants.config import SOCKET, LOG_LEVEL, CONFIG_SERVER, LOG_PATH_SERVER
 
 HELP_TEXT = """System Management Daemon (v{version})
 

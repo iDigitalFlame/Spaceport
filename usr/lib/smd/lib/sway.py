@@ -39,19 +39,12 @@
 
 from os import getenv
 from os.path import exists
-from struct import pack, unpack
 from lib.constants import EMPTY
+from struct import pack, unpack
 from lib.util import nes, boolean
 from collections import namedtuple
-from json import loads, dumps, JSONDecodeError
-from socket import (
-    socket,
-    AF_UNIX,
-    SHUT_RDWR,
-    SOL_SOCKET,
-    SOCK_STREAM,
-    SO_REUSEADDR,
-)
+from json import JSONDecodeError, dumps, loads
+from socket import AF_UNIX, SHUT_RDWR, SOL_SOCKET, SOCK_STREAM, SO_REUSEADDR, socket
 
 Window = namedtuple(
     "Window",

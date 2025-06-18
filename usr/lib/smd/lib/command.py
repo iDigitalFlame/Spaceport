@@ -44,9 +44,9 @@ from traceback import format_exc
 from argparse import ArgumentParser
 from importlib import import_module
 from lib.util.file import perm_check
-from sys import exit, stderr, _getframe
 from lib.args import ARGS, DESCRIPTIONS
-from os.path import basename, isdir, relpath
+from sys import exit, stderr, _getframe
+from os.path import isdir, relpath, basename
 from lib.constants import EMPTY, NEWLINE, VERSION
 from lib.constants.config import (
     NAME,
@@ -79,7 +79,7 @@ def powerctl():
             m = x
     else:
         m = x
-    del x, b, e
+    del x, b
     m.add_argument(
         "-S",
         type=str,
@@ -114,7 +114,11 @@ def powerctl():
             f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2025\n\n"
             f"System: {NAME} ({NAME_SERVER} / {NAME_CLIENT})"
         )
+        print("\nPowerCTL Modules:")
+        for i in e.keys():
+            print(f"- {i}")
         exit(0)
+    del e
     if hasattr(a, "subs") and isinstance(a.subs, dict) and len(a.subs) > 0:
         try:
             r = _exec_subs(a)

@@ -37,11 +37,11 @@
 # PowerCTL Module: CPU
 #   Command line user module to configure CPU Speed/Power options.
 
-from lib.util import boolean, num, nes
+from lib.util import nes, num, boolean
 from lib import print_error, send_message
 from lib.constants.config import TIMEOUT_SEC_MESSAGE
-from lib.shared.cpu import cpu, freq_to_str, validate
-from lib.constants import EMPTY, HOOK_CPU, HOOK_OK, MSG_CONFIG
+from lib.shared.cpu import cpu, validate, freq_to_str
+from lib.constants import EMPTY, HOOK_OK, HOOK_CPU, MSG_CONFIG
 
 
 def _parse(freq):

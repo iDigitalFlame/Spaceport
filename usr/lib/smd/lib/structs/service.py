@@ -40,14 +40,13 @@
 #   common functions, such as logging and dispatching.
 
 import threading
-
 from lib.util import nes
 from pprint import pformat
 from lib.util.file import perm_check
 from lib.structs.logger import Logger
 from lib.structs.storage import Storage
-from signal import signal, SIGALRM, SIGINT
-from os import getgid, getpid, getuid, kill
+from signal import SIGINT, SIGALRM, signal
+from os import kill, getgid, getpid, getuid
 from lib.constants.config import LOG_PAYLOAD
 from lib.structs.dispatcher import Dispatcher
 
@@ -100,6 +99,9 @@ class Service(object):
             perm_check(self.config.path(), 0o4137, self._uid, getgid())
             self.config.load()
             if self.config.is_read_only() and not self._read_only:
+                self._log.debug(
+                    f'[service]: Configuration "{self.config.path()}" enabled read-only mode!'
+                )
                 self._read_only = True
         except (ValueError, OSError) as err:
             self._log.error(
@@ -109,6 +111,9 @@ class Service(object):
 
     def is_server(self):
         return False
+
+    def is_read_only(self):
+        return self._read_only
 
     def cancel(self, event):
         return self._dispatcher.cancel_task(event)

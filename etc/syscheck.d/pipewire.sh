@@ -43,8 +43,8 @@ fi
 chown -hR root:root "/etc/pipewire"
 chown -hR root:root "/etc/wireplumber"
 
-chmod -R 0555 "/etc/pipewire"
-chmod -R 0555 "/etc/wireplumber"
+chmod -hR 0555 "/etc/pipewire"
+chmod -hR 0555 "/etc/wireplumber"
 
 find "/etc/pipewire" -type f -exec chmod 0444 {} \;
 find "/etc/wireplumber" -type f -exec chmod 0444 {} \;

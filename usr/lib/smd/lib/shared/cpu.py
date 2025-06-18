@@ -40,21 +40,21 @@
 from glob import glob
 from os.path import exists
 from lib.constants import EMPTY
-from lib.util import boolean, num, nes
 from lib.util.file import read, clean
+from lib.util import nes, num, boolean
 from lib.constants.config import (
     CPU_PATH,
-    CPU_PATH_MIN,
     CPU_PATH_MAX,
+    CPU_PATH_MIN,
     CPU_PATH_TURBO,
     CPU_PATH_CURRENT,
     CPU_PATH_GOVERNOR,
     CPU_PATH_GOVERNORS,
-    CPU_PATH_TURBO_MIN,
     CPU_PATH_TURBO_MAX,
-    CPU_PATH_SCALING_MIN,
-    CPU_PATH_SCALING_MAX,
+    CPU_PATH_TURBO_MIN,
     CPU_PATH_PERFORMANCE,
+    CPU_PATH_SCALING_MAX,
+    CPU_PATH_SCALING_MIN,
     CPU_PATH_PERFORMANCES,
     CPU_PATH_TURBO_CURRENT,
 )

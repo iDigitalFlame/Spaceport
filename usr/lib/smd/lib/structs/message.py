@@ -38,14 +38,14 @@
 #   The Message class is a subclass of the "Storage" class that is designed specifically
 #   to be passed between client and server in binary format quickly.
 
-from lib.util import num, nes
-from struct import unpack, pack
+from lib.util import nes, num
+from struct import pack, unpack
 from traceback import format_exc
 from lib.structs.storage import Flex
-from lib.constants import HOOK_ERROR, HOOK_OK
-from json import loads, dumps, JSONDecodeError
-from socket import socket, AF_UNIX, SHUT_RDWR, SOCK_STREAM
-from lib.constants.config import HOOK_TRANSLATIONS, LOG_FRAME_LIMIT, TIMEOUT_SEC_MESSAGE
+from lib.constants import HOOK_OK, HOOK_ERROR
+from json import JSONDecodeError, dumps, loads
+from socket import AF_UNIX, SHUT_RDWR, SOCK_STREAM, socket
+from lib.constants.config import LOG_FRAME_LIMIT, HOOK_TRANSLATIONS, TIMEOUT_SEC_MESSAGE
 
 
 def as_error(err):
@@ -69,10 +69,12 @@ def as_exception(header, err):
 
 
 def _wait_for(sock, wait, timeout, errors):
-    t, k, h, o = timeout, None, wait, False
+    t, k, h, o, f = timeout, None, wait, False, None
     sock.settimeout(t)
     if (isinstance(wait, list) or isinstance(wait, tuple)) and len(wait) >= 2:
-        if isinstance(wait[1], bool) and wait[1] and isinstance(wait[0], int):
+        if isinstance(wait[0], int) and callable(wait[1]):
+            h, k, f = wait[0], True, wait[1]
+        elif isinstance(wait[1], bool) and wait[1] and isinstance(wait[0], int):
             h, k, o = wait[0], None, True
         else:
             h, k = f"{wait[0]}", f"{wait[1]}"
@@ -87,7 +89,9 @@ def _wait_for(sock, wait, timeout, errors):
         while True:
             try:
                 r = Message(stream=sock)
-                if o and r.header() == HOOK_OK:
+                if o and callable(f) and f(r):
+                    return r
+                elif o and r.header() == HOOK_OK:
                     return r
                 if h is not None and r.header() == HOOK_ERROR and errors:
                     return r
@@ -95,7 +99,10 @@ def _wait_for(sock, wait, timeout, errors):
                     return r
                 if h is None and k is not None and k in r:
                     return r
-                if r.header() == h and (k is None or k in r):
+                if r.header() == h and f is not None:
+                    if f(r):
+                        return r
+                elif r.header() == h and (k is None or k in r):
                     return r
                 sock.setblocking(True)
                 sock.settimeout(t)
@@ -105,7 +112,7 @@ def _wait_for(sock, wait, timeout, errors):
             except KeyboardInterrupt:
                 break
     finally:
-        del t, k, h
+        del f, h, k, t
     return None
 
 

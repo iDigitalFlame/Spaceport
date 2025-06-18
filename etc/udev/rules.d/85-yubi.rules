@@ -34,5 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", MODE="0664", GROUP="users"
+ACTION=="add", KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", MODE="0664", GROUP="users"
+
 ACTION=="remove", ENV{ID_VENDOR}=="Yubico", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", RUN+="/usr/lib/smd/libexec/smd-key-eject"

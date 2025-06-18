@@ -41,46 +41,46 @@
 from glob import glob
 from shutil import rmtree
 from threading import Event
-from uuid import uuid4, UUID
 from base64 import b64encode
-from typing import NamedTuple
+from uuid import UUID, uuid4
 from datetime import datetime
-from signal import SIGSTOP, SIGCONT, SIGUSR1
-from lib.util.exec import nulexec, split, stop
-from socket import socket, AF_INET, SOCK_STREAM
+from typing import NamedTuple
+from signal import SIGCONT, SIGSTOP, SIGUSR1
+from lib.util.exec import stop, split, nulexec
+from socket import AF_INET, SOCK_STREAM, socket
 from lib.structs import Message, Storage, as_error
-from lib.util import num, nes, cancel_nul, boolean, fnv32
-from subprocess import DEVNULL, Popen, PIPE, SubprocessError
+from lib.util import nes, num, fnv32, boolean, cancel_nul
+from subprocess import PIPE, DEVNULL, Popen, SubprocessError
 from os.path import isabs, isdir, exists, isfile, getsize, basename, getctime
-from os import chmod, urandom, remove, makedirs, statvfs, environ, set_blocking
+from os import chmod, remove, environ, statvfs, urandom, makedirs, set_blocking
 from lib.constants.files import BACKUP_RESTORE_SCRIPT, BACKUP_RESTORE_SCRIPT_NO_KEY
-from lib.util.file import read, read_json, write_json, info, write, remove_file, copy
+from lib.util.file import copy, info, read, write, read_json, write_json, remove_file
 from lib.constants.config import (
-    BACKUP_STATE,
     BACKUP_HOSTS,
+    BACKUP_STATE,
     CONFIG_BACKUP,
     BACKUP_EXCLUDE,
     BACKUP_TIMEOUT,
     BACKUP_KEY_SIZE,
-    BACKUP_STATE_DIR,
     BACKUP_READ_TIME,
+    BACKUP_STATE_DIR,
     BACKUP_WAIT_TIME,
     BACKUP_DEFAULT_DIR,
+    BACKUP_BACKOFF_TIME,
     BACKUP_BATTERY_PATH,
     BACKUP_DEFAULT_PORT,
-    BACKUP_BACKOFF_TIME,
 )
 from lib.constants import (
     EMPTY,
     MSG_PRE,
     NEWLINE,
-    MSG_USER,
     MSG_POST,
-    MSG_STATUS,
-    MSG_UPDATE,
+    MSG_USER,
     HOOK_POWER,
     MSG_ACTION,
     MSG_CONFIG,
+    MSG_STATUS,
+    MSG_UPDATE,
     HOOK_BACKUP,
     HOOK_LOCKER,
     BACKUP_SIZES,
@@ -88,13 +88,13 @@ from lib.constants import (
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
     BACKUP_STATE_DONE,
-    LOCKER_TYPE_BACKUP,
-    BACKUP_STATE_NAMES,
     BACKUP_STATE_ERROR,
+    BACKUP_STATE_NAMES,
+    LOCKER_TYPE_BACKUP,
     BACKUP_STATE_KEYGEN,
-    BACKUP_STATE_WAITING,
     BACKUP_STATE_PACKING,
     BACKUP_STATE_PRE_CMD,
+    BACKUP_STATE_WAITING,
     BACKUP_STATE_COMPRESS,
     BACKUP_STATE_NO_KEYGEN,
     BACKUP_STATE_UPLOADING,
@@ -594,7 +594,7 @@ class Plans(object):
         for i in self.entries:
             if c and current.id == i.id:
                 try:
-                    v = BACKUP_STATE_NAMES[current._state].title()
+                    v = BACKUP_STATE_NAMES[current._state]
                 except IndexError:
                     v = "Invalid"
                 if current.paused():
@@ -993,7 +993,7 @@ class Backup(object):
         if self._state > 0xB:
             v = "Unknown"
         else:
-            v = BACKUP_STATE_NAMES[self._state].title()
+            v = BACKUP_STATE_NAMES[self._state]
         if len(e) == 0:
             server.error(
                 f"[m/backup/job/{self.id}]: {v} process exited with a non-zero exit code ({n})!"
@@ -1552,6 +1552,9 @@ class Backup(object):
             )
             return self._update(server, BACKUP_STATE_ERROR)
         i = h.find(" ")
+        if not isinstance(i, int) or i <= 0:
+            server.error(f"[m/backup/job/{self.id}]: Cannot read Backup hash data!")
+            return self._update(server, BACKUP_STATE_ERROR)
         h, d = h[:i], self._plan.description
         del i
         if not nes(d):
@@ -1901,6 +1904,8 @@ class BackupServer(object):
         return {"plans": r}
 
     def hook(self, server, message):
+        if message.uid() != 0:
+            return server.warning("[m/backup]: Ignoring request from a non-root user.")
         if self._current is None or not self._current.running():
             return
         if message.header() == HOOK_SHUTDOWN:

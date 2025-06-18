@@ -45,13 +45,13 @@
 from lib.util.file import import_file
 from lib.constants import CUSTOM_DEFAULTS
 
-## Default Configuration Constants
+# Default Configuration Constants
 # Overrides are loaded from disk from "CUSTOM_DEFAULTS".
 
-# Waybar Defaults
+## Waybar Defaults
 DEFAULT_WAYBAR_NAME = "bar"
 
-# Locker Defaults
+## Locker Defaults
 DEFAULT_LOCKER_LID = True
 DEFAULT_LOCKER_LOCK = 120
 DEFAULT_LOCKER_BLANK = 60
@@ -60,20 +60,20 @@ DEFAULT_LOCKER_SUSPEND = 120
 DEFAULT_LOCKER_KEY_LOCK = True
 DEFAULT_LOCKER_HIBERNATE = 300
 
-# Notification Defaults
+## Notification Defaults
 DEFAULT_NOTIFY_DIRS = list()
 DEFAULT_NOTIFY_ICON = "dialog-information.png"
 DEFAULT_NOTIFY_THEME = "/usr/share/icons/hicolor/scalable/status"
 DEFAULT_NOTIFY_FULLPATH = False
 
-# Background Defaults
+## Background Defaults
 DEFAULT_BACKGROUND_PATH = "${HOME}/Pictures/Backgrounds"
 DEFAULT_BACKGROUND_METHOD = "native"
 DEFAULT_BACKGROUND_SWITCH = 600
 DEFAULT_BACKGROUND_METHODS = ["native", "fit", "center"]
 DEFAULT_BACKGROUND_LOCKSCREEN = "${HOME}/.cache/smd/lockscreen.png"
 
-# Session Defaults
+## Session Defaults
 DEFAULT_SESSION_IGNORE = list()
 DEFAULT_SESSION_FREEZE = True
 DEFAULT_SESSION_MONITOR = False

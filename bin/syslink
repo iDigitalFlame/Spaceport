@@ -56,7 +56,6 @@ fi
 
 relink "$SYSCONFIG" /
 
-cp /etc/fstab "${SYSCONFIG}/etc/fstab.nlk"
 pacman -Qeqn 1> "${SYSCONFIG}/packages.md"
 pacman -Qeqm 1> "${SYSCONFIG}/packages-aur.md"
 systemctl list-unit-files --plain --full --no-pager --legend=false | grep "masked" | awk '{print $1}' 1> "${SYSCONFIG}/masked.md"

@@ -35,6 +35,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+if ! [ "$USER" = "root" ]; then
+    echo "Error: root is required!"
+    exit 1
+fi
+
 FILE_HASH="e528e83e300daf2eae99d7394052b635"
 
 # NOTE(dij): Only replace this file if it does not exist or match our hash.
@@ -51,5 +56,5 @@ local_users_only
 EOF
 fi
 
-chown root:root "/etc/security/faillock.conf"
-chmod 0444 "/etc/security/faillock.conf"
+chown -h root:root "/etc/security/faillock.conf"
+chmod -h 0444      "/etc/security/faillock.conf"

@@ -51,11 +51,17 @@
 #   2 - Wait timeout expired (if waiting)
 #   N - Other exit codes may be specified with "-e"
 
+# isort please don't lint this
+"""
+isort:skip_file
+"""
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
 
 from sys import exit
+from os import getuid
 from lib.util import nes
 from argparse import ArgumentParser
 from lib import print_error, send_message
@@ -63,6 +69,8 @@ from lib.constants.config import SOCKET, HOOK_TRANSLATIONS
 
 
 def _main(args):
+    if args.root and getuid() != 0:
+        return print_error("You must be root!", exit_code=args.exit)
     if args.translate:
         h = HOOK_TRANSLATIONS.get(args.header.lower())
         if h is None:
@@ -165,6 +173,14 @@ if __name__ == "__main__":
         help="exit code to always exit with, regardless of errors",
         action="store",
         default=None,
+        required=False,
+    )
+    p.add_argument(
+        "--root",
+        dest="root",
+        help="send message only if the user is root",
+        action="store_true",
+        default=False,
         required=False,
     )
     e = _main(p.parse_args())

@@ -35,10 +35,10 @@
 #
 
 # smd-hibernate-post
-#   Script used by systemd after the system resumes from hibernate to inform SMD to
-#   start the post-hibernate process. Can only be called by systemd.
+#   Script used by Systemd after the system resumes from hibernate to inform SMD to
+#   start the post-hibernate process. Can only be called by Systemd.
 
 export PYTHONOPTIMIZE=2
 export PYTHONPYCACHEPREFIX="/var/cache/python"
 
-exec /usr/lib/smd/libexec/smd-message --translate hibernate --exit 0 --payload '{"type": 1}'
+exec /usr/lib/smd/libexec/smd-message --root --translate hibernate --exit 0 --payload '{"type": 1}' 1> /dev/null

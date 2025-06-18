@@ -1,3 +1,4 @@
+#!/usr/bin/dash
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #
@@ -16,7 +17,6 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## UDev Flipper Interface Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,4 +34,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740|df11", TAG+="uaccess"
+vet() {
+    isort --color --no-sections --length-sort --force-sort-within-sections \
+          --multi-line=3 --line-length=88 --order-by-type --combine-as \
+          --trailing-comma --case-sensitive --float-to-top --use-parentheses "$1"
+    black -q "$1"
+}
+
+for i in $(find ./usr/lib/smd/lib/ -type f -print); do
+    vet "$i"
+done
+
+# Don't run isort on these, as the import for SMD needs to be first and isort
+# doesn't understand that
+black -q "usr/lib/smd/bin/powerctl"
+black -q "usr/lib/smd/libexec/smd-daemon"
+black -q "usr/lib/smd/libexec/smd-client"
+black -q "usr/lib/smd/libexec/smd-locker"
+black -q "usr/lib/smd/libexec/smd-message"
+black -q "usr/lib/smd/libexec/smd-wait-sway"

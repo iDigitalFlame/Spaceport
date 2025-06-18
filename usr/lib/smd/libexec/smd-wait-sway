@@ -38,6 +38,11 @@
 #   Waits for the Sway socket to become ready. Used by the smd-client daemon to
 #   prevent running until Sway is ready.
 
+# isort please don't lint this
+"""
+isort:skip_file
+"""
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")

@@ -37,16 +37,23 @@
 # PowerCTL Module: Hydra
 #   Command line user module to configure and control Hydra VMs.
 
-from uuid import uuid4
 from time import sleep
+from uuid import uuid4
 from os import fork, execl
 from os.path import basename
-from lib.util import nes, num
 from datetime import datetime
-from lib.util.file import read_json, expand
-from socket import socket, AF_UNIX, SOCK_STREAM
-from lib import print_error, send_message, check_error
-from lib.shared.hydra import load_vm, get_devices, valid_snap_name, get_device_name
+from lib.util import nes, num
+from lib.util.file import expand, read_json
+from socket import AF_UNIX, SOCK_STREAM, socket
+from lib import check_error, print_error, send_message
+from lib.shared.hydra import load_vm, get_devices, get_device_name, valid_snap_name
+from lib.constants.config import (
+    HYDRA_DIR,
+    CONFIG_CLIENT,
+    HYDRA_EXEC_VNC,
+    HYDRA_EXEC_SPICE,
+    TIMEOUT_SEC_MESSAGE,
+)
 from lib.constants import (
     EMPTY,
     HYDRA_TAP,
@@ -57,28 +64,22 @@ from lib.constants import (
     HYDRA_SLEEP,
     HYDRA_START,
     HYDRA_STATUS,
-    HYDRA_RESTART,
     HYDRA_GA_PING,
+    HYDRA_RESTART,
     HYDRA_USB_ADD,
     HYDRA_HIBERNATE,
-    HYDRA_USB_QUERY,
-    HYDRA_USB_CLEAN,
     HYDRA_SNAP_LIST,
     HYDRA_SNAP_TAKE,
+    HYDRA_USB_CLEAN,
+    HYDRA_USB_QUERY,
     HYDRA_SEND_INPUT,
     HYDRA_USB_DELETE,
     HYDRA_SNAP_DELETE,
+    HYDRA_USER_RESULT,
     HYDRA_SNAP_RESTORE,
-    HYDRA_USER_DIRECTORY,
     HYDRA_USER_ADD_ALIAS,
+    HYDRA_USER_DIRECTORY,
     HYDRA_USER_DELETE_ALIAS,
-)
-from lib.constants.config import (
-    HYDRA_DIR,
-    CONFIG_CLIENT,
-    HYDRA_EXEC_VNC,
-    HYDRA_EXEC_SPICE,
-    TIMEOUT_SEC_MESSAGE,
 )
 
 _CACHE = dict()
@@ -522,6 +523,10 @@ def _vm(x, n, p):
     return f"VM({x})"
 
 
+def _is_result(r):
+    return "error" in r or r.type == HYDRA_USER_RESULT
+
+
 def _usb_vet(args):
     d, n = get_devices(), args.usb_name.lower()
     if len(n) == 9 and ":" in n and n in d:
@@ -686,10 +691,12 @@ def _all(args, cmd, force=False):
 
 def user_directory(args):
     try:
-        send_message(
+        r = send_message(
             args.socket,
             HOOK_HYDRA,
-            payload={
+            (HOOK_HYDRA, _is_result),
+            TIMEOUT_SEC_MESSAGE,
+            {
                 "user": True,
                 "type": HYDRA_USER_DIRECTORY,
                 "directory": args.directory,
@@ -697,25 +704,36 @@ def user_directory(args):
         )
     except OSError as err:
         return print_error("Cannot set the VM search directory!", err)
+    check_error(r, "Cannot set the VM search directory")
+    print(f'VM search directory set to: "{args.directory}"!')
     return True
 
 
 def user_alias(args, vm=None):
-    vm = _get_check(args, vm)
+    if nes(args.alias_delete):
+        vm = dict()
+        vm["name"], vm["type"], o = args.alias_delete, HYDRA_USER_DELETE_ALIAS, "remove"
+    elif nes(args.alias_add):
+        vm = _get_check(args, vm)
+        vm["name"], vm["type"], o = args.alias_add, HYDRA_USER_ADD_ALIAS, "add"
+    else:
+        return print_error(
+            "Cannot perform operation: an opteration type must be specified!"
+        )
     vm["user"] = True
-    if nes(args.alias_add) and not nes(args.alias_delete):
-        vm["name"], vm["type"] = args.alias_add, HYDRA_USER_ADD_ALIAS
-    elif nes(args.alias_delete) and not nes(args.alias_add):
-        vm["name"], vm["type"] = args.alias_delete, HYDRA_USER_DELETE_ALIAS
-    if "type" not in vm:
-        return print_error('Cannot perform operation: a "type" must be specified!')
     try:
-        send_message(args.socket, HOOK_HYDRA, payload=vm)
+        r = send_message(
+            args.socket, HOOK_HYDRA, (HOOK_HYDRA, _is_result), TIMEOUT_SEC_MESSAGE, vm
+        )
     except OSError as err:
-        if vm["type"] == HYDRA_USER_ADD_ALIAS:
-            return print_error("Cannot add an alias!", err)
-        return print_error("Cannot remove an alias!", err)
-    del vm
+        return print_error(f"Cannot {o} an alias!", err)
+    check_error(r, f"Cannot {o} an alias")
+    del o
+    if vm["type"] == HYDRA_USER_DELETE_ALIAS:
+        print(f'Alias "{vm["name"]}" was removed')
+    else:
+        print(f'Alias "{vm["name"]}" was added for VM({r.vmid})')
+    del r, vm
     return True
 
 

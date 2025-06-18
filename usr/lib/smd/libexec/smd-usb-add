@@ -1,3 +1,4 @@
+#!/usr/bin/dash
 ################################
 ### iDigitalFlame  2016-2025 ###
 #                              #
@@ -16,7 +17,6 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## UDev Flipper Interface Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,4 +34,20 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740|df11", TAG+="uaccess"
+# smd-usb-add
+#   Script used by Udev to inform SMD that a USB device was attached.
+#   Can only be called by Udev.
+
+if [ "$1" = "" ] || [ "$2" = "" ]; then
+    exit 0
+fi
+
+if [ "$1" = "0bda" ]; then
+    # Ignore Dell Devices as the Dock can trigger a false positive.
+    exit 0
+fi
+
+export PYTHONOPTIMIZE=2
+export PYTHONPYCACHEPREFIX="/var/cache/python"
+
+# exec /usr/lib/smd/libexec/smd-message --root --translate usb --exit 0 --payload "{\"type\": 0, \"dev\": \"${1}:${2}\"}"

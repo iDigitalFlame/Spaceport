@@ -40,11 +40,16 @@
 
 from lib.sway import windows
 from lib.util.file import expand
-from lib.util import boolean, a2z
+from lib.util import a2z, boolean
 from signal import SIGCONT, SIGSTOP
-from os import getpgid, killpg, kill
+from os import kill, killpg, getpgid
 from lib.constants.config import RADIO_NAMES
-from lib.util.exec import stop, nulexec, split
+from lib.util.exec import stop, split, nulexec
+from lib.constants.defaults import (
+    DEFAULT_SESSION_FREEZE,
+    DEFAULT_SESSION_IGNORE,
+    DEFAULT_SESSION_STARTUPS,
+)
 from lib.constants import (
     MSG_PRE,
     MSG_POST,
@@ -53,16 +58,11 @@ from lib.constants import (
     HOOK_RADIO,
     MSG_ACTION,
     HOOK_RELOAD,
-    HOOK_SUSPEND,
     HOOK_DISPLAY,
+    HOOK_SUSPEND,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
     LOCKER_TYPE_FREEZE,
-)
-from lib.constants.defaults import (
-    DEFAULT_SESSION_IGNORE,
-    DEFAULT_SESSION_FREEZE,
-    DEFAULT_SESSION_STARTUPS,
 )
 
 HOOKS = {
@@ -109,7 +109,7 @@ def _signal_group(pid, sig):
 
 
 def _can_freeze(ignore, window):
-    if window.app.startswith("i3lock") or window.app.startswith("swaylock"):
+    if window.app.startswith("swaylock") or window.app.startswith("gtklock"):
         return False
     if not isinstance(ignore, list) or len(ignore) == 0:
         return True
@@ -273,6 +273,16 @@ class Session(object):
         self.setup(server)
 
     def trigger(self, server, message):
+        if message.header() == HOOK_DISPLAY:
+            return self._trigger(server, "display")
+        if message.header() == HOOK_SUSPEND:
+            return self._trigger(
+                server, "suspend_pre" if message.type == MSG_PRE else "suspend_post"
+            )
+        if message.header() == HOOK_HIBERNATE:
+            return self._trigger(
+                server, "hibernate_pre" if message.type == MSG_PRE else "hibernate_post"
+            )
         if message.header() == HOOK_POWER:
             if message.type == MSG_PRE:
                 # NOTE(dij): Prevent re-running power triggers when the AC
@@ -286,17 +296,7 @@ class Session(object):
                     return
                 self._last_ac = True
                 return self._trigger(server, "power_ac")
-        if message.header() == HOOK_DISPLAY:
-            return self._trigger(server, "display")
-        if message.header() == HOOK_SUSPEND:
-            return self._trigger(
-                server, "suspend_pre" if message.type == MSG_PRE else "suspend_post"
-            )
-        if message.header() == HOOK_HIBERNATE:
-            return self._trigger(
-                server, "hibernate_pre" if message.type == MSG_PRE else "hibernate_post"
-            )
-        if message.header() != HOOK_RADIO or message.type != MSG_ACTION:
+        elif message.header() != HOOK_RADIO or message.type != MSG_ACTION:
             return
         if not a2z(message.radio):
             return server.warning("[m/session]: Ignoring invalid Radio name!")

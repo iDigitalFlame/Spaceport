@@ -47,6 +47,11 @@
 #   0 - Completed successfully
 #   1 - Error occurred or syntax error
 
+# isort please don't lint this
+"""
+isort:skip_file
+"""
+
 import sys
 
 sys.path.insert(0, "/usr/lib/smd")
@@ -54,10 +59,11 @@ sys.path.insert(0, "/usr/lib/smd")
 from os import fork
 from time import sleep
 from sys import exit, stderr
-from lib import Client, print_error
 from argparse import ArgumentParser
-from lib.constants import LOG_LEVELS, VERSION
-from lib.constants.config import LOG_PATH_CLIENT, LOG_LEVEL, SOCKET, CONFIG_CLIENT
+from lib import Client, print_error
+from lib.constants import VERSION, LOG_LEVELS
+from lib.constants.config import SOCKET, LOG_LEVEL, CONFIG_CLIENT, LOG_PATH_CLIENT
+
 
 HELP_TEXT = """System Management Client (v{version})
 

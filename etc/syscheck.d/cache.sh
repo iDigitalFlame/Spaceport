@@ -40,51 +40,48 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
-rm "/etc/.updated" 2> /dev/null
-rm "/etc/.pwd.lock" 2> /dev/null
+rm "/etc/.updated" "/etc/.pwd.lock"            2> /dev/null
 rmdir "/etc/NetworkManager/system-connections" 2> /dev/null
 
-linkcheck "/etc/ld.so.cache" "/var/cache/ld.so.cache"
-linkcheck "/etc/pacman.d/gnupg" "/var/db/pacman/gnupg"
-linkcheck "/etc/pacman.d/mirrorlist" "/var/cache/pacman/mirrorlist"
-linkcheck "/etc/cups/printers.conf" "/var/cache/cups/printers.conf"
+linkcheck "/etc/ld.so.cache"                       "/var/cache/ld.so.cache"
+linkcheck "/etc/pacman.d/gnupg"                    "/var/db/pacman/gnupg"
+linkcheck "/etc/cups/printers.conf"                "/var/cache/cups/printers.conf"
+linkcheck "/etc/pacman.d/mirrorlist"               "/var/cache/pacman/mirrorlist"
 linkcheck "/etc/NetworkManager/system-connections" "/var/lib/NetworkManager/system-connections"
 
-chmod 0644 "/var/cache/ld.so.cache"
-chmod 0444 "/var/cache/pacman/mirrorlist"
-chmod 0600 "/var/cache/cups/printers.conf"
-chmod 0700 "/var/lib/NetworkManager/system-connections"
-chmod 0600 /var/lib/NetworkManager/system-connections/*
+chmod -h 0644 "/var/cache/ld.so.cache"
+chmod -h 0444 "/var/cache/pacman/mirrorlist"
+chmod -h 0600 "/var/cache/cups/printers.conf"
+chmod -h 0700 "/var/lib/NetworkManager/system-connections"
+chmod -h 0600 "/var/lib/NetworkManager/system-connections/"*
 
-chown root:root "/var/cache/ld.so.cache"
-chown root:cups "/var/cache/cups/printers.conf"
-chown -R root:root "/var/lib/NetworkManager/system-connections"
+chown -hR root:root "/var/lib/NetworkManager/system-connections"
 
-chmod -R 2755 "/var/cache/fontconfig"
-chmod 2644 /var/cache/fontconfig/*
-chown -R root:root "/var/cache/fontconfig"
+chown -hR root:root "/var/cache/fontconfig"
+chmod -hR 2755      "/var/cache/fontconfig"
+chmod -h 2644       "/var/cache/fontconfig/"*
 
-chmod -R 2750 "/var/cache/pacman/pkg"
-chmod 2660 /var/cache/pacman/pkg/*
-chown -R alpm:root "/var/cache/pacman/pkg"
+chown -hR alpm:root "/var/cache/pacman/pkg"
+chmod -hR 2750      "/var/cache/pacman/pkg"
+chmod -h 2660       "/var/cache/pacman/pkg/"*
 
-chmod 2755 "/var/lib/pacman/sync"
-chmod 2644 /var/lib/pacman/sync/*.db
-chown -R root:root "/var/lib/pacman/sync"
+chown -hR root:root "/var/lib/pacman/sync"
+chmod -h 2755       "/var/lib/pacman/sync"
+chmod -h 2644       "/var/lib/pacman/sync/"*.db
 
-chmod 2755 -R "/var/lib/pacman/local"
-find "/var/lib/pacman/local" -type f -exec chmod 644 {} \;
-chown -R root:root "/var/lib/pacman/local"
+chown -hR root:root "/var/lib/pacman/local"
+chmod -hR 2755      "/var/lib/pacman/local"
+find "/var/lib/pacman/local" -type f -exec chmod -h 0644 {} \;
 
-chmod 2700 "/var/cache/ldconfig"
-chown -R root:root "/var/cache/ldconfig"
+chown -hR root:root "/var/cache/ldconfig"
+chmod -h 2700       "/var/cache/ldconfig"
 
-chmod 3775 "/var/cache/makepkg"
-chmod 3640 /var/cache/makepkg/*
-chown root:makepkg -R "/var/cache/makepkg"
+chown -hR root:makepkg "/var/cache/makepkg"
+chmod -h 3775          "/var/cache/makepkg"
+chmod -h 3640          "/var/cache/makepkg/"* 2> /dev/null
 
-chmod 3777 "/var/cache/python"
-chown root:root "/var/cache/python"
+chown -h root:root "/var/cache/python"
+chmod -h 3777      "/var/cache/python"
 
-chmod 2770 "/var/cache/python/usr/lib/smd"
-chown root:smd "/var/cache/python/usr/lib/smd"
+chown -hR root:smd "/var/cache/python/usr/lib/smd"
+chmod -h 2770      "/var/cache/python/usr/lib/smd"

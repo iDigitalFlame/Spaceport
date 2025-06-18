@@ -43,19 +43,18 @@
 #   online/offline.
 
 from lib.util.exec import nulexec
-from lib.util import boolean, a2z, nes
+from lib.util import a2z, nes, boolean
 from lib.constants.config import RADIO_EXEC, RADIO_NAMES
 from lib.constants import (
     MSG_POST,
-    MSG_STATUS,
+    HOOK_RADIO,
     MSG_ACTION,
     MSG_CONFIG,
-    HOOK_RADIO,
+    MSG_STATUS,
     HOOK_STARTUP,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
 )
-
 
 HOOKS_SERVER = {
     HOOK_RADIO: "Radio.hook",
@@ -71,12 +70,6 @@ class Radio(object):
     def __init__(self):
         self._states = dict()
 
-    def startup(self, server):
-        server.debug("[m/radio]: Running Radio startup..")
-        for k, v in self._states.items():
-            self._set(server, k, v, True, update=False)
-        server.debug("[m/radio]: Radio startup completed!")
-
     def setup_server(self, server):
         for i in RADIO_NAMES:
             if not a2z(i):
@@ -87,12 +80,20 @@ class Radio(object):
 
     def hook(self, server, message):
         if message.header() == HOOK_SHUTDOWN:
+            if message.uid() != 0:
+                return server.warning(
+                    "[m/radio]: Ignoring Shutdown request from a non-root user."
+                )
             for i in RADIO_NAMES:
                 if not a2z(i) or server.get(f"radio.{i}.boot", True):
                     continue
                 self._set(server, i, False, True)
             return
-        elif message.header() == HOOK_HIBERNATE:
+        if message.header() == HOOK_HIBERNATE:
+            if message.uid() != 0:
+                return server.warning(
+                    "[m/radio]: Ignoring Hibernate request from a non-root user."
+                )
             a = message.type == MSG_POST
             for k, v in self._states.items():
                 if not v:
@@ -129,6 +130,16 @@ class Radio(object):
         if not r or message.force:
             return
         return message.multicast()
+
+    def startup(self, server, message):
+        if message.uid() != 0:
+            return server.warning(
+                "[m/radio]: Ignoring Startup request from a non-root user."
+            )
+        server.debug("[m/radio]: Running Radio startup..")
+        for k, v in self._states.items():
+            self._set(server, k, v, True, update=False)
+        server.debug("[m/radio]: Radio startup completed!")
 
     def _set(self, server, name, state, force, notify=False, update=True):
         v = "enable" if state else "disable"

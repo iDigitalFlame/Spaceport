@@ -42,4 +42,4 @@
 from lib.client import Client
 from lib.server import Server
 from lib.structs import Message, send_message
-from lib.command import powerctl, print_error, check_error
+from lib.command import powerctl, check_error, print_error

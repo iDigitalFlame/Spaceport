@@ -42,7 +42,7 @@
 from signal import alarm
 from lib.constants import HOOK_OK, HOOK_ERROR
 from lib.structs.message import Message, as_exception
-from lib.constants.config import TIMEOUT_SEC_HOOK, LOG_TICKS
+from lib.constants.config import LOG_TICKS, TIMEOUT_SEC_HOOK
 
 
 class Hook(object):

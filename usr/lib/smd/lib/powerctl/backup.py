@@ -40,15 +40,15 @@
 from lib.util import nes
 from datetime import datetime
 from lib.constants.config import TIMEOUT_SEC_MESSAGE
-from lib import print_error, send_message, check_error
+from lib import check_error, print_error, send_message
 from lib.constants import (
     EMPTY,
     MSG_PRE,
     MSG_POST,
     MSG_USER,
-    MSG_STATUS,
-    MSG_CONFIG,
     MSG_ACTION,
+    MSG_CONFIG,
+    MSG_STATUS,
     HOOK_BACKUP,
 )
 

@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## UDev Flipper Interface Configuration
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,4 +34,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740|df11", TAG+="uaccess"
+/usr/share/xkeyboard-config-2/** r,

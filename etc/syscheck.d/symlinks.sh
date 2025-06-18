@@ -42,41 +42,28 @@ fi
 
 BASE_DIR="/opt/spaceport"
 
-# Udev Device Names Link
-linkcheck "/etc/udev/rules.d/80-net-setup-link.rules" "/dev/null"
-
-# Firefox file Link
-linkcheck "/usr/lib/librewolf/browser/extensions" "/usr/lib/firefox/browser/extensions"
-linkcheck "/usr/lib/firefox/firefox.cfg" "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
-linkcheck "/usr/lib/librewolf/librewolf.cfg" "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
+# Firefox Links
+linkcheck "/usr/lib/firefox/firefox.cfg"                   "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
+linkcheck "/usr/lib/librewolf/librewolf.cfg"               "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
+linkcheck "/usr/lib/librewolf/browser/extensions"          "/usr/lib/firefox/browser/extensions"
 linkcheck "/usr/lib/librewolf/defaults/pref/librewolf.cfg" "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
 
-chown root:root "/usr/lib/firefox/firefox.cfg"
-chown root:root "/usr/lib/librewolf/librewolf.cfg"
-chown root:root "/usr/lib/librewolf/defaults/pref/librewolf.cfg"
-chmod 0444 "/usr/lib/firefox/firefox.cfg"
-chmod 0444 "/usr/lib/librewolf/librewolf.cfg"
-chmod 0444 "/usr/lib/librewolf/defaults/pref/librewolf.cfg"
-
-# Less Syskeys
-linkcheck "/etc/syslesskey" "/etc/sysless"
+# Less/Syskey Links
+linkcheck "/etc/syslesskey"           "/etc/sysless"
 linkcheck "/usr/local/etc/syslesskey" "/etc/sysless"
 
-chmod 0444 "/etc/sysless"
-chmod 0444 "/etc/syslesskey"
-chmod 0444 "/usr/local/etc/syslesskey"
-
 # Fontconfig Links
-linkcheck "/etc/fonts/conf.d/70-yes-bitmaps.conf" "/usr/share/fontconfig/conf.avail/70-yes-bitmaps.conf"
-linkcheck "/etc/fonts/conf.d/10-sub-pixel-rgb.conf" "/usr/share/fontconfig/conf.avail/10-sub-pixel-rgb.conf"
+linkcheck "/etc/fonts/conf.d/70-yes-bitmaps.conf"     "/usr/share/fontconfig/conf.avail/70-yes-bitmaps.conf"
+linkcheck "/etc/fonts/conf.d/10-sub-pixel-rgb.conf"   "/usr/share/fontconfig/conf.avail/10-sub-pixel-rgb.conf"
 linkcheck "/etc/fonts/conf.d/11-lcdfilter-light.conf" "/usr/share/fontconfig/conf.avail/11-lcdfilter-light.conf"
 
-# Setup Links for Bin
-for module in $(/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO ${BASE_DIR}/usr/lib/smd/bin/powerctl modules 2> /dev/null | grep -v log); do
-    linkcheck "/usr/local/bin/${module}" "${BASE_DIR}/usr/lib/smd/bin/powerctl"
-    linkcheck "/usr/local/bin/${module}ctl" "${BASE_DIR}/usr/lib/smd/bin/powerctl"
-    chown root:root "/usr/local/bin/${module}"
-    chown root:root "/usr/local/bin/${module}ctl"
-    chmod 0555 "/usr/local/bin/${module}"
-    chmod 0555 "/usr/local/bin/${module}ctl"
+# Null Blocks Links
+linkcheck "/etc/tmpfiles.d/audit.conf"                       "/dev/null"
+linkcheck "/etc/udev/rules.d/80-net-setup-link.rules"        "/dev/null"
+linkcheck "/etc/pacman.d/hooks/update-desktop-database.hook" "/dev/null"
+
+# SMD PowerCTL Links
+for i in $(/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO ${BASE_DIR}/usr/lib/smd/bin/powerctl modules 2> /dev/null | grep -v log); do
+    linkcheck "/usr/local/bin/${i}"    "${BASE_DIR}/usr/lib/smd/bin/powerctl"
+    linkcheck "/usr/local/bin/${i}ctl" "${BASE_DIR}/usr/lib/smd/bin/powerctl"
 done
