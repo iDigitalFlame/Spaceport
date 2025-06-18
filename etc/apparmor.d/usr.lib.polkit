@@ -56,10 +56,9 @@ profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected)
     /etc/machine-id                                   r,
     /etc/polkit-1/rules.d/                            r,
     /usr/share/polkit-1/actions/                      r,
-    /usr/share/polkit-1/rules.d/                      r,
-
     /usr/lib/{,polkit-1}/polkitd                      rm,
     /etc/polkit-1/rules.d/*.rules                     r,
+    /usr/share/polkit-1/rules.d{,/}                   r,
     /etc/polkit-1/actions/{,*.policy}                 r,
     /etc/polkit-1/localauthority/{,**}                r,
     /usr/share/polkit-1/rules.d/*.rules               r,
