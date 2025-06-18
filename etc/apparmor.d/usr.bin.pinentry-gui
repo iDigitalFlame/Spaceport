@@ -46,6 +46,8 @@ profile pinentry-gui /usr/bin/pinentry-{gnome3,gtk,qt*,*} flags=(enforce) {
 
     signal receive set=(int) peer=gpg-agent,
 
+    ptrace read,
+
     /etc/machine-id            r,
     /usr/share/gtk-*/{,**}     r,
     /usr/share/terminfo/**     r,

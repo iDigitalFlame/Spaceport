@@ -41,6 +41,8 @@ profile pinentry /usr/bin/pinentry{,-curses,-emacs,-tty} flags=(enforce) {
     include <abstractions/consoles>
     include <abstractions/private-files>
 
+    ptrace read,
+
     /usr/share/terminfo/** r,
 
     /usr/bin/ldd           ixr,
