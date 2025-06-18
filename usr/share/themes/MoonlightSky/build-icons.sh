@@ -80,7 +80,7 @@ for i in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | awk '
     done
 done
 
-chown -kR root:root "${THEME_DIR}"
+chown -hR root:root "${THEME_DIR}"
 find "${THEME_DIR}" -type d -exec chmod 0755 {} \;
 find "${THEME_DIR}" -type f -exec chmod 0644 {} \;
 exit 0
