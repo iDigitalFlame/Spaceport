@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## "dash" to "sh" Symlink Pacman Hook
+##  Pacman Hook
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -36,13 +36,11 @@
 
 [Trigger]
 Type        = Package
-Target      = bash
-Target      = dash
+Target      = gnome-keyring
 Operation   = Install
 Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/dash -c "rm -f '/usr/bin/sh'; ln -sfT '/usr/bin/dash' '/usr/bin/sh'"
-Depends     = dash
-Description = Re-pointing "/bin/sh" symlink to dash..
+Exec        = /usr/bin/setcap cap_ipc_lock=+ep "/usr/bin/gnome-keyring-daemon"
+Description = Updating capabilities on gnome-keyring-daemon..

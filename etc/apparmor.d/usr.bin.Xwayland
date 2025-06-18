@@ -46,7 +46,7 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    signal receive set=(hup, term) peer=unconfined,
+    signal receive set=(hup, term),
 
     ptrace read,
 

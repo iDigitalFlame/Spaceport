@@ -1228,7 +1228,7 @@ class VM(Storage):
                 s = "virtio-vga,disable-modern=false,disable-legacy=auto,iommu_platform=true,hostmem=32M"
                 v = True
             elif g == "qxl":
-                s, v = "vram_size_mb=32,ram_size_mb=32", True
+                s, v = "vgamem_mb=32,vram_size_mb=32,ram_size_mb=32", True
             else:
                 s, v = g, False
         else:

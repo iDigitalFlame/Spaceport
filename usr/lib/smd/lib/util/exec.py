@@ -46,15 +46,17 @@ from subprocess import PIPE, DEVNULL, Popen, SubprocessError
 
 def stop(proc, valid=True):
     if not isinstance(proc, Popen) and valid:
-        return
+        return None
     if not valid and proc is None:
-        return
+        return None
     if proc.poll() is not None:
         return proc.wait()
     try:
         proc.send_signal(SIGINT)
     except (OSError, SubprocessError):
         pass
+    if proc.poll() is not None:
+        return proc.wait()
     try:
         proc.terminate()
     except (OSError, SubprocessError):
@@ -64,7 +66,7 @@ def stop(proc, valid=True):
     except (OSError, SubprocessError):
         pass
     if proc.poll() is not None:
-        return proc.returncode
+        return proc.wait()
     try:
         proc.kill()
     except (OSError, SubprocessError):

@@ -42,6 +42,8 @@ profile swaybg /usr/bin/swaybg flags=(enforce) {
     include <abstractions/wayland>
     include <abstractions/private-files>
 
+    signal receive set=(int, kill, quit, term),
+
     /usr/bin/swaybg                                     rm,
 
     # NOTE(dij): For pictures and backgrounds.

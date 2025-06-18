@@ -57,12 +57,14 @@ profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected)
     /etc/polkit-1/rules.d/                            r,
     /usr/share/polkit-1/actions/                      r,
     /usr/share/polkit-1/rules.d/                      r,
+
     /usr/lib/{,polkit-1}/polkitd                      rm,
     /etc/polkit-1/rules.d/*.rules                     r,
     /etc/polkit-1/actions/{,*.policy}                 r,
     /etc/polkit-1/localauthority/{,**}                r,
     /usr/share/polkit-1/rules.d/*.rules               r,
     /usr/share/polkit-1/actions/*.policy              r,
+    /usr/local/share/polkit-1/rules.d{,/,/*}          r,
     /etc/polkit-1/localauthority.conf.d/{,**}         r,
     /var/lib/polkit{,-1}/localauthority/{,**}         r,
     /usr/share/polkit-1/actions/*.policy.choice       r,
@@ -77,6 +79,7 @@ profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected)
 
     @{run}/systemd/sessions/*                         r,
     @{run}/systemd/users/@{uid}                       r,
+    @{run}/polkit-1/rules.d{,/,/*}                    r,
 
     owner /var/lib/polkit{,-1}/.cache/                rw,
 

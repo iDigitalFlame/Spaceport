@@ -84,6 +84,8 @@ _chmod 0550 "/etc/modprobe.d"        0440
 _chmod 0550 "/etc/modules-load.d"    0440
 _chmod 0550 "/etc/pacman.d/hooks"    0440
 _chmod 0550 "/etc/security/limits.d" 0440
+_chmod 0550 "/etc/polkit-1"
+_chmod 0550 "/etc/polkit-1/rules.d"
 _chmod 0550 "/etc/squid"             0440
 _chmod 0500 "/etc/sudoers.d"         0400
 _chmod 0500 "/etc/sysctl.d"          0400
@@ -99,16 +101,20 @@ _chmod 0550 "/etc/pacman.d/hooks"    0440
 ## Files
 chmod -h 0444 "/etc/ssh/"*.pub
 chmod -h 0440 "${BASE_DIR}/etc/locale.gen"
+chmod -h 0440 "${BASE_DIR}/etc/libaudit.conf"
 chmod -h 0440 "${BASE_DIR}/etc/nftables.conf"
 chmod -h 0440 "${BASE_DIR}/etc/vconsole.conf"
 chmod -h 0440 "${BASE_DIR}/etc/logrotate.conf"
 chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
 chmod -h 0440 "${BASE_DIR}/etc/mkinitcpio.conf"
 chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
+chmod -h 0440 "${BASE_DIR}/etc/polkit-1/rules.d/spaceport.rules"
 chmod -h 0440 "${BASE_DIR}/etc/NetworkManager/NetworkManager.conf"
 
 ## Might Not Exist
-chmod -h 0444 "/var/cache/librewolf.cfg.bak" 2> /dev/null
+chmod -h 0550 "/usr/local/share/polkit-1"         2> /dev/null
+chmod -h 0550 "/usr/local/share/polkit-1/rules.d" 2> /dev/null
+chmod -h 0444 "/var/cache/librewolf.cfg.bak"      2> /dev/null
 
 # Recursive Execute
 chmod -hR 0555 "${BASE_DIR}/bin"
@@ -127,12 +133,15 @@ chmod -h 0440 "/etc/cups/"*.conf         2> /dev/null
 chmod -h 0440 "/etc/cups/"*.conf.default 2> /dev/null
 
 # Ownership Updates
-chown -hR root:cups  "/etc/cups"
-chown -hR root:cups  "${BASE_DIR}/etc/cups"
-chown -hR root:proxy "/etc/squid"
-chown -hR root:proxy "${BASE_DIR}/etc/squid"
-chown -h  root:root  "/usr/share/applications/mimeinfo.cache"
-chown -h  root:root  "${BASE_DIR}/usr/share/applications/mimeinfo.cache"
+chown -hR root:cups    "/etc/cups"
+chown -hR root:cups    "${BASE_DIR}/etc/cups"
+chown -hR root:proxy   "/etc/squid"
+chown -hR root:proxy   "${BASE_DIR}/etc/squid"
+chown -h  root:root    "/usr/share/applications/mimeinfo.cache"
+chown -h  root:root    "${BASE_DIR}/usr/share/applications/mimeinfo.cache"
+chown -hR root:polkitd "/etc/polkit-1"
+chown -hR root:polkitd "${BASE_DIR}/etc/polkit-1"
+chown -hR root:polkitd "/usr/local/share/polkit-1"
 
 # Group Helper Permissions
 chown -h root:root "/bin/ghr"

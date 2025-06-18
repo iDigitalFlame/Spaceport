@@ -59,6 +59,7 @@ linkcheck "/etc/fonts/conf.d/11-lcdfilter-light.conf" "/usr/share/fontconfig/con
 
 # Null Blocks Links
 linkcheck "/etc/tmpfiles.d/audit.conf"                       "/dev/null"
+linkcheck "/etc/tmpfiles.d/polkit-tmpfiles.conf"             "/dev/null"
 linkcheck "/etc/udev/rules.d/80-net-setup-link.rules"        "/dev/null"
 linkcheck "/etc/pacman.d/hooks/update-desktop-database.hook" "/dev/null"
 

@@ -353,6 +353,7 @@ class Background(object):
         # NOTE(dij): Cache the process and copy the object to prevent the screen
         #            from flickering too much.
         o = self._proc
+        self._proc = None
         try:
             self._proc = nulexec(
                 ["/usr/bin/swaybg", "--mode", "fill", "--output", "*", "--image", file]
@@ -361,6 +362,8 @@ class Background(object):
             return server.error(
                 f'[m/background]: Cannot set the user Background to "{file}"!', err
             )
-        server.debug(f'[m/background]: Set the user Background to "{file}".')
+        server.debug(
+            f'[m/background]: Set the user Background to "{file}", PID({self._proc.pid}).'
+        )
         stop(o)
         del o

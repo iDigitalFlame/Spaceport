@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## "dash" to "sh" Symlink Pacman Hook
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,15 +34,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Trigger]
-Type        = Package
-Target      = bash
-Target      = dash
-Operation   = Install
-Operation   = Upgrade
+include <tunables/spaceport>
 
-[Action]
-When        = PostTransaction
-Exec        = /usr/bin/dash -c "rm -f '/usr/bin/sh'; ln -sfT '/usr/bin/dash' '/usr/bin/sh'"
-Depends     = dash
-Description = Re-pointing "/bin/sh" symlink to dash..
+profile sway /usr/bin/sway{,fx} flags=(default_allow) {
+    # NOTE(dij): I've tried a couple times to confine Sway.
+    #            it seems that it fails even when it's in complain
+    #            mode. Not sure why it does this??!
+    #
+    #            If anyone solves this let me know.
+
+    include if exists <local/usr.bin.sway>
+}

@@ -37,26 +37,38 @@
 DIR_BASE="$(pwd)"
 DIR_DEST="/opt/spaceport"
 
+printf '\e[0;32;40mChecking Python files and linting..\x1b[0m\n'
 # Lint
 dash "./usr/lib/smd/assets/smd-lint.sh"
 
+printf '\e[0;32;40mRemoving cache files..\x1b[0m\n'
 # Remove pycache
 find "${DIR_BASE}" -type f -name "*.pyc" -delete
 find "${DIR_BASE}" -type d -name "*pycache*" -exec rm -rf {} \;
 
+printf '\e[0;34;40mFiles missing newlines:\x1b[0m\n'
+# Check for missing newlines at the end
+pcregrep -LMr '\n\Z' . 2> /dev/null |grep -vE 'ghr$|hostname$|\.issue$|sysless$|/themes/|\.git|\.json$|\.md$|\.html$|\.code-workspace$|/ld.so'
+printf '\e[0;34;40m==================================\x1b[0m\n'
+
+printf '\e[0;37;40mPreparing file copy.. (\e[1;37;41msudo\e[0;37;40m prompt ahead)\x1b[0m\n'
 cat<<EOF | sudo -i --
     set -u
     mount -o rw,remount /
     rm -f  "/etc/.pwd.lock" "/root/.bash_history"
     rm -rf "${DIR_DEST}/.git" "${DIR_DEST}/.github" "${DIR_DEST}/.vscode" "${DIR_DEST}/*.md"
-    printf 'Copying "\x1b[96m\x1b[1m%s\x1b[0m" to "\x1b[96m\x1b[1m%s\x1b[0m"..\n' "$DIR_BASE" "$DIR_DEST"
+    printf '\e[0;37;41mCopying "\e[1;37;42m%s\e[0;37;41m" to "\e[1;37;44m%s\e[0;37;41m"..\x1b[0m\n' "$DIR_BASE" "$DIR_DEST"
     rsync --ignore-times --recursive \
           --exclude=.git* --exclude=*.md --exclude=.vscode --exclude="deploy.sh" \
           --exclude="LICENSE" --exclude=*.code-workspace \
           --exclude ".github" --exclude ".vscode" "${DIR_BASE}/" "${DIR_DEST}/"
+    printf '\e[0;37;41mSyncing permissions..\x1b[0m\n'
     syslink
+    printf '\e[0;37;41mFile Diff:\x1b[0m\n'
     diff -r "${DIR_DEST}/" "${DIR_BASE}/" | grep "Only in ${DIR_DEST}" | grep -vE '.json$'
+    printf '\e[0;37;41m==================================\x1b[0m\n'
     mount -ro remount,ro / 2> /dev/null || mount -Rro remount,ro /
+    printf '\e[0;37;41mSync Complete!\x1b[0m\n'
 EOF
 
 cp "/etc/fstab"                  "${DIR_BASE}/fstab.md"
@@ -74,8 +86,11 @@ chmod 0660 "${DIR_BASE}/indirect.md"
 chmod 0660 "${DIR_BASE}/packages-aur.md"
 
 if [ "$1" = "reload" ]; then
+    printf '\e[0;36;40mReloading services..x1b[0m\n'
     systemctl --user stop smd-client.service
     sudo sh -c "systemctl daemon-reload; systemctl restart smd-daemon.service"
     systemctl --user daemon-reload
     systemctl --user restart smd-client.service
 fi
+
+printf '\e[0;32;40mDone!\x1b[0m\n'

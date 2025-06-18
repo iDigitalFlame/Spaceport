@@ -40,6 +40,7 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/audio>
     include <abstractions/dconf>
+    include <abstractions/nameservice>
     include <abstractions/notifications>
     include <abstractions/private-files>
 

@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## XZ Broken Links Fix Pacman Hook
+## AppArmor Patches Pacman Hook
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -44,3 +44,6 @@ Operation   = Upgrade
 When        = PostTransaction
 Exec        = /usr/lib/smd/sbin/aa-notify-patch
 Description = Patching aa-notify..
+
+# TODO(dij): Update this once the upstream AppArmor patch hits the Arch repos.
+#            https://gitlab.com/apparmor/apparmor/-/merge_requests/1706 hehe

@@ -88,7 +88,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     owner @{HOME}/.local/apps/zohoworkdrive/logs/{,*}                       rw,
     owner @{HOME}/.local/apps/zohoworkdrive/locales{,/}                     rw,
     owner @{HOME}/.local/apps/zohoworkdrive/backup/{,**}                    rwk,
-    owner @{HOME}/.local/apps/zohoworkdrive/upgrade{,/,/*}                  rw,
+    owner @{HOME}/.local/apps/zohoworkdrive/upgrade{,/,/**}                 rw,
     owner @{HOME}/.local/apps/zohoworkdrive/config.dat{,-*}                 rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/resources.db{,-*}               rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/office_doc_statsdb              rwk,
