@@ -58,6 +58,7 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     network inet                                    stream,
     network inet6                                   stream,
 
+    /                                               r,
     /sys/devices/virtual/dmi/id/bios_vendor         r,
     /sys/kernel/mm/transparent_hugepage/enabled     r,
 

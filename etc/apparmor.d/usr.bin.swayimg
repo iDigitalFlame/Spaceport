@@ -44,7 +44,7 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     include <abstractions/private-files>
 
     # Needed to open any files for reading.
-    /**                               r,
+    /{,**}                            r,
     /usr/bin/swayimg                  rm,
 
     owner @{CONFIG}/swayimg/config    r,
