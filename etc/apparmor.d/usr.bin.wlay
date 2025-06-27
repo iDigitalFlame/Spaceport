@@ -47,6 +47,7 @@ profile wlay /usr/bin/wlay flags=(enforce) {
     include <abstractions/no-network>
     include <abstractions/private-files>
 
+    /usr/bin/wlay                                 rm,
     /usr/share/glib-2.0/schemas/gschemas.compiled r,
 
     owner /proc/@{pid}/cmdline                    r,

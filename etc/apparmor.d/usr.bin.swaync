@@ -64,6 +64,7 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     owner @{HOME}/Pictures/Screenshots/*.{jpg,png}    r,
 
     /usr/bin/sudo                                     Px -> sudo,
+    /usr/bin/wlay                                     Px -> wlay,
     /usr/local/bin/*ctl                               Px -> powerctl,
     /usr/bin/{,ba,da}sh                               ix,
     /usr/bin/swaync-client                            Px -> swaync-client,
