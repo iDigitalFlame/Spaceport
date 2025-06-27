@@ -156,8 +156,8 @@ class Flex(object):
 
     def __setitem__(self, name, value):
         if Flex.__reserved(name):
-            # NOTE(dij): Let's raise an error so we can catch anything attempting
-            #            to add an invalid attribute.
+            # Let's raise an error so we can catch anything attempting to add
+            # an invalid attribute.
             raise ValueError(f'cannot use reserved name "{name}"')
         if not isinstance(name, str):
             return self._data.__setitem__(name, value)

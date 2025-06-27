@@ -43,6 +43,8 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     include <abstractions/python>
     include <abstractions/vulkan>
     include <abstractions/consoles>
+    include <abstractions/no-network>
+    include <abstractions/private-files>
 
     capability                         sys_ptrace,
 

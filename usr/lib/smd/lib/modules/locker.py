@@ -179,8 +179,8 @@ def _find_lid_switch(server):
 def _connected_displays(server):
     g = glob(DISPLAY_PATH_CONNECTED)
     for i in g:
-        # NOTE(dij): Force detection of monitors first to see if any are
-        #            connected if the kernel didn't enable them correctly.
+        # Force detection of monitors first to see if any are connected if the
+        # kernel didn't enable them correctly.
         write(i, "detect", errors=False)
     c = 0
     for i in g:
@@ -210,16 +210,16 @@ def _connected_displays(server):
             a += 1
         del v
     server.debug(f"[m/locker]: Detected {a} active display(s)..")
-    # NOTE(dij): We check to see if only one display is enabled and being used.
-    #            sometimes we can have 0 active displays, which we should assume
-    #            that we're using DPMS/DisplayTimeout to turn off the displays.
+    # We check to see if only one display is enabled and being used. Sometimes
+    # we can have 0 active displays, which we should assume that we're using
+    # DPMS/DisplayTimeout to turn off the displays.
     #
-    #            In that case we trust the connected displays number since there's
-    #            not a super reliable way to detect single screen/multi-head setups.
+    # In that case we trust the connected displays number since there's not a
+    # super reliable way to detect single screen/multi-head setups.
     if a != 1:
         return True
     del a
-    # NOTE(dij): Check the default Display if it's active and being used.
+    # Check the default Display if it's active and being used.
     g = glob(DISPLAY_PATH_DEFAULT)
     if len(g) != 1:
         return True
@@ -471,8 +471,8 @@ class LockerClient(object):
         self._lockdir = expand(LOCKER_PATH_DIR)
 
     def _wake_backoff(self):
-        # NOTE(dij): Clear the backoff, this happens if something slowed or stopped
-        #            the suspend/hibernate process.
+        # Clear the backoff, this happens if something slowed or stopped the
+        # suspend/hibernate process.
         self._backoff = None
 
     def _blank_backoff(self):
@@ -493,9 +493,9 @@ class LockerClient(object):
         self._idle = None
 
     def shutdown(self, server):
-        # NOTE(dij): If we're locked and we receive a shutdown, orphan the
-        #            Lockscreen. It'll get killed if we're exiting a session
-        #            but will stay up to prevent SMD from unlocking the device.
+        # If we're locked and we receive a shutdown, orphan the Lockscreen.
+        # It'll get killed if we're exiting a session but will stay up to prevent
+        # SMD from unlocking the device.
         self._lock_unlock(server, False)
         stop(self._idle)
         self._idle = None
@@ -515,7 +515,7 @@ class LockerClient(object):
         if self._ability.can_lock():
             x += ["timeout", f"{self._ability.lock}", f"{LOCKER_EXEC_LOCK}"]
         if len(x) == 0:
-            # NOTE(dij): Stop idle without restarting it.
+            # Stop idle without restarting it.
             v = self._idle
             self._idle = None
             stop(v)
@@ -523,8 +523,7 @@ class LockerClient(object):
             return
         a = ["/usr/bin/swayidle", "-C", "/dev/null", "-w"] + x
         del x
-        # NOTE(dij): Prevent the thread from registering this as the locker quiting
-        #            randomally.
+        # Prevent the thread from registering this as the locker quiting randomally.
         v = self._idle
         self._idle = None
         if v is not None:
@@ -597,7 +596,7 @@ class LockerClient(object):
             self._backoff = cancel_nul(server, self._backoff)
             self._lock(server, True)
             return HOOK_OK
-        # NOTE(dij); Backoff is stopped here just incase the event falls through.
+        # Backoff is stopped here just incase the event falls through.
         self._sleeping, self._backoff = False, cancel_nul(server, self._backoff)
         if not self._locked():
             self._lock(server, True)
@@ -607,7 +606,7 @@ class LockerClient(object):
             swaymsg(0, "output * power on")
         except OSError as err:
             server.error("[m/locker]: Cannot power on the Displays!", err)
-        # NOTE(dij): Check power source after suspend/resume.
+        # Check power source after suspend/resume.
         if _on_power():
             if not self._battery:
                 return
@@ -678,7 +677,7 @@ class LockerClient(object):
             except OSError as err:
                 server.error("[m/locker]: Cannot power off the Displays!", err)
             return
-        # NOTE(dij): Handeling of the Key Locker is handled at the Server level.
+        # Handeling of the Key Locker is handled at the Server level.
         if message.trigger == TRIGGER_KEY and not self._ability.key:
             return server.debug(
                 "[m/locker]: Ignoring Key request as we lack the Key ability."
@@ -815,8 +814,8 @@ class LockerClient(object):
         if self._lockscreen is not None:
             if unlock:
                 try:
-                    # NOTE(dij): Send SIGUSR1 to swaylock as SIGINT/SIGTERM does
-                    #            not close the lockscreen.
+                    # Send SIGUSR1 to swaylock as SIGINT/SIGTERM does not close
+                    # the lockscreen.
                     self._lockscreen.send_signal(SIGUSR1)
                 except OSError:
                     pass
@@ -921,8 +920,7 @@ class LockerServer(object):
         except OSError as err:
             if err.errno == 0x10:
                 try:
-                    # NOTE(dij): Fix a bug where sometimes the RTC isn't cleared
-                    #            properly.
+                    # Fix a bug where sometimes the RTC isn't cleared properly.
                     write(LOCKER_PATH_WAKEALARM, "0")
                     write(
                         LOCKER_PATH_WAKEALARM,
@@ -952,17 +950,16 @@ class LockerServer(object):
             except OSError:
                 pass  # We're only seeking to prevent backlogged lid actions.
             return
-        # NOTE(dij): We're async reading the Lid switch, as it outputs a 48b data
-        #            segment on state change. If nothing happens, this returns None.
+        # We're async reading the Lid switch, as it outputs a 48b data segment
+        # on state change. If nothing happens, this returns None.
         try:
             v = self._lid.read(48)
         except OSError as err:
             return server.error(
                 f'[m/locker]: Cannot read the Lid switch "{self._lid_path}"!', err
             )
-        # NOTE(dij): Like all evdev events, the state flag is on the 20th byte.
+        # Like all evdev events, the state flag is on the 20th byte.
         if isinstance(v, bytes) and len(v) > 20:
-            # and v[20] == 1:
             # We're going to fire on any lid opens and closes so we can turn on
             # the Display if needed.
             server.debug(
@@ -977,7 +974,7 @@ class LockerServer(object):
                 return server.debug(
                     "[m/locker]: Ignoring Lid closure as the screen backoff is in effect."
                 )
-            # NOTE(dij): Update the clients about a potential Display change.
+            # Update the clients about a potential Display change.
             self.screen(server, None, v[20] == 0)
             if (
                 v[20] == 1
@@ -1182,8 +1179,7 @@ class LockerServer(object):
                 except OSError as err:
                     server.error("[m/locker]: Hibernation command failed!", err)
                 return
-            # NOTE(dij): Prevent cascading suspends and wait a little for to check
-            #            again.
+            # Prevent cascading suspends and wait a little for to check again.
             server.cancel(self._backoff)
             self._backoff = server.task(LOCKER_TIME_BACKOFF, self._backoff_clear)
             self.screen(server, None)
@@ -1224,8 +1220,7 @@ class LockerServer(object):
                 "[m/locker]: Post-Hibernation request received, releasing Hibernation locks!"
             )
             self._suspending, self._hibernating = False, False
-            # NOTE(dij): Prevent cascading suspends and wait a little for to check
-            #            again.
+            # Prevent cascading suspends and wait a little for to check again.
             server.cancel(self._backoff)
             self._backoff = server.task(LOCKER_TIME_BACKOFF, self._backoff_clear)
             self.screen(server, None)
@@ -1233,8 +1228,8 @@ class LockerServer(object):
 
     def _suspend(self, server, is_lid=False):
         if self._backoff is not None:
-            # NOTE(dij): Same as the Lid closure event, prevent suspending when
-            #            disconnecting docks or external monitors.
+            # Same as the Lid closure event, prevent suspending when disconnecting
+            # docks or external monitors.
             return server.debug(
                 "[m/locker]: Ignoring Suspend request as the screen backoff is in effect!"
             )
@@ -1283,6 +1278,7 @@ class LockerServer(object):
         if self._backoff is not None:
             # NOTE(dij): We use a backoff period to prevent back-n-forth switches
             #            triggered by multiple udev events.
+            #
             #            Currently it's at 5sec which should be good enough to be
             #            stable.
             return server.debug(
@@ -1290,8 +1286,8 @@ class LockerServer(object):
             )
         if close:
             self._backoff = server.task(LOCKER_TIME_BACKOFF, self._backoff_clear)
-        # NOTE(dij): We only care if we have more than one active display or a
-        #            single active display that isn't the builtin display.
+        # We only care if we have more than one active display or a single active
+        # display that isn't the builtin display.
         self._displays = _connected_displays(server)
         if message is None:
             return server.broadcast(Message(HOOK_MONITOR))
@@ -1320,7 +1316,7 @@ class LockerServer(object):
             if e <= 0:
                 return self._locker_remove(server, name)
         x = self._lockers.get(name)
-        # NOTE(dij): We shouldn't remove Lockers that match the one we want to set.
+        # We shouldn't remove Lockers that match the one we want to set.
         if x is not None and e == x.expire:
             return
         if x is not None:
@@ -1333,7 +1329,7 @@ class LockerServer(object):
                 f'[m/locker]: Added a Locker "{name}" with a timeout of "{e}" seconds.'
             )
         self._lockers[name] = Locker(server, self, name, e)
-        # NOTE(dij): We don't notify for Backup Lockers
+        # We don't notify for Backup Lockers
         if name != LOCKER_TYPE_BACKUP:
             self._update = True
         del e
@@ -1343,7 +1339,7 @@ class LockerServer(object):
             self._lockers.pop(locker.name, None)
         server.debug(f'[m/locker]: Removed Locker "{locker.name}"!')
         locker.event, locker.expire = cancel_nul(server, locker.event), None
-        # NOTE(dij): We don't notify for Backup Lockers
+        # We don't notify for Backup Lockers
         if not notify or locker.name == LOCKER_TYPE_BACKUP:
             return
         self._update = True

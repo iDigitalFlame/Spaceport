@@ -36,25 +36,28 @@
 
 include <tunables/spaceport>
 
-profile smd-convert-picture /{,opt/spaceport/}usr/lib/smd/libexec/smd-convert-picture flags=(enforce) {
+profile smd-convert-picture /{,opt/spaceport/}usr/lib/smd/libexec/smd-convert-picture flags=(enforce, attach_disconnected) {
     include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     @{sysconfig}/usr/lib/smd/libexec/smd-convert-picture r,
 
+    /etc/ImageMagick-*/*.xml                             r,
+    /usr/share/ImageMagick-*/*.xml                       r,
     /usr/lib/smd/libexec/smd-convert-picture             r,
 
-    # NOTE(dij): For pictures and backgrounds.
+    # For pictures and backgrounds.
     owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic}  r,
 
     owner @{HOME}/.cache/smd{,/}                         rw,
     owner @{HOME}/.cache/smd/*.{jp,pn}g                  rw,
 
-    /usr/bin/cp                                          ix,
     /usr/bin/dash                                        ixr,
+    /usr/bin/{cp,ln}                                     ix,
     /usr/bin/convert                                     ixr,
-
-    deny network,
+    /usr/bin/{jpegtran,magick}                           ix,
 
     include if exists <local/usr.lib.smd.smd-convert-picture>
 }

@@ -36,10 +36,12 @@
 
 include <tunables/spaceport>
 
-profile swaybg /usr/bin/swaybg flags=(enforce) {
+profile swaybg /usr/bin/swaybg flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/wayland>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     signal receive set=(int, kill, quit, term),
@@ -50,8 +52,6 @@ profile swaybg /usr/bin/swaybg flags=(enforce) {
     owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic} r,
 
     /dev/shm/swaybg-*                                   rw,
-
-    deny network,
 
     include if exists <local/usr.bin.swaybg>
 }

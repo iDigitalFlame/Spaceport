@@ -88,7 +88,6 @@ profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_dis
 
     owner @{HOME}/.local/share/dbus-1/services/{,**} r,
 
-    /dev/tty*                                        rw,
     /dev/ptmx                                        rw,
     /dev/dri/card*                                   rw,
     /dev/input/event*                                rw,
@@ -115,8 +114,10 @@ profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_dis
     /usr/lib/dbus-1.0/dbus-daemon-launch-helper      ixrm,
     /usr/bin/dbus-update-activation-environment      ixrm,
 
-    unix (bind, listen)                   type=stream addr="@/tmp/dbus-*",
-    unix (send, receive)                  type=stream addr=none peer=(label=gnome-shell, addr=none),
+    unix (bind, listen) type=stream addr="@/tmp/dbus-*",
+
+    unix (send, receive) type=stream addr=none peer=(label=gnome-shell, addr=none),
+
     unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
     unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
 

@@ -95,7 +95,7 @@ class Service(object):
             f'[service]: Loading configuration from "{self.config.path()}"..'
         )
         try:
-            # NOTE(dij): Allow SGID here.
+            # Allow SGID here.
             perm_check(self.config.path(), 0o4137, self._uid, getgid())
             self.config.load()
             if self.config.is_read_only() and not self._read_only:

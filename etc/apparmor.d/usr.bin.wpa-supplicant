@@ -65,7 +65,6 @@ profile wpa-supplicant /usr/bin/wpa_supplicant flags=(enforce) {
 
     /sys/device/pci**{,/name}            r,
 
-
     @{HOME}/.pki/wifi/**                 r,
     @{HOME}/**/*.{crt,pem}               r,
     @{HOME}/.local/lib/pki/wifi/**       r,

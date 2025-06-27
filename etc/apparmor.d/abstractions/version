@@ -38,8 +38,8 @@ abi <abi/4.0>,
 
 /etc/{,arch-release}                                      r,
 
-/sys/devices/virtual/dmi/id/{board_name,chassis_type}     r,
-/sys/devices/virtual/dmi/id/{product_name,product_family} r,
+/sys/devices/virtual/dmi/id/chassis_type                  r,
+/sys/devices/virtual/dmi/id/{board,product}_{family,name} r,
 
 /proc/version                                             r,
 

@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile smd-hydractl /usr/local/bin/hydra* flags=(enforce) {
     include <abstractions/smd>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /sys/bus/usb/devices/*/id{Product,Vendor}     r,
@@ -49,8 +50,6 @@ profile smd-hydractl /usr/local/bin/hydra* flags=(enforce) {
 
     /usr/bin/spicy                                Pix -> spicy,
     /usr/bin/vncviewer                            Pix -> vncviewer,
-
-    deny network,
 
     include if exists <local/usr.local.bin.hydractl>
 }

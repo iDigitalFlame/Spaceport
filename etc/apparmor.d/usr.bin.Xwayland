@@ -43,6 +43,8 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     include <abstractions/fonts>
     include <abstractions/vulkan>
     include <abstractions/wayland>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
@@ -62,7 +64,6 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     /proc/@{pid}/cmdline                      r,
 
     /dev/fb*                                  rw,
-    /dev/tty{,*}                              rw,
     /dev/dri/card*                            rw,
     /dev/dri/render*                          rw,
     /dev/input/event*                         rw,

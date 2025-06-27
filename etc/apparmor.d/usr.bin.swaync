@@ -40,6 +40,8 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/audio>
     include <abstractions/dconf>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/notifications>
     include <abstractions/private-files>
@@ -67,14 +69,11 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     /usr/bin/swaync-client                            Px -> swaync-client,
     /usr/lib/smd/bin/powerctl                         Px -> powerctl,
 
-    owner @{HOME}/.local/bin/{,sway/}*                PUx,
-    owner @{HOME}/.dotfiles/.local/bin/{,sway/}*      PUx,
+    owner @{HOMEDOTS}/.local/bin/{,sway/}*            PUx,
 
     dbus bind name=org.erikreider.swaync.cc,
 
     dbus (send, receive) interface=org.erikreider.swaync.cc,
-
-    deny network,
 
     include if exists <local/usr.bin.swaync>
 }

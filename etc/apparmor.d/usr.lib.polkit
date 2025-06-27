@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected) {
     include <abstractions/base>
+    include <abstractions/no-network>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>
     include <abstractions/private-files>
@@ -83,8 +84,6 @@ profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected)
     owner /var/lib/polkit{,-1}/.cache/                rw,
 
     dbus send bus=system path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={GetConnectionUnixProcessID,GetConnectionUnixUser,GetConnectionCredentials} peer=(name=org.freedesktop.DBus, label=dbus-system),
-
-    deny network,
 
     deny /.cache/                                     rw,
 

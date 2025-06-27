@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile systemd-cat /usr/bin/systemd-cat flags=(enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     capability net_admin,
@@ -52,8 +53,6 @@ profile systemd-cat /usr/bin/systemd-cat flags=(enforce) {
 
     /usr/bin/**           PUx,
     /usr/local/{,s}bin/** PUx,
-
-    deny network,
 
     include if exists <local/usr.bin.systemd-cat>
 }

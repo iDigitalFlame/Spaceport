@@ -17,6 +17,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
+## Python Linting Script
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -41,8 +42,8 @@ vet() {
     black -q "$1"
 }
 
-for i in $(find ./usr/lib/smd/lib/ -type f -print); do
-    vet "$i"
+for i in $(find ./usr/lib/smd/lib/ -xdev -type f -print); do
+    vet "$i" | grep -v 'Skipped '
 done
 
 # Don't run isort on these, as the import for SMD needs to be first and isort

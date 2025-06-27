@@ -61,8 +61,8 @@ profile systemd-logind /usr/lib/systemd/systemd-logind flags=(enforce, attach_di
 
     /boot/                                                              r,
     /boot/**/*.efi                                                      r,
-    /boot/EFI/Linux/                                                    r,
     /boot/loader/loader.conf                                            r,
+    /boot/{efi,EFI,esp/EFI}/Linux/                                      r,
 
     /                                                                   r,
     /etc/machine-id                                                     r,
@@ -137,11 +137,6 @@ profile systemd-logind /usr/lib/systemd/systemd-logind flags=(enforce, attach_di
     /proc/sys/kernel/random/boot_id                                     r,
 
     @{run}/utmp                                                         rk,
-    @{run}/udev/data/+usb:*                                             r,
-    @{run}/udev/data/+hid:*                                             r,
-    @{run}/udev/data/+i2c:*                                             r,
-    @{run}/udev/data/+pci:*                                             r,
-    @{run}/udev/data/+leds:*                                            r,
     @{run}/udev/data/{b,c}*:*                                           r,
     @{run}/udev/tags/uaccess/                                           r,
     @{run}/udev/data/+wakeup:*                                          r,
@@ -154,6 +149,7 @@ profile systemd-logind /usr/lib/systemd/systemd-logind flags=(enforce, attach_di
     @{run}/udev/tags/master-of-seat/                                    r,
     @{run}/udev/static_node-tags/uaccess/                               r,
     @{run}/credentials/getty@tty*.service/                              r,
+    @{run}/udev/data/+{hid,i2c,leds,pci,usb}:*                          r,
 
     owner /proc/@{pid}/stat                                             r,
 

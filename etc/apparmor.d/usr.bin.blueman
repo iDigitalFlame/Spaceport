@@ -45,18 +45,20 @@ profile blueman /usr/bin/blueman-* flags=(enforce, attach_disconnected) {
     include <abstractions/xdg-desktop>
     include <abstractions/dbus-session>
     include <abstractions/private-files>
+    include <abstractions/freedesktop.org>
 
     network                             bluetooth raw,
 
     /usr/bin/                           r,
+    /etc/fstab                          r,
     /usr/share/blueman/{,**}            r,
     /usr/share/glib-2.0/schemas/*       r,
 
     /dev/rfkill                         r,
 
     owner /proc/@{pid}/fd/              r,
-    owner /proc/@{pid}/mounts           r,
     owner /proc/@{pid}/cmdline          r,
+    owner /proc/@{pid}/mount{info,s}    r,
 
     /usr/bin/blueman-*                  ixr,
     /usr/lib/gio-launch-desktop         ix,

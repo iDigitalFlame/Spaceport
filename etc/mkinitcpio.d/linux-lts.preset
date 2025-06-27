@@ -40,8 +40,8 @@ ALL_kver="/boot/vmlinuz-linux-lts"
 
 PRESETS=( "default" "fallback" )
 
-default_uki="/boot/EFI/Linux/$(hostname)-lts.efi"
+default_uki="/boot/efi/Linux/$(hostname)-lts.efi"
 default_options="--splash /usr/lib/smd/assets/boot-logo.bmp"
 
-fallback_uki="/boot/EFI/Linux/$(hostname)-lts-fallback.efi"
+fallback_uki="/boot/efi/Linux/$(hostname)-lts-fallback.efi"
 fallback_options="-S autodetect --splash /usr/lib/smd/assets/boot-logo.bmp"

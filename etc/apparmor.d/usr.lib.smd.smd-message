@@ -38,9 +38,8 @@ include <tunables/spaceport>
 
 profile smd-message /{,opt/spaceport/}usr/lib/smd/libexec/smd-message flags=(enforce, attach_disconnected) {
     include <abstractions/smd>
+    include <abstractions/no-network>
     include <abstractions/private-files>
-
-    deny network,
 
     include if exists <local/usr.lib.smd.smd-message>
 }

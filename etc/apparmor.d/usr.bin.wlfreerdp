@@ -36,15 +36,17 @@
 
 include <tunables/spaceport>
 
-profile wlfreerdp /usr/bin/{wl,x}freerdp flags=(enforce) {
+profile freerdp /usr/bin/{,wl,x}freerdp flags=(enforce) {
     include <abstractions/gui>
+    include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
     include <abstractions/nameservice>
 
-    /usr/bin/{x,wl}freerdp                        rm,
+    network                                       inet  stream,
+    network                                       inet6 stream,
 
-    /dev/tty*                                     rw,
+    /usr/bin/{x,wl}freerdp                        rm,
 
     @{run}/user/@{uid}/#*                         rw,
 
@@ -52,6 +54,8 @@ profile wlfreerdp /usr/bin/{wl,x}freerdp flags=(enforce) {
 
     owner @{HOME}/.config/freerdp/                rw,
     owner @{HOME}/.config/freerdp/known_hosts{,2} rw,
+
+    deny @{HOME}/.{dotfiles,private}{,/}          r,
 
     include if exists <local/usr.bin.wlfreerdp>
 }

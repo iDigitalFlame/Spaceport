@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile xfconfd /usr/lib/xfce4/xfconf/xfconfd flags=(enforce) {
     include <abstractions/gui>
+    include <abstractions/no-network>
     include <abstractions/xdg-desktop>
     include <abstractions/private-files>
     include <abstractions/freedesktop.org>
@@ -54,8 +55,6 @@ profile xfconfd /usr/lib/xfce4/xfconf/xfconfd flags=(enforce) {
     owner @{HOME}/.config/xfce4/                    rw,
     owner @{HOME}/.config/xfce4/help{,ers}.rc       rw,
     owner @{HOME}/.config/xfce4/help{,ers}.rc.*.tmp rw,
-
-    deny network,
 
     deny @{CONFIG}/xfce4/xfconf/**/*.xml{,.new}     w,
 

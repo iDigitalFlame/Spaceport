@@ -44,6 +44,7 @@ include <abstractions/gnome>
 include <abstractions/vulkan>
 include <abstractions/p11-kit>
 include <abstractions/openssl>
+include <abstractions/consoles>
 include <abstractions/cups-client>
 include <abstractions/dbus-strict>
 include <abstractions/nameservice>
@@ -85,13 +86,11 @@ network                                                              inet6 strea
 /proc/sys/fs/inotify/max_user_watches                                r,
 /proc/sys/net/ipv6/conf/all/disable_ipv6                             r,
 
-owner /proc/@{pid}/exe                                               r,
-owner /proc/@{pid}/fd/                                               r,
-owner /proc/@{pid}/cgroup                                            r,
-owner /proc/@{pid}/cmdline                                           r,
+owner /proc/@{pid}/{exe,fd/}                                         r,
 owner /proc/@{pid}/mountinfo                                         r,
 owner /proc/@{pid}/smaps_rollup                                      r,
 owner /proc/@{pid}/task/{,@{tid}}                                    r,
+owner /proc/@{pid}/c{group,mdline}                                   r,
 owner /proc/@{pid}/task/@{tid}/{comm,status}                         r,
 
 /dev/hidraw*                                                         rw,
@@ -118,7 +117,7 @@ owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
 
 /usr/bin/dbus-send                                                   ix,
 
-deny /dev/tty                                                        rw,
+deny /proc/@{pid}/task/@{tid}/status                                 r,
 deny /usr/lib/chromium/extensions{,/,/**}                            w,
 
 include if exists <abstractions/chromium.d>

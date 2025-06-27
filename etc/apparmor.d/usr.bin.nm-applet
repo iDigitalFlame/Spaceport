@@ -40,6 +40,7 @@ profile nm-applet /usr/bin/nm-applet flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/dconf>
     include <abstractions/p11-kit>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/freedesktop.org>
 
@@ -71,8 +72,6 @@ profile nm-applet /usr/bin/nm-applet flags=(enforce) {
     /usr/bin/openvpn                                       Px -> openvpn,
     /usr/bin/nm-connection-editor                          ix,
     /usr/lib/nm-openvpn-auth-dialog                        Pix -> nm-openvpn-auth-dialog,
-
-    deny network,
 
     include if exists <local/usr.bin.nm-applet>
 }

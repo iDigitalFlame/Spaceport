@@ -85,6 +85,7 @@ from lib.constants.config import (
     HYDRA_FILE_UEFI_VARS,
 )
 from lib.constants import (
+    EMPTY,
     MSG_PRE,
     NEWLINE,
     HOOK_USB,
@@ -444,12 +445,13 @@ class VM(Storage):
             i = info(path, sym=False)
         except OSError as err:
             raise Error(f'cannot read "{path}": {err}')
-        # NOTE(dij): We don't wrap these as they're the same as an Error
-        #            and they already provide context.
-        #            Must be owner with exclusive access.
+        # We don't wrap these as they're the same as an Error and they already
+        # provide context.
+        #
+        # Must be owner with exclusive access.
         i.only(file=True).check(0o7177, uid, req=0o600, own_gid=True)
-        # NOTE(dij): Verify that the host directory is also owned by the user
-        #            and has write permissions.
+        # Verify that the host directory is also owned by the user and has
+        # write permissions.
         info(dirname(path), sym=False).check(0o7027, uid, req=0o700, own_gid=True).only(
             dir=True
         )
@@ -678,13 +680,13 @@ class VM(Storage):
             server.debug(f"[m/hydra/VM({self.vmid})]: Entering sleep")
             self._cmd(server, "stop")
             self._proc.send_signal(SIGSTOP)
-            # NOTE(dij): Sleep the STPM process also.
+            # Sleep the STPM process also.
             if self._stpm is not None:
                 self._stpm.send_signal(SIGSTOP)
             self._state = HYDRA_STATE_SLEEPING
             return
         server.debug(f"[m/hydra/VM({self.vmid})]: Resuming from sleep")
-        # NOTE(dij): Wake the STPM process also.
+        # Wake the STPM process also.
         if self._stpm is not None:
             self._stpm.send_signal(SIGCONT)
         self._proc.send_signal(SIGCONT)
@@ -733,7 +735,7 @@ class VM(Storage):
                     f'[m/hydra/VM({self.vmid})]: Created interface "{i.device}".'
                 )
         except OSError as err:
-            # NOTE(dij): Cleanup on failure.
+            # Cleanup on failure.
             self._close_adapters(server)
             raise err
         server.debug(
@@ -1033,9 +1035,9 @@ class VM(Storage):
         del s
 
     def _build(self, server, manager, uid, opts):
-        # NOTE(dij): Do stuff that requires a bunch of checking first.
+        # Do stuff that requires a bunch of checking first.
         x = self._build_restriced(server, manager, uid)
-        # NOTE(dij): If the above passes, we should be good!
+        # If the above passes, we should be good!
         b, t = self.get("dev.bus"), self.get("dev.type", "q35")
         if not nes(b):
             if nes(t) and "q35" in t:
@@ -1070,8 +1072,8 @@ class VM(Storage):
                 c = f'{c},{",".join(o)}'
         except TypeError:
             raise Error('"cpu.options" list can only contain string values')
-        # NOTE(dij): These two lines /could/ fail just in case, luckily we haven't
-        #            done /much/ yet.
+        # These two lines /could/ fail just in case, luckily we haven't done
+        # /much/ yet.
         try:
             d = self._build_drives(
                 server,
@@ -1210,8 +1212,8 @@ class VM(Storage):
         del x, t, o, c, n, v
         s = self.get("dev.osk")
         if nes(s):
-            # NOTE(dij): Support MacOS with an OSK. This allows MacOS to not need
-            #            to use the "extra" tag.
+            # Support MacOS with an OSK. This allows MacOS to not need to use
+            # the "extra" tag.
             r += ["-device", f"isa-applesmc,osk={s}"]
         del s
         g = self.get("dev.display", "virtio")
@@ -1240,8 +1242,8 @@ class VM(Storage):
         for i in range(0, n):
             if q:
                 r.append("-device")
-                # NOTE(dij): Multiple QXL displays must use "qxl" instead of "qxl-vga"
-                #            when they are NOT the first display.
+                # Multiple QXL displays must use "qxl" instead of "qxl-vga" when
+                # they are NOT the first display.
                 if i == 0:
                     r.append(f"qxl-vga,{s},bus={b}.0")
                 else:
@@ -1264,14 +1266,13 @@ class VM(Storage):
                 f"driver=pa,id=audio0,server=/var/run/user/{uid}/pulse/native",
             ]
             if s == "virtio":
-                # NOTE(dij): Untested, does NOT work on Windows, audio driver
-                #            is Linux only!
+                # Untested, does NOT work on Windows, audio driver is Linux only!
                 r += [
                     "-device",
                     f"virtio-sound-pci,audiodev=audio0,id=sound1,bus={b}.0,addr=0x0b",
                 ]
             elif s == "output":
-                # NOTE(dij): Use Intel ich6 (older chipset) for output only.
+                # Use Intel ich6 (older chipset) for output only.
                 r += [
                     "-device",
                     f"intel-hda,id=sound1,bus={b}.0,addr=0x0b,multifunction=on",
@@ -1280,7 +1281,7 @@ class VM(Storage):
                 ]
             else:
                 if s == "compat" or s == "old":
-                    v = ""
+                    v = EMPTY
                 else:
                     v = "ich9-"
                 r += [
@@ -1406,7 +1407,7 @@ class VM(Storage):
             server.info(
                 f"[m/hydra/VM({self.vmid})]: Started VM with PID {self._proc.pid}, waiting for sockets!"
             )
-        # NOTE(dij): Last chance effort, as some get caught in this quasi-state.
+        # Last chance effort, as some get caught in this quasi-state.
         self._socket_perms_set()
         return self._proc.pid
 
@@ -1470,8 +1471,8 @@ class VM(Storage):
             # NOTE(dij): This shouldn't really fail but *shrug* if it does, it
             #            means something is horribly wrong or we're getting bs'd.
             raise Error(f'cannot find user for "{uid}"')
-        # NOTE(dij): We don't expand any vars in the "vm.binary" option as it
-        #            must be a full path.
+        # We don't expand any vars in the "vm.binary" option as it must be a
+        # full path.
         x, v = self.get("vm.binary"), server.get("hydra.unsafe.enabled", False, True)
         if nes(x):
             if not v:
@@ -1504,45 +1505,46 @@ class VM(Storage):
                 f'[m/hydra/VM({self.vmid})]: Adding additional arguments via "vm.extra" = [{" ".join(e)}]!'
             )
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             e = None
         del v
-        # NOTE(dij): Security Check
-        #            Can only be a root owned/group file that has 0o0755 permissions.
+        # Security Check:
+        #             Can only be a root owned/group file that has 0o0755
+        #             permissions.
         info(x, False, hide=True).only(file=True, hide=True).check(
             0o7022, 0, 0, req=0o0755, hide=True
         )
         d = dirname(self.path())
         f = expand_abs(self.get("bios.file"), d)
         if nes(f):
-            # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0400
-            #            permissions.
+            # Security Check:
+            #             Can only be a file owned by the calling user that
+            #             has 0o0400 permissions.
             info(f, False, hide=True).check_if_owner(
                 0o7177, uid=uid, req=0o0400, hide=True
             ).check_if_not_owner(uid, 0o7133, req=0o0644, hide=True).only(file=True)
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             f = None
         q = expand_abs(self.get("bios.vars"), d)
         if nes(q):
-            # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0600
-            #            permissions.
+            # Security Check:
+            #             Can only be a file owned by the calling user that
+            #             has 0o0600 permissions.
             info(q, False, hide=True).check(
                 0o7137, uid, hide=True, req=0o600, own_gid=True
             ).only(file=True)
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             q = None
         t, c = expand_abs(self.get("dev.tpm.path"), d), self.get("dev.tpm.software")
         if c and not nes(t):
             t = self.set("dev.tpm.path", f"{d}/tpm.raw")
         if nes(t):
             if c and not exists(t):
-                # NOTE(dij): Security Check
-                #            Virtual TPM file. Don't need to check here as we check
-                #            on creation of the VM object anyway.
+                # Security Check:
+                #             Virtual TPM file. Don't need to check here as
+                #             we check on creation of the VM object anyway.
                 server.debug(
                     f'[m/hydra/VM({self.vmid})]: Creating no-existant software TPM file "{t}".'
                 )
@@ -1557,17 +1559,18 @@ class VM(Storage):
                     raise Error(
                         f'TPM device "{t}" is a file but "dev.tpm.software" is not set as "true"'
                     )
-                # NOTE(dij): Security Check
-                #            Virtual TPM file. Can only be a file owned by the
-                #            calling user that has 0o0600 permissions.
+                # Security Check:
+                #             Virtual TPM file. Can only be a file owned by
+                #             the calling user that has 0o0600 permissions.
                 i.check(0o7177, uid, hide=True, req=0o0600, own_gid=True).only(
                     file=True
                 )
             else:
-                # NOTE(dij): Security Check
-                #            Can only be a TPM chardev device that is not owned by
-                #            root. The calling user must by in the group owned by the
-                #            owner (usually "tss"). The device must have 0o0660 permissions.
+                # Security Check:
+                #             Can only be a TPM chardev device that is not
+                #             owned by root. The calling user must by in the
+                #             group owned by the owner (usually "tss"). The
+                #             device must have 0o0660 permissions.
                 i.check(0o7117, req=0o0660, hide=True).only(char=True)
                 if i.uid != uid:
                     raise Error(
@@ -1590,41 +1593,44 @@ class VM(Storage):
                 del v, g
             del i
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             t = None
         del c
         k = expand_abs(self.get("dev.kernel"), d)
         if nes(k):
-            # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0600
-            #            permissions. The file must also be owned by the user's primary group.
+            # Security Check:
+            #             Can only be a file owned by the calling user that
+            #             has 0o0600 permissions. The file must also be owned
+            #             by the user's primary group.
             info(k, False, hide=True).check(
                 0o7177, uid, hide=True, req=0o600, own_gid=True
             ).only(file=True)
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             k = None
         y = expand_abs(self.get("dev.initrd"), d)
         if nes(y):
-            # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0600
-            #            permissions. The file must also be owned by the user's primary group.
+            # Security Check:
+            #             Can only be a file owned by the calling user that
+            #             has 0o0600 permissions. The file must also be owned
+            #             by the user's primary group.
             info(y, False, hide=True).check(
                 0o7177, uid, hide=True, req=0o0600, own_gid=True
             ).only(file=True)
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             d = None
         o = expand_abs(self.get("dev.devicetree"), d)
         if nes(o):
-            # NOTE(dij): Security Check
-            #            Can only be a file owned by the calling user that has 0o0600
-            #            permissions. The file must also be owned by the user's primary group.
+            # Security Check:
+            #             Can only be a file owned by the calling user that
+            #             has 0o0600 permissions. The file must also be owned
+            #             by the user's primary group.
             info(o, False, hide=True).check(
                 0o7177, uid, hide=True, req=0o0600, own_gid=True
             ).only(file=True)
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             o = None
         del d
         n = self.get("memory.size", 1024)
@@ -1640,7 +1646,7 @@ class VM(Storage):
             server.debug(f"[m/hydra/VM({self.vmid})]: Reserving {n}MB of memory..")
             manager.pages(server, self.vmid, round(n / HYDRA_RESERVE_SIZE))
         else:
-            # NOTE(dij): Set to None to remove anything else.
+            # Set to None to remove anything else.
             r = None
         return Restricted(
             x, e, n, r, f, q, t, k, y, o, u.pw_name, x.endswith("-x86_64")
@@ -1665,8 +1671,8 @@ class VM(Storage):
                 continue
             if "type" not in d:
                 raise Error(f'drive "{n}" is missing the "type" value')
-            # NOTE(dij): Expanded forms do NOT get re-saved back to the file so
-            #            they can be evaluated again.
+            # Expanded forms do NOT get re-saved back to the file so
+            # they can be evaluated again.
             p = expand_abs(d.get("file"), z)
             if not nes(p):
                 server.warning(
@@ -1679,7 +1685,7 @@ class VM(Storage):
                 raise Error(
                     f'drive "{n}" file "{p}" does not exist or is not a file: {err}'
                 )
-            # NOTE(dij): Security Check
+            # Security Check:
             #            Can only be a file or block device. If the target is
             #            a block device, it must be owned by root and the
             #            calling user must be in the group on the device, if
@@ -1733,17 +1739,15 @@ class VM(Storage):
                     )
                     d["readonly"] = True
                 if not d.get("readonly", False):
-                    # NOTE(dij): Don't care if we're mounting a shared disk as
-                    #            read only.
+                    # Don't care if we're mounting a shared disk as read only.
                     try:
                         m = _parse_mounted()
                         if p in m:
                             raise Error(
                                 f'drive "{n}" block dev "{p}" is currently mounted'
                             )
-                        # NOTE(dij): Check submounts, meaning we should deter
-                        #            using a blockdev that has partitions of
-                        #            itself mounted.
+                        # Check submounts, meaning we should deter using a
+                        # blockdev that has partitions of itself mounted.
                         for i in m:
                             if i.startswith(p):
                                 raise Error(
@@ -1756,8 +1760,8 @@ class VM(Storage):
                         )
                 del g
             else:
-                # NOTE(dij): This shouldn't reach here, but catch any non-file/blockdev
-                #            disk mount attempts.
+                # This shouldn't reach here, but catch any non-file/blockdev disk
+                # mount attempts.
                 raise Error(
                     f'drive "{n}" file "{p}" is not a valid file or block device'
                 )
@@ -1795,7 +1799,7 @@ class VM(Storage):
                 if d["type"] == "cd" or d["type"] == "iso":
                     d["format"] = "raw"
                 else:
-                    # NOTE(dij): Try to guess based on extension.
+                    # Try to guess based on extension.
                     _, k = splitext(p)
                     if nes(k) and len(k) >= 2:
                         d["format"] = k[1:]
@@ -1805,7 +1809,7 @@ class VM(Storage):
             del d, p
         del i, b
         i, r, a, k = 0, list(), False, 0
-        # NOTE(dij): This loop will re-save all formatted drive entries.
+        # This loop will re-save all formatted drive entries.
         for n, d in w.items():
             f = d["type"] if d["type"].endswith("flash") else "none"
             s = (
@@ -1813,8 +1817,7 @@ class VM(Storage):
                 f"if={f},detect-zeroes=unmap"
             )
             del f
-            # NOTE(dij): Determine how we handle the drive based on the type and
-            #            driver.
+            # Determine how we handle the drive based on the type and driver.
             if not d.get("direct", True):
                 s += ",aio=io_uring"
             elif d["format"] == "raw" and d["type"] == "virtio":
@@ -1822,7 +1825,7 @@ class VM(Storage):
             else:
                 s += ",aio=threads,cache=writeback"
             u = False
-            # NOTE(dij): CDs and ISOs are always read only.
+            # CDs and ISOs are always read only.
             if d.get("readonly", False) or d["type"] == "cd" or d["type"] == "iso":
                 s += ",readonly=on"
                 u = True
@@ -1835,8 +1838,7 @@ class VM(Storage):
                 server.debug(
                     f'[m/hydra/VM({self.vmid})]: Setting drive "{n}" as a temporary drive due to startup option.'
                 )
-            # NOTE(dij): Gate to readonly. Can't be temporary if we can't write
-            #            to it anyway.
+            # Gate to readonly. Can't be temporary if we can't write to it anyway.
             if (d.get("temp", False) or opts.temp) and not u:
                 s += ",snapshot=on"
             del u
@@ -1845,7 +1847,7 @@ class VM(Storage):
             if d["type"] == "usb":
                 r += ["-device", f"usb-storage,bus=usb-bus3.0,drive={n}"]
             elif d["type"] == "scsi":
-                # NOTE(dij): If the SCSI bus isn't added, add it.
+                # If the SCSI bus isn't added, add it.
                 if not a:
                     a = True
                     r += [
@@ -1863,14 +1865,13 @@ class VM(Storage):
                     f'virtio-blk-pci,id={n}-dev,drive={n},bus={bus}.0,bootindex={d["index"]}',
                 ]
             elif not d["type"].endswith("flash"):
-                # NOTE(dij): Treat q35 and older machines differently. Q35 will default
-                #            to the SATA bus if nothing is specified. Older machines
-                #            get IDE.
+                # Treat q35 and older machines differently. Q35 will default to
+                # the SATA bus if nothing is specified. Older machines get IDE.
                 v = i + 1 if "q35" in machine else i / 2
                 if d["type"] == "sata":
                     t = "sata"
                     if k == 0:
-                        # NOTE(dij): Add the SATA bus if not added already.
+                        # Add the SATA bus if not added already.
                         k = 1
                         r += ["-device", "ich9-ahci,id=sata"]
                     v = k
@@ -1934,7 +1935,7 @@ class VM(Storage):
             )
             del t
             return
-        # NOTE(dij): If force is true, we're not throwing any errors.
+        # If force is true, we're not throwing any errors.
         stop(self._proc)
         if self._proc is not None:
             try:
@@ -1945,7 +1946,7 @@ class VM(Storage):
             e = None
         if isinstance(e, int) and e != 0:
             server.warning(f"[m/hydra/VM({self.vmid})]: Exit was non-zero ({e}).")
-        # NOTE(dij): If debugging is enabled check the output of the process.
+        # If debugging is enabled check the output of the process.
         if self._output is None and self._debug:
             try:
                 o = self._proc.stdout.read().replace(NEWLINE, ";")
@@ -1984,8 +1985,8 @@ class VM(Storage):
         self._close_adapters(server)
         self._event = cancel_nul(server, self._event)
         self._usb_clean(server, manager)
-        # NOTE(dij): For some reason, using "remove_file" prevents the files from
-        #            being deleted, but this works *shrug*
+        # For some reason, using "remove_file" prevents the files from being
+        # deleted, but this works *shrug*
         try:
             remove(f"{self._path}.pid")
         except OSError:
@@ -2104,19 +2105,19 @@ class VM(Storage):
         s.settimeout(timeout)
         try:
             s.connect(f)
-            # NOTE(dij): Trigger initial server greeting
+            # Trigger initial server greeting
             s.sendall(b"\r\n")
             if not ga:
-                # NOTE(dij): Read initial server greeting
+                # Read initial server greeting
                 _command_response(s.recv(HYDRA_SOCK_BUF_SIZE))
-                # NOTE(dij): Capabilities negotiation response
+                # Capabilities negotiation response
                 s.sendall(_HYDRA_IPC)
                 r = _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
                 if r is None:
                     raise Error("invalid hello response")
                 server.debug(f'[m/hydra/VM({self.vmid})]: Hello response "{r}".')
                 del r
-            # NOTE(dij): Now send our command
+            # Now send our command
             s.sendall(p)
             s.sendall(b"\r\n")
             r = _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
@@ -2128,8 +2129,8 @@ class VM(Storage):
                 s.close()
             del f, p
         if ga and not self._agent:
-            # NOTE(dij): If we received a response from the Guest Agent, flag it
-            #            so we know to use it again.
+            # If we received a response from the Guest Agent, flag it so we
+            # know to use it again.
             self._agent = True
         return (r, s)
 
@@ -2281,7 +2282,7 @@ class HydraServer(object):
                 f'[m/hydra]: Network bridge address "{HYDRA_BRIDGE_NETWORK}" host allocation size is too small!'
             )
         server.debug(f'[m/hydra]: Creating VM Bridge interface "{HYDRA_BRIDGE}"..')
-        # NOTE(dij): Delete any existing bridge entries.
+        # Delete any existing bridge entries.
         nulexec(
             ["/usr/bin/ip", "link", "set", HYDRA_BRIDGE, "down"],
             wait=True,
@@ -2631,9 +2632,8 @@ class HydraServer(object):
                     # Wake VM if we're attempting to start a sleeping VM.
                     # This calls wake if the VM is already running.
                     x._start(server, self, message.uid(), message)
-                # NOTE(dij): Ensure that the sockets never fail to get set as
-                #            readable. This will trigger when clients try to view
-                #            the VM's screen
+                # Ensure that the sockets never fail to get set as readable.
+                # This will trigger when clients try to view the VM's screen
                 x._socket_perms_set()
                 return x._status()
             try:
@@ -2643,7 +2643,7 @@ class HydraServer(object):
                 x._start(server, self, message.uid(), message)
                 self._vms[x.vmid] = x
             except Error as err:
-                # NOTE(dij): Remove VM as it failed on launch.
+                # Remove VM as it failed on launch.
                 if x.vmid in self._vms and (
                     not x._running() or x._state != HYDRA_STATE_RUNNING
                 ):
@@ -2661,7 +2661,7 @@ class HydraServer(object):
             return s
         if not x._running() or x._state == HYDRA_STATE_STOPPED:
             return as_error(f"VM {x.vmid} is not running")
-        # NOTE(dij): These commands return "non-standard" results.
+        # These commands return "non-standard" results.
         if message.type == HYDRA_TAP:
             try:
                 x._stop(server, self, False, message.get("timeout", 90), tap=True)
@@ -2723,7 +2723,7 @@ class HydraServer(object):
                 )
                 return as_error(f"cannot send input to VM {x.vmid}: {err}")
             return True
-        # NOTE(dij): The commands below all return "x._status()"
+        # The commands below all return "x._status()"
         if message.type == HYDRA_STOP:
             try:
                 x._stop(server, self, message.force, message.get("timeout", 90))

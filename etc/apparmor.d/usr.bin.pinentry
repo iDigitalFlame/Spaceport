@@ -39,18 +39,16 @@ include <tunables/spaceport>
 profile pinentry /usr/bin/pinentry{,-curses,-emacs,-tty} flags=(enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     ptrace read,
 
     /usr/share/terminfo/** r,
 
-    /usr/bin/ldd           ixr,
-    /usr/lib/ld-*          ixr,
+    /usr/lib/ld{-*,d}      ixr,
     /usr/bin/{,ba,da,z}sh  ixr,
     /usr/bin/pinentry{,-*} Pxrm,
-
-    deny network,
 
     include if exists <local/usr.bin.pinentry>
 }

@@ -38,11 +38,10 @@ include <tunables/spaceport>
 
 profile nm-initrd-generator /usr/lib/nm-initrd-generator flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /usr/lib/nm-initrd-generator rm,
-
-    deny network,
 
     include if exists <local/usr.lib.nm-initrd-generator>
 }

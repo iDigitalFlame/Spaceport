@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enforce) {
+profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/mesa>
     include <abstractions/audio>
@@ -45,8 +45,9 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
-    include <abstractions/user-home>
     include <abstractions/nameservice>
+    include <abstractions/xdg-desktop>
+    include <abstractions/private-files>
     include <abstractions/freedesktop.org>
 
     network                                                   inet  stream,
@@ -64,9 +65,8 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     /etc/ssl/certs/java/cacerts                               r,
     /etc/java-[0-9]*-openjdk/**                               r,
     /usr/share/pipewire/jack.conf                             r,
-    /etc/java-openjdk/net.properties                          r,
-    /etc/java-openjdk/jaxp.properties                         r,
     /etc/java-openjdk/logging.properties                      r,
+    /etc/java-openjdk/{jaxp,net}.properties                   r,
     /etc/java-openjdk/security/java.security                  r,
     /etc/java-openjdk/security/policy/unlimited/              r,
     /etc/java-openjdk/security/policy/**/*.policy             r,
@@ -113,8 +113,8 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
 
     /tmp/                                                     r,
 
-    owner @{CGROUP}/app.slice/cpu.max                         r,
-    owner @{CGROUP}/app.slice/sway.service/memory.{high,max}  r,
+    @{CGROUP}/app.slice/cpu.max                               r,
+    @{CGROUP}/app.slice/sway.service/memory.{high,max}        r,
 
     owner /proc/@{pid}/fd/                                    r,
     owner /proc/@{pid}/stat                                   r,
@@ -122,9 +122,8 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner /proc/@{pid}/c{group,mdline}                        r,
 
     owner @{HOME}/                                            r,
-    # This is for AtLauncher to download files manually.
-    owner @{HOME}/Downloads/*.jar                             r,
     owner @{HOME}/.config/java/jssc/linux/*.so                rm,
+    owner @{HOMEDOTS}/.local/bin/tools/atlauncher             r,
 
     owner /proc/@{pid}/coredump_filter                        rw,
     owner /proc/@{pid}/task/@{tid}/comm                       rw,
@@ -139,31 +138,33 @@ profile atlauncher @{HOME}/{,.dotfiles/}.local/bin/tools/atlauncher flags=(enfor
     owner @{CACHE}/JNA{,/**}                                  rmwkl,
     owner @{HOME}/.java/fonts/*/                              rw,
     owner @{HOME}/.config/java/fonts/*/                       rw,
+    # This is for AtLauncher to download and import files manually.
     owner @{HOME}/Documents/Minecraft/**                      rmwkl,
+    owner @{HOME}/Documents/Minecraft{,/}                     rw,
+    owner @{HOME}/*.{jar,mcpack,mrpack,zip}                   rw,
     owner @{HOME}/Documents/Minecraft/**/bin/*                rwix,
     owner @{HOME}/.java/fonts/*/fcinfo[0-9]*.tmp              rw,
     owner @{HOME}/.java/fonts/*/fcinfo-*.properties           rw,
+    owner @{HOME}/Downloads/*.{jar,mcpack,mrpack,zip}         rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/Documents/Minecraft/**/lib/jspawnhelper     rwix,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
-    /usr/bin/uname                                            ix,
-    /usr/bin/getconf                                          ix,
-    /usr/bin/ldconfig                                         ix,
     /usr/bin/xdg-open                                         Pix -> xdg-open,
     /usr/bin/ls{cpu,pci}                                      ix,
     /usr/lib/gio-launch-desktop                               Pix -> xdg-open,
+    /usr/bin/{getconf,ldconfig,uname}                         ix,
     /usr/lib/jvm/default{,-runtime}/{,jre/}bin/java           ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/{,jre/}bin/java          ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper         ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/{,jre/}bin/java        ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ix,
 
-    deny ptrace read peer=xdg-{open,settings},
-
     deny @{HOME}/lwjgl{,/}                                    rw,
     deny @{HOME}/.cache/resourcefullib{,/}                    rw,
     deny /sys/devices/system/cpu/vulnerabilities/*            r,
+
+    deny ptrace read peer=xdg-{open,settings},
 
     include if exists <local/local.bin.atlauncher>
 }

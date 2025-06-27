@@ -74,7 +74,7 @@ def config(args):
         return print_error("Cannot retrive CPU information!", err)
     p = {"cpus": dict(), "type": MSG_CONFIG}
     if args.step:
-        # NOTE(dij): "step" always implies turbo.
+        # "step" always implies turbo.
         p["turbo"], args.turbo = True, None
     for v in x["cpus"].keys():
         c = dict()
@@ -84,8 +84,7 @@ def config(args):
             except ValueError as err:
                 return print_error(f'Minimum "{args.minimum}" is not valid!', err)
         if nes(args.maximum):
-            # NOTE(dij): If we're using "step" set to the max freq on the first
-            #            "step".
+            # If we're using "step" set to the max freq on the first "step".
             if args.step:
                 c["scale_max"] = x["cpus"][v]["max"]
             else:

@@ -41,8 +41,10 @@ include <abstractions/mime>
 include <abstractions/audio>
 include <abstractions/dconf>
 include <abstractions/consoles>
+include <abstractions/no-network>
 include <abstractions/dbus-system>
 include <abstractions/nameservice>
+include <abstractions/xdg-desktop>
 include <abstractions/private-files>
 include <abstractions/freedesktop.org>
 include <abstractions/dbus-session-strict>
@@ -69,11 +71,7 @@ owner /proc/@{pid}/mountinfo                 r,
 owner /proc/@{pid}/task/@{tid}/              r,
 owner /proc/@{pid}/task/@{tid}/status        r,
 
-owner @{CONFIG}/user-dirs.dirs               r,
-
 owner @{HOME}/                               r,
-
-/dev/tty                                     rw,
 
 owner /dev/shm/grim-*                        rw,
 

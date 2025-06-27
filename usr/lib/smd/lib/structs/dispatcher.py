@@ -96,7 +96,7 @@ class Dispatcher(Thread):
                 self._service.send(None, r)
             del r
         self._service.save()
-        # NOTE(dij): Don't trigger the daemon until now.
+        # Don't trigger the daemon until now.
         self._executer.start()
         while not self._running.is_set():
             if len(self._messages) == 0:
@@ -264,7 +264,7 @@ class DispatchExecuter(Thread):
                 continue
             if i[0].poll() is None:
                 continue
-            # NOTE(dij): Call a "stop" function if it exists.
+            # Call a "stop" function if it exists.
             try:
                 f = getattr(i[0], "stop")
                 if callable(f):

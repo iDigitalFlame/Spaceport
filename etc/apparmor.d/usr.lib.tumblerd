@@ -36,12 +36,16 @@
 
 include <tunables/spaceport>
 
-profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
+profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/fonts>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/user-data-ro>
+
+    # Device wide thumbnails for picture formats.
+    /**/*.{jpg,png,ico,svg,jpeg,heic,bmp,gif,HEIC}                                  r,
 
     /var/tmp/                                                                       r,
     /etc/fstab                                                                      r,
@@ -55,9 +59,6 @@ profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
     /usr/share/backgrounds/xfce/{,**}                                               r,
     /usr/share/gstreamer-1.0/presets/Gst*Enc.prs                                    r,
 
-    # Device wide thumbnails for picture formats.
-    /**/*.{jpg,png,ico,svg,jpeg,heic,bmp,gif,HEIC}                                  r,
-
     /dev/                                                                           r,
     /dev/dri/                                                                       r,
     /dev/bus/usb/                                                                   r,
@@ -69,9 +70,9 @@ profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
     /sys/class/video4linux/                                                         r,
     /sys/devices/system/node/                                                       r,
     /sys/devices/pci*/**/descriptors                                                r,
-    /sys/devices/pci*/**/{busnum,config}                                            r,
+    /sys/devices/pci*/**/{bus,dev}num                                               r,
     /sys/devices/system/node/node*/meminfo                                          r,
-    /sys/devices/pci*/**/{devnum,speed,uevent}                                      r,
+    /sys/devices/pci*/**/{config,speed,uevent}                                      r,
 
     @{run}/udev/data/c*:*                                                           r,
     @{run}/udev/data/+usb:*                                                         r,
@@ -95,8 +96,6 @@ profile tumblerd /usr/lib/tumbler-1/tumblerd flags=(enforce) {
     /usr/bin/magick                                                                 ix,
     /usr/bin/*{,-}thumbnailer                                                       ix,
     /usr/lib/{,gstreamer1.0}gstreamer1.0/gstreamer-1.0/gst-plugin-scanner           ix,
-
-    deny network,
 
     include if exists <local/usr.lib.tumblerd>
 }

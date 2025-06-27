@@ -75,14 +75,13 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
 
     owner /tmp/imgui.ini                                  rw,
 
-    /usr/bin/dash                                         ix,
-
-    owner @{HOME}/.local/bin/zenity                       ixr,
-    owner @{HOME}/.dotfiles/.local/bin/zenity             ixr,
-
     owner @{HOME}/.local/share/mcpelauncher{,/**}         rwk,
     owner @{HOME}/.local/share/mcpelauncher/mods/*.so     rm,
     owner @{HOME}/.local/share/mcpelauncher/versions/*/** rmw,
+
+    /usr/bin/dash                                         ix,
+
+    owner @{HOMEDOTS}/.local/bin/zenity                   ixr,
 
     include if exists <local/usr.bin.mcpelauncher-client>
 }

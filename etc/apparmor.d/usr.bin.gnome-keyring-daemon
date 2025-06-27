@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/openssl>
+    include <abstractions/no-network>
     include <abstractions/dbus-system>
     include <abstractions/dbus-session-strict>
 
@@ -79,8 +80,6 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(enforce, attac
     dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name=:*, label=systemd-logind),
     dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.impl.portal.Settings member={Read,ReadAll} peer=(name=:*, label=xdg-desktop-portal),
     dbus receive bus=system  path=/org/freedesktop/login1/session/* interface=org.freedesktop.login1.Session member={PauseDevice,Unlock} peer=(name="{:*,org.freedesktop.login1}", label=systemd-logind),
-
-    deny network,
 
     include if exists <local/usr.bin.gnome-keyring-daemon>
 }

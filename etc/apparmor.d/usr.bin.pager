@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     capability                        dac_override,
@@ -46,7 +47,7 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
 
     signal receive set=(cont, kill, stop, term),
 
-    # NOTE(dij): Required for pagers to work
+    # Required for pagers to work
     /**                               r,
 
     @{sysconfig}/etc/sysless{,key}    r,
@@ -62,10 +63,6 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
 
     owner @{HOME}/                    r,
     owner @{HOME}/.lesshs*            r,
-
-    /dev/tty*                         rw,
-
-    deny network,
 
     deny @{HOME}/.lesshs*             w,
     deny @{HOME}/.local/state/lesshs* w,

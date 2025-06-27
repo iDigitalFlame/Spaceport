@@ -38,6 +38,8 @@ include <tunables/spaceport>
 
 profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) {
     include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
@@ -64,14 +66,13 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     /proc/@{pid}/mounts               r,
 
     /dev/fuse                         rw,
-    /dev/tty*                         rw,
 
     /tmp/.mount_**                    rw,
     /tmp/com.freerdp.client.cliprdr.* rw,
 
     owner @{run}/user/@{uid}/doc/     rw,
 
-    /usr/bin/mount                    ix,
+    /usr/bin/{,u}mount                ix,
 
     unix (send receive) type=stream peer=(label=xdg-document-portal),
 

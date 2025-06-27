@@ -38,7 +38,9 @@ include <tunables/spaceport>
 
 profile gpg-agent /usr/bin/gpg-agent flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/gnupg>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
 
     signal receive peer=scdaemon,
@@ -52,45 +54,17 @@ profile gpg-agent /usr/bin/gpg-agent flags=(enforce) {
     owner @{GPG_SYS_DIR}/.gpg-*                           r,
     owner @{GPG_SYS_DIR}/*.conf                           r,
 
-    owner @{run}/user/@{uid}/gnupg/.gpg-*                 r,
-    owner @{run}/user/@{uid}/gnupg/*.conf                 r,
-
-    owner @{GPG_DIR}/.gpg-*                               r,
-    owner @{GPG_DIR}/*.conf                               r,
-    owner @{GPG_DIR}/.gpg-*                               r,
-    owner @{GPG_DIR}/*.conf                               r,
-
     owner @{GPG_SYS_DIR}/                                 rw,
-    owner @{GPG_SYS_DIR}/.#lk*                            rw,
+    owner @{GPG_SYS_DIR}/.#lk*                            rwkl,
     owner @{GPG_SYS_DIR}/sshcontrol                       rw,
     owner @{GPG_SYS_DIR}/crls.d/{,*}                      rw,
     owner @{GPG_SYS_DIR}/{,d.*/}{,S.*}                    rw,
-    owner @{GPG_SYS_DIR}/*.{db,kbx,kbx~,gpg}              rw,
     owner @{GPG_SYS_DIR}/openpgp-revocs.d/{,*}            rw,
     owner @{GPG_SYS_DIR}/private-keys-v1.d/{,*}           rw,
-
-    owner @{run}/user/@{uid}/gnupg/                       rw,
-    owner @{run}/user/@{uid}/gnupg/.#lk*                  rw,
-    owner @{run}/user/@{uid}/gnupg/sshcontrol             rw,
-    owner @{run}/user/@{uid}/gnupg/crls.d/{,*}            rw,
-    owner @{run}/user/@{uid}/gnupg/{,d.*/}{,S.*}          rw,
-    owner @{run}/user/@{uid}/gnupg/*.{db,kbx,kbx~,gpg}    rw,
-    owner @{run}/user/@{uid}/gnupg/openpgp-revocs.d/{,*}  rw,
-    owner @{run}/user/@{uid}/gnupg/private-keys-v1.d/{,*} rw,
-
-    owner @{GPG_DIR}/                                     rw,
-    owner @{GPG_DIR}/.#lk*                                rw,
-    owner @{GPG_DIR}/sshcontrol                           rw,
-    owner @{GPG_DIR}/crls.d/{,*}                          rw,
-    owner @{GPG_DIR}/{,d.*/}{,S.*}                        rw,
-    owner @{GPG_DIR}/*.{db,kbx,kbx~,gpg}                  rw,
-    owner @{GPG_DIR}/openpgp-revocs.d/{,*}                rw,
-    owner @{GPG_DIR}/private-keys-v1.d/{,*}               rw,
+    owner @{GPG_SYS_DIR}/*.{db,kbx,kbx~,gpg}{,.lock}      rwkl,
 
     /usr/bin/pinentry{,-*}                                Px,
     /usr/{bin,lib}/{,gnupg/}scdaemon                      Px -> scdaemon,
-
-    deny network,
 
     include if exists <local/usr.bin.gpg-agent>
 }

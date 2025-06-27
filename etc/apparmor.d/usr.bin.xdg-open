@@ -43,6 +43,7 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/xdg-open>
+    include <abstractions/no-network>
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
@@ -56,16 +57,10 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     @{sysconfig}/bin/ghr                                   Pix -> ghr,
     @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
 
-    /usr/bin/cat                                           ix,
-    /usr/bin/env                                           ix,
-    /usr/bin/file                                          ix,
-    /usr/bin/gawk                                          ix,
-    /usr/bin/xprop                                         ix,
-    /usr/bin/printf                                        ix,
-    /usr/bin/realpath                                      ix,
     /usr/bin/dbus-send                                     ix,
     /etc/xdg/xdg-open-shim.sh                              ixr,
     /usr/bin/{u,base,host}name                             ix,
+    /usr/bin/{cat,env,file,gawk,printf,realpath,xprop}     ix,
 
     /usr/bin/ghr                                           Px -> ghr,
     /usr/bin/vlc                                           Px,
@@ -86,11 +81,7 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce) {
     /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura       Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
 
-    owner @{HOME}/.local/bin/**                            PUx,
-    owner @{HOME}/.private/.local/bin/**                   PUx,
-    owner @{HOME}/.dotfiles/.local/bin/**                  PUx,
-
-    deny network,
+    owner @{HOMEDATA}/.local/bin/**                        PUx,
 
     include if exists <local/usr.bin.xdg-open>
 }

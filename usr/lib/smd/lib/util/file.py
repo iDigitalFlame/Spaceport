@@ -233,23 +233,12 @@ class Stat(NamedTuple):
         return self.check(mask, uid, gid, req, hide, own_gid)
 
 
-def remove_file(path, sym=False):
-    if not isinstance(path, str) or len(path) == 0 or not isfile(path):
-        return
-    if not sym and islink(path):
-        raise PermissionError(f'cannot delete link "{path}"')
-    try:
-        remove(path)
-    except OSError:
-        pass
-
-
 def import_file(path):
     i = info(path, sym=False, no_fail=True)
     if not i.isfile:
         return
     try:
-        # NOTE(dij): Prevent loading insecure config files.
+        # Prevent loading insecure config files.
         i.check(0o7133, 0, 0, req=0o0400).only(file=True)
     except OSError:
         return
@@ -261,13 +250,12 @@ def import_file(path):
         for n, d in v.items():
             if not nes(n):
                 continue
-            # NOTE(dij): Ignore names that do not start with [a-zA-Z]
+            # Ignore names that do not start with [a-zA-Z]
             if not (0x61 <= ord(n[0]) <= 0x7A or 0x41 <= ord(n[0]) <= 0x5A):
                 continue
-            # NOTE(dij): If errors occur here, we want to break with an exception
-            #            so we're not gonna catch them. AttributeErrors won't
-            #            happen, but anything like TypeErrors might but that's a
-            #            user issue.
+            # If errors occur here, we want to break with an exception so we're
+            # not gonna catch them. AttributeErrors won't happen, but anything
+            # like TypeErrors might but that's a user issue.
             g[n.upper()] = d
         del g
     del v
@@ -522,6 +510,34 @@ def read(path, binary=False, errors=True, strip=False, sym=False):
 
 def perm_check(path, mask=None, uid=None, gid=None, sym=True, st=None):
     info(path, sym=sym, st=st).check(mask, uid, gid)
+
+
+def remove_file(path, sym=False, errors=False, secure=False, block=4096):
+    if not isinstance(path, str) or len(path) == 0 or not isfile(path):
+        return
+    if not sym and islink(path):
+        raise PermissionError(f'cannot delete link "{path}"')
+    if not isfile(path):
+        return
+    try:
+        # Overrite the file with zeros
+        if secure:
+            with open(path, "br+") as f:
+                n = f.seek(0, 2)
+                f.seek(0, 0)
+                i = n // block
+                r, t = n - (i * block), bytearray(block)
+                for _ in range(0, i):
+                    f.write(t)
+                del i, n, t
+                if r > 0:
+                    f.write(bytearray(r))
+                del r
+        remove(path)
+    except OSError as err:
+        if errors:
+            raise err
+        pass
 
 
 def copy(src, dst, uid=None, gid=None, perms=None, errors=True, sym=False):

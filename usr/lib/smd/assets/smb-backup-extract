@@ -1,0 +1,87 @@
+#!/usr/bin/dash
+################################
+### iDigitalFlame  2016-2025 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Backup File Entries Listing Script
+#
+# Copyright (C) 2016 - 2025 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+set -u
+
+if [ $# -lt 3 ]; then
+    echo "$0 <private_key> <tar_file> <output> [target_files]"
+    exit 1
+fi
+if ! [ -e "$1" ]; then
+    printf 'Private key "%s" does not exist!\n' "$1"
+    exit 1
+fi
+if ! [ -e "$2" ]; then
+    printf 'Tar file "%s" does not exist!\n' "$2"
+    exit 1
+fi
+if ! mkdir -p "$3" 2> /dev/null; then
+    printf 'Cannot use or make output directory "%s"!\n' "$3"
+    exit 1
+fi
+
+pem=$(tar -xf "$2" --wildcards "*/data.pem" -O 2> /dev/null | base64)
+if [ $? -ne 0 ] || [ -z "$pem" ]; then
+    printf 'Extraction of key from "%s" failed!\n' "$2"
+    exit 1
+fi
+
+export key=$(echo "$pem" | base64 -d | openssl pkeyutl -decrypt -inkey "$1" -in - -out -)
+
+r=$?
+unset pem
+
+if [ $? -ne 0 ] || [ -z "$key" ]; then
+    printf 'Decryption using key "%s" failed!\n' "$1"
+    exit 1
+fi
+
+if ! [ -z "$4" ]; then
+    tar -xf "$2" --wildcards "*/data.pak" -O | openssl aes-256-ctr -d -pass env:key -pbkdf2 -in - -out - | tar -xvf - --zstd -C "$3" --wildcards "$4"
+else
+    tar -xf "$2" --wildcards "*/data.pak" -O | openssl aes-256-ctr -d -pass env:key -pbkdf2 -in - -out - | tar -xf - --zstd -C "$3"
+fi
+
+r=$?
+unset key
+
+if [ $r -ne 0 ]; then
+    printf 'Decryption and extraction of backup from "%s" failed!\n' "$2"
+    exit 1
+fi
+
+exit 0

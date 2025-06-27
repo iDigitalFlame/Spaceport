@@ -40,6 +40,7 @@ profile top /usr/bin/top flags=(enforce) {
     include <abstractions/base>
     include <abstractions/wutmp>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
@@ -78,9 +79,9 @@ profile top /usr/bin/top flags=(enforce) {
 
     @{run}/systemd/sessions/{,*}              r,
 
-    deny network,
-
     deny @{HOME}/.config/procps{,/*}          rw,
+
+    deny capability                           sys_admin,
 
     include if exists <local/usr.bin.top>
 }

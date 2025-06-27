@@ -40,6 +40,7 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
     include <abstractions/base>
     include <abstractions/python>
     include <abstractions/openssl>
+    include <abstractions/consoles>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>
     include <abstractions/private-files>
@@ -87,7 +88,6 @@ profile cupsd /usr/bin/cupsd flags=(enforce) {
     /var/log/cups/{,*}                        rw,
     /var/{cache,spool}/cups/{,**}             rwk,
 
-    /dev/tty                                  rw,
     /dev/bus/usb/**                           rwk,
 
     @{run}/cups/{,**}                         rw,

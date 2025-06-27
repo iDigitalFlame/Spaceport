@@ -51,10 +51,11 @@ owner @{CACHE}/qtshadercache-*/{,**}                  rwkl,
 owner @{CACHE}/qt_compose_cache_{little,big}_endian_* rwl -> @{CACHE}/#[0-9]*[0-9],
 
 owner @{HOME}/.config/#[0-9]*[0-9]                    rw,
-owner @{HOME}/.config/QtProject.conf                  rwl -> @{HOME}/.config/#[0-9]*[0-9],
+owner @{HOME}/.config/QtProject.conf                  rl -> @{HOME}/.config/#[0-9]*[0-9],
 owner @{HOME}/.config/QtProject.conf.lock             rwk,
 owner @{HOME}/.config/QtProject.conf.??????           rwl -> @{HOME}/.config/#[0-9]*[0-9],
 
 deny /usr/share/qt{,*}/resources/**                   w,
+deny @{HOME}/.config/QtProject.conf                   w,
 
 include if exists <abstractions/qt.d>

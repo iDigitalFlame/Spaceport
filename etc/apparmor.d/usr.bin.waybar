@@ -40,6 +40,8 @@ profile waybar /usr/bin/waybar flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/audio>
     include <abstractions/dconf>
+    include <abstractions/wayland>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/freedesktop.org>
@@ -66,8 +68,6 @@ profile waybar /usr/bin/waybar flags=(enforce) {
     /usr/bin/wpctl                              ix,
     /usr/bin/swaymsg                            ix,
     /usr/bin/{,ba,da,z}sh                       ix,
-
-    deny network,
 
     include if exists <local/usr.bin.waybar>
 }

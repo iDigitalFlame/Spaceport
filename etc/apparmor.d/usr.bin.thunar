@@ -39,10 +39,12 @@ include <tunables/spaceport>
 profile thunar /usr/bin/{T,t}hunar flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/dconf>
+    include <abstractions/consoles>
     include <abstractions/user-data>
+    include <abstractions/no-network>
     include <abstractions/xdg-desktop>
 
-    # NOTE(dij): Needed to open any files for reading.
+    # Needed to open any files for reading.
     /{,**}                                             r,
 
     /usr/lib/tumbler-*/plugins/*                       rm,
@@ -62,9 +64,7 @@ profile thunar /usr/bin/{T,t}hunar flags=(enforce) {
     /usr/bin/xdg-settings                              PUx,
     /usr/lib/gio-launch-desktop                        PUx,
 
-    deny network,
-
-    deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/thunar.xml  w,
+    deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml       w,
 
     include if exists <local/usr.bin.thunar>
 }

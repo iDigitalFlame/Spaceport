@@ -1121,7 +1121,7 @@ def vm_usb(args, remove=False, vm=None):
     if nes(args.usb_name):
         if args.usb_name == "all" and (remove or args.usb_delete):
             return vm_usb_clean(args, vm)
-        # NOTE(dij): We already checked the name so we're good.
+        # We already checked the name so we're good.
         try:
             args.usb_id = int(args.usb_name)
         except ValueError:

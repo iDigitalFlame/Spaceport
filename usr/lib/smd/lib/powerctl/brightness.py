@@ -46,7 +46,7 @@ from lib.constants.config import BRIGHTNESS_PATH, BRIGHTNESS_PATH_MAX
 
 
 def default(args):
-    # NOTE(dij): Fixup the "i" and "d" values being used as positional args.
+    # Fixup the "i" and "d" values being used as positional args.
     if args.level and len(args.level) >= 1:
         v = args.level.lower()
         if v[0] == "i":

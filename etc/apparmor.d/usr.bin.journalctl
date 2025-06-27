@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile journalctl /usr/bin/journalctl flags=(enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
@@ -75,8 +76,6 @@ profile journalctl /usr/bin/journalctl flags=(enforce) {
     /var/lib/systemd/catalog/.#database*          rw,
 
     /usr/bin/{less,more}                          Pix -> pager,
-
-    deny network,
 
     include if exists <local/usr.bin.journalctl>
 }

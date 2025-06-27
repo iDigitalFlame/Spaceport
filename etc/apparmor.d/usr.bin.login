@@ -84,9 +84,9 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
 
     owner /proc/@{pid}/uid_map             r,
 
-    /var/lib/faillock/*                    rwk,
-
     /dev/tty*                              rw,
+
+    /var/lib/faillock/*                    rwk,
 
     @{run}/faillock/*                      rwk,
     @{run}/systemd/sessions/*.ref          rw,

@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile xdg-permission-store /usr/lib/xdg-permission-store flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
@@ -53,8 +54,6 @@ profile xdg-permission-store /usr/lib/xdg-permission-store flags=(enforce, attac
     owner @{HOME}/.local/share/flatpak/{,**} rw,
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
-
-    deny network,
 
     include if exists <local/usr.lib.xdg-permission-store>
 }

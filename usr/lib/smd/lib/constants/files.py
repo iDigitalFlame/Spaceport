@@ -106,41 +106,50 @@ follow symlinks = no
 """
 
 BACKUP_RESTORE_SCRIPT = """#!/bin/bash
+set -u
+
 if [ $# -lt 1 ]; then
     echo "$0 <private_key> [output_dir]"
+    exit 1
+fi
+if ! [ -e "$1" ]; then
+    printf 'Private key "%s" does not exist!\\n' "$1"
     exit 1
 fi
 
 output="$(pwd)/output"
 if [ $# -eq 2 ]; then
-    output=$2
+    output="$2"
+else
+    output="$(pwd)/output"
+fi
+if ! mkdir -p "$output" 2> /dev/null; then
+    printf 'Cannot use or make output directory "%s"!\\n' "$output"
+    exit 1
 fi
 
-hash_sum=$(sha256sum "data.pak" | awk '{print $1}')
+hash=$(sha256sum "data.pak" | awk '{print $1}')
 if [ $? -ne 0 ]; then
     echo "File hashing failed!"
     exit 1
 fi
-
-hash_orig="$(cat data.sum | awk '{print $1}')"
-if [[ "$hash_sum" != "$hash_orig" ]]; then
+if [[ "$hash" != "$(cat data.sum | awk '{print $1}')" ]]; then
     echo "Hash sum mismatch!"
     exit 1
 fi
 
-export keydata=$(openssl pkeyutl -decrypt -inkey "$1" -in "data.pem")
-if [ $? -ne 0 ] || [ -z "$keydata" ]; then
-    printf "Decryption using key \"%s\" failed!\n" "$1"
+key=$(openssl pkeyutl -decrypt -inkey "$1" -in "data.pem" -out -)
+if [ $? -ne 0 ] || [ -z "$key" ]; then
+    printf 'Decryption using key "%s" failed!\\n' "$1"
     exit 1
 fi
 
-printf "Decrypting and extracing into \"%s\", please wait..\n" "$output"
-mkdir "$output" 1>/dev/null 2> /dev/null
+printf 'Decrypting and extracing into "%s", please wait..\\n' "$output"
+env key="$key" openssl aes-256-ctr -d -pass env:key -pbkdf2 -in data.pak -out - | tar -xf - --zstd -C "$output"
 
-openssl aes-256-ctr -d -pass env:keydata -pbkdf2 -in data.pak -out - | tar -xf - --zstd -C "$output"
 r=$?
+unset key
 
-unset keydata
 if [ $r -ne 0 ]; then
     echo "Decryption and extraction of backup file failed!"
     exit 1
@@ -150,28 +159,31 @@ echo "Extraction complete."
 exit 0
 """
 BACKUP_RESTORE_SCRIPT_NO_KEY = """#!/bin/bash
+set -u
+
 output="$(pwd)/output"
-if [ $# -eq 2 ]; then
-    output=$2
+if [ $# -eq 1 ]; then
+    output="$1"
+else
+    output="$(pwd)/output"
+fi
+if ! mkdir -p "$output" 2> /dev/null; then
+    printf 'Cannot use or make output directory "%s"!\\n' "$output"
+    exit 1
 fi
 
-hash_sum=$(sha256sum "data.pak" | awk '{print $1}')
+hash=$(sha256sum "data.pak" | awk '{print $1}')
 if [ $? -ne 0 ]; then
     echo "File hashing failed!"
     exit 1
 fi
-
-hash_orig="$(cat data.sum | awk '{print $1}')"
-if [[ "$hash_sum" != "$hash_orig" ]]; then
+if [[ "$hash" != "$(cat data.sum | awk '{print $1}')" ]]; then
     echo "Hash sum mismatch!"
     exit 1
 fi
 
-printf "Extracing into \"%s\", please wait..\n" "$output"
-mkdir "$output" 1>/dev/null 2> /dev/null
-
-tar -xf "data.pak" --zstd -C "$output"
-if [ $r -ne 0 ]; then
+printf 'Extracing into "%s", please wait..\\n' "$output"
+if ! tar -xf "data.pak" --zstd -C "$output"; then
     echo "Extraction of backup file failed!"
     exit 1
 fi

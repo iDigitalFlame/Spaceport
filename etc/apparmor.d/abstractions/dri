@@ -36,9 +36,12 @@
 
 abi <abi/4.0>,
 
-/etc/libva.conf                                                                                                  r,
+/etc/libva.conf                                 r,
 
-/sys/bus/pci/devices/                                                                                            r,
-/sys/devices/pci*/**/{class,config,device,irq,resource,revision,subsystem_device,subsystem_vendor,uevent,vendor} r,
+/sys/bus/pci/devices/                           r,
+/sys/devices/pci*/**/c{lass,onfig}              r,
+/sys/devices/pci*/**/r{esource,evision}         r,
+/sys/devices/pci*/**/{device,irq,uevent,vendor} r,
+/sys/devices/pci*/**/subsystem{_device,_vendor} r,
 
 include if exists <abstractions/dri.d>

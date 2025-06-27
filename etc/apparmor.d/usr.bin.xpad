@@ -39,15 +39,14 @@ include <tunables/spaceport>
 profile xpad /usr/bin/xpad flags=(enforce) {
     include <abstractions/dconf>
     include <abstractions/gnome>
-    include <abstractions/user-data-ro>
+    include <abstractions/no-network>
+    include <abstractions/private-files>
 
     /usr/share/gtksourceview-*/styles/{,**} r,
 
     owner @{CONFIG}/xpad/default-style      r,
 
-    owner @{CONFIG}/xpad/{,*}               rw,
-
-    deny network,
+    owner @{HOME}/.config/xpad/{,*}         rw,
 
     deny @{CONFIG}/xpad/default-style       w,
 

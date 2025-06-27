@@ -43,6 +43,7 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/freedesktop.org>
 
@@ -92,6 +93,7 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
 
     owner @{HOME}/.java/fonts/*/                              rw,
     owner @{HOME}/.config/Ghidra/**                           rwkl,
+    owner @{HOME}/.config/Ghidra{,/}                          rw,
     owner @{HOME}/.config/java/fonts/*/                       rw,
     owner @{HOME}/**{,.ghidra.test}.lock~{,~}                 kl,
     owner @{HOME}/.java/fonts/*/fcinfo[0-9]*.tmp              rw,
@@ -99,14 +101,11 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
-    /usr/bin/id                                               ix,
-    /usr/bin/expr                                             ix,
-    /usr/bin/sleep                                            ix,
-    /usr/bin/uname                                            ix,
     /usr/bin/readlink                                         ix,
     /usr/bin/xdg-open                                         Pix -> xdg-open,
     /usr/bin/{,ba,da}sh                                       ix,
     /opt/ghidra/support/launch.sh                             ixr,
+    /usr/bin/{expr,id,readlink,sleep,uname}                   ix,
     /usr/lib/jvm/default{,-runtime}/bin/java                  ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ix,
@@ -115,8 +114,6 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
     /usr/lib/jvm/java-[0-9]*-openjdk/j{dk,re}/bin/java        ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/jspawnhelper       ix,
     /opt/ghidra/Ghidra/{Extensions,Features,Framework,GPL}/** ix,
-
-    deny network,
 
     include if exists <local/usr.bin.ghidra>
 }

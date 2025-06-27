@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile cups-notifier-dbus /usr/lib/cups/notifier/dbus flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/no-network>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>
     include <abstractions/private-files>
@@ -48,8 +49,6 @@ profile cups-notifier-dbus /usr/lib/cups/notifier/dbus flags=(enforce) {
     /usr/lib/cups/notifier/dbus      rm,
 
     /tmp/cups-dbus-notifier-lockfile rwk,
-
-    deny network,
 
     include if exists <local/usr.lib.cups-notifier-dbus>
 }

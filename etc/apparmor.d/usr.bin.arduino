@@ -107,9 +107,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner /proc/@{pid}/c{group,mdline}                        r,
 
     owner @{HOME}/                                            r,
-    owner @{HOME}/.arduino15/preferences.txt                  r,
     owner @{HOME}/.config/java/jssc/linux/*.so                rm,
-    owner @{HOME}/.dotfiles/.arduino15/preferences.txt        r,
+    owner @{HOMEDOTS}/.arduino15/preferences.txt              r,
 
     /dev/bus/usb/*/*                                          rwk,
     /dev/tty{ACM,S,USB}*                                      rw,
@@ -142,10 +141,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
-    /usr/bin/ln                                               ix,
-    /usr/bin/groups                                           ix,
     /usr/bin/{i,se}d                                          ix,
-    /usr/bin/readlink                                         ix,
     /usr/bin/xdg-open                                         Pix -> xdg-open,
     /usr/bin/{,e}grep                                         ix,
     /usr/bin/c{at,hmod}                                       ix,
@@ -153,6 +149,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /usr/bin/arduino-builder                                  Px -> arduino-builder,
     /usr/bin/{avrdud,dirnam}e                                 ix,
     /usr/share/arduino/arduino                                ix,
+    /usr/bin/{groups,ln,readlink}                             ix,
     /usr/lib/jvm/default{,-runtime}/bin/java                  ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ix,
@@ -163,8 +160,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner @{HOME}/.arduino*/packages/arduino/tools/**         ixr,
 
     deny /usr/share/arduino/**                                w,
-    deny @{HOME}/.arduino15/preferences.txt                   w,
-    deny @{HOME}/.dotfiles/.arduino15/preferences.txt         w,
+    deny @{HOMEDOTS}/.arduino15/preferences.txt               w,
 
     include if exists <local/usr.bin.arduino>
 }

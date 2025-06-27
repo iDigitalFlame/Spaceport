@@ -55,10 +55,17 @@ _chmod() {
 }
 
 # Setup Base Permissions
-# Remove SUID/SGID
-# Owned by root:root / 0555
+## Remove SUID/SGID
+## Owned by root:root / 0555
 chown -hR root:root "${BASE_DIR}"
 chmod -hR "=0555"   "${BASE_DIR}"
+
+# Change /boot Permissions
+chmod -h  0500      "/boot"
+chmod -h  0500      "/boot/loader"
+chmod -h  0500      "/boot/esp"                        2> /dev/null
+find "/boot" -xdev         -exec chown root:root {} \; 2> /dev/null
+find "/boot" -xdev -type f -exec chmod 0400 {} \;,     2> /dev/null
 
 # Permission Fixes
 ## Starting 0444 Permission
@@ -156,6 +163,8 @@ chmod -h 0640  "/var/cache/smd/hydra"
 chmod -h 0640  "/var/cache/smd/hydra/"* 2> /dev/null
 chmod -hR 0555 "${BASE_DIR}/usr/lib/smd/libexec"
 chmod -h 0444  "${BASE_DIR}/var/cache/smd/constants.json"
+chmod -h 0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-entries"
+chmod -h 0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-extract"
 chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
 chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
 chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-add"
@@ -189,6 +198,26 @@ chmod -h 0440 "/etc/audit/plugins.d"/* 2> /dev/null
 chmod -h  0500 "/etc/apparmor.d"
 chmod -hR 0500 "${BASE_DIR}/etc/apparmor.d"
 find "${BASE_DIR}/etc/apparmor.d" -xdev -type f -exec chmod -h 0400 {} \;
+
+# Fill Empty Modules
+
+mkdir    "/usr/lib/firmware/qed"              2> /dev/null
+mkdir    "/usr/lib/firmware/qlogic"           2> /dev/null
+mkdir    "/usr/lib/firmware/amdgpu"           2> /dev/null
+mkdir    "/usr/lib/firmware/radeon"           2> /dev/null
+mkdir -p "/usr/lib/firmware/nvidia/gp100/acr" 2> /dev/null
+
+touch "/usr/lib/firmware/ql2500_fw.bin"
+touch "/usr/lib/firmware/aic94xx-seq.fw"
+touch "/usr/lib/firmware/wd719x-risc.bin"
+touch "/usr/lib/firmware/qlogic/12160.bin"
+touch "/usr/lib/firmware/ast_dp501_fw.bin"
+touch "/usr/lib/firmware/ct2fw-3.2.5.1.bin"
+touch "/usr/lib/firmware/renesas_usb_fw.mem"
+touch "/usr/lib/firmware/radeon/R520_cp.bin"
+touch "/usr/lib/firmware/amdgpu/navi12_gpu_info.bin"
+touch "/usr/lib/firmware/nvidia/gp100/acr/ucode_load.bin"
+touch "/usr/lib/firmware/qed/qed_init_values_zipped-8.59.1.0.bin"
 
 # Remove Drun Permissions
 chmod 0400 /usr/share/applications/exo-*                           2> /dev/null

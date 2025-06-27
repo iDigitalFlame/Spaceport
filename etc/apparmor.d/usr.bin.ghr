@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
@@ -51,8 +52,6 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
 
     /usr/bin/ghr                                rm,
 
-    /dev/tty*                                   rw,
-
     # NOTE(dij): We can't scrub these as this can cause the apps to fail to load
     #            any non-standard libraries.
     /usr/bin/**                                 pux,
@@ -62,18 +61,15 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     /opt/ultimaker-cura/**                      pux,
     /{usr,opt/spaceport}/bin/**                 pux,
 
-    # NOTE(dij): GHR is SUID so it's not an owner.
+    # GHR is SUID so it's not an owner.
     @{HOME}/.private/*                          PUx,
     @{HOME}/.local/lib/rust/**                  PUx,
     @{HOME}/.local/lib/go/bin/**                PUx,
     @{HOME}/Documents/Utilities/**              PUx,
-    @{HOME}/.dotfiles/.local/bin/**             PUx,
     @{HOME}/.local/{apps,bin,lib}/**            PUx,
     @{HOME}/.vscode-oss/extensions/**           PUx,
-    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**  PUx,
+    @{HOMEDOTS}/.local/{apps,bin,lib}/**        PUx,
     @{HOME}/.config/VSCodium/Home/extensions/** PUx,
-
-    deny network,
 
     deny /dev/dri/**                           rw,
     deny @{CACHE_TMP}/mesa{,_db}/**            rw,

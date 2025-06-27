@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile aa-notify /usr/bin/aa-notify flags=(enforce) {
     include <abstractions/base>
     include <abstractions/python>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
@@ -63,7 +64,6 @@ profile aa-notify /usr/bin/aa-notify flags=(enforce) {
 
     deny capability                       sys_ptrace,
 
-    deny network,
     deny ptrace,
 
     include if exists <local/usr.bin.aa-notify>

@@ -157,8 +157,8 @@ class Background(object):
 
     def _change(self, server):
         self._background(server)
-        # NOTE(dij): Guards against a race that may happen against the Dispatcher
-        #            and a reload request happening at the same time.
+        # Guards against a race that may happen against the Dispatcher and a
+        # reload request happening at the same time.
         if self._auto == 0 or not self._enabled:
             return
         self._handle = server.task(self._auto, self._change, (server,), priority=20)
@@ -176,7 +176,7 @@ class Background(object):
             return server.info(
                 "[m/background]: Not setting Background until the conversion Task is complete!"
             )
-        # NOTE(dij): Start the Guard against changing the Background.
+        # Start the Guard against changing the Background.
         self._lock = True
         p = self._select_picture(server)
         if p is None:
@@ -236,7 +236,7 @@ class Background(object):
                 f'[m/background]: Created a Lockscreen Background image from "{image}".'
             )
         finally:
-            # NOTE(dij): Catch anything else here to ensure the lock is cleared.
+            # Catch anything else here to ensure the lock is cleared.
             self._lock = False
 
     def hook(self, server, message):
@@ -307,8 +307,8 @@ class Background(object):
             return server.error(
                 f'[m/background]: Background cache path "{self._dir}" cannot be a symlink!'
             )
-        # NOTE(dij): If "self._method" is the "native" method, then we don't need to convert the
-        #            background file, we can just directly symlink it.
+        # If "self._method" is the "native" method, then we don't need to convert the
+        # background file, we can just directly symlink it.
         if self._method is None or self._method == "native":
             # This explicitly returns "None" so it won't lock.
             return self._link(server, bg)
@@ -350,8 +350,8 @@ class Background(object):
         return True
 
     def _set_background(self, server, file):
-        # NOTE(dij): Cache the process and copy the object to prevent the screen
-        #            from flickering too much.
+        # Cache the process and copy the object to prevent the screen from
+        # flickering too much.
         o = self._proc
         self._proc = None
         try:

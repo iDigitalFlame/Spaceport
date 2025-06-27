@@ -69,8 +69,6 @@ profile kmod /usr/bin/{kmod,lsmod,depmod,insmod,rmmod,modinfo,modprobe} flags=(e
 
     /usr/lib/modules/*/*modules.*             rw,
 
-    /dev/tty*                                 rw,
-
     owner /var/tmp/*modules*/{,**}            rw,
 
     owner @{run}/tmpfiles.d/                  w,

@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconnected) {
     include <abstractions/base>
+    include <abstractions/version>
     include <abstractions/dbus-system>
     include <abstractions/private-files>
 
@@ -59,17 +60,15 @@ profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconne
     /sys/devices/pci*/**/{uevent,name}       r,
     /sys/devices/pci**/**/rfkill*/name       r,
     /sys/devices/platform/**/rfkill/**/name  r,
-    /sys/devices/virtual/dmi/id/chassis_type r,
     /sys/devices/virtual/misc/uhid/**/uevent r,
 
     /proc/sys/kernel/hostname                r,
 
     @{run}/udev/data/+hid:*                  r,
 
-    /dev/uhid                                rw,
-    /dev/uinput                              rw,
     /dev/rfkill                              rw,
     /dev/hidraw*                             rw,
+    /dev/u{hid,input}                        rw,
 
     @{run}/sdp                               rw,
 

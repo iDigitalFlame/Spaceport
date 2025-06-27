@@ -36,10 +36,18 @@
 
 abi <abi/4.0>,
 
+# user-data details:
+#   Setup for advanced application permissions. Allow usage of $HOME and
+#   subdirectories and allow access to "hidden" (dot-style) directories
+#   and files. Access is restricted to read only.
+#
+#   Applications that use this are usually "generic" applications such
+#   as "file openers", such as swayimg or mupdf.
+
 include <abstractions/private-files>
 
-/mnt/{,**}                 r,
-/media/{,**}               r,
+owner /mnt/{,**}           r,
+owner /media/{,**}         r,
 
 owner /tmp/*               r,
 owner /tmp/.mounts/*/{,**} r,

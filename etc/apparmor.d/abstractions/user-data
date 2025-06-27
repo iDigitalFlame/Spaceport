@@ -36,11 +36,20 @@
 
 abi <abi/4.0>,
 
+# user-data details:
+#   Setup for advanced application permissions. Allow usage of $HOME and
+#   subdirectories and allow access to "hidden" (dot-style) directories
+#   and files.
+#
+#   Applications that use this are usually "generic" applications such
+#   as "file openers" that need to modify files, such as Thunar.
+
 include <abstractions/private-files>
 
-owner /tmp/*               rw,
 owner /mnt/{,**}           rw,
 owner /media/{,**}         rw,
+
+owner /tmp/*               rw,
 owner /tmp/.mounts/*/{,**} rw,
 
 owner @{HOME}/{,**}        rw,

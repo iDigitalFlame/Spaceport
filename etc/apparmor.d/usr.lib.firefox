@@ -58,6 +58,8 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     owner /proc/@{pid}/smaps                                           r,
     owner /proc/@{pid}/task/@{tid}/stat                                r,
 
+    owner @{CONFIG}/{librewolf,mozilla/firefox}/chrome/*.css           r,
+
     owner /dev/shm/wayland.mozilla.ipc.[0-9]*                          rw,
 
     owner @{run}/user/*/wayland-proxy-*                                rwk,
@@ -73,11 +75,9 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     owner @{HOME}/.config/librewolf/**/*.{db,parentlock,sqlite}*       k,
     owner @{HOME}/.config/mozilla/firefox/**/*.{db,parentlock,sqlite}* k,
 
-    /usr/bin/tr                                                        ix,
-    /usr/bin/pwd                                                       ix,
-    /usr/bin/which                                                     ix,
     /usr/bin/xdg-open                                                  Pix -> xdg-open,
     /usr/bin/xdg-email                                                 Pix -> xdg-email,
+    /usr/bin/{pwd,tr,which}                                            ix,
     /usr/lib/gio-launch-desktop                                        Pix -> xdg-open,
     /usr/lib/{firefox,librewolf}/**                                    ixr,
     /usr/lib/{firefox,librewolf}/browser/extensions/**                 ixrm,

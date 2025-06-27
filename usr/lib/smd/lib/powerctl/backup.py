@@ -38,9 +38,15 @@
 #   Command line user module to start/stop/pause/resume Backups.
 
 from lib.util import nes
+from os import execl, getcwd
 from datetime import datetime
-from lib.constants.config import TIMEOUT_SEC_MESSAGE
+from os.path import isfile, basename
 from lib import check_error, print_error, send_message
+from lib.constants.config import (
+    TIMEOUT_SEC_MESSAGE,
+    BACKUP_SCRIPT_ENTRIES,
+    BACKUP_SCRIPT_EXTRACT,
+)
 from lib.constants import (
     EMPTY,
     MSG_PRE,
@@ -84,7 +90,9 @@ def config(args):
         )
     check_error(r, exit_code=args.exit_code)
     m = r.result
-    if nes(m):
+    if args.clear:
+        print("Cleared the Backup Database Cache.")
+    elif nes(m):
         print(m)
     del m, r
 
@@ -109,18 +117,73 @@ def default(args):
     del d
 
 
+def entries(args):
+    if not nes(args.key):
+        return print_error('Keyfile must be specified with "-k" or "--key"!')
+    if not nes(args.path) or not isfile(args.path):
+        return print_error("A backup file must be specified!")
+    try:
+        execl(
+            BACKUP_SCRIPT_ENTRIES, basename(BACKUP_SCRIPT_ENTRIES), args.key, args.path
+        )
+    except OSError as err:
+        return print_error("Cannot start the entry list process!", err)
+
+
+def extract(args):
+    if not nes(args.key):
+        return print_error('Keyfile must be specified with "-k" or "--key"!')
+    if not nes(args.path) or not isfile(args.path):
+        return print_error("A backup file must be specified!")
+    if nes(args.dir):
+        d = args.dir
+    else:
+        try:
+            d = getcwd()
+        except OSError as err:
+            return print_error(
+                'Cannot get current directory, specify one with "-d"!', err
+            )
+    try:
+        execl(
+            BACKUP_SCRIPT_EXTRACT,
+            basename(BACKUP_SCRIPT_EXTRACT),
+            args.key,
+            args.path,
+            d,
+            args.files[0] if len(args.files) >= 1 else EMPTY,
+        )
+    except OSError as err:
+        return print_error("Cannot start the extract process!", err)
+
+
 def _print(plans, adv):
     if not adv:
-        print(f'{"ID":11}{"Status":11}{"Last":15}{"Last Size":9} Path\n{"=" * 70}')
+        print(
+            f'{"ID":11}{"Status":11}{"Last":15}{"Last Size":9} {"Keep":4} Path\n{"=" * 80}'
+        )
     for i in plans:
         x = i.get("id")
         if not nes(x) or len(x) < 10:
             continue
-        v = i["state"]
+        v, p = i["state"], i.get("keep")
+        if isinstance(p, bool):
+            if p:
+                k = "All"
+            else:
+                k = EMPTY
+        elif isinstance(p, int):
+            k = f"{p}"
+        else:
+            k = EMPTY
+        if adv and len(k) == 0:
+            k = "None"
+        del p
         if adv:
             print(f'{i["id"]} - {i["path"]}\n{"=" * 60}')
             print(f'{"ID":<12}: {x}\n{"Path":<12}: {i["path"]}')
             print(f'{"Description":<12}: {i["description"]}\n{"UUID":<12}: {i["uuid"]}')
+            print(f'{"Keep":<12}: {k}')
             if len(i["status"]) > 0:
                 print(f'{"Status":<12}: {i["status"]}', end="")
                 if v == "W":
@@ -151,10 +214,14 @@ def _print(plans, adv):
             if len(x) == 0 or len(v) == 0:
                 print()
                 continue
-            print(f'{"Last Run":<12}: {x}{"(Failed)" if i.get("error") else EMPTY}')
+            print(f'{"Last Run":<12}: {x}', end="")
+            if i.get("error"):
+                print(" (Failed)")
+            else:
+                print(" (Full)" if i["full"] else " (Incremental)")
             print(f'{"Last Size":<12}: {v}\n')
         else:
-            print(f'{x:<15}{v:>9} {i["path"]}', end="")
+            print(f'{x:<15}{v:>9} {k:>4} {i["path"]}', end="")
             if nes(i["description"]) and len(i["description"]) <= 32:
                 print(f' ({i["description"]})')
             else:

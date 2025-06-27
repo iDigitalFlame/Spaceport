@@ -100,8 +100,7 @@ def load_modules(service, directory):
     for m in x:
         if not m.endswith(".py"):
             continue
-        # NOTE(dij): Only root can own these file and they cannot be writable by
-        #            non-root users.
+        # Only root can own these file and they cannot be writable by non-root users.
         perm_check(f"{directory}/{m}", 0o7022, 0, 0)
         n = m[:-3].lower()
         if "/" in n or "\\" in n:

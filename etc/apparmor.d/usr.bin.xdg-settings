@@ -40,6 +40,7 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
 
@@ -57,17 +58,9 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
 
     owner @{CONFIG}/mimeapps.list        r,
 
-    /usr/bin/tr                          ix,
-    /usr/bin/gio                         ix,
-    /usr/bin/env                         ix,
     /usr/bin/ghr                         Pix -> ghr,
-    /usr/bin/head                        ix,
-    /usr/bin/file                        ix,
-    /usr/bin/xprop                       ix,
-    /usr/bin/printf                      ix,
     /usr/bin/c{a,u}t                     ix,
     /usr/bin/{,e}grep                    ix,
-    /usr/bin/mimetype                    ix,
     /usr/bin/xdg-mime                    Pxr -> xdg-mime,
     /usr/bin/xdg-email                   Px -> xdg-email,
     /usr/bin/{,g,m}awk                   ix,
@@ -78,8 +71,8 @@ profile xdg-settings /usr/bin/xdg-settings flags=(enforce) {
     /usr/bin/{,ba,da}sh                  ixr,
     /usr/bin/{u,base}name                ix,
     /usr/bin/rea{dlink,lpath}            ix,
-
-    deny network,
+    /usr/bin/{mimetype,tr,xprop}         ix,
+    /usr/bin/{env,file,gio,head,printf}  ix,
 
     include if exists <local/usr.bin.xdg-settings>
 }

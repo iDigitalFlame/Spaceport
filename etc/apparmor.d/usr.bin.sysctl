@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile sysctl /usr/bin/sysctl flags=(enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     capability                      mac_admin,
@@ -56,8 +57,6 @@ profile sysctl /usr/bin/sysctl flags=(enforce) {
     /usr/lib/sysctl.d/{,**}         r,
 
     /proc/sys/{,**}                 rw,
-
-    deny network,
 
     include if exists <local/usr.bin.sysctl>
 }

@@ -36,8 +36,10 @@
 
 include <tunables/spaceport>
 
-profile vncviewer /usr/bin/vncviewer flags=(enforce) {
+profile vncviewer /usr/bin/vncviewer flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
+    include <abstractions/consoles>
+    include <abstractions/private-files>
 
     network                                              inet  stream,
     network                                              inet6 stream,
@@ -53,6 +55,7 @@ profile vncviewer /usr/bin/vncviewer flags=(enforce) {
     @{run}/smd/hydra/*.vnc                               rw,
 
     deny /etc/fltk{,/,/*}                                rw,
+    deny @{HOME}/.fltk{,/}                               w,
     deny @{CONFIG}/fltk/fltk.org/*.prefs                 w,
     deny @{CONFIG}/tigervnc/default.tigervnc             w,
     deny @{HOME}/.local/share/tigervnc/tigervnc.history  w,

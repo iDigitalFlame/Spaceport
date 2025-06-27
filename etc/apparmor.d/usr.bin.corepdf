@@ -41,6 +41,8 @@ profile corepdf /usr/bin/corepdf flags=(enforce) {
     include <abstractions/gui>
     include <abstractions/mesa>
     include <abstractions/vulkan>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
@@ -57,9 +59,6 @@ profile corepdf /usr/bin/corepdf flags=(enforce) {
 
     owner @{CONFIG}/cubocore/coreapps.conf   r,
 
-    deny network,
-
-    deny /dev/tty                            rw,
     deny /dev/disk/by-label/                 r,
     deny @{CONFIG}/QtProject.conf            w,
     deny @{CONFIG}/cubocore/coreapps.conf    w,

@@ -38,19 +38,22 @@ include <tunables/spaceport>
 
 profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     include <abstractions/gui>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/xdg-desktop>
-    include <abstractions/user-data-ro>
+    include <abstractions/private-files>
 
-    # NOTE(dij): Needed to open any files for reading.
-    /**                      r,
+    # Needed to open any files for reading.
+    /**                               r,
+    /usr/bin/swayimg                  rm,
 
-    /usr/bin/swayimg         rm,
+    owner @{CONFIG}/swayimg/config    r,
 
-    @{CONFIG}/swayimg/config r,
+    owner /dev/shm/swayimg_*          rwk,
 
-    owner /dev/shm/swayimg_* rwk,
+    /usr/bin/zsh                      ix,
 
-    deny network,
+    owner @{HOMEDOTS}/.local/bin/crop Pxr -> cropgui,
 
     include if exists <local/usr.bin.swayimg>
 }

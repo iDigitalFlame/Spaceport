@@ -99,7 +99,6 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
 
     owner /var/lib/extrausers/shadow                         r,
 
-    /dev/tty*                                                rwk,
     /dev/ptmx                                                rwk,
     /dev/bus/usb/*/{,*}                                      rwk,
 
@@ -127,8 +126,7 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
     /usr/bin/{ba,da,z}sh                                     Ux,
     /usr/local/{,s}bin/**                                    PUx,
 
-    @{HOME}/.local/{apps,bin,lib}/**                         PUx,
-    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**               PUx,
+    @{HOMEDOTS}/.local/{apps,bin,lib}/**                     PUx,
 
     unix bind type=stream addr="@*/bus/sudo/system",
 

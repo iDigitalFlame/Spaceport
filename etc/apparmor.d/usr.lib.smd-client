@@ -75,8 +75,7 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
     /usr/lib/smd/libexec/*                                  Pix,
     /usr/lib/smd/bin/powerctl                               Px -> powerctl,
 
-    @{HOME}/.local/{apps,bin,lib}/**                        Pixr,
-    @{HOME}/.dotfiles/.local/{apps,bin,lib}/**              Pixr,
+    owner @{HOMEDOTS}/.local/{apps,bin,lib}/**              Pixr,
 
     include if exists <local/usr.lib.smd-client>
 }

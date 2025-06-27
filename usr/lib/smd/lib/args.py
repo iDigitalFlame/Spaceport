@@ -1200,11 +1200,42 @@ ARGS = {
             "config",
         ),
         (
+            ("-L", "--entries"),
+            {
+                "dest": "entries",
+                "help": "show the files inside the specified backup tar",
+                "action": "store_true",
+                "required": False,
+            },
+            "entries",
+        ),
+        (
+            ("-E", "--extract"),
+            {
+                "dest": "extract",
+                "help": "extract the files from the specified backup tar",
+                "action": "store_true",
+                "required": False,
+            },
+            "extract",
+        ),
+        (
+            ("-k", "--key"),
+            {
+                "type": str,
+                "dest": "key",
+                "help": "path to the backup private key for extracting and entries",
+                "action": "store",
+                "metavar": "key",
+                "required": False,
+            },
+        ),
+        (
             ("-d", "--dir"),
             {
                 "type": str,
                 "dest": "dir",
-                "help": "select the backup target path",
+                "help": "select the backup target path or output dir when extracting",
                 "action": "store",
                 "metavar": "dir",
                 "required": False,
@@ -1220,6 +1251,15 @@ ARGS = {
                 "default": None,
             },
             "config",
+        ),
+        (
+            "files",
+            {
+                "nargs": "*",
+                "default": None,
+                "action": "store",
+                "help": "files to extract from backup (accepts wildcards)",
+            },
         ),
     ],
     "reload": [

@@ -105,8 +105,8 @@ class Conn(object):
             while len(self._queue) > 0:
                 self._flush(server)
         except (TypeError, AttributeError):
-            # NOTE(dij): Catch race condition that happens when a client disconnects
-            #            during a flush operation.
+            # Catch race condition that happens when a client disconnects
+            # during a flush operation.
             pass
 
     def _flush(self, server):

@@ -40,14 +40,8 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
-if [ $# -eq 0 ]; then
-    find "/boot" -type f -iname "*.efi" -exec "$0" {} \;
-else
-    if ! [ -f "$1" ]; then
-        printf 'File "%s" does not exist!\n' "$1"
-        exit 1
+for i in $(find "/boot" -xdev -type f -iname "*.efi" -print); do
+    if ! sbverify --list "$i" 2> /dev/null | grep -q "signature certificates"; then
+        sbsign --key "/opt/secureboot/db.key" --cert "/opt/secureboot/db.crt" --output "$i" "$i" 2>&1 | grep -v 'warning: data remaining\['
     fi
-    if ! sbverify --list "$1" 2> /dev/null | grep -q "signature certificates"; then
-        sbsign --key "/opt/secureboot/db.key" --cert "/opt/secureboot/db.crt" --output "$1" "$1" 2>&1 | grep -v 'warning: data remaining\['
-    fi
-fi
+done

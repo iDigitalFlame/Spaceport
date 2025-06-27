@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile nm-priv-helper /usr/lib/nm-priv-helper flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     capability              dac_override,
@@ -47,8 +48,6 @@ profile nm-priv-helper /usr/lib/nm-priv-helper flags=(enforce) {
     dbus bind bus=system name=org.freedesktop.nm_priv_helper,
 
     dbus (send, receive) bus=system interface=org.freedesktop.nm_priv_helper,
-
-    deny network,
 
     include if exists <local/usr.lib.nm-priv-helper>
 }

@@ -40,8 +40,9 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/xdg-open>
+    include <abstractions/no-network>
     include <abstractions/xdg-desktop>
-    include <abstractions/user-data-ro>
+    include <abstractions/private-files>
 
     @{sysconfig}/bin/ghr                                   Pix -> ghr,
     @{sysconfig}/bin/hostname                              ixr,
@@ -53,26 +54,16 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
 
     owner @{CONFIG}/mimeapps.list                          r,
 
-    /usr/bin/cat                                           ix,
-    /usr/bin/env                                           ix,
-    /usr/bin/file                                          ix,
-    /usr/bin/gawk                                          ix,
-    /usr/bin/xprop                                         ix,
-    /usr/bin/printf                                        ix,
-    /usr/bin/realpath                                      ix,
     /usr/bin/dbus-send                                     ix,
     /usr/bin/{u,base,host}name                             ix,
+    /usr/bin/{cat,env,file,gawk,realpath,printf,xprop}     ix,
 
     /usr/bin/ghr                                           Px -> ghr,
     /usr/bin/chrom{e,ium}                                  Px,
     /usr/{bin,lib/signal-desktop}/signal-desktop           Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
 
-    owner @{HOME}/.local/bin/**                            PUx,
-    owner @{HOME}/.private/.local/bin/**                   PUx,
-    owner @{HOME}/.dotfiles/.local/bin/**                  PUx,
-
-    deny network,
+    owner @{HOMEDATA}/.local/bin/**                        PUx,
 
     include if exists <local/usr.bin.xdg-email>
 }

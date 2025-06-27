@@ -81,8 +81,9 @@ profile systemd-timesyncd /usr/lib/systemd/systemd-timesyncd flags=(enforce, att
 
     owner @{run}/systemd/timesync/synchronized                          rw,
 
+    unix bind type=stream addr="@*/bus/systemd-timesyn/bus-api-timesync",
+
     unix (send, receive) type=dgram addr=none peer=(label=unconfined, addr=none),
-    unix (bind)          type=stream addr="@*/bus/systemd-timesyn/bus-api-timesync",
 
     dbus bind bus=system name=org.freedesktop.timesync1,
 

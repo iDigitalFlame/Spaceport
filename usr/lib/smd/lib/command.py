@@ -282,7 +282,7 @@ def check_error(msg, message=None, exit_code=None):
         return
     if nes(message):
         return print_error(f"{message}: {e}!", exit_code=exit_code)
-    # NOTE(dij): Silly hack to only upper the first char if it's not uppercase.
+    # Silly hack to only upper the first char if it's not uppercase.
     return print_error(f"{e[0].upper()}{e[1:]}!", exit_code=exit_code)
 
 

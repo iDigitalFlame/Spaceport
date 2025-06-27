@@ -42,7 +42,7 @@ fi
 
 FILE_HASH="e528e83e300daf2eae99d7394052b635"
 
-# NOTE(dij): Only replace this file if it does not exist or match our hash.
+# Only replace this file if it does not exist or match our hash.
 if ! [ -f "/etc/security/faillock.conf" ] || ! [ "$(md5sum "/etc/security/faillock.conf" | awk '{print $1}')" = "$FILE_HASH" ]; then
     cat<<EOF>"/etc/security/faillock.conf"
 dir             = /var/run/faillock

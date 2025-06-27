@@ -39,11 +39,10 @@ include <tunables/spaceport>
 profile smd-wait-sway /{,opt/spaceport/}usr/lib/smd/libexec/smd-wait-sway flags=(enforce) {
     include <abstractions/smd>
     include <abstractions/wayland>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     @{run}/user/@{uid}{,/} r,
-
-    deny network,
 
     include if exists <local/usr.lib.smd.smd-wait-sway>
 }

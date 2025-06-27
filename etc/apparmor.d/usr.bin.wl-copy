@@ -39,18 +39,15 @@ include <tunables/spaceport>
 profile wl-copy /usr/bin/wl-{copy,paste} flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /usr/bin/wl-{copy,paste}          rm,
-
-    /dev/tty*                         rw,
 
     owner /tmp/wl-copy-buffer-*/{,**} rw,
 
     /usr/bin/{cat,rm}                 ix,
     /usr/bin/xdg-mime                 Pxr -> xdg-mime,
-
-    deny network,
 
     include if exists <local/usr.bin.wl-copy>
 }

@@ -37,7 +37,7 @@
 include <tunables/spaceport>
 
 profile sshd /usr/bin/sshd flags=(enforce) {
-    # NOTE(dij): Used to stop "sshd" from running.
+    # Used to stop "sshd" from running.
     audit deny /usr/bin/sshd rm,
 
     include if exists <local/usr.bin.sshd>

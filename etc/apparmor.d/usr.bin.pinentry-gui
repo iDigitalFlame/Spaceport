@@ -41,6 +41,7 @@ profile pinentry-gui /usr/bin/pinentry-{gnome3,gtk,qt*,*} flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/gnome>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
 
@@ -59,12 +60,9 @@ profile pinentry-gui /usr/bin/pinentry-{gnome3,gtk,qt*,*} flags=(enforce) {
 
     owner /dev/shm/#*          rw,
 
-    /usr/bin/ldd               ixr,
-    /usr/lib/ld-*              ixr,
+    /usr/lib/ld{-*,d}          ixr,
     /usr/bin/{,ba,da,z}sh      ixr,
     /usr/bin/pinentry{,-*}     Pxrm,
-
-    deny network,
 
     include if exists <local/usr.bin.pinentry-gui>
 }

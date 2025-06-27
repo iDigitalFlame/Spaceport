@@ -34,5 +34,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-/dev/pts/*   rw,
-/dev/console rw,
+include <abstractions/consoles>

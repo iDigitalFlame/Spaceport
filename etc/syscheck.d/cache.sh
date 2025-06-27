@@ -71,7 +71,7 @@ chmod -h 2644       "/var/lib/pacman/sync/"*.db
 
 chown -hR root:root "/var/lib/pacman/local"
 chmod -hR 2755      "/var/lib/pacman/local"
-find "/var/lib/pacman/local" -type f -exec chmod -h 0644 {} \;
+find "/var/lib/pacman/local" -xdev -type f -exec chmod -h 0644 {} \;
 
 chown -hR root:root "/var/cache/ldconfig"
 chmod -h 2700       "/var/cache/ldconfig"

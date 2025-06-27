@@ -38,9 +38,8 @@ include <tunables/spaceport>
 
 profile smd-powerctl /usr/local/bin/{backup*,lock*,reload*} flags=(enforce) {
     include <abstractions/smd>
+    include <abstractions/no-network>
     include <abstractions/private-files>
-
-    deny network,
 
     include if exists <local/usr.local.bin.powerctl>
 }

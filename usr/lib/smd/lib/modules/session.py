@@ -43,7 +43,7 @@ from lib.util.file import expand
 from lib.util import a2z, boolean
 from signal import SIGCONT, SIGSTOP
 from os import kill, killpg, getpgid
-from lib.constants.config import RADIO_NAMES
+from lib.constants.config import RADIO_TYPES
 from lib.util.exec import stop, split, nulexec
 from lib.constants.defaults import (
     DEFAULT_SESSION_FREEZE,
@@ -153,7 +153,7 @@ class Session(object):
         self._profiles["suspend_post"] = _trigger(server, "suspend.post")
         self._profiles["hibernate_pre"] = _trigger(server, "hibernate.pre")
         self._profiles["hibernate_post"] = _trigger(server, "hibernate.post")
-        for i in RADIO_NAMES:
+        for i in RADIO_TYPES:
             if not a2z(i):
                 continue
             self._profiles[f"{i}_enable"] = _trigger(server, f"{i}.enable")
@@ -285,8 +285,7 @@ class Session(object):
             )
         if message.header() == HOOK_POWER:
             if message.type == MSG_PRE:
-                # NOTE(dij): Prevent re-running power triggers when the AC
-                #            device reconnects.
+                # Prevent re-running power triggers when the AC device reconnects.
                 if self._last_ac is not None and not self._last_ac:
                     return
                 self._last_ac = False

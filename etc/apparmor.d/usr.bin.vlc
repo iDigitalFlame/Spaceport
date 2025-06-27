@@ -62,6 +62,7 @@ profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce, attach_disconnected) {
     /dev/dvb/**                         r,
 
     owner @{CONFIG}/vlc{,/,/*}          r,
+    owner @{HOME}/.local/share/vlc/**   r,
 
     owner /proc/@{pid}/cmdline          r,
 

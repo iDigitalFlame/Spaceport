@@ -184,7 +184,9 @@ profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnec
     profile systemctl {
         include <abstractions/base>
         include <abstractions/consoles>
+        include <abstractions/no-network>
         include <abstractions/dbus-system>
+        include <abstractions/private-files>
 
         ptrace read peer=unconfined,
 

@@ -38,11 +38,10 @@ include <tunables/spaceport>
 
 profile smd-brightnessctl /usr/local/bin/brightness* flags=(enforce) {
     include <abstractions/smd>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /sys/class/backlight/intel_backlight/{,max_}brightness r,
-
-    deny network,
 
     include if exists <local/usr.local.bin.brightnessctl>
 }

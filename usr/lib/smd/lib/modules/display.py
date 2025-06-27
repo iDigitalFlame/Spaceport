@@ -74,14 +74,14 @@ class Display(object):
             server.debug(
                 f'[m/display]: Found Display "{i.name}" in the "{"enabled" if i.active else "disabled"}" state.'
             )
-            # NOTE(dij): Check to verify if a single Display is enabled.
+            # Check to verify if a single Display is enabled.
             if not s and i.active:
                 s = True
-            # NOTE(dij): Check if our Display configuration has changed and we
-            #            need to send out an update.
+            # Check if our Display configuration has changed and we need to
+            # send out an update.
             if not u and (i.name not in o or o[i.name] != i.active):
                 u = True
-            # NOTE(dij): Found a new Display that's not enabled.
+            # Found a new Display that's not enabled.
             if i.name not in o:  # or not i.active:
                 n.append(i.name)
             self._last[i.name] = i.active
@@ -110,8 +110,8 @@ class Display(object):
             )
         if not self._auto:
             return u
-        # NOTE(dij): Single read the LID path here. This is ok since it's a single
-        #            read that's not affected by the other calls.
+        # Single read the LID path here. This is ok since it's a single read
+        # that's not affected by the other calls.
         v = read(DISPLAY_PATH_LID, True, False)
         c = v is not None and len(v) >= 12 and v[12] == 0x63
         if c and len(self._last) > 1:
@@ -126,9 +126,9 @@ class Display(object):
                     err,
                 )
             if DISPLAY_BUILTIN in n:
-                # NOTE(dij): Detect if the internal Display was disabled and remove
-                #            it from the auto-list if it's been re-added to prevent
-                #            an "off-then-on" situation.
+                # Detect if the internal Display was disabled and remove it from
+                # the auto-list if it's been re-added to prevent an "off-then-on"
+                # situation.
                 n.remove(DISPLAY_BUILTIN)
         del c, v
         for i in n:

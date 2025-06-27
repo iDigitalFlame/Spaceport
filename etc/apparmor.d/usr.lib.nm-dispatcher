@@ -39,6 +39,8 @@ include <tunables/spaceport>
 profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/python>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>
     include <abstractions/private-files>
@@ -60,8 +62,6 @@ profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected
     @{run}/systemd/netif/leases/            r,
 
     owner /proc/@{pid}/fd/                  r,
-
-    /dev/tty                                rw,
 
     @{run}/systemd/notify                   rw,
     @{run}/modem-manager-gui/{,timestamps}  rw,
@@ -87,12 +87,12 @@ profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected
 
     dbus send bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label=NetworkManager),
 
-    deny network,
-
     profile systemctl {
         include <abstractions/base>
         include <abstractions/consoles>
+        include <abstractions/no-network>
         include <abstractions/dbus-system>
+        include <abstractions/private-files>
 
         capability                      net_admin,
 

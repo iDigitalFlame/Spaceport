@@ -39,9 +39,10 @@ include <tunables/spaceport>
 profile qtws /usr/bin/qtws flags=(enforce) {
     include <abstractions/qt>
     include <abstractions/chromium>
+    include <abstractions/xdg-desktop>
     include <abstractions/private-files>
 
-    # NOTE(dij): This is here to allow for in-memory blob locking
+    # This is here to allow for in-memory blob locking
     /**                                                   lk,
 
     /usr/bin/qtws                                         rm,
@@ -49,8 +50,6 @@ profile qtws /usr/bin/qtws flags=(enforce) {
 
     owner /proc/@{pid}/stat                               r,
     owner /proc/@{pid}/task/{,*/status}                   r,
-
-    owner @{CONFIG}/user-dirs.dirs                        r,
 
     owner @{CACHE}/qtws/**                                rwkl,
 

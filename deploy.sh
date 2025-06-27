@@ -43,8 +43,8 @@ dash "./usr/lib/smd/assets/smd-lint.sh"
 
 printf '\e[0;32;40mRemoving cache files..\x1b[0m\n'
 # Remove pycache
-find "${DIR_BASE}" -type f -name "*.pyc" -delete
-find "${DIR_BASE}" -type d -name "*pycache*" -exec rm -rf {} \;
+find "${DIR_BASE}" -xdev -type f -name "*.pyc" -delete
+find "${DIR_BASE}" -xdev -type d -name "*pycache*" -exec rm -rf {} \;
 
 printf '\e[0;34;40mFiles missing newlines:\x1b[0m\n'
 # Check for missing newlines at the end
@@ -86,7 +86,7 @@ chmod 0660 "${DIR_BASE}/indirect.md"
 chmod 0660 "${DIR_BASE}/packages-aur.md"
 
 if [ "$1" = "reload" ]; then
-    printf '\e[0;36;40mReloading services..x1b[0m\n'
+    printf '\e[0;36;40mReloading services..\x1b[0m\n'
     systemctl --user stop smd-client.service
     sudo sh -c "systemctl daemon-reload; systemctl restart smd-daemon.service"
     systemctl --user daemon-reload

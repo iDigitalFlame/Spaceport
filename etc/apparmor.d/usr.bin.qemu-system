@@ -43,6 +43,7 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
     include <abstractions/audio>
     include <abstractions/video>
     include <abstractions/vulkan>
+    include <abstractions/no-network>
     include <abstractions/dri-common>
     include <abstractions/nameservice>
     include <abstractions/nss-systemd>
@@ -111,10 +112,8 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
     /**/*.{bin,cd,disk,img,iso}                                            rk,
     /opt/hydra/*/**/*.{bin,cd,disk,img,iso}                                rk,
 
-    # NOTE(dij): Prevent QEMU from executing applications
+    # Prevent QEMU from executing applications
     deny /**                                                               x,
-
-    deny network,
 
     include if exists <local/usr.bin.qemu-system>
 }

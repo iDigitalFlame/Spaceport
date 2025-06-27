@@ -71,8 +71,8 @@ class Logger(object):
             raise ValueError(
                 f'level must be a positive number or string (is "{type(level)}")'
             )
-        # NOTE(dij): Change the names to be more "readable" in log output.
-        #            This is safe to be called multiple times if needed.
+        # Change the names to be more "readable" in log output. This is safe to
+        # be called multiple times if needed.
         for i, n in LOG_LEVELS_PREFIX.items():
             addLevelName(i, n)
         self._log = getLogger(name)
@@ -100,8 +100,7 @@ class Logger(object):
             raise OSError(f'cannot create log file "{file}": {err}')
 
     def dump(self, message):
-        # NOTE(dij): This makes dumps (for debuging) show up regardless of the
-        #            logging level.
+        # This makes dumps (for debuging) show up regardless of the logging level.
         self._log._log(90, message, None)
 
     def info(self, message, err=None):

@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile arduino-ctags /usr/bin/arduino-ctags flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /usr/bin/arduino-ctags                  rm,

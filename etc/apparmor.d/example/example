@@ -139,7 +139,7 @@ profile profile_name /path/to/binary flags=(enforce[, attach_disconnected]) {
 
     /proc/@{pid}/mounts                 rw,
 
-    @{run}/user/@{uid}/dconf            rw, # would remove the entry at line 122.
+    @{run}/user/@{uid}/dconf            rw, # would remove the entry at line 127.
 
     @{HOME}/.marked                     w,
 

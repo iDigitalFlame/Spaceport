@@ -146,8 +146,8 @@ def _set(server, info):
             try:
                 write(f"{p}/{CPU_PATH_PERFORMANCE}", c["performance"])
             except OSError as err:
-                # NOTE(dij): Catch a bug in the "intel_pstate" driver causing
-                #            a "Device or Resource Busy" error (16).
+                # Catch a bug in the "intel_pstate" driver causing a "Device or
+                # Resource Busy" error (16).
                 if err.errno == 0x10:
                     server.info(
                         f'[m/cpu]: Caught bug setting the CPU "{n}" power governor to "{c["performance"]}"!'
@@ -211,7 +211,6 @@ def startup(server, message):
     if message.header() == HOOK_HIBERNATE and message.type == MSG_PRE:
         return shutdown(server)
     d = server.get("cpu")
-    # NOTE(dij): We don't have to re-validate this info as we clean it in "_set"
-    #            anyway.
+    # We don't have to re-validate this info as we clean it in "_set" anyway.
     _set(server, d)
     del d

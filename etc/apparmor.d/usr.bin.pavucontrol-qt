@@ -40,6 +40,7 @@ profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(enforce, attach_disconnect
     include <abstractions/qt>
     include <abstractions/audio>
     include <abstractions/dconf>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
@@ -52,8 +53,6 @@ profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(enforce, attach_disconnect
     owner @{CONFIG}/pavucontrol-qt/pavucontrol-qt.conf r,
 
     owner @{HOME}/                                     r,
-
-    deny network,
 
     deny @{CONFIG}/pavucontrol-qt/pavucontrol-qt.conf  w,
 

@@ -216,29 +216,23 @@ NOTIFY_EXTENSIONS = [".png", ".svg", ".jpg", ".gif", ".ico"]
 ## Radio Module Constants
 RADIO_PATH_WIFI = "/sys/class/net"
 RADIO_PATH_BLUE = "/sys/class/bluetooth/*/rfkill*/state"
+RADIO_PATH_RFKILL = "/sys/class/rfkill/rfkill*"
 
 RADIO_EXEC = {
-    "bluetooth_disable": [
-        "/usr/bin/systemctl stop bluetooth.service",
-        "/usr/bin/rfkill block bluetooth",
-    ],
-    "bluetooth_enable": [
-        "/usr/bin/rfkill unblock bluetooth",
-        "/usr/bin/systemctl start bluetooth.service",
-    ],
-    "wireless_disable": "/usr/bin/rfkill block wifi",
-    "wireless_enable": "/usr/bin/rfkill unblock wifi",
+    "bluetooth_disable": "/usr/bin/systemctl stop bluetooth.service",
+    "bluetooth_enable": "/usr/bin/systemctl start bluetooth.service",
 }
-RADIO_NAMES = [
-    "bluetooth",
-    "wireless",
-]
+RADIO_TYPES = {
+    "wireless": "wlan",
+    "bluetooth": "bluetooth",
+}
 
 ## Backup Module Constants
 BACKUP_STATE = f"{DIRECTORY_CONFIG}/backup-state.json"
 BACKUP_HOSTS = "/etc/smd/backup-hosts.ssh"
 BACKUP_TIMEOUT = 14400  # 4Hrs
 BACKUP_KEY_SIZE = 0xFF
+BACKUP_TEMP_DIR = f"{DIRECTORY_TEMP}/backup"
 BACKUP_STATE_DIR = f"{DIRECTORY_CONFIG}/backup"
 BACKUP_READ_TIME = 300  # 5Min
 BACKUP_WAIT_TIME = 86400  # 24Hrs
@@ -246,6 +240,8 @@ BACKUP_DEFAULT_DIR = "/opt/hydra/smd-backup"
 BACKUP_DEFAULT_PORT = 22
 BACKUP_BATTERY_PATH = "/sys/class/power_supply/AC/online"
 BACKUP_BACKOFF_TIME = 900  # 15Min
+BACKUP_SCRIPT_ENTRIES = f"{DIRECTORY_BASE}/assets/smb-backup-entries"
+BACKUP_SCRIPT_EXTRACT = f"{DIRECTORY_BASE}/assets/smb-backup-extract"
 
 BACKUP_EXCLUDE = ["/dev", "/proc", "/run", "/sys", "/tmp", "/var/run"]
 

@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile at-spi-bus-launcher /usr/lib/at-spi-bus-launcher flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/dconf>
+    include <abstractions/consoles>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
@@ -75,8 +76,6 @@ profile at-spi-bus-launcher /usr/lib/at-spi-bus-launcher flags=(enforce, attach_
     owner /tmp/xauth_*                               r,
 
     owner @{HOME}/.Xauthority                        r,
-
-    /dev/tty*                                        rw,
 
     /sys/kernel/security/apparmor/.access            rw,
 

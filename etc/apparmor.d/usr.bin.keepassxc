@@ -42,9 +42,11 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     include <abstractions/gnome>
     include <abstractions/openssl>
     include <abstractions/p11-kit>
+    include <abstractions/consoles>
+    include <abstractions/user-home>
+    include <abstractions/no-network>
     include <abstractions/dbus-strict>
     include <abstractions/nameservice>
-    include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
     include <abstractions/dbus-accessibility-strict>
 
@@ -59,29 +61,26 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
 
     @{run}/udev/data/**                                        r,
 
-    owner @{HOME}/.private/keepassxc.ini                       rkl,
-    owner @{HOME}/.local/lib/keepassxc.ini                     rkl,
-    owner @{CONFIG}/keepassxc/keepassxc.ini                    rkl,
+    owner @{HOME}/.local/ssh/*                                 r,
+    owner @{HOMEDATA}/keepassxc.{conf,ini}                     rk,
+    owner @{HOME}/.local/lib/keepassxc.ini                     rk,
     owner @{CACHE}/keepassxc/keepassxc.ini                     rkl,
+    owner @{CONFIG}/keepassxc/keepassxc.ini                    rk,
 
     /{dev,sys}/bus/usb/{,**}                                   rw,
     /{dev,sys}/bus/usb/devices/{,**}                           rw,
 
-    owner @{MOUNTS}/**/*{*.kdbx,*.kdbx.*}                      rwkl,
-
     owner @{HOME}/{#*,*.kdbx,*.kdbx.*}                         rwkl,
-    owner @{HOME}/Documents/**/{#*,*.kdbx,*.kdbx.*}            rwkl,
+    owner @{MOUNTS}/**/*{*.kdbx,*.kdbx.*}                      rwkl,
     owner @{CACHE}/keepassxc/keepassxc.ini.lock                rwkl,
+    owner @{HOME}/Documents/**/{#*,*.kdbx,*.kdbx.*}            rwkl,
     owner @{HOME}/.config/keepassxc/keepassxc.ini.lock         rwkl,
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**/{#*,*.kdbx,*.kdbx.*} rwkl,
 
     /usr/bin/wl-copy                                           ix,
     /usr/bin/xdg-open                                          Px -> xdg-open,
 
-    deny network,
-
-    deny /dev/tty                                              rw,
-    deny @{HOME}/.private/keepassxc.{conf,ini}                 w,
+    deny @{HOMEDATA}/keepassxc.{conf,ini}                      w,
     deny @{HOME}/.local/lib/keepassxc.{conf,ini}               w,
     deny @{CONFIG}/keepassxc/keepassxc.{conf,ini}              w,
     deny @{HOME}/.c{ache,onfig}/keepassxc/keepassxc.{conf,ini} w,

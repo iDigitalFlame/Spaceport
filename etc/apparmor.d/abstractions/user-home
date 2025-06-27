@@ -36,16 +36,43 @@
 
 abi <abi/4.0>,
 
-include <abstractions/user-data-ro>
+# user-home details:
+#   Setup for typical application permissions. Allow usage of $HOME and
+#   subdirectories, but prevent access to "hidden" (dot-style) directories
+#   and files. Profiles that use this should setup explicit permissions
+#   for the application's configuration and cache directories.
+#
+#   Standard directory access (thumbnails, themes, etc.) are handled by
+#   their respective abstractions.
 
-deny @{HOME}/.*                           rw,
-deny @{HOME}/Downloads/.*                 rw,
-deny @{HOME}/@{XDG_DOWNLOAD_DIR}/.*       rw,
+include <abstractions/private-files>
 
-owner @{HOME}/*                           rw,
-# NOTE(dij): Allow subdirectories of non dot-files
-owner @{HOME}/[^.]*/**                    rw,
-owner @{HOME}/Downloads/*                 rw,
-owner @{HOME}/@{XDG_DOWNLOAD_DIR}/*       rw,
+owner /tmp/*                            r,
+owner /tmp/.mounts/*/{,**}              r,
+
+owner @{HOME}/                          r,
+
+deny @{HOME}/.*                         rw,
+deny @{HOME}/Desktop/.*                 rw,
+deny @{HOME}/Downloads/.*               rw,
+deny @{HOME}/@{XDG_DESKTOP_DIR}/.*      rw,
+deny @{HOME}/@{XDG_DOWNLOAD_DIR}/.*     rw,
+
+owner @{HOME}/*                         rw,
+owner @{HOME}/Downloads{,/**}           rw,
+owner @{HOME}/@{XDG_DOWNLOAD_DIR}{,/**} rw,
+
+owner /mnt/{,**}                        rw,
+owner /media/{,**}                      rw,
+
+# Allow subdirectories of non dot-files
+owner @{HOME}/[^.]*{,/,**}              rw,
+
+# Explicit Deny Some specific Files
+deny @{HOMEDOTS}/.zshenv                r,
+
+# Allow X/Wayland dot-files
+owner @{HOMEDOTS}/.dmrc                 r,
+owner @{HOMEDOTS}/.Xresources           r,
 
 include if exists <abstractions/user-home.d>

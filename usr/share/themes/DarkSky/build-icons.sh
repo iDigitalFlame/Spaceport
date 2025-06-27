@@ -65,14 +65,14 @@ fi
 rm -rf "${THEME_DIR}/apps"
 rm -f  "${THEME_DIR}/index.theme"
 rm -f  "${THEME_DIR}/icon-theme.cache"
-find   "${THEME_DIR}/actions" -type l -name "go-*" -delete
-find   "${THEME_DIR}/actions" -type f -name "go-*" -delete
+find   "${THEME_DIR}/actions" -xdev -type l -name "go-*" -delete
+find   "${THEME_DIR}/actions" -xdev -type f -name "go-*" -delete
 
 ln -sT "/usr/share/icons/kora/apps"             "${THEME_DIR}/apps"
 ln -sT "/usr/share/themes/DarkSky/icons.theme"  "${THEME_DIR}/index.theme"
 ln -sT "/usr/share/icons/Vimix-cursors/cursors" "${THEME_DIR}/cursors" 2> /dev/null
 
-for i in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | awk '{print $11}'); do
+for i in $(find "/usr/share/icons/kora/actions" -xdev -type f -name "go-*" -ls | awk '{print $11}'); do
     for d in "${THEME_DIR}"/actions/*; do
         if [ -d "${THEME_DIR}/actions/${d}" ]; then
             ln -sT "$i" "${THEME_DIR}/actions/${d}/" 2> /dev/null
@@ -81,6 +81,6 @@ for i in $(find "/usr/share/icons/kora/actions" -type f -name "go-*" -ls | awk '
 done
 
 chown -hR root:root "${THEME_DIR}"
-find "${THEME_DIR}" -type d -exec chmod 0755 {} \;
-find "${THEME_DIR}" -type f -exec chmod 0644 {} \;
+find "${THEME_DIR}" -xdev -type d -exec chmod 0755 {} \;
+find "${THEME_DIR}" -xdev -type f -exec chmod 0644 {} \;
 exit 0

@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile gtklock /usr/bin/gtklock flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/dconf>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/authentication>
     include <abstractions/freedesktop.org>
@@ -64,8 +65,6 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
     # NOTE(dij): Trying to directly choose the profile transition will cause
     #            this profile to not load correctly (weird).
     /usr/bin/unix_chkpwd                                                  Px,
-
-    deny network,
 
     include if exists <local/usr.bin.gtklock>
 }

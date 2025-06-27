@@ -38,11 +38,10 @@ include <tunables/spaceport>
 
 profile smd-cpuctl /usr/local/bin/cpu* flags=(enforce) {
     include <abstractions/smd>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /sys/devices/system/cpu/{,**} r,
-
-    deny network,
 
     include if exists <local/usr.local.bin.cpuctl>
 }

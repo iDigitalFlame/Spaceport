@@ -70,9 +70,9 @@ profile pipewire /usr/bin/pipewire flags=(enforce, attach_disconnected) {
     owner /proc/@{pid}/task/@{tid}/comm                        rw,
 
     owner @{run}/user/@{uid}/bus                               rw,
-    owner @{run}/user/@{uid}/pulse/pid                         rw,
     owner @{run}/user/@{uid}/pipewire-*                        rw,
     owner @{run}/user/@{uid}/pipewire-*.lock                   rwk,
+    owner @{run}/user/@{uid}/pulse{,/,/native,/pid}            rw,
 
     owner /tmp/dbus-*                                          rw,
 
@@ -80,7 +80,8 @@ profile pipewire /usr/bin/pipewire flags=(enforce, attach_disconnected) {
     /usr/bin/pipewire                                          ixrm,
     /usr/bin/pipewire-pulse                                    Px -> pipewire-pulse,
 
-    unix (bind, listen)                   type=stream addr="@/tmp/dbus-*",
+    unix (bind, listen) type=stream addr="@/tmp/dbus-*",
+
     unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
     unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
 

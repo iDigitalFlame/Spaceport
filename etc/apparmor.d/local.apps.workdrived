@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforce) {
+profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforce, attach_disconnected) {
     include <abstractions/dri>
     include <abstractions/audio>
     include <abstractions/dconf>
@@ -45,6 +45,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     include <abstractions/openssl>
     include <abstractions/p11-kit>
     include <abstractions/version>
+    include <abstractions/consoles>
     include <abstractions/nameservice>
     include <abstractions/notifications>
     include <abstractions/private-files>
@@ -54,7 +55,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
 
     @{sysconfig}/bin/hostname                                               ix,
 
-    # NOTE(dij): This is here to allow for in-memory blob locking
+    # This is here to allow for in-memory blob locking
     /**                                                                     lk,
 
     /etc/machine-id                                                         r,
@@ -71,7 +72,12 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     owner /proc/@{pid}/fdinfo/@{tid}                                        r,
     owner /proc/@{pid}/{mountinfo,stat}                                     r,
 
+    owner @{HOME}/Desktop{,/}                                               r,
+    owner @{HOME}/Documents{,/}                                             r,
     owner @{HOME}/.config/QtProject.conf                                    r,
+    owner @{HOME}/@{XDG_DESKTOP_DIR}{,/}                                    r,
+    owner @{HOME}/@{XDG_DOCUMENTS_DIR}{,/}                                  r,
+    owner @{HOME}/.temp.workdrive.f{ile,older}.*.*{,/}                      r,
 
     owner /proc/@{pid}/oom_score_adj                                        rw,
 
@@ -82,13 +88,13 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     owner @{HOME}/.zohoworkdrive/**                                         rwk,
     owner @{HOME}/.pki/nssdb/*.{db,txt}                                     rwk,
     owner @{HOME}/.local/apps/agent.conf                                    rw,
+    owner @{HOME}/.config/workdrive/{,**}                                   rwk,
     owner @{HOME}/.local/lib/pki/nssdb/*.{db,txt}                           rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/zlock                           rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/sync.*                          rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/logs/{,*}                       rw,
     owner @{HOME}/.local/apps/zohoworkdrive/locales{,/}                     rw,
     owner @{HOME}/.local/apps/zohoworkdrive/backup/{,**}                    rwk,
-    owner @{HOME}/.local/apps/zohoworkdrive/upgrade{,/,/**}                 rw,
     owner @{HOME}/.local/apps/zohoworkdrive/config.dat{,-*}                 rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/resources.db{,-*}               rwk,
     owner @{HOME}/.local/apps/zohoworkdrive/office_doc_statsdb              rwk,
@@ -99,7 +105,6 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     owner @{HOME}/@{XDG_DESKTOP_DIR}/Zoho\ WorkDrive\ \(*\){,**}            rwk,
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/Zoho\ WorkDrive\ \(*\){,**}          rwk,
 
-    owner @{HOME}/.temp.workdrive.f{ile,older}.*.*{,/}                      rw,
     owner @{HOME}/Documents/.temp.workdrive.f{ile,older}.*.*{,/}            rw,
     owner @{HOME}/@{XDG_DESKTOP_DIR}/.temp.workdrive.f{ile,older}.*.*{,/}   rw,
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/.temp.workdrive.f{ile,older}.*.*{,/} rw,
@@ -112,14 +117,11 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     #            The gcc and ld seem to be here to pre-compile some of the Python
     #            code on the fly.
     /usr/bin/df                                                             ix, # df -T
-    /usr/bin/ld                                                             ix,
-    /usr/bin/cat                                                            ix,
-    /usr/bin/gcc                                                            ix,
     /usr/bin/dash                                                           ix, # only needed for launching main
     /usr/bin/hostname                                                       ix,
-    /usr/bin/ldconfig                                                       ix, # ldconfig -p
     /usr/bin/xdg-open                                                       Pix -> xdg-open,
-    /usr/bin/dbus-send                                                      ix,
+    /usr/bin/ld{,config}                                                    ix, # ldconfig -p
+    /usr/bin/{cat,dbus-send,gcc}                                            ix,
 
     owner @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived                  ix,
     owner @{HOME}/.local/apps/zohoworkdrive/QtWebEngineProcess              ix,
@@ -127,10 +129,9 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     deny @{HOME}/.__main__.py{,/}                                           rw,
     deny @{HOME}/.config/QtProject.conf                                     w,
     deny @{HOME}/.QtWebEngineProcess{,/}                                    rw,
-    deny @{HOME}/.private/bookmarks.conf                                    rw,
+    deny @{HOME}/.private/bookmarks.conf                                    w,
 
-    # NOTE(dij): WorkDrive doesn't need to open things.
-    deny /dev/tty                                                           rw,
+    # WorkDrive doesn't need to open things.
     deny /usr/bin/cut                                                       x,
     deny /usr/bin/file                                                      x,
     deny /usr/bin/pmap                                                      x,
@@ -138,6 +139,9 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     deny /usr/bin/xprop                                                     x,
     deny /usr/bin/uname                                                     x,
     deny /usr/bin/realpath                                                  x,
+
+    # Notify us when it tries to upgrade as it will fill the drive.
+    audit deny @{HOME}/.local/apps/zohoworkdrive/upgrade{,/,/**}            rw,
 
     include if exists <local/local.apps.workdrived>
 }

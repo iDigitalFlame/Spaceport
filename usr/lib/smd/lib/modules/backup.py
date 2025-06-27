@@ -54,7 +54,16 @@ from subprocess import PIPE, DEVNULL, Popen, SubprocessError
 from os.path import isabs, isdir, exists, isfile, getsize, basename, getctime
 from os import chmod, remove, environ, statvfs, urandom, makedirs, set_blocking
 from lib.constants.files import BACKUP_RESTORE_SCRIPT, BACKUP_RESTORE_SCRIPT_NO_KEY
-from lib.util.file import copy, info, read, write, read_json, write_json, remove_file
+from lib.util.file import (
+    copy,
+    info,
+    read,
+    write,
+    islink,
+    read_json,
+    write_json,
+    remove_file,
+)
 from lib.constants.config import (
     BACKUP_HOSTS,
     BACKUP_STATE,
@@ -62,6 +71,7 @@ from lib.constants.config import (
     BACKUP_EXCLUDE,
     BACKUP_TIMEOUT,
     BACKUP_KEY_SIZE,
+    BACKUP_TEMP_DIR,
     BACKUP_READ_TIME,
     BACKUP_STATE_DIR,
     BACKUP_WAIT_TIME,
@@ -100,6 +110,8 @@ from lib.constants import (
     BACKUP_STATE_UPLOADING,
     BACKUP_STATE_HASHING_P1,
     BACKUP_STATE_HASHING_P2,
+    BACKUP_STATE_MANIFEST_P1,
+    BACKUP_STATE_MANIFEST_P2,
     BACKUP_STATE_ENCRYPT_COMPRESS,
 )
 
@@ -208,7 +220,6 @@ class Plan(object):
         "uuid",
         "path",
         "wait",
-        "debug",
         "upload",
         "exclude",
         "cmd_pre",
@@ -219,9 +230,8 @@ class Plan(object):
 
     def __init__(self, data):
         self.dir = data.get("dir")
-        if nes(self.dir):
-            if not isabs(self.dir):
-                raise ValueError(f'plan "path" "{self.dir}" must be a full path')
+        if nes(self.dir) and not isabs(self.dir):
+            raise ValueError(f'plan "path" "{self.dir}" must be a full path')
         self.path = data.get("path")
         if not nes(self.path):
             raise ValueError('plan "path" cannot be missing or empty')
@@ -235,9 +245,8 @@ class Plan(object):
                 'plan "wait" must be a positive number greater than or equal to zero'
             )
         self.schedule, self.key = Schedule(data.get("schedule")), data.get("public_key")
-        if nes(self.key):
-            if not isabs(self.key):
-                raise ValueError('plan "public_key" must be a full path')
+        if nes(self.key) and not isabs(self.key):
+            raise ValueError('plan "public_key" must be a full path')
         self.exclude = data.get("exclude")
         if self.exclude is not None and not isinstance(self.exclude, list):
             raise ValueError('plan "exclude" must be a list')
@@ -262,14 +271,19 @@ class Plan(object):
         del u
         self.id = f"P{hex(fnv32(self.uuid))[2:].zfill(9)}"
         self.keep = data.get("keep", False)
-        if isinstance(self.keep, int) and self.keep <= 0:
+        if isinstance(self.keep, bool):
+            pass
+        elif isinstance(self.keep, int) and self.keep <= 0:
             self.keep = False
         elif not isinstance(self.keep, (bool, int)):
             self.keep = boolean(self.keep)
+        if not isinstance(self.keep, bool) and isinstance(self.keep, int):
+            if self.schedule._cycle > 0 and self.keep < self.schedule._cycle:
+                # Make sure we keep enough for a complete backup set.
+                self.keep = self.schedule._cycle
         self.vars = data.get("vars")
         if self.vars is not None and not isinstance(self.vars, dict):
             self.vars = None
-        self.debug = boolean(data.get("debug"))
         self.description = data.get("description")
         self.cmd_pre, self.cmd_post = data.get("command_pre"), data.get("command_post")
 
@@ -293,9 +307,9 @@ class Plan(object):
     def __str__(self):
         return f"{self.uuid}/[{self.id}]"
 
-    def incremental(self, state, force_full):
+    def is_incremental(self, state, force_full):
         if self.uuid not in state:
-            # NOTE(dij): If no entry exists, do a full backup.
+            # If no entry exists, do a full backup.
             state[self.uuid] = {"last": None, "size": None, "error": False, "count": 0}
             return False
         c = state[self.uuid].get("count", 0)
@@ -412,7 +426,7 @@ class Queue(object):
         for i in plans.entries:
             server.debug(f'[m/backup/add_plans]: Evaluating Plan "{i.id}"..')
             if r and i.id == current.id:
-                # NOTE(dij): Don't re-add the running backup.
+                # Don't re-add the running backup.
                 server.debug(
                     f'[m/backup/add_plans]: Skipping currently running Plan "{i.id}".'
                 )
@@ -444,7 +458,7 @@ class Queue(object):
                     except ValueError:
                         pass
                 del t
-            if not i.schedule.runnable(w):
+            if not i.schedule.is_runnable(w):
                 server.debug(
                     f'[m/backup/add_plans]: Skipping non-runnable Plan "{i.id}".'
                 )
@@ -607,38 +621,28 @@ class Plans(object):
                     x = "Q"
                 else:
                     x = EMPTY
-            if i.uuid not in s:
-                r.append(
-                    {
-                        "id": i.id,
-                        "last": None,
-                        "size": None,
-                        "uuid": i.uuid,
-                        "path": i.path,
-                        "full": False,
-                        "error": None,
-                        "state": x,
-                        "status": v,
-                        "description": i.description,
-                    }
-                )
-                continue
-            f = s[i.uuid].get("count")
-            r.append(
-                {
-                    "id": i.id,
-                    "last": s[i.uuid].get("last"),
-                    "size": s[i.uuid].get("size"),
-                    "uuid": i.uuid,
-                    "path": i.path,
-                    "full": False if isinstance(f, int) and f > 0 else True,
-                    "error": boolean(s[i.uuid].get("error")),
-                    "state": x,
-                    "status": v,
-                    "description": i.description,
-                }
-            )
-            del v, x, f
+            e = {
+                "id": i.id,
+                "full": False,
+                "last": None,
+                "keep": i.keep,
+                "path": i.path,
+                "size": None,
+                "uuid": i.uuid,
+                "error": None,
+                "state": x,
+                "status": v,
+                "description": i.description,
+            }
+            if i.uuid in s:
+                f = s[i.uuid].get("count")
+                e["full"] = False if isinstance(f, int) and f > 1 else True
+                e["last"] = s[i.uuid].get("last")
+                e["size"] = s[i.uuid].get("size")
+                e["error"] = boolean(s[i.uuid].get("error"))
+                del f
+            r.append(e)
+            del e, v, x
         del c, s
         return r
 
@@ -689,11 +693,11 @@ class Upload(object):
             del s
         return False
 
-    def valid(self):
-        return nes(self._host) and isinstance(self.port, int) and 0 < self.port < 0xFFFF
-
     def __bool__(self):
-        return self.valid()
+        return self.is_valid()
+
+    def is_valid(self):
+        return nes(self._host) and isinstance(self.port, int) and 0 < self.port < 0xFFFF
 
     @staticmethod
     def _split_user(s, other):
@@ -730,7 +734,6 @@ class Backup(object):
         "_path",
         "_time",
         "_size",
-        "_debug",
         "_state",
         "_cancel",
         "_paused",
@@ -753,7 +756,6 @@ class Backup(object):
         )
         self._time = None
         self._size = None
-        self._debug = plan.debug
         self._state = BACKUP_STATE_WAITING
         self._cancel = Event()
         self._paused = Event()
@@ -779,13 +781,19 @@ class Backup(object):
     def start(self, server):
         if self._upload and not self._upload.check():
             raise ConnectionError("invalid upload configuration")
+        if islink(self._path):
+            raise OSError(f'not removing link at "{self._path}"')
         if isdir(self._path):
             try:
                 rmtree(self._path)
             except OSError as err:
                 raise OSError(f'cannot remove directory "{self._path}": {err}')
         try:
-            makedirs(BACKUP_STATE_DIR, exist_ok=True, mode=0o0750)
+            makedirs(BACKUP_TEMP_DIR, exist_ok=True, mode=0o0700)
+        except OSError as err:
+            raise OSError(f'cannot make directory "{BACKUP_TEMP_DIR}": {err}')
+        try:
+            makedirs(BACKUP_STATE_DIR, exist_ok=True, mode=0o0700)
         except OSError as err:
             raise OSError(f'cannot make directory "{BACKUP_STATE_DIR}": {err}')
         server.info(f"[m/backup/job/{self.id}]: Starting Backup Job {self}..")
@@ -813,8 +821,8 @@ class Backup(object):
                     f"[m/backup/job/{self.id}]: Cannot suspend Backup {self}!", err
                 )
         server.info(f"[m/backup/job/{self.id}]: Suspending Backup {self}.")
-        # NOTE(dij): Clear "last time" so a suspended Backup task does not fail
-        #            when it wakes up.
+        # Clear "last time" so a suspended Backup task does not fail when it
+        # wakes up.
         self._time = None
         self._paused.set()
         return True
@@ -824,11 +832,11 @@ class Backup(object):
         #             True  - delete
         #             False - don't delete
         if not self._plan.keep:
-            return self._upload.valid()
+            return self._upload.is_valid()
         if isinstance(self._plan.keep, bool):
             return not self._plan.keep
         if not isinstance(self._plan.keep, int) or self._plan.keep <= 0:
-            return self._upload.valid()
+            return self._upload.is_valid()
         server.debug(
             f'[m/backup/job/{self.id}]: Validating keep value of "{self._plan.keep}"..'
         )
@@ -883,7 +891,7 @@ class Backup(object):
                 else:
                     self._proc.send_signal(SIGUSR1)
             except OSError as err:
-                server.debug(
+                server.warning(
                     f"[m/backup/job/{self.id}]: Cannot send a SIGUSR1 signal to the process!",
                     err,
                 )
@@ -952,8 +960,8 @@ class Backup(object):
                 c = 0
         else:
             c = 0
-        # NOTE(dij): The "count" attribute was incremented when the Backup starts
-        #            but now it should be only incremented on a successful run.
+        # The "count" attribute was incremented when the Backup starts but now
+        # it should be only incremented on a successful run.
         n = {
             "size": self._size,
             "last": datetime.now().isoformat(),
@@ -982,6 +990,8 @@ class Backup(object):
         except OSError as err:
             server.error(f"[m/backup/job/{self.id}]: Cannot read process output!", err)
             return self._update(server, BACKUP_STATE_ERROR)
+        if nes(self._last):
+            server.debug(f"[m/backup/job/{self.id}]: Process output: [{self._last}]")
         # NOTE(dij): Packing and compress don't seem to throw these exit codes
         #            anymore during normal operations, but let's keep them here
         #            as tar/openssl will bail with a different code if something
@@ -990,7 +1000,7 @@ class Backup(object):
             return True
         if n == 0:
             return True
-        if self._state > 0xB:
+        if self._state > len(BACKUP_STATE_NAMES):
             v = "Unknown"
         else:
             v = BACKUP_STATE_NAMES[self._state]
@@ -1058,7 +1068,7 @@ class Backup(object):
         if not self._update(server, BACKUP_STATE_UPLOADING):
             return
         f = f"{self._path}.tar"
-        if not self._upload.valid():
+        if not self._upload.is_valid():
             server.info(f"[m/backup/job/{self.id}]: Skipping Upload with no target!")
             return self._next(server, f)
         if not exists(BACKUP_HOSTS):
@@ -1130,7 +1140,7 @@ class Backup(object):
             remove_file(f"{self._path}.tar")
         else:
             self._state = BACKUP_STATE_DONE
-        # NOTE(dij): We run this after so we can unmount anything used.
+        # We run this after so we can unmount anything used.
         try:
             self._start_post_cmd(server)
         except Exception as err:
@@ -1149,8 +1159,7 @@ class Backup(object):
             if not self._increment and isfile(s):
                 remove(s)
             elif isfile(s):
-                # NOTE(dij): Copy file to save a Backup to return to if this one
-                #            fails.
+                # Copy file to save a Backup to return to if this one fails.
                 copy(s, f"{s}.bak", perms=0o400)
                 server.debug(
                     f'[m/backup/job/{self.id}]: Created a backup of the state file "{s}" as "{s}.bak".'
@@ -1158,6 +1167,14 @@ class Backup(object):
         except OSError as err:
             server.error(f"[m/backup/job/{self.id}]: Cannot remove state file", err)
             return self._update(server, BACKUP_STATE_ERROR)
+        m = f"{BACKUP_TEMP_DIR}/{self.id}-manifest.log"
+        if islink(m):
+            server.error(
+                f'[m/backup/job/{self.id}]: Cannot delete file manifest file "{m}" symlink!'
+            )
+            return self._update(server, BACKUP_STATE_ERROR)
+        elif isfile(m):
+            remove_file(m)
         x = [
             "/bin/tar",
             "-c",
@@ -1165,16 +1182,20 @@ class Backup(object):
             "--acls",
             "--sparse",
             "--xattrs",
+            "--verbose",
             "--restrict",
             "--recursion",
             "--no-selinux",
+            "--force-local",
             "--totals=USR1",
             "--warning=no-xdev",
             "--one-file-system",
             "--preserve-permissions",
+            "--warning=no-verbose",
             "--warning=no-file-ignored",
             "--warning=no-file-changed",
             "--warning=no-file-removed",
+            f"--index-file={m}",
             f"--listed-incremental={s}",
             f"--exclude={self._dir}",
             f"--directory={self._plan.path}",
@@ -1184,9 +1205,7 @@ class Backup(object):
         if isinstance(self._plan.exclude, list) and len(self._plan.exclude) > 0:
             for i in self._plan.exclude:
                 x.append(f"--exclude={i}")
-        del s
-        if self._debug:
-            x += ["-v", "-v"]
+        del m, s
         x += ["-f", "-", self._plan.path]
         e = environ.copy()
         e["SMD_ENC_KEY"] = key
@@ -1236,7 +1255,7 @@ class Backup(object):
             f"[m/backup/job/{self.id}]: Command started, PID {self._proc.pid()}."
         )
         self._proc.nice()
-        server.watch(self._proc, self._next, (server,))
+        server.watch(self._proc, self._next, (server, key))
         try:
             set_blocking(self._proc.p1.stderr.fileno(), False)
         except OSError as err:
@@ -1282,7 +1301,7 @@ class Backup(object):
             self._stop(server, True)
             return False
         p, self._state = self._state, state
-        # NOTE(dij): Catch paused state between steps and wait if needed.
+        # Catch paused state between steps and wait if needed.
         if self._paused.is_set():
             self._paused.wait()
         self._paused.clear()
@@ -1311,8 +1330,7 @@ class Backup(object):
             if not self._increment and isfile(s):
                 remove(s)
             elif isfile(s):
-                # NOTE(dij): Copy file to save a Backup to return to if this one
-                #            fails.
+                # Copy file to save a Backup to return to if this one fails.
                 copy(s, f"{s}.bak", perms=0o400)
                 server.debug(
                     f'[m/backup/job/{self.id}]: Created a backup of the state file "{s}" as "{s}.bak".'
@@ -1320,6 +1338,14 @@ class Backup(object):
         except OSError as err:
             server.error(f"[m/backup/job/{self.id}]: Cannot remove state file", err)
             return self._update(server, BACKUP_STATE_ERROR)
+        m = f"{BACKUP_TEMP_DIR}/{self.id}-manifest.log"
+        if islink(m):
+            server.error(
+                f'[m/backup/job/{self.id}]: Cannot delete file manifest file "{m}" symlink!'
+            )
+            return self._update(server, BACKUP_STATE_ERROR)
+        elif isfile(m):
+            remove_file(m)
         x = [
             "/bin/tar",
             "-c",
@@ -1327,16 +1353,20 @@ class Backup(object):
             "--acls",
             "--sparse",
             "--xattrs",
+            "--verbose",
             "--restrict",
             "--recursion",
             "--no-selinux",
+            "--force-local",
             "--totals=USR1",
             "--warning=no-xdev",
             "--one-file-system",
             "--preserve-permissions",
+            "--warning=no-verbose",
             "--warning=no-file-ignored",
             "--warning=no-file-changed",
             "--warning=no-file-removed",
+            f"--index-file={m}",
             f"--listed-incremental={s}",
             f"--exclude={self._dir}",
             f"--directory={self._plan.path}",
@@ -1346,9 +1376,7 @@ class Backup(object):
         if isinstance(self._plan.exclude, list) and len(self._plan.exclude) > 0:
             for i in self._plan.exclude:
                 x.append(f"--exclude={i}")
-        del s
-        if self._debug:
-            x += ["-v", "-v"]
+        del m, s
         x += ["-f", f"{self._path}/data.pak", self._plan.path]
         try:
             self._exec_and_watch(server, x, read=True)
@@ -1442,8 +1470,12 @@ class Backup(object):
         if self._state == BACKUP_STATE_KEYGEN:
             return self._step_ec(server, arg)
         if self._state == BACKUP_STATE_COMPRESS:
-            return self._step_hash_part1(server)
+            return self._step_manifest_part1(server, arg)
         if self._state == BACKUP_STATE_ENCRYPT_COMPRESS:
+            return self._step_manifest_part1(server, arg)
+        if self._state == BACKUP_STATE_MANIFEST_P1:
+            return self._step_manifest_part2(server)
+        if self._state == BACKUP_STATE_MANIFEST_P2:
             return self._step_hash_part1(server)
         if self._state == BACKUP_STATE_HASHING_P1:
             return self._step_hash_part2(server)
@@ -1461,7 +1493,7 @@ class Backup(object):
                     err,
                 )
             else:
-                if self._upload.valid():
+                if self._upload.is_valid():
                     server.info(
                         f'[m/backup/job/{self.id}]: Uploaded Backup file "{arg}" ({self._size}) to '
                         f'"{self._upload._host}" successfully!'
@@ -1491,14 +1523,13 @@ class Backup(object):
             return self._next(server)
         if len(c) == 0:
             return self._next(server)
-        # NOTE(dij): Add a final timeout just in-case.
+        # Add a final timeout just in-case.
         self._timeout = server.task(BACKUP_TIMEOUT, self._step_timeout, (server, True))
         server.debug(
             f'[m/backup/job/{self.id}]: Executing post-backup command set "{c}".'
         )
         try:
-            # NOTE(dij): Don't break on command errors so all commands in the "chain"
-            #            complete.
+            # Don't break on command errors so all commands in the "chain" complete.
             self._proc = Multi(c, stop_error=False)
         except OSError as err:
             server.error(
@@ -1601,6 +1632,99 @@ class Backup(object):
         )
         self._stop(server, True)
 
+    def _step_manifest_part2(self, server):
+        if not self._update(server, BACKUP_STATE_MANIFEST_P2):
+            return
+        if not isfile(f"{self._path}/manifest.pak"):
+            server.error(
+                f'[m/backup/job/{self.id}]: Cannot find the encrypted manifest file "{self._path}/manifest.pak"!'
+            )
+            return self._update(server, BACKUP_STATE_ERROR)
+        server.debug(
+            f"[m/backup/job/{self.id}]: Starting the [Manifest Cleanup] step.."
+        )
+        try:
+            remove_file(
+                f"{BACKUP_TEMP_DIR}/{self.id}-manifest.log", errors=True, secure=True
+            )
+        except OSError as err:
+            server.error(
+                f'[m/backup/job/{self.id}]: Cannot delete old manifest file "{BACKUP_TEMP_DIR}/'
+                f'{self.id}-manifest.log"!',
+                err,
+            )
+            return self._update(server, BACKUP_STATE_ERROR)
+        self._next(server)
+
+    def _step_manifest_part1(self, server, key):
+        if not self._update(server, BACKUP_STATE_MANIFEST_P1):
+            return
+        if key is None:
+            self.server.warning(
+                f"[m/backup/job/{self.id}]: Skipping manifest encryption step with no keyfile! "
+                "MANIFEST WILL NOT BE ENCRYPTED!"
+            )
+            try:
+                copy(
+                    f"{BACKUP_TEMP_DIR}/{self.id}-manifest.log",
+                    f"{self._path}/manifest.log",
+                )
+            except OSError as err:
+                server.error(
+                    f'[m/backup/job/{self.id}]: Cannot copy manifest file "{BACKUP_TEMP_DIR}/'
+                    f'{self.id}-manifest.log" to "{self._path}/manifest.log"!',
+                    err,
+                )
+                return self._update(server, BACKUP_STATE_ERROR)
+            try:
+                remove_file(
+                    f"{BACKUP_TEMP_DIR}/{self.id}-manifest.log",
+                    errors=True,
+                    secure=True,
+                )
+            except OSError as err:
+                server.error(
+                    f'[m/backup/job/{self.id}]: Cannot delete old manifest file "{self._path}/manifest.log"!',
+                    err,
+                )
+                return self._update(server, BACKUP_STATE_ERROR)
+            self._update(server, BACKUP_STATE_MANIFEST_P2)
+            return self._next(server)
+        # NOTE(dij): We handle the file manifest kinda weirdly. We can't output
+        #            it directly to a pipe, which is annoying. Even if we could
+        #            the buffer wouldn't be large enough to handle some transfers.
+        #
+        #            So instead, we create it in memory (temp dir), then read it
+        #            and output the encrypted version in the backup directory. Once
+        #            the encryption is done, we securly delete the file just in case.
+        server.debug(f"[m/backup/job/{self.id}]: Starting the [Manifest] step..")
+        try:
+            return self._exec_and_watch(
+                server,
+                [
+                    "/bin/openssl",
+                    "aes-256-ctr",
+                    "-bufsize",
+                    "16384",
+                    "-e",
+                    "-salt",
+                    "-pbkdf2",
+                    "-pass",
+                    "stdin",
+                    "-in",
+                    f"{BACKUP_TEMP_DIR}/{self.id}-manifest.log",
+                    "-out",
+                    f"{self._path}/manifest.pak",
+                ],
+                stdin=key,
+            )
+        except OSError as err:
+            server.error(
+                f"[m/backup/job/{self.id}]: Cannot start the manifest encryption process!",
+                err,
+            )
+        return self._update(server, BACKUP_STATE_ERROR)
+
     def _check_space(self, server, file, extra=1.5):
         p = f"{self._path}/{file}"
         try:
@@ -1690,11 +1814,11 @@ class Schedule(object):
     def is_full(self, count):
         if not isinstance(self._days, list) or not self._increment:
             return True
-        return isinstance(self._cycle, int) and (
-            self._cycle == 0 or count >= self._cycle
+        return (
+            not isinstance(self._cycle, int) or self._cycle == 0 or count >= self._cycle
         )
 
-    def runnable(self, current_day):
+    def is_runnable(self, current_day):
         if not isinstance(self._days, list) or len(self._days) == 0:
             return False
         for i in self._days:
@@ -1783,8 +1907,7 @@ class Dual(NamedTuple):
         self.p2.terminate()
 
     def read(self, count, _):
-        # NOTE(dij): We can't read stdout of the p1 process as it's being
-        #            piped.
+        # We can't read stdout of the p1 process as it's being piped.
         return self.p1.stderr.read(count)
 
     def wait(self, timeout=None):
@@ -1906,14 +2029,28 @@ class BackupServer(object):
     def hook(self, server, message):
         if message.uid() != 0:
             return server.warning("[m/backup]: Ignoring request from a non-root user.")
+        if message.header() == HOOK_SHUTDOWN:
+            if self._current is not None and self._current.running():
+                server.info(
+                    f"[m/backup]: Stopping Backup {self._current} due to shutdown."
+                )
+                self._current.stop(server)
+                self._current.save(server, BACKUP_STATE)
+                self._current = None
+            if not isdir(BACKUP_TEMP_DIR):
+                return
+            server.debug("[m/backup]: Removing temp directory..")
+            try:
+                rmtree(BACKUP_TEMP_DIR)
+            except OSError as err:
+                server.error(
+                    f'[m/backup]: Cannot remove temp directory "{BACKUP_TEMP_DIR}"!',
+                    err,
+                )
+            return
         if self._current is None or not self._current.running():
             return
-        if message.header() == HOOK_SHUTDOWN:
-            server.info(f"[m/backup]: Stopping Backup {self._current} due to shutdown.")
-            self._current.stop(server)
-            self._current.save(server, BACKUP_STATE)
-            self._current = None
-        elif message.type == MSG_POST and self._current.paused():
+        if message.type == MSG_POST and self._current.paused():
             if not _on_battery():
                 return server.info(
                     "[m/backup]: Not starting a Backup on battery power."
@@ -2055,7 +2192,7 @@ class BackupServer(object):
             server.info("[m/backup]: Not starting a Backup as the queue is empty.")
             return {"result": "No Backups are scheduled or could be started!"}
         server.debug(f"[m/backup]: Selected Plan {n}..")
-        i = n.incremental(s, force_full)
+        i = n.is_incremental(s, force_full)
         try:
             write_json(BACKUP_STATE, s, perms=0o0640)
         except OSError as err:

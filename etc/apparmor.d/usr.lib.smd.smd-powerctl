@@ -44,6 +44,7 @@ include <tunables/spaceport>
 #            This is kept as a separate profile for reuse.
 profile powerctl flags=(enforce) {
     include <abstractions/smd>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /sys/class/net/                                        r,
@@ -52,8 +53,6 @@ profile powerctl flags=(enforce) {
     /sys/class/net/*/{flag,wireles}s                       r,
     /sys/class/bluetooth/*/rfkill*/state                   r,
     /sys/class/backlight/intel_backlight/{,max_}brightness r,
-
-    deny network,
 
     include if exists <local/usr.lib.smd.smd-powerctl>
 }

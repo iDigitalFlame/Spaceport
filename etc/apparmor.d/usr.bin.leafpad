@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile leafpad /usr/bin/leafpad flags=(enforce) {
     include <abstractions/gnome>
     include <abstractions/user-data>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
 
     /etc/fstab                   r,
@@ -49,8 +50,6 @@ profile leafpad /usr/bin/leafpad flags=(enforce) {
     owner /tmp/**                r,
 
     owner @{CONFIG}/leafpad/{,*} r,
-
-    deny network,
 
     deny @{CONFIG}/leafpad/{,*}  w,
 

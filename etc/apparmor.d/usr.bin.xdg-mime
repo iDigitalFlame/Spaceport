@@ -41,6 +41,7 @@ profile xdg-mime /usr/bin/xdg-mime flags=(enforce) {
     include <abstractions/mime>
     include <abstractions/consoles>
     include <abstractions/xdg-open>
+    include <abstractions/no-network>
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
@@ -49,16 +50,9 @@ profile xdg-mime /usr/bin/xdg-mime flags=(enforce) {
 
     owner @{CONFIG}/mimeapps.list    r,
 
-    /usr/bin/tr                      ix,
-    /usr/bin/gio                     ix,
-    /usr/bin/env                     ix,
-    /usr/bin/head                    ix,
-    /usr/bin/file                    ix,
-    /usr/bin/xprop                   ix,
     /usr/bin/printf                  ix,
     /usr/bin/c{a,u}t                 ix,
     /usr/bin/{,e}grep                ix,
-    /usr/bin/mimetype                ix,
     /usr/bin/{,g,m}awk               ix,
     /usr/bin/s{ed,ort}               ix,
     /usr/bin/w{c,hich}               ix,
@@ -67,10 +61,10 @@ profile xdg-mime /usr/bin/xdg-mime flags=(enforce) {
     /usr/bin/{,ba,da}sh              ixr,
     /usr/bin/{u,base}name            ix,
     /usr/bin/rea{dlink,lpath}        ix,
+    /usr/bin/{env,file,gio,head}     ix,
+    /usr/bin/{mimetype,tr,xprop}     ix,
 
     owner /tmp/wl-copy-buffer-*/stdin r,
-
-    deny network,
 
     include if exists <local/usr.bin.xdg-mine>
 }

@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile dconf-service /usr/lib/dconf-service flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/dconf>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     signal receive set=(hup, kill, term) peer=dbus-session,
@@ -58,7 +59,8 @@ profile dconf-service /usr/lib/dconf-service flags=(enforce, attach_disconnected
     owner @{HOME}/.config/dconf/{,user,user.*}      rw,
     owner @{HOME}/.config/glib-2.0/settings/keyfile w,
 
-    unix (bind, listen)                   type=stream addr="@/tmp/dbus-*",
+    unix (bind, listen) type=stream addr="@/tmp/dbus-*",
+
     unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
     unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
 
@@ -68,8 +70,6 @@ profile dconf-service /usr/lib/dconf-service flags=(enforce, attach_disconnected
     dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
-
-    deny network,
 
     include if exists <local/usr.lib.dconf-service>
 }

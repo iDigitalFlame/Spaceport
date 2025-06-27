@@ -44,6 +44,7 @@ profile wlay /usr/bin/wlay flags=(enforce) {
     include <abstractions/video>
     include <abstractions/vulkan>
     include <abstractions/consoles>
+    include <abstractions/no-network>
     include <abstractions/private-files>
 
     /usr/share/glib-2.0/schemas/gschemas.compiled r,
@@ -51,8 +52,6 @@ profile wlay /usr/bin/wlay flags=(enforce) {
     owner /proc/@{pid}/cmdline                    r,
 
     /usr/bin/swaymsg                              ix,
-
-    deny network,
 
     include if exists <local/usr.bin.wlay>
 }

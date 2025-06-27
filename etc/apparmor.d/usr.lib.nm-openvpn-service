@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile nm-openvpn-service /usr/lib/nm-openvpn-service flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/consoles>
     include <abstractions/nameservice>
 
     capability                                 kill,
@@ -53,7 +54,6 @@ profile nm-openvpn-service /usr/lib/nm-openvpn-service flags=(enforce) {
     @{HOME}/.cert/nm-openvpn/*.pem             r,
     @{HOME}/.config/openvpn/nm-openvpn/*.pem   r,
 
-    /dev/tty                                   rw,
     /dev/net/tun                               rw,
 
     @{run}/NetworkManager/nm-openvpn-*         rw,

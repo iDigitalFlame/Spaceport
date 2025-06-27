@@ -38,4 +38,7 @@
 @{HOME}=@{HOMEDIRS}/*/
 @{CONFIG}=@{HOME}/.config/ @{HOME}/.dotfiles/.config/
 
+@{HOMEDOTS}=@{HOME}/ @{HOME}/.dotfiles/
+@{HOMEDATA}=@{HOME}/ @{HOME}/.dotfiles/ @{HOME}/.private/
+
 include if exists <tunables/home.d>

@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile mupdf /usr/bin/mupdf flags=(enforce) {
     include <abstractions/gui>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
@@ -47,8 +48,6 @@ profile mupdf /usr/bin/mupdf flags=(enforce) {
     /usr/local/texlive/{,**} r,
 
     owner /tmp/**            r,
-
-    deny network,
 
     include if exists <local/usr.bin.mupdf>
 }

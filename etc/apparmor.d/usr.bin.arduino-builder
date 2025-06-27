@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile arduino-builder /usr/bin/arduino-builder flags=(enforce) {
     include <abstractions/base>
+    include <abstractions/no-network>
     include <abstractions/user-data-ro>
 
     /usr/bin/                                                 r,

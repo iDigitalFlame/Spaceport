@@ -42,21 +42,18 @@
 
 /var/cache/ld.so.cache              rm,
 
-owner /dev/pts/*                    rw,
-owner /dev/tty{,*}                  rw,
-
 audit deny /opt/secureboot/{,*}     rw,
 
-# NOTE(dij): Allow confined processes to signal they are shutting down to
-#            smd-client and smd-daemon.
+# Allow confined processes to signal they are shutting down to smd-client
+# and smd-daemon.
 signal receive peer=smd-{client,daemon} set=(cont, int, kill, quit, term, stop),
 signal receive peer=unconfined          set=(cont, int, kill, quit, term, stop, hup, pipe, segv),
 signal         peer=@{profile_name},
-
-deny signal send peer=unconfined,
 
 # Disconnected Paths
 deny /apparmor/.null                rw,
 
 deny /etc/ld.so.preload             w,
 deny @{sysconfig}/etc/ld.so.preload w,
+
+deny signal send peer=unconfined,

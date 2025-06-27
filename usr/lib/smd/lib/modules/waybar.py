@@ -112,8 +112,8 @@ class Waybar(object):
 
     def hook(self, server, message):
         if message.header() == HOOK_SHUTDOWN:
-            # NOTE(dij): We're stopping the process here to prevent it being
-            #            leaked if the thread call processes the message late.
+            # We're stopping the process here to prevent it being leaked if the
+            # thread call processes the message late.
             self._errors, self._reload = 0, False
             stop(self._proc)
             self._proc = None

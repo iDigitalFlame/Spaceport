@@ -42,12 +42,13 @@ profile xkbcomp /usr/bin/xkbcomp flags=(enforce, attach_disconnected) {
     include <abstractions/mesa>
     include <abstractions/vulkan>
     include <abstractions/consoles>
+    include <abstractions/no-network>
+    include <abstractions/private-files>
 
     /usr/bin/xkbcomp                          rm,
     /usr/share/X11/xkb/**                     r,
 
     /dev/fb*                                  rw,
-    /dev/tty{,*}                              rw,
     /dev/dri/card*                            rw,
     /dev/dri/render*                          rw,
     /dev/input/event*                         rw,

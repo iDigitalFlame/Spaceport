@@ -38,6 +38,7 @@ abi <abi/4.0>,
 
 include <abstractions/base>
 include <abstractions/python>
+include <abstractions/consoles>
 include <abstractions/nameservice>
 
 capability                                dac_override,
@@ -63,12 +64,12 @@ owner /proc/@{pid}/cmdline                        r,
 
 owner @{CONFIG}/smd.json                          r,
 
-/usr/lib/smd/**/__pycache__/*.pyc{,*}             rw,
-
 @{run}/smd/*.sock                                 rw,
 
 /usr/lib/smd/lib/smd-message                      ixr,
 
 unix (connect, receive, send) type=stream peer=(addr="@{run}/smd/*.sock"),
+
+deny /usr/lib/smd/**/__pycache__/*.pyc{,*}        w,
 
 include if exists <abstractions/smd.d>
