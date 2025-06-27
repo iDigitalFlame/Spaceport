@@ -50,13 +50,13 @@ profile swtpm /usr/bin/swtpm flags=(enforce) {
 
     signal receive set=(int, cont, stop, term) peer=smd-daemon,
 
-    /usr/bin/swtpm                             rm,
+    /usr/bin/swtpm                                rm,
     # Read TPM Images
-    /**/*.{bin,disk,img,iso,ram,raw}           rk,
+    /**/*.{bin,disk,fd,img,iso,ram,raw}           rk,
 
-    /opt/hydra/**/*.{bin,disk,img,iso,ram,raw} rwk,
+    /opt/hydra/**/*.{bin,disk,fd,img,iso,ram,raw} rwk,
 
-    @{run}/smd/hydra/*.swtpm{,.pid}            rw,
+    @{run}/smd/hydra/*.swtpm{,.pid}               rw,
 
     unix (bind, listen) type=stream addr="@/tmp/dbus-*",
 
