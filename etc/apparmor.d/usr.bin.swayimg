@@ -52,6 +52,7 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     owner /dev/shm/swayimg_*          rwk,
 
     /usr/bin/zsh                      ix,
+    /usr/bin/wl-copy                  ix,
 
     owner @{HOMEDOTS}/.local/bin/crop Pxr -> cropgui,
 
