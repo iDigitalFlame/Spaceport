@@ -36,11 +36,12 @@
 
 include <tunables/spaceport>
 
-profile waybar /usr/bin/waybar flags=(enforce) {
+profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/wayland>
+    include <abstractions/consoles>
     include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/private-files>

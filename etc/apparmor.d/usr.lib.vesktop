@@ -76,7 +76,9 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
     deny /usr/bin/xdg-settings                  x,
     deny /sys/bus/[^pci]*/devices/              r,
 
+    deny ptrace read  peer=sway,
     deny ptrace read  peer=unconfined,
+    deny ptrace trace peer=sway,
     deny ptrace trace peer=unconfined,
 
     include if exists <local/usr.lib.vesktop>
