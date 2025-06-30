@@ -42,7 +42,7 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/video>
-    include <abstractions/vulkan>
+    include <abstractions/consoles>
     include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
@@ -80,8 +80,6 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     @{run}/udev/data/+usb{,-serial}:*             rw,
 
     /tmp/orcexec.*                                rwm,
-
-    owner /dev/pts/*                              rw,
 
     owner @{CACHE}/gstreamer-1.0/registry.*       rw,
 

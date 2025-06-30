@@ -41,6 +41,7 @@ profile cropgui /{usr,@{HOMEDOTS}/.local}/bin/crop{,gui} flags=(enforce, attach_
     include <abstractions/perl>
     include <abstractions/dconf>
     include <abstractions/python>
+    include <abstractions/consoles>
     include <abstractions/user-home>
     include <abstractions/no-network>
     include <abstractions/nameservice>

@@ -40,7 +40,7 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
-for i in $(find "/boot" -xdev -type f -iname "*.efi" -print); do
+for i in $(find "/boot" -type f \( -iname "*.efi" -or -iname "vmlinuz-*" \) -print); do
     if ! sbverify --list "$i" 2> /dev/null | grep -q "signature certificates"; then
         sbsign --key "/opt/secureboot/db.key" --cert "/opt/secureboot/db.crt" --output "$i" "$i" 2>&1 | grep -v 'warning: data remaining\['
     fi

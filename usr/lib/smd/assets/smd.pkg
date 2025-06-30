@@ -36,7 +36,7 @@
 # Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
 pkgrel=1
-pkgver=1.5.1
+pkgver=1.5.2
 pkgname="smd"
 pkgdesc="System Management Daemon base packages"
 
@@ -60,6 +60,10 @@ depends=(
     "python-gobject"
     "reflector"
     "systemd"
+
+    ## Kernels
+    "linux-lts"
+    "linux-zen"
 
     ## Backup
     "openssh"
