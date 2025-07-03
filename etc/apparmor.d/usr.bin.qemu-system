@@ -43,8 +43,9 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
     include <abstractions/audio>
     include <abstractions/video>
     include <abstractions/vulkan>
-    include <abstractions/no-network>
+    include <abstractions/consoles>
     include <abstractions/dri-common>
+    include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/nss-systemd>
 
@@ -82,6 +83,7 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
 
     @{run}/udev/data/c1*:*                                                 r,
     @{run}/udev/data/+usb:*                                                r,
+    @{run}/smd/hydra/*.bios                                                r,
 
     /opt/hydra/*/**/*.{disk,fd,img,raw,qcow,qcow2,vdmk}                    rwk,
 

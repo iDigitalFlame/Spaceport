@@ -97,6 +97,15 @@ _SCHEMA = """# HydraVM Schema v3-release
                           and must have the permissions 0o0644 if not owned, or
                           0o0600 if owned.
 
+        "native"         <Boolean, Optional[Default = false]>
+                          Enables the ability for the VM to use the Host's SMBIOS
+                          data when creating the VM. This will include devices
+                          such as fans and temperature sensors.
+
+                          If the SMBIOS file does not exist, this value is ignored.
+                          If the SMBIOS file exists, this will ignore the "bios.type"
+                          option.
+
         "secure_boot"    <Boolean, Optional[Default = false]>
                           Enables the secure boot enabled UEFI vars file, if
                           avaliable. Does nothing if "bios.file" is specified or
@@ -183,7 +192,7 @@ _SCHEMA = """# HydraVM Schema v3-release
 
         "display"        <String, Optional[Default = virtio]>
                           Supported values: "std" | "cirrus" | "vmware" | "qxl" | "virtio" |
-                           "none"
+                           "virtio-vga" | "vga" | "none"
 
                           Changes the specific type of graphics driver used. This
                           only affects how the display is rendered. This may affect
@@ -191,7 +200,7 @@ _SCHEMA = """# HydraVM Schema v3-release
                           disable the VNC or spice viewers.
 
                           Some display drivers may cause issues with some hosts. The
-                          "gxl" driver for example, may cause BSODs in Windows VMs.
+                          "virtio" driver for example, may cause BSODs in Windows VMs.
 
         "display_count"  <Integer, Optional[Default = 1]>
                           Supported values: Integer greater than zero.

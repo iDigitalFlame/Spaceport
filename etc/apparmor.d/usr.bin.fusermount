@@ -58,12 +58,12 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     umount /tmp/.mount_**,
     umount /tmp/com.freerdp.client.cliprdr.*,
 
-    umount @{run}/user/@{uid}/doc/,
+    umount @{run}/user/@{uid}/doc{,/},
 
     /etc/fuse{,*}.conf                r,
     /usr/bin/fusermount{,*}           rm,
 
-    /proc/@{pid}/mounts               r,
+    owner /proc/@{pid}/mount{info,s}  r,
 
     /dev/fuse                         rw,
 

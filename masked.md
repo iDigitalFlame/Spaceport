@@ -12,6 +12,7 @@ dbus-org.freedesktop.portable1.service
 debug-shell.service
 display-manager.service
 emergency.service
+gpsd.service
 nslcd.service
 plymouth-quit-wait.service
 plymouth-start.service
@@ -46,6 +47,7 @@ systemd-update-done.service
 systemd-userdbd.service
 systemd-vmspawn@.service
 systemd-volatile-root.service
+gpsd.socket
 sshd-unix-local.socket
 systemd-importd.socket
 systemd-journal-remote.socket

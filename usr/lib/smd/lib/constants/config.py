@@ -132,9 +132,10 @@ HOOK_TRANSLATIONS = {
 ## Hydra Module Constants
 HYDRA_USER = "qemu"
 HYDRA_WAIT_TIME = 10
-HYDRA_SOCK_BUF_SIZE = 4096
-HYDRA_PATH_MOUNTS = "/proc/self/mounts"
 HYDRA_VM_CONFIGS = ["vm.conf", "vm.json", "vmx"]
+HYDRA_PATH_MOUNTS = "/proc/self/mounts"
+HYDRA_FILE_SMBIOS = "/sys/firmware/dmi/tables/DMI"
+HYDRA_SOCK_BUF_SIZE = 4096
 
 HYDRA_BRIDGE = "vmi0"
 HYDRA_BRIDGE_NAME = f"vm.{NAME}"

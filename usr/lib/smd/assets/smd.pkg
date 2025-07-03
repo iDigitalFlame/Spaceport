@@ -36,7 +36,7 @@
 # Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
 pkgrel=1
-pkgver=1.5.2
+pkgver=1.5.3
 pkgname="smd"
 pkgdesc="System Management Daemon base packages"
 
@@ -76,7 +76,6 @@ depends=(
     "dnsmasq"
     "edk2-ovmf"
     "iproute2"
-    "qemu-audio-alsa"
     "qemu-audio-pa"
     "qemu-audio-spice"
     "qemu-base"
@@ -87,7 +86,6 @@ depends=(
     "qemu-hw-display-virtio-vga"
     "qemu-hw-usb-host"
     "qemu-hw-usb-redirect"
-    "qemu-vhost-user-gpu"
     "samba"
     "spice"
     "swtpm"

@@ -64,6 +64,8 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
     owner @{HOME}/                    r,
     owner @{HOME}/.lesshs*            r,
 
+    owner /dev/tty*                   rw,
+
     deny @{HOME}/.lesshs*             w,
     deny @{HOME}/.local/state/lesshs* w,
 

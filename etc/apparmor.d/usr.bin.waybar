@@ -40,6 +40,7 @@ profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/audio>
     include <abstractions/dconf>
+    include <abstractions/vulkan>
     include <abstractions/wayland>
     include <abstractions/consoles>
     include <abstractions/no-network>

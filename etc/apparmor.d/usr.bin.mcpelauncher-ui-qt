@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce) {
+profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce, attach_disconnected, mediate_deleted) {
     include <abstractions/qt>
     include <abstractions/mesa>
     include <abstractions/audio>
@@ -62,6 +62,8 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce) {
 
     owner @{HOME}/{,Downloads/}*                           r,
     owner @{HOME}/.local/share/mcpelauncher{,/**}          rwk,
+    owner @{HOME}/.cache/Minecraft\ Linux\ Launcher/**     l,
+    owner @{HOME}/.config/Minecraft\ Linux\ Launcher/**    l,
     owner @{HOME}/.local/share/mcpelauncher/versions/*/**  rw,
     owner @{HOME}/.cache/Minecraft\ Linux\ Launcher{,/**}  rw,
     owner @{HOME}/.config/Minecraft\ Linux\ Launcher{,/**} rwk,

@@ -78,6 +78,7 @@ from lib.constants.config import (
     HYDRA_EXEC_SWTPM,
     HYDRA_BRIDGE_NAME,
     HYDRA_DIR_DEVICES,
+    HYDRA_FILE_SMBIOS,
     HYDRA_PATH_MOUNTS,
     HYDRA_RESERVE_SIZE,
     HYDRA_SOCK_BUF_SIZE,
@@ -854,6 +855,71 @@ class VM(Storage):
         self._usb.clear()
         server.debug(f"[m/hydra/VM({self.vmid})]: Removed All USB devices.")
 
+    def _build_displays(self, server, bus):
+        r, g = list(), self.get("dev.display", "virtio").lower()
+        try:
+            n = int(self.get("dev.display_count", 1))
+        except ValueError:
+            n = self.set("dev.display_count", 1)
+        if n <= 0 or n > 4:
+            server.warning(
+                f"[m/hydra/VM({self.vmid})]: Clamping display count at 4 (instead of {n})."
+            )
+            n = 1
+        if nes(g):
+            if g == "none":
+                return r
+            if g == "std":
+                s = "std"
+            elif g == "cirrus":
+                s = "cirrus-vga"
+            elif g == "virtio" or g == "virtio-vga":
+                # NOTE(dij): VirtIO VGA drivers are REALLY buggy on Windows. They cause
+                #            BSODs randomally. It's driver related as if the driver isn't
+                #            installed, the BSODs stop. However, this limits your maximum
+                #            screen resolution to 1200x1080.
+                server.warning(
+                    f"[m/hydra/VM({self.vmid})]: The drivers for the VirtIO VGA device have compatibility issues with"
+                    " Windows, your VM may BSOD."
+                )
+                if g == "virtio-vga":
+                    s = "virtio-vga"
+                else:
+                    s = "virtio-gpu-pci"
+                s = (
+                    f"{s},disable-modern=off,disable-legacy=auto,iommu_platform=on,"
+                    f"hostmem=256M,xres=1920,yres=1080,max_outputs={n}"
+                )
+            elif g == "qxl":
+                s = "vgamem_mb=64,vram_size_mb=64,ram_size_mb=64"
+            elif g == "vmware":
+                s = "vmware-svga,vgamem_mb=64M"
+            else:
+                s = "VGA,vgamem_mb=64"
+            v = True
+        else:
+            s, v = "std", False
+        if s.startswith("virtio"):
+            r += ["-device", f"{s},bus={bus}.0"]
+        else:
+            q = g == "qxl"
+            for i in range(0, n):
+                if q:
+                    r.append("-device")
+                    # Multiple QXL displays must use "qxl" instead of "qxl-vga" when
+                    # they are NOT the first display.
+                    if i == 0:
+                        r.append(f"qxl-vga,{s},bus={bus}.0")
+                    else:
+                        r.append(f"qxl,{s},bus={bus}.0")
+                elif v:
+                    r += ["-device", f"{s},bus={bus}.0"]
+                else:
+                    r += ["-vga", s]
+            del q
+        del g, s, v
+        return r
+
     def _build_adapters(self, server, bus):
         if not isinstance(self.network, dict):
             self.network = dict()
@@ -936,12 +1002,37 @@ class VM(Storage):
             )
 
     def _build_bios(self, server, info, uid):
+        if self.get("bios.native"):
+            if not exists(HYDRA_FILE_SMBIOS):
+                server.warning(
+                    '[m/hydra/VM({self.vmid})]: Ignoring "bios.native" as no SMBIOS file "'
+                    f'{HYDRA_FILE_SMBIOS}" can be found.'
+                )
+                s = EMPTY
+            else:
+                try:
+                    copy(
+                        HYDRA_FILE_SMBIOS,
+                        f"{self._path}.bios",
+                        uid=0,
+                        gid=_hydra_user().pw_gid,
+                        perms=0o0440,
+                    )
+                except OSError as err:
+                    raise Error(
+                        f'Cannot copy system SMBIOS file "{HYDRA_FILE_SMBIOS}": {err}'
+                    )
+                s = f"{self._path}.bios"
+        else:
+            s = EMPTY
         t = self.get("bios.type", 1)
         if not isinstance(t, int):
             t = 1
         elif t > 0x29 or t < 0:
             t = 1
         if not self.get("bios.uefi"):
+            if nes(s):
+                return [f"file={s}"]
             return [f"type={t}"]
         if nes(info.bios):
             f = info.bios
@@ -973,7 +1064,7 @@ class VM(Storage):
             else:
                 self.bios["vars"] = v
         return [
-            f'type={t},uuid={self.get("vm.uuid")}',
+            f"file={s}" if nes(s) else f'type={t},uuid={self.get("vm.uuid")}',
             "-drive",
             f"if=pflash,id=efi0-bios,bus=0,format=raw,unit=0,readonly=on,file={f}",
             "-drive",
@@ -1216,43 +1307,7 @@ class VM(Storage):
             # the "extra" tag.
             r += ["-device", f"isa-applesmc,osk={s}"]
         del s
-        g = self.get("dev.display", "virtio")
-        if nes(g):
-            if g == "virtio":
-                # NOTE(dij): VirtIO VGA drivers are REALLY buggy on Windows. They cause
-                #            BSODs randomally. It's driver related as if the driver isn't
-                #            installed, the BSODs stop. However, this limits your maximum
-                #            screen resolution to 1200x1080.
-                server.warning(
-                    f"[m/hydra/VM({self.vmid})]: The drivers for the VirtIO VGA device have compatibility issues with"
-                    " Windows, your VM may BSOD."
-                )
-                s = "virtio-vga,disable-modern=false,disable-legacy=auto,iommu_platform=true,hostmem=32M"
-                v = True
-            elif g == "qxl":
-                s, v = "vgamem_mb=32,vram_size_mb=32,ram_size_mb=32", True
-            else:
-                s, v = g, False
-        else:
-            v, s = False, "std"
-        q, n = v and g == "qxl", self.get("dev.display_count", 1)
-        if not isinstance(n, int) or n <= 0 or n > 4:
-            self.set("dev.display_count", 1)
-            n = 1
-        for i in range(0, n):
-            if q:
-                r.append("-device")
-                # Multiple QXL displays must use "qxl" instead of "qxl-vga" when
-                # they are NOT the first display.
-                if i == 0:
-                    r.append(f"qxl-vga,{s},bus={b}.0")
-                else:
-                    r.append(f"qxl,{s},bus={b}.0")
-            elif v:
-                r += ["-device", f"{s},bus={b}.0"]
-            else:
-                r += ["-vga", s]
-        del g, q, s, v
+        r += self._build_displays(server, b)
         s = self.get("dev.sound", True)
         # "dev.sound" = false will disable this.
         # When it's true, we use the default sound device.
@@ -1997,6 +2052,10 @@ class VM(Storage):
             pass
         try:
             remove(f"{self._path}.qga")
+        except OSError:
+            pass
+        try:
+            remove(f"{self._path}.bios")
         except OSError:
             pass
         try:
