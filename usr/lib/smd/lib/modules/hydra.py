@@ -880,7 +880,7 @@ class VM(Storage):
                 #            screen resolution to 1200x1080.
                 server.warning(
                     f"[m/hydra/VM({self.vmid})]: The drivers for the VirtIO VGA device have compatibility issues with"
-                    " Windows, your VM may BSOD."
+                    " Windows, your VM may BSOD!"
                 )
                 if g == "virtio-vga":
                     s = "virtio-vga"
