@@ -43,6 +43,7 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
     include <abstractions/dconf>
     include <abstractions/video>
     include <abstractions/vulkan>
+    include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/nameservice>
     include <abstractions/private-files>

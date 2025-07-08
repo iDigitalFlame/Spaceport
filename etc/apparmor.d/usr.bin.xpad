@@ -36,9 +36,10 @@
 
 include <tunables/spaceport>
 
-profile xpad /usr/bin/xpad flags=(enforce) {
+profile xpad /usr/bin/xpad flags=(enforce, attach_disconnected) {
     include <abstractions/dconf>
     include <abstractions/gnome>
+    include <abstractions/consoles>
     include <abstractions/no-network>
     include <abstractions/private-files>
 
