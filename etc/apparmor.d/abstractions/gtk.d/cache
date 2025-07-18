@@ -34,44 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/spaceport>
+owner @{HOME}/.cache/gtk-[0-9].0 rw,
 
-profile kitty /usr/bin/kitty flags=(enforce) {
-    include <abstractions/dri>
-    include <abstractions/gui>
-    include <abstractions/mesa>
-    include <abstractions/python>
-    include <abstractions/vulkan>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
-    include <abstractions/private-files>
-
-    capability                         sys_ptrace,
-
-    ptrace read  peer=kitty,
-    ptrace trace peer=kitty,
-
-    signal send set=(int, kill, quit, term),
-
-    /proc/                             r,
-
-    owner /proc/@{pid}/stat            r,
-    owner /proc/@{pid}/cgroup          r,
-
-    owner @{run}/user/@{uid}/          r,
-
-    owner @{CONFIG}/kitty{,/}          r,
-    owner @{CONFIG}/kitty/kitty.conf   r,
-
-    /dev/ptmx                          rw,
-
-    owner @{HOME}/.cache/kitty{,/,/**} rw,
-
-    /usr/bin/kitten                    ix,
-    /usr/bin/xdg-open                  Px -> xdg-open,
-    /usr/bin/{ba,da,z}sh               Ux,
-
-    deny ptrace read,
-
-    include if exists <local/usr.bin.kitty>
-}
+owner @{CACHE_TMP}/gtk{,/,/**} rwk,

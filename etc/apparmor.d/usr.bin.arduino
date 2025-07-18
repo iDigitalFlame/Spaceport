@@ -74,7 +74,6 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa rm,
 
     /dev/                                                     r,
-    /dev/udmabuf                                              rw,
     /dev/bus/usb/                                             r,
     /dev/bus/usb/*/                                           r,
 

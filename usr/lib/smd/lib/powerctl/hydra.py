@@ -1244,6 +1244,7 @@ def vm_connect(args, vm=None, vnc=False):
     except OSError as err:
         return print_error("Cannot connect to the VM via Spice!", err)
     del r, v
+    # This should never return.
     return True
 
 

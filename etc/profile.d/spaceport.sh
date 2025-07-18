@@ -99,6 +99,9 @@ fi
 if ! [ -d "/tmp/.usercache/${USER}/qt" ]; then
     mkdir "/tmp/.usercache/${USER}/qt" 2> /dev/null
 fi
+if ! [ -d "/tmp/.usercache/${USER}/gtk" ]; then
+    mkdir "/tmp/.usercache/${USER}/gtk" 2> /dev/null
+fi
 if ! [ -d "/tmp/.usercache/${USER}/mesa" ]; then
     mkdir "/tmp/.usercache/${USER}/mesa" 2> /dev/null
 fi

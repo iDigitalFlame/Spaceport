@@ -63,7 +63,7 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     /etc/fuse{,*}.conf                r,
     /usr/bin/fusermount{,*}           rm,
 
-    owner /proc/@{pid}/mount{info,s}  r,
+    /proc/@{pid}/mount{info,s}        r,
 
     /dev/fuse                         rw,
 

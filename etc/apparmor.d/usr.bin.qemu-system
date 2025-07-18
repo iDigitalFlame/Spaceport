@@ -58,6 +58,7 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
     capability                                                             dac_override,
     capability                                                             dac_read_search,
 
+    /etc/libnl/*                                                           r,
     /etc/machine-id                                                        r,
     /usr/share/qemu/**                                                     r,
     /etc/sasl2/qemu.conf                                                   r,
