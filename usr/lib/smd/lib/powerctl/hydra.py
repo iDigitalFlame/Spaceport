@@ -77,6 +77,7 @@ from lib.constants import (
     HYDRA_SNAP_DELETE,
     HYDRA_USER_RESULT,
     HYDRA_SNAP_RESTORE,
+    HYDRA_USB_RECONNECT,
     HYDRA_USER_ADD_ALIAS,
     HYDRA_USER_DIRECTORY,
     HYDRA_USER_DELETE_ALIAS,
@@ -915,6 +916,8 @@ def tokenize(args):
             return vm_usb_list(args, vm)
         if o == "clean" or o == "clear":
             return vm_usb_clean(args, vm)
+        if o == "reconnect" or o == "re" or o == "sync":
+            return vm_usb_reconnect(args, vm)
         vm_usb(args, (o == "remove" or o == "del") or args.usb_delete, vm)
         del n, o
         return
@@ -1043,13 +1046,13 @@ def vm_usb_list(args, vm=None):
 
 def vm_usb_clean(args, vm=None):
     vm = _get_check(args, vm)
-    vm["type"] = HYDRA_USB_CLEAN
+    vm["type"] = HYDRA_USB_RECONNECT
     try:
         r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
     except OSError as err:
-        return print_error("Cannot remove all USB devices!", err)
-    check_error(r, "Cannot remove all USB devices")
-    print(f"Removed all USB devices from {_vm(r.vmid, r.name, r.file)}.")
+        return print_error("Cannot reconnect all USB devices!", err)
+    check_error(r, "Cannot reconnect all USB devices")
+    print(f"Reconnected all USB devices to {_vm(r.vmid, r.name, r.file)}.")
     del r, vm
     return True
 
@@ -1121,6 +1124,19 @@ def vm_snap_restore(args, vm=None):
         return print_error("Cannot restore Snapshot!", err)
     check_error(r, "Cannot restore Snapshot")
     print(f"{_vm(r.vmid, r.name, r.file)} - {r.status.title()}!")
+    del r, vm
+    return True
+
+
+def vm_usb_reconnect(args, vm=None):
+    vm = _get_check(args, vm)
+    vm["type"] = HYDRA_USB_CLEAN
+    try:
+        r = send_message(args.socket, HOOK_HYDRA, HOOK_HYDRA, TIMEOUT_SEC_MESSAGE, vm)
+    except OSError as err:
+        return print_error("Cannot remove all USB devices!", err)
+    check_error(r, "Cannot remove all USB devices")
+    print(f"Removed all USB devices from {_vm(r.vmid, r.name, r.file)}.")
     del r, vm
     return True
 

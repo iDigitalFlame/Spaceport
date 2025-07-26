@@ -3,3 +3,5 @@ archstrike-keyring
 archstrike-mirrorlist
 chaotic-keyring
 chaotic-mirrorlist
+evtest
+wev

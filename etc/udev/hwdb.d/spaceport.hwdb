@@ -37,6 +37,9 @@
 evdev:atkbd:dmi:*
     KEYBOARD_KEY_38=leftmeta
     KEYBOARD_KEY_DB=leftalt
+    KEYBOARD_KEY_6E=reserved
+    KEYBOARD_KEY_INSERT=reserved
+    # Fuck you insert key
 
 evdev:input:b*v046DpC548*
     KEYBOARD_KEY_700E2=leftmeta

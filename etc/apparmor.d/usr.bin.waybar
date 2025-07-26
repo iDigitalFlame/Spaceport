@@ -37,7 +37,9 @@
 include <tunables/spaceport>
 
 profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
+    include <abstractions/dri>
     include <abstractions/gtk>
+    include <abstractions/mesa>
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/vulkan>
@@ -54,6 +56,7 @@ profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
 
     /dev/rfkill                                 r,
 
+    /sys/devices/pci*/**/uevent                 r,
     /sys/class/power_supply/{,**}               r,
     /sys/devices/**/power_supply/**             r,
     /sys/devices/system/cpu/present             r,

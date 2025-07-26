@@ -761,6 +761,16 @@ ARGS = {
             "vm_usb_clean",
         ),
         (
+            ("-uu", "--usb-reconnect"),
+            {
+                "dest": "usb_reconnect",
+                "help": "reconnect all USB devices connected to the VM",
+                "action": "store_true",
+                "required": False,
+            },
+            "vm_usb_reconnect",
+        ),
+        (
             "--usb2",
             {
                 "dest": "usb_slow",

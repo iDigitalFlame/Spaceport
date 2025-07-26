@@ -127,6 +127,7 @@ from lib.constants import (
     HYDRA_STATE_RUNNING,
     HYDRA_STATE_STOPPED,
     HYDRA_STATE_WAITING,
+    HYDRA_USB_RECONNECT,
     HYDRA_STATE_SLEEPING,
     HYDRA_STATE_SNAP_DEL,
     HYDRA_USER_ADD_ALIAS,
@@ -1070,6 +1071,37 @@ class VM(Storage):
             "-drive",
             f"if=pflash,id=efi0-user,bus=0,format=raw,unit=1,file={v}",
         ]
+
+    def _usb_reconnect(self, server, manager):
+        if self._state != HYDRA_STATE_RUNNING:
+            raise Error("invalid state to reconnect USB devices")
+        server.info(f"[m/hydra/VM({self.vmid})]: Reconnecting all USB devices..")
+        for k, v in self._usb.items():
+            server.debug(f'[m/hydra/VM({self.vmid})]: Reconnecting device "{k}"..')
+            try:
+                self._cmd(server, "device_del", {"id": f"usb-dev-{v}"})
+                self._cmd(
+                    server,
+                    "device_add",
+                    {
+                        "id": f"usb-dev-{v}",
+                        "bus": "usb-bus3.0",
+                        "driver": "usb-host",
+                        "vendorid": int(k[:4], 16),
+                        "productid": int(k[5:], 16),
+                    },
+                )
+            except OSError as err:
+                server.error(
+                    f'[m/hydra/VM({self.vmid})]: Cannot reconnect device "{k}"!', err
+                )
+                try:
+                    self._usb_remove(server, manager, full=k)
+                except OSError as err:
+                    server.error(
+                        f'[m/hydra/VM({self.vmid})]: Cannot remove device "{k}"!', err
+                    )
+        server.debug(f"[m/hydra/VM({self.vmid})]: Reconnecting done!")
 
     def _snap_drives(self, server, snaps=False):
         r, _ = self._cmd(server, "query-block")
@@ -2825,6 +2857,15 @@ class HydraServer(object):
                     err,
                 )
                 return as_error(f"cannot remove device from VM {x.vmid}: {err}")
+        elif message.type == HYDRA_USB_RECONNECT:
+            try:
+                x._usb_reconnect(server, self)
+            except Error as err:
+                server.error(
+                    f"[m/hydra/VM({x.vmid})]: Cannot reconnect USB devices to the VM!",
+                    err,
+                )
+                return as_error(f"cannot reconnect devices to VM {x.vmid}: {err}")
         elif message.type == HYDRA_SNAP_DELETE:
             if not valid_snap_name(message.name):
                 server.error(
