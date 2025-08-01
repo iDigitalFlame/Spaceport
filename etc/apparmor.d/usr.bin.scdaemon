@@ -74,6 +74,7 @@ profile scdaemon /usr/{bin,lib}/{,gnupg/}scdaemon flags=(enforce) {
 
     owner @{run}/user/@{uid}/gnupg/{,d.*/}S.scdaemon rw,
 
+    owner @{HOME}/.local/share/gpnpg{,/}             rw,
     owner @{HOME}/.gpnpg/reader_*.status             rw,
     owner @{HOME}/.local/share/gpnpg/reader_*.status rw,
 

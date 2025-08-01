@@ -53,7 +53,7 @@ profile freerdp /usr/bin/{,wl,x}freerdp flags=(enforce) {
     owner /dev/shm/com.freerdp.xfreerdp.*         rw,
 
     owner @{HOME}/.config/freerdp/                rw,
-    owner @{HOME}/.config/freerdp/known_hosts{,2} rw,
+    owner @{HOME}/.config/freerdp/known_hosts{,2} rwk,
 
     deny @{HOME}/.{dotfiles,private}{,/}          r,
 
