@@ -45,6 +45,7 @@ profile cropgui /{usr,@{HOMEDOTS}/.local}/bin/crop{,gui} flags=(enforce, attach_
     include <abstractions/user-home>
     include <abstractions/no-network>
     include <abstractions/nameservice>
+    include <abstractions/xdg-desktop>
     include <abstractions/freedesktop.org>
 
     /etc/fstab                        r,
