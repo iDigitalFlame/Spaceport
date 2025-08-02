@@ -87,6 +87,7 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
     /dev/tty*                              rw,
 
     /var/lib/faillock/*                    rwk,
+    /var/lib/lastlog{,/}                   rw
 
     @{run}/faillock/*                      rwk,
     @{run}/systemd/sessions/*.ref          rw,
