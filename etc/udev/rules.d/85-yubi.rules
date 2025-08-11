@@ -35,5 +35,4 @@
 #
 
 ACTION=="add", KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", MODE="0664", GROUP="users"
-
-ACTION=="remove", ENV{ID_VENDOR}=="Yubico", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", RUN+="/usr/lib/smd/libexec/smd-key-eject"
+ACTION=="remove",            ENV{ID_VENDOR}=="Yubico", ATTRS{idVendor}=="1050", ATTRS{idProduct}=="0407", RUN+="/usr/lib/smd/libexec/smd-key-eject"

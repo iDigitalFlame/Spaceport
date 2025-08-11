@@ -54,8 +54,8 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     /sys/fs/cgroup/user.slice/cpu.max                        r,
     /sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max      r,
 
-    owner @{CGROUP}/{,app.slice/}cpu.max                     r,
-    owner @{CGROUP}/app.slice/sway.service/memory.{high,max} r,
+    @{CGROUP}/{,app.slice/}cpu.max                           r,
+    @{CGROUP}/app.slice/sway.service/memory.{high,max}       r,
 
     owner @{HOME}/                                           r,
 

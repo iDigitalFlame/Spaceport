@@ -18,8 +18,6 @@
 ### Spaceport + SMD
 ## UDev Interface Configuration
 #
-## Not on GitHub (Private)
-#
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
@@ -36,7 +34,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="48:21:0b:41:d9:4e", NAME="en0"
-ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="9c:eb:e8:11:93:5c", NAME="uth0"
-ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="a0:ce:c8:07:3d:55", NAME="uth1"
-ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="32:68:fa:b5:8d:b5", NAME="wlan0"
+ACTION=="add", SUBSYSTEM=="leds", DEVPATH=="/devices/platform/dell-laptop/leds/platform::micmute", RUN+="/usr/bin/echo '0' > '/sys%p/brightness'"
