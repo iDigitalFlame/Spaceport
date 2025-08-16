@@ -41,6 +41,7 @@ Description             = System Management Daemon
 Type                    = simple
 UMask                   = 0027
 ExecStart               = /usr/lib/smd/libexec/smd-daemon --journal
+MemoryKSM               = true
 ProcSubset              = all
 KillSignal              = SIGINT
 PrivateTmp              = true

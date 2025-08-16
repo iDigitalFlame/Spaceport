@@ -1,0 +1,75 @@
+################################
+### iDigitalFlame  2016-2025 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## AppArmor Configuration
+#
+# Copyright (C) 2016 - 2025 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+include <tunables/spaceport>
+
+profile qFlipper /usr/bin/qFlipper flags=(enforce) {
+    include <abstractions/qt>
+    include <abstractions/chromium>
+    include <abstractions/user-home>
+    include <abstractions/xdg-desktop>
+    include <abstractions/private-files>
+
+    # This is here to allow for in-memory blob locking
+    /**                                                 lk,
+
+    /usr/bin/qFlipper                                   rm,
+
+    /dev/bus/usb/                                       r,
+
+    /sys/class/tty/                                     rm,
+    /sys/{bu,clas}s/                                    r,
+    /sys/bus/usb/devices/                               r,
+    /sys/devices/virtual/tty/*/uevent                   r,
+    /sys/devices/pnp*/**/tty/tty*/uevent                r,
+    /sys/devices/pci*/**/usb*/{,**/}{bus,dev}num        r,
+    /sys/devices/platform/serial*/**/tty/tty*/uevent    r,
+    /sys/devices/pci*/**/usb*/{,**/}{descriptors,speed} r,
+
+    @{run}/udev/data/c*:*                               r,
+    @{run}/udev/data/+usb:*                             r,
+
+    /dev/bus/usb/*/*                                    rw,
+    /dev/tty{ACM,USB}*                                  rw,
+
+    owner @{HOME}/.local/share/qFlipper{,/,/*}          rw,
+    owner @{HOME}/.cache/Flipper\ Devices\ Inc/**       rwk,
+    owner @{HOME}/.cache/Flipper\ Devices\ Inc{,/}      rw,
+    owner @{HOME}/.config/Flipper\ Devices\ Inc/**      rwk,
+    owner @{HOME}/.config/Flipper\ Devices\ Inc{,/}     rw,
+
+    include if exists <local/usr.bin.qFlipper>
+}

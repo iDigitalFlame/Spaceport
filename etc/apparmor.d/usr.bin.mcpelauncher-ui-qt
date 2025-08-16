@@ -61,6 +61,7 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce, attach_disconne
     /dev/input/event*                                      r,
 
     owner @{HOME}/{,Downloads/}*                           r,
+
     owner @{HOME}/.local/share/mcpelauncher{,/**}          rwk,
     owner @{HOME}/.cache/Minecraft\ Linux\ Launcher/**     l,
     owner @{HOME}/.config/Minecraft\ Linux\ Launcher/**    l,

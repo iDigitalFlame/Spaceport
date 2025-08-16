@@ -732,7 +732,7 @@ class LockerClient(object):
         self._lock_dpms(server, True)
         self._wake_check(server)
         self._backoff_blank = cancel_nul(server, self._backoff_blank)
-        if not self._ability.key and not _on_power():
+        if self._ability.key and not _on_power():
             # NOTE(dij): We're gonna lock the keyring ONLY if the device is:
             #            - On Battery Power
             #            - Yubikey lock is ENABLED

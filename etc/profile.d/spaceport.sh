@@ -93,25 +93,25 @@ fi
 PATH=/usr/lib/smd/bin:/usr/local/bin:$PATH:${PYTHONUSERBASE}/bin
 export PATH
 
-if ! [ -d "/tmp/.usercache/${USER}" ]; then
-    mkdir "/tmp/.usercache/${USER}" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/qt" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/qt" 2> /dev/null
 fi
-if ! [ -d "/tmp/.usercache/${USER}/qt" ]; then
-    mkdir "/tmp/.usercache/${USER}/qt" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/gtk" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/gtk" 2> /dev/null
 fi
-if ! [ -d "/tmp/.usercache/${USER}/gtk" ]; then
-    mkdir "/tmp/.usercache/${USER}/gtk" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/mesa" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/mesa" 2> /dev/null
 fi
-if ! [ -d "/tmp/.usercache/${USER}/mesa" ]; then
-    mkdir "/tmp/.usercache/${USER}/mesa" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/screen" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
+    chmod 0700 "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
 fi
-if ! [ -d "/tmp/.usercache/${USER}/screen" ]; then
-    mkdir "/tmp/.usercache/${USER}/screen" 2> /dev/null
-    chmod 0700 "/tmp/.usercache/${USER}/screen" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/mesa_db" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/mesa_db" 2> /dev/null
 fi
-if ! [ -d "/tmp/.usercache/${USER}/mesa_db" ]; then
-    mkdir "/tmp/.usercache/${USER}/mesa_db" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/firefox" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/firefox" 2> /dev/null
 fi
-if ! [ -d "/tmp/.usercache/${USER}/chromium_cache" ]; then
-    mkdir "/tmp/.usercache/${USER}/chromium_cache" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/chromium_cache" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/chromium_cache" 2> /dev/null
 fi

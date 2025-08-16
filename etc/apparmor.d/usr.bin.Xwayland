@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     include <abstractions/X>
+    include <abstractions/gui>
     include <abstractions/base>
     include <abstractions/mesa>
     include <abstractions/fonts>

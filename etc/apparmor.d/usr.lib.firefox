@@ -70,6 +70,11 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     owner @{CACHE}/mozilla/firefox/**/*.sqlite                         k,
     owner @{CACHE}/{mozilla,librewolf}{,/,/**}                         rw,
 
+    owner @{CACHE_TMP}/mozilla/firefox/**                              rw,
+    owner @{CACHE_TMP}/librewolf/**/*.sqlite                           k,
+    owner @{CACHE_TMP}/mozilla/firefox/**/*.sqlite                     k,
+    owner @{CACHE_TMP}/{mozilla,librewolf}{,/,/**}                     rw,
+
     owner @{HOME}/.config/librewolf/{,**}                              rw,
     owner @{HOME}/.config/mozilla/firefox/{,**}                        rw,
     owner @{HOME}/.config/librewolf/**/*.{db,parentlock,sqlite}*       k,
@@ -105,6 +110,11 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
 
     # You don't need this
     deny /sys/devices/virtual/dmi/id/product_sku                       r,
+
+    # Nor these
+    deny /usr/lib/{firefox,librewolf}/pingsender                       rx,
+    deny /usr/lib/{firefox,librewolf}/crashreporter                    rx,
+    deny /usr/lib/{firefox,librewolf}/minidump-analyzer                rx,
 
     include if exists <local/usr.lib.firefox>
 }

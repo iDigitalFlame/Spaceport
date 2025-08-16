@@ -35,6 +35,6 @@
 #
 
 @{CACHE}=@{HOME}/.cache
-@{CACHE_TMP}=/tmp/.usercache/*/
+@{CACHE_TMP}=/tmp/.usercache/*/ @{run}/user/@{uid}/
 
 include if exists <tunables/cache.d>

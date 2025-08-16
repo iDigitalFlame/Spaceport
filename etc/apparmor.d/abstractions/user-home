@@ -48,9 +48,15 @@ abi <abi/4.0>,
 include <abstractions/private-files>
 
 owner /tmp/*                            r,
-owner /tmp/.mounts/*/{,**}              r,
+
+owner @{MOUNTS}/{,**}                   r,
 
 owner @{HOME}/                          r,
+
+# Allow X/Wayland dot-files
+owner @{HOMEDOTS}/.dmrc                 r,
+owner @{HOMEDOTS}/.Xdefaults            r,
+owner @{HOMEDOTS}/.Xresources           r,
 
 deny @{HOME}/.*                         rw,
 deny @{HOME}/Desktop/.*                 rw,
@@ -70,9 +76,5 @@ owner @{HOME}/[^.]*{,/,**}              rw,
 
 # Explicit Deny Some specific Files
 deny @{HOMEDOTS}/.zshenv                r,
-
-# Allow X/Wayland dot-files
-owner @{HOMEDOTS}/.dmrc                 r,
-owner @{HOMEDOTS}/.Xresources           r,
 
 include if exists <abstractions/user-home.d>

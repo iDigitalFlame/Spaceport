@@ -60,9 +60,8 @@ profile nm-applet /usr/bin/nm-applet flags=(enforce) {
     owner /proc/@{pid}/mountinfo                           r,
 
     owner /tmp/*                                           r,
-    owner /mnt/{,**}                                       r,
-    owner /media/{,**}                                     r,
-    owner /tmp/.mounts/*/{,**}                             r,
+
+    owner @{MOUNTS}/{,**}                                  r,
 
     owner @{HOME}/{,**}                                    r,
 

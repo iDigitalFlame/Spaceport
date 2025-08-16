@@ -39,3 +39,7 @@ if ! [ -d "/tmp/.mounts/${USER}" ]; then
     mkdir "/tmp/.mounts/${USER}" 2> /dev/null
     chmod 1750 "/tmp/.mounts/${USER}"
 fi
+if ! [ -d "${XDG_RUNTIME_DIR}/mounts" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/mounts" 2> /dev/null
+    chmod 0750 "${XDG_RUNTIME_DIR}/mounts"
+fi

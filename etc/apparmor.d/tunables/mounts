@@ -34,6 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{MOUNTS}=/tmp/.mounts/*/ /mnt/*/
+@{MOUNTS}=/mnt/ /media/ /tmp/.mounts/*/ @{run}/user/@{uid}/mounts/
 
 include if exists <tunables/mounts.d>

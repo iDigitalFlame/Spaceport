@@ -43,5 +43,5 @@ Operation   = Upgrade
 
 [Action]
 When        = PostTransaction
-Exec        = /usr/bin/dash -c "rm -f /opt/vscodium-bin/VSCodium-linux-x64-*.tar.gz; rm -f /opt/vscodium-bin/vscodium-bin-uri-handler.desktop /opt/vscodium-bin/vscodium-bin.sh /opt/vscodium-bin/vscodium-bin.install /opt/vscodium-bin/vscodium-bin-wayland.desktop"
+Exec        = /usr/bin/dash -c "rm -f /opt/vscodium-bin/VSCodium-linux-x64-*.tar.gz; rm -f /opt/vscodium-bin/vscodium-bin-uri-handler.desktop /opt/vscodium-bin/vscodium-bin.sh /opt/vscodium-bin/vscodium-bin.install /opt/vscodium-bin/vscodium-bin-wayland.desktop; [ -e /usr/bin/codium ] || ln -s /usr/bin/vscodium-electron /usr/bin/codium"
 Description = Removing Codium broken links..

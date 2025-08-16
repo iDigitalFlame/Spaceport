@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Pacman Group for Userspace Packages
+## XDG Desktop Capabilities Fix Pacman Hook
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -33,55 +33,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-# Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
-pkgrel=1
-pkgver=1.5.1
-pkgname="smd-user"
-pkgdesc="System Management Daemon base userspace and client packages"
+[Trigger]
+Type        = Package
+Target      = xdg-desktop-portal
+Operation   = Install
+Operation   = Upgrade
 
-url="https://github.com/iDigitalFlame/spaceport"
-arch=( "any" )
-license=( "GPL-3.0" )
-
-source=()
-noextract=()
-sha256sums=()
-
-depends=(
-    ## Wayland
-    "qt5-wayland"
-    "qt6-wayland"
-    "swayfx" # "sway"
-    "swaybg"
-    "swayidle"
-    "swaync"
-    "wl-clipboard"
-    "xorg-xwayland"
-    "xdg-desktop-portal-gtk"
-    "xdg-desktop-portal-wlr"
-    "xdg-utils"
-
-    ## Screenshots / Clipping
-    "grim"
-    "slurp"
-
-    ## Hydra
-    "spice-gtk"
-    "tigervnc"
-
-    ## Lockscreen
-    "gtklock"
-    "imagemagick"
-
-    ## Networking
-    "network-manager-applet"
-
-    ## Keyring
-    "gnome-keyring"
-    "libsecret"
-
-    ## Navigation / UI
-    "rofi-wayland"
-    "waybar"
-)
+[Action]
+When        = PostTransaction
+Exec        = /usr/bin/setcap cap_sys_ptrace=ep "/usr/lib/xdg-desktop-portal"
+Description = Updating capabilities on xdg-desktop-portal..

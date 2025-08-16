@@ -42,30 +42,35 @@ include <abstractions/mime>
 include <abstractions/fonts>
 include <abstractions/wayland>
 
-@{sysconfig}/etc/fonts/**          r,
-@{sysconfig}/usr/share/icons/**    r,
-@{sysconfig}/usr/share/themes/**   r,
-@{sysconfig}/usr/share/cursors/**  r,
+@{sysconfig}/etc/fonts/**                 r,
+@{sysconfig}/usr/share/icons/**           r,
+@{sysconfig}/usr/share/themes/**          r,
+@{sysconfig}/usr/share/cursors/**         r,
 
-/etc/                              r,
-/usr/share/icons/{,**}             r,
-/usr/share/fonts/{,**}             r,
-/usr/share/themes/{,**}            r,
-/usr/share/pixmaps/{,**}           r,
-/usr/share/cursors/{,**}           r,
-/usr/share/hunspell/{,**}          r,
-/var/cache/fontconfig/{,**}        r,
-/usr/share/gtk-{2,3,4}.0/{,*}      r,
+/etc/                                     r,
+/usr/share/icons/{,**}                    r,
+/usr/share/fonts/{,**}                    r,
+/usr/share/themes/{,**}                   r,
+/usr/share/pixmaps/{,**}                  r,
+/usr/share/cursors/{,**}                  r,
+/usr/share/hunspell/{,**}                 r,
+/var/cache/fontconfig/{,**}               r,
+/usr/share/gtk-{2,3,4}.0/{,*}             r,
 
-/opt/**/icons/*.{pn,sv}g           r,
+/opt/**/icons/*.{pn,sv}g                  r,
 
-owner @{CONFIG}/theme/**           r,
-owner @{CONFIG}/gtk-{2,3,4}.0/{,*} r,
+/sys/devices/system/cpu/cpu*/cpu_capacity r,
 
-owner @{HOMEDATA}/bookmarks.conf   r,
-owner @{HOME}/.cache/thumbnails/** r,
+owner @{CONFIG}/theme/**                  r,
+owner @{CONFIG}/gtk-{2,3,4}.0/{,*}        r,
 
-deny /var/cache/fontconfig/{,**}   w,
-deny @{HOME}/.xsession-errors{,*}  rw,
+owner @{HOMEDATA}/bookmarks.conf          r,
+owner @{HOME}/.cache/thumbnails/**        r,
+
+owner @{HOMEDOTS}/.Xdefaults              r,
+owner @{HOMEDOTS}/.Xresources             r,
+
+deny /var/cache/fontconfig/{,**}          w,
+deny @{HOME}/.xsession-errors{,*}         rw,
 
 include if exists <abstractions/gui.d>

@@ -207,6 +207,7 @@ mkdir    "/usr/lib/firmware/amdgpu"           2> /dev/null
 mkdir    "/usr/lib/firmware/radeon"           2> /dev/null
 mkdir -p "/usr/lib/firmware/nvidia/gp100/acr" 2> /dev/null
 
+touch "/usr/lib/firmware/qat_6xxx.bin"
 touch "/usr/lib/firmware/ql2500_fw.bin"
 touch "/usr/lib/firmware/aic94xx-seq.fw"
 touch "/usr/lib/firmware/wd719x-risc.bin"
@@ -279,6 +280,7 @@ chmod 0400 /usr/share/applications/thunar-settings.desktop              2> /dev/
 chmod 0400 /usr/share/applications/blueman-adapters.desktop             2> /dev/null
 chmod 0400 /usr/share/applications/libinput-gestures.desktop            2> /dev/null
 chmod 0400 /usr/share/applications/java-java-openjdk.desktop            2> /dev/null
+chmod 0400 /usr/share/applications/vscodium-electron*.desktop           2> /dev/null
 chmod 0400 /usr/share/applications/thunar-bulk-rename.desktop           2> /dev/null
 chmod 0400 /usr/share/applications/codium-uri-handler.desktop           2> /dev/null
 chmod 0400 /usr/share/applications/com.ultimaker.cura.desktop           2> /dev/null
