@@ -102,6 +102,12 @@ fi
 if ! [ -d "${XDG_RUNTIME_DIR}/mesa" ]; then
     mkdir "${XDG_RUNTIME_DIR}/mesa" 2> /dev/null
 fi
+if ! [ -d "${XDG_RUNTIME_DIR}/slack" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/slack" 2> /dev/null
+fi
+if ! [ -d "${XDG_RUNTIME_DIR}/discord" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/discord" 2> /dev/null
+fi
 if ! [ -d "${XDG_RUNTIME_DIR}/screen" ]; then
     mkdir "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
     chmod 0700 "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
