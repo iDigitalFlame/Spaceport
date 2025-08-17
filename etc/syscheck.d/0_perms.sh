@@ -260,10 +260,10 @@ chmod 0400 /usr/share/applications/librewolf.desktop                    2> /dev/
 chmod 0400 /usr/share/applications/ristretto.desktop                    2> /dev/null
 chmod 0400 /usr/share/applications/echomixer.desktop                    2> /dev/null
 chmod 0400 /usr/share/applications/hdspmixer.desktop                    2> /dev/null
-chmod 0400 /usr/share/applications/notesnook.desktop                    2> /dev/null
 chmod 0400 /usr/share/applications/cmake-gui.desktop                    2> /dev/null
 chmod 0400 /usr/share/applications/vncviewer.desktop                    2> /dev/null
 chmod 0400 /usr/share/applications/electron*.desktop                    2> /dev/null
+chmod 0400 /usr/share/applications/notesnook*.desktop                   2> /dev/null
 chmod 0400 /usr/share/applications/lxshortcut.desktop                   2> /dev/null
 chmod 0400 /usr/share/applications/hwmixvolume.desktop                  2> /dev/null
 chmod 0400 /usr/share/applications/xfce4-about.desktop                  2> /dev/null

@@ -48,7 +48,7 @@ find "${DIR_BASE}" -xdev -type d -name "*pycache*" -exec rm -rf {} \;
 
 printf '\e[0;34;40mFiles missing newlines:\x1b[0m\n'
 # Check for missing newlines at the end
-pcregrep -LMr '\n\Z' . 2> /dev/null |grep -vE 'ghr$|hostname$|\.issue$|sysless$|/themes/|\.git|\.json$|\.md$|\.html$|\.code-workspace$|/ld.so'
+pcregrep -LMr '\n\Z' . 2> /dev/null | grep -vE 'ghr$|hostname$|\.issue$|sysless$|/themes/|\.git|\.json$|\.md$|\.html$|\.code-workspace$|/ld.so'
 printf '\e[0;34;40m==================================\x1b[0m\n'
 
 printf '\e[0;37;40mPreparing file copy.. (\e[1;37;41msudo\e[0;37;40m prompt ahead)\x1b[0m\n'
