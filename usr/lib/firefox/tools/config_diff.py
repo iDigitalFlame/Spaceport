@@ -38,7 +38,7 @@
 from sys import argv, stdout, stderr, exit
 
 
-def split(d):
+def split(d, file):
     r = dict()
     for i in d.split("\n"):
         if i.strip().startswith("//"):
@@ -61,7 +61,7 @@ def split(d):
         if k == "_user.js.parrot":
             continue
         if k in r:
-            raise ValueError(k)
+            raise ValueError(f'duplicate value "{k}" in "{file}"')
         r[k] = (i.strip()[0].lower() == "l", k, i[c + 1 : e].strip())
         del n, v, c, e, k
     return r
@@ -95,11 +95,11 @@ def output(p, file):
 if __name__ == "__main__":
     if len(argv) < 3:
         print(f"{argv[0]} <base> <compare>", file=stderr)
-        exit(1)
+        exit(2)
 
     try:
         with open(argv[1]) as b, open(argv[2]) as c:
-            g, h = split(b.read()), split(c.read())
+            g, h = split(b.read(), argv[1]), split(c.read(), argv[2])
 
         for k, v in h.items():
             if k not in g:
