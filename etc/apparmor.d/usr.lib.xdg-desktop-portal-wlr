@@ -42,10 +42,12 @@ profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(enforce, a
     include <abstractions/wayland>
     include <abstractions/xdg-desktop-portal>
 
-    /usr/share/drirc.d/{,*}                      r,
-    /usr/lib/xdg-desktop-portal-wlr              rm,
+    /usr/share/drirc.d/{,*}         r,
+    /usr/lib/xdg-desktop-portal-wlr rm,
 
-    /dev/dri/render*                             rw,
+    /dev/dri/render*                rw,
+
+    /usr/bin/swaync-client          x,
 
     include if exists <local/usr.lib.xdg-desktop-portal-wlr>
 }

@@ -64,6 +64,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     /sys/devices/pci*/**/dev                                                r,
     /sys/devices/system/node/                                               r,
     /sys/devices/virtual/block/{,*/dev}                                     r,
+    /sys/devices/system/cpu/cpu*/cpu_capacity                               r,
 
     /proc/sys/kernel/hostname                                               r,
     /proc/{,partitions,uptime}                                              r,
