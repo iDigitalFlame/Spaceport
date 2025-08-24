@@ -78,7 +78,7 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
 
     owner @{HOME}/.local/share/mcpelauncher{,/**}         rwk,
     owner @{HOME}/.local/share/mcpelauncher/mods/*.so     rm,
-    owner @{HOME}/.local/share/mcpelauncher/versions/*/** rmw,
+    owner @{HOME}/.local/share/mcpelauncher/versions/*/** rwm,
 
     /usr/bin/dash                                         ix,
 

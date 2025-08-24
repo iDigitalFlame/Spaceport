@@ -137,11 +137,11 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
 
     owner @{run}/user/@{uid}/temp{,/,/**}                     rw,
 
-    owner @{CACHE}/JNA{,/**}                                  rmwkl,
+    owner @{CACHE}/JNA{,/**}                                  rwmkl,
     owner @{HOME}/.java/fonts/*/                              rw,
     owner @{HOME}/.config/java/fonts/*/                       rw,
     # This is for AtLauncher to download and import files manually.
-    owner @{HOME}/Documents/Minecraft/**                      rmwkl,
+    owner @{HOME}/Documents/Minecraft/**                      rwmkl,
     owner @{HOME}/Documents/Minecraft{,/}                     rw,
     owner @{HOME}/*.{jar,mcpack,mrpack,zip}                   rw,
     owner @{HOME}/Documents/Minecraft/**/bin/*                rwix,

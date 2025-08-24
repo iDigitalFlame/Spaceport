@@ -86,6 +86,7 @@ from lib.constants import (
     NEWLINE,
     MSG_POST,
     MSG_USER,
+    MSG_ALERT,
     HOOK_POWER,
     MSG_ACTION,
     MSG_CONFIG,
@@ -595,6 +596,24 @@ class Plans(object):
             self.storage.save()
         except OSError as err:
             server.error("[m/backup]: Cannot write to the Backup config file!", err)
+
+    def failed(self, server, queue, current):
+        try:
+            s = read_json(BACKUP_STATE, False)
+            if not isinstance(s, dict):
+                s = dict()
+        except OSError as err:
+            server.warning("[m/backup]: Cannot read the Backup state file!", err)
+            s = dict()
+        r, c = list(), current is not None and current.running()
+        for i in self.entries:
+            if c and current.id == i.id or i.uuid in queue:
+                continue
+            if not boolean(s[i.uuid].get("error")):
+                continue
+            r.append(i.id)
+        del c, s
+        return r
 
     def status(self, server, queue, current):
         try:
@@ -2092,6 +2111,14 @@ class BackupServer(object):
                     "[m/backup]: No Backups are scheduled or could be started!"
                 )
             return server.debug(f"[m/backup]: Starting Backup {self._current}!")
+        if message.type == MSG_ALERT:
+            return self._retry_failed(server, message.force)
+        if message.type == MSG_ACTION:
+            if message.action == MSG_PRE:
+                return self._select(server, message.dir, message.force, message.full)
+            if message.action == MSG_POST:
+                return self._stop(server, message.dir)
+            return as_error("unknown/invalid backup command")
         if self._current is None or not self._current.running():
             if message.type == MSG_USER:
                 server.debug("[m/backup]: Clearing the Backup state and cache files..")
@@ -2102,8 +2129,6 @@ class BackupServer(object):
                     server.error("[m/backup]: Cannot clear the Backup cache!", err)
                     return as_error("Cannot clear the Backup cache!")
                 return {"result": ""}
-            if message.type == MSG_ACTION and message.action == MSG_PRE:
-                return self._select(server, message.dir, message.force, message.full)
             return {"result": "No Backup is running."}
         if message.type == MSG_USER:
             return {"result": "There is currently a Backup running."}
@@ -2123,11 +2148,6 @@ class BackupServer(object):
                 return as_error("Cannot resume Backup!")
             server.notify("Backup Status", f"Backup {self._current} resumed!", "yed")
             return {"result": f"Resumed Backup {self._current}."}
-        if message.type == MSG_ACTION:
-            if message.action == MSG_PRE:
-                return self._select(server, message.dir, message.force, message.full)
-            if message.action == MSG_POST:
-                return self._stop(server, message.dir)
         return as_error("unknown/invalid backup command")
 
     def _stop(self, server, path=None):
@@ -2147,6 +2167,25 @@ class BackupServer(object):
         if r is not None:
             return {"result": f"Backup {r} was removed from the queue."}
         return {"result": "Backup was not found in queue or running."}
+
+    def _retry_failed(self, server, force):
+        if not _on_battery(force):
+            server.info("[m/backup]: Not starting a Backup on battery power.")
+            return as_error(
+                'Cannot trigger on battery power, please connect to AC power or use the "-f" switch!'
+            )
+        try:
+            p = Plans(CONFIG_BACKUP)
+        except (OSError, ValueError) as err:
+            server.error("[m/backup]: Cannot read the Backup config!", err)
+            return as_error("could not load backup config")
+        r = p.failed(server, self._queue, self._current)
+        if p.updated:
+            p.save(server)
+        del p
+        for i in r:
+            self._select(server, i, force)
+        return {"plans": r}
 
     def _select(self, server, path=None, force=False, force_full=False):
         if not _on_battery(force):

@@ -1200,6 +1200,16 @@ ARGS = {
             "config",
         ),
         (
+            ("-R", "--retry-failed"),
+            {
+                "dest": "retry",
+                "help": "retry all failed backups",
+                "action": "store_true",
+                "required": False,
+            },
+            "config",
+        ),
+        (
             ("-C", "--clear"),
             {
                 "dest": "clear",

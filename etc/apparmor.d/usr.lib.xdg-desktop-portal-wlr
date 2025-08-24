@@ -47,7 +47,7 @@ profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(enforce, a
 
     /dev/dri/render*                rw,
 
-    /usr/bin/swaync-client          x,
+    /usr/bin/swaync-client          Px -> swaync-client,
 
     include if exists <local/usr.lib.xdg-desktop-portal-wlr>
 }

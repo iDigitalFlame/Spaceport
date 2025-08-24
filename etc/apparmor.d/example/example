@@ -65,8 +65,8 @@ profile profile_name /path/to/binary flags=(enforce[, attach_disconnected]) {
     # Files begin here.
     #
     #  Permissions always follow the following format.
-    #   'm' is always last, but before 'l' or 'k'. (eg: rm, rwm, ixrm, rwmlk.)
-    #       'k' is always last if used, otherwise 'l' is last if used.
+    #   'm' is always last, but before 'k' or 'l'. (eg: rm, rwm, ixrm, rwmkl.)
+    #       'l' is always last if used, otherwise 'k' is last if used.
     #   Execute permissions are always first. (eg: ixr/Px/Pixr).
     #
     #  - Read: r,
@@ -75,11 +75,11 @@ profile profile_name /path/to/binary flags=(enforce[, attach_disconnected]) {
     #  - Read/Write/Load: rwm,
     #  - Read/Lock: rk,
     #  - Read/Link: rl,
-    #  - Read/Link/Lock: rlk,
-    #  - Read/Load/Link/Lock: rmlk,
-    #  - Read/Write/Load/Link/Lock: rwmlk,
-    #  - Execute (Inherit)/Read/Load/Link/Lock: ixrmlk,
-    #  - Execute (Inherit)/Read/Link/Lock: ixrlk,
+    #  - Read/Link/Lock: rkl,
+    #  - Read/Load/Link/Lock: rmkl,
+    #  - Read/Write/Load/Link/Lock: rwmkl,
+    #  - Execute (Inherit)/Read/Load/Link/Lock: ixrmkl,
+    #  - Execute (Inherit)/Read/Link/Lock: ixrkl,
     #  - Execute (Inherit)/Read/Write: ixrw,
     #
     # 'mkl' are allowed inside "read" blocks.
@@ -147,7 +147,7 @@ profile profile_name /path/to/binary flags=(enforce[, attach_disconnected]) {
 
     owned @{run}/user/@{uid}/config     rw,
 
-    owned @{HOME}/.config/conf.json     rwlk,
+    owned @{HOME}/.config/conf.json     rwkl,
 
     # Execute permissions follow. These also have the same ordering, but can be
     # combined. The only seperator is the "owned" prefix.

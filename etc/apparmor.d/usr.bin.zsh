@@ -36,6 +36,6 @@
 
 include <tunables/spaceport>
 
-profile codium /{usr/bin,opt/vscodium-bin}/{,bin/}{,vs}codium{,-electron} flags=(default_allow) {
-    include if exists <local/usr.bin.codium>
+profile zsh /usr/bin/zsh flags=(default_allow) {
+    include if exists <local/usr.bin.zsh>
 }

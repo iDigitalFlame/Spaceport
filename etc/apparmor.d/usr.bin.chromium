@@ -70,7 +70,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     owner @{CACHE}/chrom{e,ium}/**                           rw,
     owner @{CACHE}/chrom{e,ium}/**/*.sqlite                  k,
 
-    owner @{HOME}/.config/chrom{e,ium}/**                    rwlk,
+    owner @{HOME}/.config/chrom{e,ium}/**                    rwkl,
     owner @{HOME}/.config/chrom{e,ium}/{,**}                 rwl,
 
     /usr/bin/xdg-open                                        Pix -> xdg-open,

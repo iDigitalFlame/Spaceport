@@ -44,7 +44,7 @@ profile qFlipper /usr/bin/qFlipper flags=(enforce) {
     include <abstractions/private-files>
 
     # This is here to allow for in-memory blob locking
-    /**                                                 lk,
+    /**                                                 kl,
 
     /usr/bin/qFlipper                                   rm,
 

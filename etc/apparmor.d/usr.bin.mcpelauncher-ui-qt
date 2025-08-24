@@ -51,7 +51,7 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce, attach_disconne
     network                                                inet6 stream,
 
     # This is here to allow for in-memory blob locking
-    /**                                                    lk,
+    /**                                                    kl,
 
     /etc/machine-id                                        r,
     /usr/share/mcpelauncher/**                             rm,

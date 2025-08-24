@@ -43,7 +43,7 @@ profile qtws /usr/bin/qtws flags=(enforce) {
     include <abstractions/private-files>
 
     # This is here to allow for in-memory blob locking
-    /**                                                   lk,
+    /**                                                   kl,
 
     /usr/bin/qtws                                         rm,
     /usr/share/qtws-apps/youtube-music/youtube-music.qtws r,

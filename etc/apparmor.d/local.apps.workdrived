@@ -56,7 +56,7 @@ profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforc
     @{sysconfig}/bin/hostname                                               ix,
 
     # This is here to allow for in-memory blob locking
-    /**                                                                     lk,
+    /**                                                                     kl,
 
     /etc/machine-id                                                         r,
 

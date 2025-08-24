@@ -52,6 +52,7 @@ from lib.constants import (
     MSG_PRE,
     MSG_POST,
     MSG_USER,
+    MSG_ALERT,
     MSG_ACTION,
     MSG_CONFIG,
     MSG_STATUS,
@@ -80,6 +81,8 @@ def config(args):
             p["dir"] = args.path
     elif args.clear:
         p["type"] = MSG_USER
+    elif args.retry:
+        p["type"] = MSG_ALERT
     else:
         return default(args)
     try:
@@ -89,12 +92,20 @@ def config(args):
             "Cannot configure Backup Plans!", err, exit_code=args.exit_code
         )
     check_error(r, exit_code=args.exit_code)
-    m = r.result
     if args.clear:
         print("Cleared the Backup Database Cache.")
-    elif nes(m):
-        print(m)
-    del m, r
+    elif args.retry:
+        if not isinstance(r.plans, list):
+            return print_error("Invalid server response!")
+        if len(r.plans) == 0:
+            print("No failed Backup Plans to retry!")
+        elif len(r.plans) == 1:
+            print(f"Retrying the Backup Plan: {r.plans[0]}")
+        else:
+            print(f'Retrying the Backup Plans: {" ".join(r.plans)}')
+    elif nes(r.result):
+        print(r.result)
+    del r
 
 
 def default(args):

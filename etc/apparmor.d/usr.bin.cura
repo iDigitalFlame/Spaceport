@@ -54,7 +54,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
     include <abstractions/freedesktop.org>
 
     # This is here to allow for in-memory blob locking
-    /**                                                 lk,
+    /**                                                 kl,
 
     /etc/fstab                                          r,
     /etc/machine-id                                     r,

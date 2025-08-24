@@ -83,13 +83,17 @@ profile ghidra /{usr/bin/ghidra,opt/ghidra/support/launch.sh} flags=(enforce) {
 
     owner /proc/@{pid}/coredump_filter                        rw,
 
+    owner @{run}/user/@{uid}/temp{,/,/*}                      rw,
+    owner @{run}/user/@{uid}/temp/*jna*.tmp                   rwm,
+
+    owner /tmp/jna*.tmp                                       rw,
     owner /tmp/ghidra*.cache                                  rw,
     owner /tmp/~tmp*.pdb.db{,/**}                             rw,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/*-{g,G}hidra{,/**}                   rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
 
-    owner @{CACHE}/JNA/**                                     rmwkl,
+    owner @{CACHE}/JNA/**                                     rwmkl,
 
     owner @{HOME}/.java/fonts/*/                              rw,
     owner @{HOME}/.config/Ghidra/**                           rwkl,
