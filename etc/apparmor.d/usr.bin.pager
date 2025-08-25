@@ -45,7 +45,7 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
     capability                        dac_override,
     capability                        dac_read_search,
 
-    signal receive set=(cont, kill, stop, term),
+    signal receive set=(cont, hup, kill, stop, term),
 
     # Required for pagers to work
     /**                               r,

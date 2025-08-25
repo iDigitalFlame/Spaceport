@@ -36,6 +36,6 @@
 
 include <tunables/spaceport>
 
-profile zsh /usr/bin/zsh flags=(default_allow) {
-    include if exists <local/usr.bin.zsh>
+profile shell /usr/bin/{ba,da,z}sh flags=(default_allow) {
+    include if exists <local/usr.bin.shell>
 }

@@ -51,7 +51,7 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     ptrace read  peer=kitty,
     ptrace trace peer=kitty,
 
-    signal send set=(int, kill, quit, term),
+    signal send set=(hup, int, kill, quit, term),
 
     /proc/                             r,
 
@@ -69,7 +69,7 @@ profile kitty /usr/bin/kitty flags=(enforce) {
 
     /usr/bin/kitten                    ix,
     /usr/bin/xdg-open                  Px -> xdg-open,
-    /usr/bin/{ba,da,z}sh               Ux,
+    /usr/bin/{ba,da,z}sh               Px -> shell,
 
     deny ptrace read,
 

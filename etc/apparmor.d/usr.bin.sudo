@@ -123,7 +123,7 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
     /lib/**                                                  PUx,
     /opt/*/**                                                PUx,
     /usr/{bin,lib}/**                                        PUx,
-    /usr/bin/{ba,da,z}sh                                     Ux,
+    /usr/bin/{ba,da,z}sh                                     Px -> shell,
     /usr/local/{,s}bin/**                                    PUx,
 
     @{HOMEDOTS}/.local/{apps,bin,lib}/**                     PUx,
