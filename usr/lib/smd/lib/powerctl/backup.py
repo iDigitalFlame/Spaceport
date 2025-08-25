@@ -82,7 +82,7 @@ def config(args):
     elif args.clear:
         p["type"] = MSG_USER
     elif args.retry:
-        p["type"] = MSG_ALERT
+        p["type"], p["force"] = MSG_ALERT, args.force
     else:
         return default(args)
     try:
