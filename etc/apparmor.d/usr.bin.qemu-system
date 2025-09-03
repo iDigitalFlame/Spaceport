@@ -100,10 +100,12 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
 
     owner /proc/@{pid}/task/@{tid}/comm                                    rw,
 
+    # QEMU can use mesa with QXL for some 2d graphics acceleration.
+    # It's written to temp as the root filesystem is read-only.
     owner /var/cache/root/                                                 r,
     owner /var/cache/root/mesa_shader_cache/                               rw,
-    owner /var/cache/root/mesa_shader_cache/index                          rw,
     owner /var/cache/root/mesa_shader_cache/[a-f0-9][a-f0-9]/              rw,
+    owner /var/cache/root/mesa_shader_cache/{index,marker,part*/}          rwk,
     owner /var/cache/root/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*     rw,
     owner /var/cache/root/mesa_shader_cache/[a-f0-9][a-f0-9]/[0-9a-f]*.tmp rwk,
 
