@@ -136,6 +136,7 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     owner /tmp/libnetty_transport_native_epoll_*.so           rwm,
 
     owner @{run}/user/@{uid}/temp{,/,/**}                     rw,
+    owner @{run}/user/@{uid}/temp/jna*.tmp                    rwm,
 
     owner @{CACHE}/JNA{,/**}                                  rwmkl,
     owner @{HOME}/.java/fonts/*/                              rw,
