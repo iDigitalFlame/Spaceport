@@ -49,6 +49,7 @@ profile ssh /usr/bin/ssh flags=(enforce) {
     network                                    netlink raw,
 
     signal receive set=(term) peer=gnome-keyring-daemon,
+    signal receive set=(int, hup, kill, term),
 
     @{sysconfig}/etc/ssh/ssh_config            r,
 
