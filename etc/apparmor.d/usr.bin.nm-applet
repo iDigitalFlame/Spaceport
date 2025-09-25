@@ -39,7 +39,6 @@ include <tunables/spaceport>
 profile nm-applet /usr/bin/nm-applet flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/dconf>
-    include <abstractions/glycin>
     include <abstractions/p11-kit>
     include <abstractions/no-network>
     include <abstractions/nameservice>

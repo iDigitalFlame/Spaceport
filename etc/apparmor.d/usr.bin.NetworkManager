@@ -63,7 +63,7 @@ profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnec
     network                                             netlink raw,
     network                                             packet dgram,
 
-    signal (send) set=(term) peer=dnsmasq,
+    signal send set=(term) peer=dnsmasq,
 
     @{sysconfig}/etc/NetworkManager/NetworkManager.conf r,
 

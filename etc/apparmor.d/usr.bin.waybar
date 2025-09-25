@@ -42,7 +42,6 @@ profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
     include <abstractions/mesa>
     include <abstractions/audio>
     include <abstractions/dconf>
-    include <abstractions/glycin>
     include <abstractions/vulkan>
     include <abstractions/wayland>
     include <abstractions/consoles>
@@ -51,7 +50,6 @@ profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
     include <abstractions/private-files>
     include <abstractions/freedesktop.org>
 
-    /                                           r,
     /usr/bin/waybar                             rm,
     /etc/machine-id                             r,
     /opt/*/**/icons/*/*.{ico,png,svg}           r,

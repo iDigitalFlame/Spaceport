@@ -52,9 +52,9 @@ profile systemd-logind /usr/lib/systemd/systemd-logind flags=(enforce, attach_di
 
     network                                                            netlink raw,
 
-    mqueue r type=posix /,
-
     ptrace read peer=unconfined,
+
+    mqueue r type=posix /,
 
     @{sysconfig}/etc/systemd/sleep.conf                                r,
     @{sysconfig}/etc/systemd/logind.conf                               r,

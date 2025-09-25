@@ -53,10 +53,6 @@ profile dnsmasq /usr/bin/dnsmasq flags=(enforce, attach_disconnected) {
     network                        inet raw,
     network                        inet6 raw,
 
-    signal (receive) peer=smd-daemon,
-
-    ptrace (readby) peer=smd-daemon,
-
     /usr/share/dnsmasq{/,/*}       r,
     /usr/{bin,sbin}/dnsmasq        rm,
 

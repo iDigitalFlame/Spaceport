@@ -48,10 +48,10 @@ profile kitty /usr/bin/kitty flags=(enforce) {
 
     capability                         sys_ptrace,
 
+    signal send set=(hup, int, kill, quit, term),
+
     ptrace read  peer=kitty,
     ptrace trace peer=kitty,
-
-    signal send set=(hup, int, kill, quit, term),
 
     /proc/                             r,
 

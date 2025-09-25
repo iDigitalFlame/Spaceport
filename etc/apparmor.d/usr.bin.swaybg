@@ -48,7 +48,6 @@ profile swaybg /usr/bin/swaybg flags=(enforce, attach_disconnected) {
 
     signal receive set=(int, kill, quit, term),
 
-    /                                                   r,
     /usr/bin/swaybg                                     rm,
 
     # NOTE(dij): For pictures and backgrounds.

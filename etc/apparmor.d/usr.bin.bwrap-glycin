@@ -41,12 +41,12 @@ profile bwrap-glycin flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/private-files>
 
-    capability                                          setpcap,
-    capability                                          net_admin,
-    capability                                          sys_admin,
-    capability                                          sys_ptrace,
+    capability                                               setpcap,
+    capability                                               net_admin,
+    capability                                               sys_admin,
+    capability                                               sys_ptrace,
 
-    network                                             netlink raw,
+    network                                                  netlink raw,
 
     signal receive set=(int, kill, quit, term),
 
@@ -59,6 +59,8 @@ profile bwrap-glycin flags=(enforce, attach_disconnected) {
 
     owner /proc/@{pid}/fd/                                   r,
     owner /proc/@{pid}/mountinfo                             r,
+
+    owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic}      r,
 
     /tmp/{new,old}root{,/}                                   rw,
 
@@ -74,9 +76,6 @@ profile bwrap-glycin flags=(enforce, attach_disconnected) {
     owner @{HOME}/.config/chromium/GraphiteDawnCache/*       rw,
 
     owner /newroot/{,**}                                     w,
-
-    # NOTE(dij): For pictures and backgrounds.
-    owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic}      r,
 
     /bin/true                                                ix,
     /usr/lib/glycin-loaders/2+/glycin-*                      ix,
