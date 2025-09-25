@@ -36,7 +36,7 @@
 # Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
 pkgrel=1
-pkgver=1.5.1
+pkgver=1.5.2
 pkgname="smd-user"
 pkgdesc="System Management Daemon base userspace and client packages"
 
@@ -50,8 +50,6 @@ sha256sums=()
 
 depends=(
     ## Wayland
-    "qt5-wayland"
-    "qt6-wayland"
     "swayfx" # "sway"
     "swaybg"
     "swayidle"
@@ -82,6 +80,6 @@ depends=(
     "libsecret"
 
     ## Navigation / UI
-    "rofi-wayland"
+    "rofi"
     "waybar"
 )

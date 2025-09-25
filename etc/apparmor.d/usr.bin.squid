@@ -36,45 +36,41 @@
 
 include <tunables/spaceport>
 
-profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
-    include <abstractions/dri>
-    include <abstractions/gtk>
-    include <abstractions/mesa>
-    include <abstractions/audio>
-    include <abstractions/dconf>
-    include <abstractions/glycin>
-    include <abstractions/vulkan>
-    include <abstractions/wayland>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
+profile squid /usr/bin/squid flags=(enforce) {
+    include <abstractions/base>
+    include <abstractions/mime>
+    include <abstractions/ssl_certs>
     include <abstractions/nameservice>
     include <abstractions/private-files>
-    include <abstractions/freedesktop.org>
 
-    /                                           r,
-    /usr/bin/waybar                             rm,
-    /etc/machine-id                             r,
-    /opt/*/**/icons/*/*.{ico,png,svg}           r,
+    capability                                    setgid,
+    capability                                    setuid,
 
-    /dev/rfkill                                 r,
+    network                                       inet  stream,
+    network                                       inet6 stream,
 
-    /sys/devices/pci*/**/uevent                 r,
-    /sys/class/power_supply/{,**}               r,
-    /sys/devices/**/power_supply/**             r,
-    /sys/devices/system/cpu/present             r,
-    /sys/devices/virtual/dmi/id/*_{name,vendor} r,
+    @{sysconfig}/etc/squid/*.conf                 r,
 
-    owner /proc/@{pid}/net/dev                  r,
+    /                                             r,
+    /etc/                                         r,
+    /usr/share/squid{,/,/**}                      r,
+    /etc/squid/*.c{ss,onf}{,.default,.documented} r,
 
-    owner @{CONFIG}/waybar/{,*}                 r,
+    /proc/sys/kernel/ngroups_max                  r,
+    /proc/sys/kernel/random/boot_id               r,
 
-    owner /proc/@{pid}/task/@{tid}/comm         rw,
+    @{run}/                                       r,
+    @{run}/systemd/userdb/                        r,
 
-    owner /tmp/gdkpixbuf-xpm-tmp.*              rw,
+    @{run}/squid.pid                              rwk,
 
-    /usr/bin/wpctl                              ix,
-    /usr/bin/swaymsg                            ix,
-    /usr/bin/{,ba,da,z}sh                       ix,
+    owner /dev/shm/squid-*                        rw,
 
-    include if exists <local/usr.bin.waybar>
+    owner /tmp/squid/**                           rw,
+    owner /tmp/squid{,/}                          rw,
+
+    /usr/bin/squid                                ix,
+    /usr/lib/squid/*                              ix,
+
+    include if exists <local/usr.bin.squid>
 }

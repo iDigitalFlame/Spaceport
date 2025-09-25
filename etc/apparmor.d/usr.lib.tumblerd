@@ -40,6 +40,7 @@ profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/fonts>
+    include <abstractions/glycin>
     include <abstractions/no-network>
     include <abstractions/nameservice>
     include <abstractions/user-data-ro>
@@ -95,6 +96,7 @@ profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce) {
 
     /usr/bin/magick                                                                 ix,
     /usr/bin/*{,-}thumbnailer                                                       ix,
+    /usr/lib/glycin-loaders/2+/glycin-*                                             ix,
     /usr/lib/{,gstreamer1.0}gstreamer1.0/gstreamer-1.0/gst-plugin-scanner           ix,
 
     include if exists <local/usr.lib.tumblerd>

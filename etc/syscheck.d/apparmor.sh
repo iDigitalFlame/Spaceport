@@ -51,6 +51,7 @@ find "/etc/apparmor.d" -xdev -type f -exec chmod -h 0400 {} \;
 ln -sT "/etc/apparmor.d/rpm"                                 "/etc/apparmor.d/disable/rpm"                                  2> /dev/null
 ln -sT "/etc/apparmor.d/tup"                                 "/etc/apparmor.d/disable/tup"                                  2> /dev/null
 ln -sT "/etc/apparmor.d/cam"                                 "/etc/apparmor.d/disable/cam"                                  2> /dev/null
+ln -sT "/etc/apparmor.d/code"                                "/etc/apparmor.d/disable/code"                                 2> /dev/null
 ln -sT "/etc/apparmor.d/opam"                                "/etc/apparmor.d/disable/opam"                                 2> /dev/null
 ln -sT "/etc/apparmor.d/wike"                                "/etc/apparmor.d/disable/wike"                                 2> /dev/null
 ln -sT "/etc/apparmor.d/crun"                                "/etc/apparmor.d/disable/crun"                                 2> /dev/null
@@ -75,6 +76,7 @@ ln -sT "/etc/apparmor.d/sbuild"                              "/etc/apparmor.d/di
 ln -sT "/etc/apparmor.d/devhelp"                             "/etc/apparmor.d/disable/devhelp"                              2> /dev/null
 ln -sT "/etc/apparmor.d/Discord"                             "/etc/apparmor.d/disable/Discord"                              2> /dev/null
 ln -sT "/etc/apparmor.d/trinity"                             "/etc/apparmor.d/disable/trinity"                              2> /dev/null
+ln -sT "/etc/apparmor.d/firefox"                             "/etc/apparmor.d/disable/firefox"                              2> /dev/null
 ln -sT "/etc/apparmor.d/php-fpm"                             "/etc/apparmor.d/disable/php-fpm"                              2> /dev/null
 ln -sT "/etc/apparmor.d/keybase"                             "/etc/apparmor.d/disable/keybase"                              2> /dev/null
 ln -sT "/etc/apparmor.d/flatpak"                             "/etc/apparmor.d/disable/flatpak"                              2> /dev/null
@@ -91,6 +93,7 @@ ln -sT "/etc/apparmor.d/polypane"                            "/etc/apparmor.d/di
 ln -sT "/etc/apparmor.d/rssguard"                            "/etc/apparmor.d/disable/rssguard"                             2> /dev/null
 ln -sT "/etc/apparmor.d/epiphany"                            "/etc/apparmor.d/disable/epiphany"                             2> /dev/null
 ln -sT "/etc/apparmor.d/nautilus"                            "/etc/apparmor.d/disable/nautilus"                             2> /dev/null
+ln -sT "/etc/apparmor.d/virtiofsd"                           "/etc/apparmor.d/disable/virtiofsd"                            2> /dev/null
 ln -sT "/etc/apparmor.d/evolution"                           "/etc/apparmor.d/disable/evolution"                            2> /dev/null
 ln -sT "/etc/apparmor.d/qmapshack"                           "/etc/apparmor.d/disable/qmapshack"                            2> /dev/null
 ln -sT "/etc/apparmor.d/notepadqq"                           "/etc/apparmor.d/disable/notepadqq"                            2> /dev/null
@@ -108,6 +111,8 @@ ln -sT "/etc/apparmor.d/goldendict"                          "/etc/apparmor.d/di
 ln -sT "/etc/apparmor.d/ipa_verify"                          "/etc/apparmor.d/disable/ipa_verify"                           2> /dev/null
 ln -sT "/etc/apparmor.d/lxc-create"                          "/etc/apparmor.d/disable/lxc-create"                           2> /dev/null
 ln -sT "/etc/apparmor.d/ch-checkns"                          "/etc/apparmor.d/disable/ch-checkns"                           2> /dev/null
+ln -sT "/etc/apparmor.d/sbin.klogd"                          "/etc/apparmor.d/disable/sbin.klogd"                           2> /dev/null
+ln -sT "/etc/apparmor.d/unix-chkpwd"                         "/etc/apparmor.d/disable/unix-chkpwd"                          2> /dev/null
 ln -sT "/etc/apparmor.d/lxc-execute"                         "/etc/apparmor.d/disable/lxc-execute"                          2> /dev/null
 ln -sT "/etc/apparmor.d/sbuild-hold"                         "/etc/apparmor.d/disable/sbuild-hold"                          2> /dev/null
 ln -sT "/etc/apparmor.d/slirp4netns"                         "/etc/apparmor.d/disable/slirp4netns"                          2> /dev/null
@@ -123,6 +128,7 @@ ln -sT "/etc/apparmor.d/sbuild-abort"                        "/etc/apparmor.d/di
 ln -sT "/etc/apparmor.d/sbuild-clean"                        "/etc/apparmor.d/disable/sbuild-clean"                         2> /dev/null
 ln -sT "/etc/apparmor.d/sbuild-shell"                        "/etc/apparmor.d/disable/sbuild-shell"                         2> /dev/null
 ln -sT "/etc/apparmor.d/transmission"                        "/etc/apparmor.d/disable/transmission"                         2> /dev/null
+ln -sT "/etc/apparmor.d/sbin.syslogd"                        "/etc/apparmor.d/disable/sbin.syslogd"                         2> /dev/null
 ln -sT "/etc/apparmor.d/sbuild-unhold"                       "/etc/apparmor.d/disable/sbuild-unhold"                        2> /dev/null
 ln -sT "/etc/apparmor.d/lc-compliance"                       "/etc/apparmor.d/disable/lc-compliance"                        2> /dev/null
 ln -sT "/etc/apparmor.d/usr.sbin.nmbd"                       "/etc/apparmor.d/disable/usr.sbin.nmbd"                        2> /dev/null
@@ -133,9 +139,11 @@ ln -sT "/etc/apparmor.d/usr.sbin.ntpd"                       "/etc/apparmor.d/di
 ln -sT "/etc/apparmor.d/usr.sbin.smbd"                       "/etc/apparmor.d/disable/usr.sbin.smbd"                        2> /dev/null
 ln -sT "/etc/apparmor.d/sbuild-update"                       "/etc/apparmor.d/disable/sbuild-update"                        2> /dev/null
 ln -sT "/etc/apparmor.d/userbindmount"                       "/etc/apparmor.d/disable/userbindmount"                        2> /dev/null
+ln -sT "/etc/apparmor.d/linux-sandbox"                       "/etc/apparmor.d/disable/linux-sandbox"                        2> /dev/null
 ln -sT "/etc/apparmor.d/signal-desktop"                      "/etc/apparmor.d/disable/signal-desktop"                       2> /dev/null
 ln -sT "/etc/apparmor.d/privacybrowser"                      "/etc/apparmor.d/disable/privacybrowser"                       2> /dev/null
 ln -sT "/etc/apparmor.d/github-desktop"                      "/etc/apparmor.d/disable/github-desktop"                       2> /dev/null
+ln -sT "/etc/apparmor.d/sbin.syslog-ng"                      "/etc/apparmor.d/disable/sbin.syslog-ng"                       2> /dev/null
 ln -sT "/etc/apparmor.d/lxc-usernsexec"                      "/etc/apparmor.d/disable/lxc-usernsexec"                       2> /dev/null
 ln -sT "/etc/apparmor.d/usr.sbin.mdnsd"                      "/etc/apparmor.d/disable/usr.sbin.mdnsd"                       2> /dev/null
 ln -sT "/etc/apparmor.d/sbuild-upgrade"                      "/etc/apparmor.d/disable/sbuild-upgrade"                       2> /dev/null
@@ -145,6 +153,7 @@ ln -sT "/etc/apparmor.d/MongoDB_Compass"                     "/etc/apparmor.d/di
 ln -sT "/etc/apparmor.d/usr.sbin.identd"                     "/etc/apparmor.d/disable/usr.sbin.identd"                      2> /dev/null
 ln -sT "/etc/apparmor.d/nvidia_modprobe"                     "/etc/apparmor.d/disable/nvidia_modprobe"                      2> /dev/null
 ln -sT "/etc/apparmor.d/element-desktop"                     "/etc/apparmor.d/disable/element-desktop"                      2> /dev/null
+ln -sT "/etc/apparmor.d/usr.sbin.dnsmasq"                    "/etc/apparmor.d/disable/usr.sbin.dnsmasq"                     2> /dev/null
 ln -sT "/etc/apparmor.d/systemd-coredump"                    "/etc/apparmor.d/disable/systemd-coredump"                     2> /dev/null
 ln -sT "/etc/apparmor.d/usr.sbin.dovecot"                    "/etc/apparmor.d/disable/usr.sbin.dovecot"                     2> /dev/null
 ln -sT "/etc/apparmor.d/usr.sbin.apache2"                    "/etc/apparmor.d/disable/usr.sbin.apache2"                     2> /dev/null

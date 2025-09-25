@@ -58,6 +58,7 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     /sys/bus/                                                  r,
     /sys/class/                                                r,
     /sys/devices/pci*/*/**                                     r,
+    /sys/devices/pci*/uevent                                   r,
 
     @{run}/udev/data/**                                        r,
 

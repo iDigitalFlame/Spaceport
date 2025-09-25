@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Client Daemon Unit
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,18 +34,41 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After        = sway.service graphical-session.target
-Requires     = graphical-session.target
-Description  = System Management Usermode Client
+include <tunables/spaceport>
 
-[Service]
-Type         = simple
-UMask        = 0027
-ExecStart    = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
-KillSignal   = SIGINT
-Environment  = PYTHONPYCACHEPREFIX="/var/cache/python"
-ExecStartPre = /usr/lib/smd/libexec/smd-wait-sway
+profile dnsmasq /usr/bin/dnsmasq flags=(enforce, attach_disconnected) {
+    include <abstractions/base>
+    include <abstractions/dbus>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
 
-[Install]
-WantedBy     = graphical-session.target
+    capability                     chown,
+    capability                     setgid,
+    capability                     setuid,
+    capability                     net_raw,
+    capability                     net_admin,
+    capability                     dac_override,
+    capability                     net_bind_service,
+
+    network                        inet raw,
+    network                        inet6 raw,
+
+    signal (receive) peer=smd-daemon,
+
+    ptrace (readby) peer=smd-daemon,
+
+    /usr/share/dnsmasq{/,/*}       r,
+    /usr/{bin,sbin}/dnsmasq        rm,
+
+    /proc/sys/net/ipv6/conf/*/mtu  r,
+
+    @{run}/dnsmasq{/,/*}           r,
+    @{run}/dnsmasq-forwarders.conf r,
+
+    @{run}/dnsmasq/*               rw,
+
+    @{run}/*dnsmasq*.pid           w,
+
+    include if exists <local/usr.bin.dnsmasq>
+    include if exists <local/usr.sbin.dnsmasq>
+}

@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected, mediate_deleted) {
     include <abstractions/video>
+    include <abstractions/cgroup>
     include <abstractions/version>
     include <abstractions/chromium>
     include <abstractions/user-home>
@@ -45,8 +46,6 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected,
 
     /usr/bin/slack                                           r,
     /usr/lib/slack/resources/**                              rm,
-
-    owner @{CGROUP}/app.slice/sway.service/memory.{high,max} r,
 
     owner /proc/@{pid}/mem                                   r,
 

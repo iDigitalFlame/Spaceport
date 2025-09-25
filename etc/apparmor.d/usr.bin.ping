@@ -45,8 +45,8 @@ profile ping /{usr/,}bin/{,iputils-}ping flags=(enforce) {
     capability                               setuid,
     capability                               net_raw,
 
-    network inet                             raw,
-    network inet6                            raw,
+    network                                  inet  raw,
+    network                                  inet6 raw,
 
     /etc/modules.conf                        r,
 

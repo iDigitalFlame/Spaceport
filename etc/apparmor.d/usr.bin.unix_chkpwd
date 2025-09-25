@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Client Daemon Unit
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,18 +34,26 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After        = sway.service graphical-session.target
-Requires     = graphical-session.target
-Description  = System Management Usermode Client
+include <tunables/spaceport>
 
-[Service]
-Type         = simple
-UMask        = 0027
-ExecStart    = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
-KillSignal   = SIGINT
-Environment  = PYTHONPYCACHEPREFIX="/var/cache/python"
-ExecStartPre = /usr/lib/smd/libexec/smd-wait-sway
+profile unix-chkpwd /usr/bin/unix_chkpwd flags=(enforce) {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/nameservice>
+    include <abstractions/private-files>
 
-[Install]
-WantedBy     = graphical-session.target
+    capability                           audit_write,
+    capability                           dac_read_search,
+
+    network                              netlink raw,
+
+    /etc/shadow                          r,
+    /usr/bin/unix_chkpwd                 rm,
+
+    @{run}/host/userdb/*.user            r,
+    @{run}/host/userdb/*.user-privileged r,
+
+    @{run}/authd.sock                    rw,
+
+    include if exists <local/usr.bin.unix_chkpwd>
+}

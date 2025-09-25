@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Client Daemon Unit
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,18 +34,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After        = sway.service graphical-session.target
-Requires     = graphical-session.target
-Description  = System Management Usermode Client
+abi <abi/4.0>,
 
-[Service]
-Type         = simple
-UMask        = 0027
-ExecStart    = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
-KillSignal   = SIGINT
-Environment  = PYTHONPYCACHEPREFIX="/var/cache/python"
-ExecStartPre = /usr/lib/smd/libexec/smd-wait-sway
+/sys/fs/cgroup/user.slice/cpu.max                              r,
+/sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max            r,
+/sys/fs/cgroup/user.slice/user-*.slice/session-*.scope/cpu.max r,
 
-[Install]
-WantedBy     = graphical-session.target
+@{CGROUP}/{,app.slice/}cpu.max                                 r,
+@{CGROUP}/app.slice/sway.service/memory.{high,max}             r,

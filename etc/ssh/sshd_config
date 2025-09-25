@@ -48,7 +48,6 @@ Compression                     no
 MaxStartups                     10:30:100
 GatewayPorts                    no
 PermitTunnel                    no
-PrintLastLog                    yes
 IgnoreRhosts                    yes
 TCPKeepAlive                    yes
 AddressFamily                   any

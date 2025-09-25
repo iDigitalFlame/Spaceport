@@ -35,5 +35,5 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-auth    sufficient  pam_u2f.so origin=pam://spaceport appid=pam://spaceport
-auth    include     login
+auth sufficient pam_u2f.so origin=pam://spaceport appid=pam://spaceport
+auth include    login

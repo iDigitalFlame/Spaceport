@@ -43,6 +43,7 @@ systemd-quotacheck@.service
 systemd-repart.service
 systemd-suspend-then-hibernate.service
 systemd-sysusers.service
+systemd-tpm2-clear.service
 systemd-update-done.service
 systemd-userdbd.service
 systemd-vmspawn@.service
@@ -51,8 +52,11 @@ gpsd.socket
 sshd-unix-local.socket
 systemd-importd.socket
 systemd-journal-remote.socket
+systemd-machined.socket
 systemd-mountfsd.socket
 systemd-userdbd.socket
 emergency.target
+factory-reset-now.target
+factory-reset.target
 first-boot-complete.target
 ssh-access.target

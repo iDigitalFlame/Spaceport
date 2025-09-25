@@ -42,6 +42,7 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/video>
+    include <abstractions/cgroup>
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
@@ -83,11 +84,13 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     /sys/kernel/mm/hugepages/                                 r,
     /sys/devices/system/node/                                 r,
     /sys/devices/system/cpu/cpu*/                             r,
+    /sys/devices/system/cpu/uevent                            r,
     /sys/devices/system/cpu/offline                           r,
     /sys/devices/system/cpu/cpu*/uevent                       r,
     /sys/devices/system/cpu/hotplug/states                    r,
     /sys/devices/virtual/dmi/id/bios_vendor                   r,
     /sys/devices/system/cpu/cpu*/topology/*                   r,
+
     /sys/devices/system/cpu/cpu*/cache/{,**}                  r,
     /sys/devices/system/cpu/vulnerabilities/                  r,
     /sys/devices/system/node/node[0-9]/cpumap                 r,
@@ -104,6 +107,7 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     /proc/{version,uptime}                                    r,
     /proc/sys/kernel/pid_max                                  r,
     /proc/sys/vm/max_map_count                                r,
+    /proc/sys/vm/mmap_min_addr                                r,
     /proc/sys/kernel/osrelease                                r,
     /proc/sys/net/core/somaxconn                              r,
     /proc/sys/kernel/threads-max                              r,
@@ -112,9 +116,6 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
 
     /tmp/                                                     r,
-
-    @{CGROUP}/app.slice/cpu.max                               r,
-    @{CGROUP}/app.slice/sway.service/memory.{high,max}        r,
 
     owner /proc/@{pid}/fd/                                    r,
     owner /proc/@{pid}/stat                                   r,

@@ -79,6 +79,7 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     /sys/class/sound/                                  r,
     /sys/class/usbmisc/                                r,
     /sys/bus/media/devices/                            r,
+    /sys/devices/pci*/uevent                           r,
     /sys/devices/system/node/                          r,
     /sys/bus/usb/devices/{,**}                         r,
     /sys/devices/**/sound/**/uevent                    r,

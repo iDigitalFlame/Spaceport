@@ -37,6 +37,7 @@
 include <tunables/spaceport>
 
 profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce, attach_disconnected) {
+    include <abstractions/cgroup>
     include <abstractions/chromium>
     include <abstractions/user-home>
 
@@ -52,7 +53,7 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
 
     /sys/devices/pci*/**/                                              r,
     /sys/devices/system/**/meminfo                                     r,
-    /sys/fs/cgroup/user.slice/user-*.slice/session-*.scope/cpu.max     r,
+
     /sys/devices/system/cpu/cpu*/topology/{core_cpus,thread_siblings}  r,
 
     owner /proc/@{pid}/smaps                                           r,

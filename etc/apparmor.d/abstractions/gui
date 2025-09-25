@@ -40,6 +40,7 @@ include <abstractions/X>
 include <abstractions/base>
 include <abstractions/mime>
 include <abstractions/fonts>
+include <abstractions/glycin>
 include <abstractions/wayland>
 
 @{sysconfig}/etc/fonts/**          r,

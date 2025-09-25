@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Client Daemon Unit
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,18 +34,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After        = sway.service graphical-session.target
-Requires     = graphical-session.target
-Description  = System Management Usermode Client
+include <tunables/spaceport>
 
-[Service]
-Type         = simple
-UMask        = 0027
-ExecStart    = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
-KillSignal   = SIGINT
-Environment  = PYTHONPYCACHEPREFIX="/var/cache/python"
-ExecStartPre = /usr/lib/smd/libexec/smd-wait-sway
+profile systemd-hwdb /usr/{bin,lib/systemd}/systemd-hwdb flags=(enforce, attach_disconnected, mediate_deleted) {
+    include <abstractions/base>
+    include <abstractions/consoles>
+    include <abstractions/no-network>
+    include <abstractions/private-files>
 
-[Install]
-WantedBy     = graphical-session.target
+    capability                          dac_override,
+
+    @{sysconfig}/etc/udev/hwdb.d/{,*}   r,
+
+    /etc/udev/hwdb.d/{,*}               r,
+    /usr/{bin,lib/systemd}/systemd-hwdb rm,
+
+    owner /proc/@{pid}/stat             r,
+
+    /etc/udev/.#hwdb.bin*               wl ->  /etc/udev/#*,
+    /{etc,usr/lib}/udev/#*              rwl,
+    /usr/lib/udev/.#hwdb.bin*           wl -> /usr/lib/udev/#*,
+    /{etc,usr/lib}/udev/hwdb.bin        w,
+
+    include if exists <local/usr.lib.systemd-hwdb>
+}

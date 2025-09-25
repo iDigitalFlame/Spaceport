@@ -38,6 +38,7 @@ include <tunables/spaceport>
 
 profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enforce, attach_disconnected) {
     include <abstractions/video>
+    include <abstractions/cgroup>
     include <abstractions/chromium>
     include <abstractions/user-home>
     include <abstractions/notifications>
@@ -46,29 +47,27 @@ profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enfor
     ptrace read  peer=/usr/bin/xdg-{open,settions},
     ptrace trace peer=/usr/lib/signal-desktop/chrome-sandbox,
 
-    /usr/lib/signal-desktop/**                               r,
-    /usr/lib/signal-desktop/resources/**                     rm,
+    /usr/lib/signal-desktop/**                       r,
+    /usr/lib/signal-desktop/resources/**             rm,
 
-    /sys/{bus,class}/                                        r,
-    /sys/bus/pci/devices                                     r,
-    /sys/fs/cgroup/user.slice/cpu.max                        r,
-    /sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max      r,
+    /sys/{bus,class}/                                r,
+    /sys/bus/pci/devices                             r,
 
-    @{CGROUP}/{,app.slice/}cpu.max                           r,
-    @{CGROUP}/app.slice/sway.service/memory.{high,max}       r,
+    owner @{HOME}/                                   r,
 
-    owner @{HOME}/                                           r,
+    @{run}/systemd/inhibit/*.ref                     rw,
 
-    @{run}/systemd/inhibit/*.ref                             rw,
+    owner @{HOME}/.config/Signal/{,**}               rwkl,
 
-    owner @{HOME}/.config/Signal/{,**}                       rwkl,
+    /usr/bin/xdg-open                                Pix -> xdg-open,
+    /usr/bin/xdg-email                               Pix -> xdg-email,
+    /usr/lib/signal-desktop/signal-desktop           ixr,
+    /usr/lib/signal-desktop/electron*/chrome-sandbox ix,
 
-    /usr/bin/xdg-open                                        Pix -> xdg-open,
-    /usr/bin/xdg-email                                       Pix -> xdg-email,
-    /usr/lib/signal-desktop/signal-desktop                   ixr,
-    /usr/lib/signal-desktop/electron*/chrome-sandbox         ix,
+    deny /usr/bin/xdg-settings                       rx,
 
-    deny /usr/bin/xdg-settings                               rx,
+    deny ptrace read peer=firefox,
+    deny ptrace read peer=unconfined,
 
     include if exists <local/usr.lib.signal-desktop>
 }

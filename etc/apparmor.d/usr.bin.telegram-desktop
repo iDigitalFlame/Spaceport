@@ -55,8 +55,8 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     include <abstractions/dbus-accessibility-strict>
     include <abstractions/dbus-network-manager-strict>
 
-    network inet                                    stream,
-    network inet6                                   stream,
+    network                                         inet  stream,
+    network                                         inet6 stream,
 
     /                                               r,
     /sys/devices/virtual/dmi/id/bios_vendor         r,
