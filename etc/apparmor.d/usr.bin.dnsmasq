@@ -56,6 +56,7 @@ profile dnsmasq /usr/bin/dnsmasq flags=(enforce, attach_disconnected) {
     /usr/share/dnsmasq{/,/*}       r,
     /usr/{bin,sbin}/dnsmasq        rm,
 
+    /proc/@{pid}/fd/               r,
     /proc/sys/net/ipv6/conf/*/mtu  r,
 
     @{run}/dnsmasq{/,/*}           r,

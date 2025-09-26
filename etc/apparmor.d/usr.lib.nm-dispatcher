@@ -119,8 +119,6 @@ profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected
         owner @{run}/systemd/private    rw,
 
         unix bind type=stream addr="@*/bus/systemctl/",
-
-        include if exists <local/usr.lib.nm-dispatcher-systemctl>
     }
 
     include if exists <local/usr.lib.nm-dispatcher>

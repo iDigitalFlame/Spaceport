@@ -68,7 +68,7 @@ HOOKS_SERVER = {
 }
 
 
-def _rfkill(server, name, state):
+def _rfkill(server, name, state, second=False):
     t = RADIO_TYPES.get(name)
     if not nes(t):
         return
@@ -88,6 +88,14 @@ def _rfkill(server, name, state):
             )
         del n
     del t, v
+    if not second:
+        # Run again as sometimes the driver will make a psuedo-device in rfkill.
+        # This shows up as another bluetooth/wifi device that only shows AFTER
+        # the first is enabled, so we have to do another glob pass to find it.
+        server.debug(
+            f"[m/radio/{name}]: Starting second rfkill pass to catch new devices.."
+        )
+        _rfkill(server, name, state, True)  # Once more with feeling.
 
 
 class Radio(object):

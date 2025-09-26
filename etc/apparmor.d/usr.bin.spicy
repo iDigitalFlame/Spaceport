@@ -45,6 +45,7 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
     include <abstractions/private-files>
@@ -62,6 +63,8 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     /dev/bus/usb/                                 r,
 
     /sys/{bu,clas}s/                              r,
+    /sys/bus/media/devices/                       r,
+    /sys/devices/pci*/uevent                      r,
 
     /proc/@{pid}/stat                             r,
     /proc/@{pid}/fdinfo/@{tid}{,/,/comm}          r,

@@ -40,6 +40,7 @@ profile leafpad /usr/bin/leafpad flags=(enforce) {
     include <abstractions/gnome>
     include <abstractions/user-data>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
 
     /etc/fstab                   r,

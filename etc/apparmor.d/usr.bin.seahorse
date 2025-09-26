@@ -42,6 +42,7 @@ profile seahorse /usr/bin/seahorse flags=(enforce) {
     include <abstractions/gnupg>
     include <abstractions/ssl_certs>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
 
     /etc/fstab                          r,

@@ -46,6 +46,7 @@ profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
     include <abstractions/wayland>
     include <abstractions/consoles>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/freedesktop.org>

@@ -44,6 +44,7 @@ include <abstractions/cgroup>
 include <abstractions/consoles>
 include <abstractions/no-network>
 include <abstractions/dbus-system>
+include <abstractions/glycin-base>
 include <abstractions/nameservice>
 include <abstractions/xdg-desktop>
 include <abstractions/private-files>

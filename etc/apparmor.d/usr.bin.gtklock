@@ -40,6 +40,7 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/dconf>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
     include <abstractions/authentication>
     include <abstractions/freedesktop.org>
@@ -61,10 +62,6 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
 
     owner @{run}/faillock/*                                               rwk,
     owner @{run}/user/@{uid}/pam-u2f-authpending                          rw,
-
-    # NOTE(dij): Trying to directly choose the profile transition will cause
-    #            this profile to not load correctly (weird).
-    /usr/bin/unix_chkpwd                                                  Px,
 
     include if exists <local/usr.bin.gtklock>
 }

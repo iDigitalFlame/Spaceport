@@ -44,6 +44,7 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce, attach_disconne
     include <abstractions/video>
     include <abstractions/vulkan>
     include <abstractions/ssl_certs>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 

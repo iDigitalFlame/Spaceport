@@ -45,6 +45,7 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
     include <abstractions/notifications>
     include <abstractions/private-files>

@@ -34,39 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/spaceport>
+abi <abi/4.0>,
 
-profile cropgui /{usr,@{HOMEDOTS}/.local}/bin/crop{,gui} flags=(enforce, attach_disconnected) {
-    include <abstractions/qt>
-    include <abstractions/perl>
-    include <abstractions/dconf>
-    include <abstractions/python>
-    include <abstractions/consoles>
-    include <abstractions/user-home>
-    include <abstractions/no-network>
-    include <abstractions/glycin-base>
-    include <abstractions/nameservice>
-    include <abstractions/xdg-desktop>
-    include <abstractions/freedesktop.org>
-
-    /etc/fstab                        r,
-    /etc/inputrc                      r,
-    /usr/{bin,lib}/                   r,
-    /usr/bin/cropgui                  r,
-    /etc/ImageMagick-*/*.xml          r,
-    /usr/share/ImageMagick-*/*.xml    r,
-
-    owner /proc/@{pid}/mount{s,info}  r,
-
-    owner @{HOME}/                    r,
-    owner @{HOMEDOTS}/.local/bin/crop r,
-
-    /usr/bin/cropgui                  ix,
-    /usr/bin/c{p,onvert}              ix,
-    /usr/bin/{dash,printf}            ixr,
-    /usr/bin/{env,find,nice}          ix,
-    /usr/bin/{jpegtran,magick}        ix,
-    /usr/bin/vendor_perl/exiftool     ixr,
-
-    include if exists <local/usr.bin.cropgui>
-}
+/usr/bin/bwrap Px -> glycin,

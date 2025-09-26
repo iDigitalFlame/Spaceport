@@ -45,6 +45,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
     include <abstractions/nameservice>
+    include <abstractions/xdg-desktop>
     include <abstractions/freedesktop.org>
 
     network                                                   inet    stream,
@@ -141,6 +142,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
+    /usr/bin/bwrap                                            Cx -> glycin,
     /usr/bin/{i,se}d                                          ix,
     /usr/bin/xdg-open                                         Pix -> xdg-open,
     /usr/bin/{,e}grep                                         ix,
@@ -161,6 +163,13 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
 
     deny /usr/share/arduino/**                                w,
     deny @{HOMEDOTS}/.arduino15/preferences.txt               w,
+
+    profile glycin flags=(enforce, attach_disconnected) {
+        include <abstractions/glycin-bwrap>
+
+        /usr/share/arduino/lib/*.jar    r,
+        /usr/share/arduino/tools/**.jar r,
+    }
 
     include if exists <local/usr.bin.arduino>
 }

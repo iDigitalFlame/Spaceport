@@ -41,6 +41,7 @@ profile blueman /usr/bin/blueman-* flags=(enforce, attach_disconnected) {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/python>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
     include <abstractions/xdg-desktop>
     include <abstractions/dbus-session>

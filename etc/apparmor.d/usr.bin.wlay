@@ -52,6 +52,8 @@ profile wlay /usr/bin/wlay flags=(enforce) {
 
     owner /proc/@{pid}/cmdline                    r,
 
+    /tmp/config.txt                               rw,
+
     /usr/bin/swaymsg                              ix,
 
     include if exists <local/usr.bin.wlay>

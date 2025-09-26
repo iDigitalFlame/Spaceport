@@ -81,6 +81,7 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     owner @{HOME}/.config/librewolf/**/*.{db,parentlock,sqlite}*       k,
     owner @{HOME}/.config/mozilla/firefox/**/*.{db,parentlock,sqlite}* k,
 
+    /usr/bin/bwrap                                                     Cx -> glycin,
     /usr/bin/xdg-open                                                  Pix -> xdg-open,
     /usr/bin/xdg-email                                                 Pix -> xdg-email,
     /usr/bin/{pwd,tr,which}                                            ix,
@@ -116,6 +117,16 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     deny /usr/lib/{firefox,librewolf}/pingsender                       rx,
     deny /usr/lib/{firefox,librewolf}/crashreporter                    rx,
     deny /usr/lib/{firefox,librewolf}/minidump-analyzer                rx,
+
+    profile glycin flags=(enforce, attach_disconnected) {
+        include <abstractions/glycin-bwrap>
+
+        owner /tmp/{firefox,librewolf}/.parentlock                            w,
+
+        owner @{HOME}/.config/librewolf/*/.parentlock                         w,
+        owner @{HOME}/.config/mozilla/firefox/*/.parentlock                   w,
+        owner @{HOME}/.config/librewolf/*/chrome_debugger_profile/.parentlock w,
+    }
 
     include if exists <local/usr.lib.firefox>
 }

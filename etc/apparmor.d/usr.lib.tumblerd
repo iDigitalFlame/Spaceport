@@ -42,6 +42,7 @@ profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce) {
     include <abstractions/fonts>
     include <abstractions/glycin>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/nameservice>
     include <abstractions/user-data-ro>
 

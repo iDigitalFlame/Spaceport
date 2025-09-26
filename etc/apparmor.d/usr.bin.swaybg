@@ -50,10 +50,18 @@ profile swaybg /usr/bin/swaybg flags=(enforce, attach_disconnected) {
 
     /usr/bin/swaybg                                     rm,
 
-    # NOTE(dij): For pictures and backgrounds.
+    # For pictures and backgrounds.
     owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic} r,
 
     /dev/shm/swaybg-*                                   rw,
+
+    /usr/bin/bwrap                                      Cx -> glycin,
+
+    profile glycin flags=(enforce, attach_disconnected) {
+        include <abstractions/glycin-bwrap>
+
+        owner @{HOME}/**/*.{jpg,jpeg,png,bmp,tiff,tga,heic} r,
+    }
 
     include if exists <local/usr.bin.swaybg>
 }

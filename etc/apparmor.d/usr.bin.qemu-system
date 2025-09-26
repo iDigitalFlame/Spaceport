@@ -72,6 +72,7 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
     /sys/class/tty/                                                        r,
     /sys/{bu,clas}s/                                                       r,
     /sys/class/usbmisc/                                                    r,
+    /sys/devices/pci*/uevent                                               r,
     /sys/devices/system/node/                                              r,
     /sys/bus/usb/devices/{,**}                                             r,
     /sys/devices/**/usb*/**/{idVendor,idProduct}                           r,

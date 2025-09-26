@@ -41,6 +41,7 @@ profile xpad /usr/bin/xpad flags=(enforce, attach_disconnected) {
     include <abstractions/gnome>
     include <abstractions/consoles>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/private-files>
 
     /usr/share/gtksourceview-*/styles/{,**} r,

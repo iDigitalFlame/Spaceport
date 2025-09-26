@@ -56,6 +56,9 @@ profile squid /usr/bin/squid flags=(enforce) {
     /usr/share/squid{,/,/**}                      r,
     /etc/squid/*.c{ss,onf}{,.default,.documented} r,
 
+    /sys/bus/media/devices/                       r,
+    /sys/devices/pci*/uevent                      r,
+
     /proc/sys/kernel/ngroups_max                  r,
     /proc/sys/kernel/random/boot_id               r,
 

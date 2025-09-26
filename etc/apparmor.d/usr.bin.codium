@@ -37,5 +37,7 @@
 include <tunables/spaceport>
 
 profile codium /{usr/bin,opt/vscodium-bin}/{,bin/}{,vs}codium{,-electron} flags=(default_allow) {
+    include <abstractions/glycin-base>
+
     include if exists <local/usr.bin.codium>
 }

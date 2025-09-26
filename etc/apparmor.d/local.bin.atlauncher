@@ -154,6 +154,7 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     owner @{HOME}/Documents/Minecraft/**/lib/jspawnhelper     rwix,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
+    /usr/bin/bwrap                                            Cx -> glycin,
     /usr/bin/xdg-open                                         Pix -> xdg-open,
     /usr/bin/ls{cpu,pci}                                      ix,
     /usr/lib/gio-launch-desktop                               Pix -> xdg-open,
@@ -169,6 +170,17 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     deny /sys/devices/system/cpu/vulnerabilities/*            r,
 
     deny ptrace read peer=xdg-{open,settings},
+
+    profile glycin flags=(enforce, attach_disconnected) {
+        include <abstractions/glycin-bwrap>
+
+        owner /tmp/*.tmp                           r,
+
+        owner @{HOME}/Documents/Minecraft/*.jar    r,
+
+        owner @{HOME}/Documents/Minecraft/logs/**  rw,
+        owner @{HOME}/Documents/Minecraft/cache/** rw,
+    }
 
     include if exists <local/local.bin.atlauncher>
 }

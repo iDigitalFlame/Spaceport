@@ -40,6 +40,7 @@ profile smd-convert-picture /{,opt/spaceport/}usr/lib/smd/libexec/smd-convert-pi
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/private-files>
 
     @{sysconfig}/usr/lib/smd/libexec/smd-convert-picture r,

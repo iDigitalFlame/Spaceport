@@ -211,8 +211,6 @@ profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnec
         owner @{run}/systemd/private    rw,
 
         unix bind type=stream addr="@*/bus/systemctl/",
-
-        include if exists <local/usr.bin.NetworkManager-systemctl>
     }
 
     include if exists <local/usr.bin.NetworkManager>

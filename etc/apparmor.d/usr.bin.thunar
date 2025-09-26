@@ -42,29 +42,31 @@ profile thunar /usr/bin/{T,t}hunar flags=(enforce) {
     include <abstractions/consoles>
     include <abstractions/user-data>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/xdg-desktop>
 
     # Needed to open any files for reading.
-    /{,**}                                             r,
+    /{,**}                                                r,
 
-    /usr/lib/tumbler-*/plugins/*                       rm,
-    /usr/share/thumbnailers/*.thumbnailer              r,
+    /usr/lib/tumbler-*/plugins/*                          rm,
+    /usr/share/thumbnailers/*.thumbnailer                 r,
 
-    owner @{HOME}/**                                   l,
+    owner @{HOME}/**                                      l,
 
-    owner @{CONFIG}/xfce4/xfconf/xfce-*-xml/thunar.xml r,
+    owner @{CONFIG}/xfce4/xfconf/xfce-*-xml/thunar.xml    r,
 
-    owner /tmp/**                                      rwkl,
+    owner /tmp/**                                         rwkl,
 
-    /usr/bin/ffmpegthumbnailer                         ix,
+    /usr/bin/ffmpegthumbnailer                            ix,
 
     # NOTE(dij): Thunar has unrestricted open permissions as it's needed to
     #            open any file when using it to browse the filesystem.
-    /usr/bin/xdg-open                                  PUx,
-    /usr/bin/xdg-settings                              PUx,
-    /usr/lib/gio-launch-desktop                        PUx,
+    /usr/bin/xdg-open                                     PUx,
+    /usr/bin/xdg-settings                                 PUx,
+    /usr/lib/gio-launch-desktop                           PUx,
 
-    deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml       w,
+    deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml          w,
+    deny @{HOMEDOTS}/.local/share/applications/mimeapps.* w,
 
     include if exists <local/usr.bin.thunar>
 }
