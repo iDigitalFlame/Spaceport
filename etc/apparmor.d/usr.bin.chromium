@@ -96,12 +96,15 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
         include <abstractions/dri>
         include <abstractions/glycin-bwrap>
 
-        owner /dev/shm/.org.chromium.Chromium.*                   rw,
+        /dev/dri/render*                                    rw,
 
-        owner @{HOME}/.config/chromium/{,Gr}ShaderCache/*         rw,
-        owner @{HOME}/.config/chromium/GraphiteDawnCache/*        rw,
-        owner @{HOME}/.config/chromium/BrowserMetrics/*.pma       rw,
-        owner @{HOME}/.config/chromium/Default/shared_proto_db/** rw,
+        owner /dev/shm/.org.chromium.Chromium.*             rw,
+
+        owner @{HOME}/.config/chromium/Default/**           rw,
+        owner @{HOME}/.config/chromium/Subresource*/**      rw,
+        owner @{HOME}/.config/chromium/{,Gr}ShaderCache/*   rw,
+        owner @{HOME}/.config/chromium/GraphiteDawnCache/*  rw,
+        owner @{HOME}/.config/chromium/BrowserMetrics/*.pma rw,
     }
 
     include if exists <local/usr.bin.chromium>
