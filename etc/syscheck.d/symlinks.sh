@@ -43,6 +43,7 @@ fi
 BASE_DIR="/opt/spaceport"
 
 # Firefox Links
+linkcheck "/etc/librewolf"                                 "/etc/firefox"
 linkcheck "/usr/lib/firefox/firefox.cfg"                   "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
 linkcheck "/usr/lib/librewolf/librewolf.cfg"               "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
 linkcheck "/usr/lib/librewolf/browser/extensions"          "/usr/lib/firefox/browser/extensions"

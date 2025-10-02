@@ -1,0 +1,194 @@
+{
+    "_": [
+        "################################",
+        "### iDigitalFlame  2016-2025 ###",
+        "#                              #",
+        "#            -/`               #",
+        "#            -yy-   :/`        #",
+        "#         ./-shho`:so`         #",
+        "#    .:- /syhhhh//hhs` `-`     #",
+        "#   :ys-:shhhhhhshhhh.:o- `    #",
+        "#   /yhsoshhhhhhhhhhhyho`:/.   #",
+        "#   `:yhyshhhhhhhhhhhhhh+hd:   #",
+        "#     :yssyhhhhhyhhhhhhhhdd:   #",
+        "#    .:.oyshhhyyyhhhhhhddd:    #",
+        "#    :o+hhhhhyssyhhdddmmd-     #",
+        "#     .+yhhhhyssshdmmddo.      #",
+        "#       `///yyysshd++`         #",
+        "#                              #",
+        "########## SPACEPORT ###########",
+        "### Spaceport + SMD",
+        "## Firefox/Librewolf Policy Configuration",
+        "",
+        "Copyright (C) 2016 - 2025 iDigitalFlame",
+        "",
+        "This program is free software: you can redistribute it and/or modify",
+        "it under the terms of the GNU General Public License as published by",
+        "the Free Software Foundation, either version 3 of the License, or",
+        "any later version.",
+        "",
+        "This program is distributed in the hope that it will be useful,",
+        "but WITHOUT ANY WARRANTY; without even the implied warranty of",
+        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+        "GNU General Public License for more details.",
+        "",
+        "You should have received a copy of the GNU General Public License",
+        "along with this program.  If not, see <https://www.gnu.org/licenses/>."
+    ],
+    "policies": {
+        "AllowedDomainsForApps": "",
+        "AllowFileSelectionDialogs": true,
+        "AppAutoUpdate": false,
+        "Authentication": {},
+        "AutofillCreditCardEnabled": false,
+        "AutoLaunchProtocolsFromOrigins": [],
+        "BlockAboutAddons": false,
+        "BlockAboutProfiles": false,
+        "BlockAboutSupport": false,
+        "CaptivePortal": false,
+        "ContentAnalysis": {
+            "Enabled": false
+        },
+        "DisableBuiltinPDFViewer": false,
+        "DisableDeveloperTools": false,
+        "DisableFeedbackCommands": true,
+        "DisableFirefoxAccounts": true,
+        "DisableFirefoxScreenshots": true,
+        "DisableFirefoxStudies": true,
+        "DisableMasterPasswordCreation": true,
+        "DisablePasswordReveal": true,
+        "DisablePocket": true,
+        "DisablePrivateBrowsing": false,
+        "DisableProfileImport": true,
+        "DisableProfileRefresh": true,
+        "DisableSafeMode": true,
+        "DisableSecurityBypass": false,
+        "DisableSetDesktopBackground": true,
+        "DisableSystemAddonUpdate": false,
+        "DisableTelemetry": true,
+        "DontCheckDefaultBrowser": true,
+        "EnableTrackingProtection": {
+            "Value": true,
+            "Locked": false,
+            "Cryptomining": true,
+            "Fingerprinting": true,
+            "EmailTracking": true,
+            "SuspectedFingerprinting": true,
+            "Category": "strict"
+        },
+        "EncryptedMediaExtensions": {
+            "Enabled": true,
+            "Locked": false
+        },
+        "ExtensionUpdate": true,
+        "FirefoxSuggest": false,
+        "HardwareAcceleration": true,
+        "HttpAllowlist": [],
+        "HttpsOnlyMode": "enabled",
+        "LegacySameSiteCookieBehaviorEnabled": false,
+        "LegacySameSiteCookieBehaviorEnabledForDomainList": [],
+        "LocalFileLinks": [],
+        "ManualAppUpdateOnly": false,
+        "MicrosoftEntraSSO": false,
+        "NetworkPrediction": false,
+        "NewTabPage": false,
+        "NoDefaultBookmarks": true,
+        "OfferToSaveLogins": false,
+        "OfferToSaveLoginsDefault": false,
+        "OverrideFirstRunPage": "",
+        "OverridePostUpdatePage": "",
+        "PasswordManagerEnabled": false,
+        "PDFjs": {
+            "Enabled": true,
+            "EnablePermissions": false
+        },
+        "Permissions": {
+            "Camera": {
+                "Allow": [],
+                "Block": [],
+                "BlockNewRequests": true,
+                "Locked": true
+            },
+            "Microphone": {
+                "Allow": [],
+                "Block": [],
+                "BlockNewRequests": true,
+                "Locked": true
+            },
+            "Location": {
+                "Allow": [],
+                "Block": [],
+                "BlockNewRequests": true,
+                "Locked": true
+            },
+            "Notifications": {
+                "Allow": [],
+                "Block": [],
+                "BlockNewRequests": true,
+                "Locked": true
+            },
+            "Autoplay": {
+                "Allow": [],
+                "Block": [],
+                "Default": "block-audio-video",
+                "Locked": true
+            },
+            "VirtualReality": {
+                "Allow": [],
+                "Block": [],
+                "BlockNewRequests": true,
+                "Locked": true
+            },
+            "ScreenShare": {
+                "Allow": [],
+                "Block": [],
+                "BlockNewRequests": true,
+                "Locked": true
+            }
+        },
+        "PictureInPicture": {
+            "Enabled": true,
+            "Locked": false
+        },
+        "PopupBlocking": {
+            "Allow": [],
+            "Default": true,
+            "Locked": false
+        },
+        "PostQuantumKeyAgreementEnabled": true,
+        "PrimaryPassword": false,
+        "PrintingEnabled": true,
+        "PrivateBrowsingModeAvailability": 0,
+        "RequestedLocales": "en-US",
+        "SearchBar": "unified",
+        "SearchEngines": {
+            "Add": [
+                {
+                    "Name": "DuckDuckGo",
+                    "URLTemplate": "https://duckduckgo.com/q={searchTerms}",
+                    "Method": "GET",
+                    "IconURL": "https://duckduckgo.com/favicon.ico",
+                    "Alias": "duck",
+                    "Description": "DuckDuckGo",
+                    "PostData": ""
+                }
+            ],
+            "Default": "",
+            "PreventInstalls": true,
+            "Remove": [
+                "Amazon.com",
+                "Bing",
+                "eBay",
+                "Google",
+                "Wikipedia",
+                "Wikipedia (en)"
+            ]
+        },
+        "SearchSuggestEnabled": false,
+        "ShowHomeButton": false,
+        "SkipTermsOfUse": true,
+        "TranslateEnabled": false,
+        "UserMessaging": false,
+        "WindowsSSO": false
+    }
+}
