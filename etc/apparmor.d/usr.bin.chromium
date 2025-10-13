@@ -51,9 +51,11 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     /etc/chromium/policies/managed/policies.json             r,
 
     /sys/devices/pci*/uevent                                 r,
+    /sys/devices/i915/uevent                                 r,
     /sys/{bus,class}{,/,/**}                                 r,
     /sys/{bus,class}/usb*/{,devices/}                        r,
     /sys/devices/platform/i8042/uevent                       r,
+    /sys/devices/platform/serial*/uevent                     r,
     /sys/devices/virtual/input/mice/uevent                   r,
     /sys/devices/platform/i8042/serio*/uevent                r,
     /sys/devices/platform/i8042/serio*/**/uevent             r,
@@ -83,22 +85,40 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     /usr/bin/chrom{e,ium}                                    ix,
     /usr/lib/chrom{e,ium}/chrom{e,ium}                       ix,
 
+    # Chrome fuck off
     deny @{HOME}/.config/                                    r,
     deny /sys/devices/pnp*/**                                r,
+    deny /sys/devices/*point/**                              r,
+    deny /sys/devices/cstate_*/**                            r,
+    deny /sys/devices/uncore_*/**                            r,
     deny /sys/devices/LNXSYSTM*/**                           r,
+    deny /sys/devices/system/node/**                         r,
+    deny /sys/devices/platform/*.*/**                        r,
     deny /sys/devices/platform/uevent                        r,
-    deny /sys/devices/platform/dell-*/**                     r,
+    deny /sys/devices/system/memory/**                       r,
+    deny /sys/devices/virtual/devlink/**                     r,
+    deny /sys/devices/system/{cpu,edac}/**                   r,
     deny /sys/devices/virtual/dmi/id/uevent                  r,
-    deny /sys/devices/virtual/{bdi,sound}/**                 r,
-    deny /sys/devices/platform/{INC,PNP}*/**                 r,
+    deny /sys/devices/virtual/firmware-*/**                  r,
+    deny /sys/devices/platform/microcode/**                  r,
+    deny /sys/devices/system/machinecheck/**                 r,
     deny /sys/{bu,clas}s/{acc,rfk,therm}*/{,**}              r,
     deny /sys/{bu,clas}s/*{p,q,r,u,v,x,y,z}/{,**}            r,
+    deny /sys/devices/virtual/w{akeup,orkqueue}/**           r,
+    deny /sys/devices/platform/acpi-cpufreq/uevent           r,
     deny /sys/{bu,clas}s/{dev,net,mmc,scsi}*/{,**}           r,
     deny /sys/{bu,clas}s/*{c,e,f,g,h,j,k,n,o}/{,**}          r,
+    deny /sys/devices/platform/{ACPI,INT,PNP,STM}*/**        r,
+    deny /sys/devices/virtual/{net,nvme*,powercap}/**        r,
     deny /sys/{bu,clas}s/{clockevent,mdio_bus}s/{,**}        r,
+    deny /sys/devices/{cpu,faux,intel_*,kprobe,msr}/**       r,
     deny /sys/{bu,clas}s/{dma,mem,pwm,tpm,nvme}*/{,**}       r,
     deny /sys/{bu,clas}s/{acp,me,mipi-ds,sp,wm}i/{,**}       r,
+    deny /sys/devices/virtual/{iommu,mem*,misc,msr}/**       r,
+    deny /sys/devices/virtual/{sound,thermal,vc,vt*}/**      r,
+    deny /sys/devices/platform/{dcdbas,dell-*,pcspkr}/**     r,
     deny /sys/{bu,clas}s/{mtd,cpuid,ata,back,intel}*/{,**}   r,
+    deny /sys/devices/virtual/{bdi,dell-*,graphics,sound}/** r,
 
     deny ptrace read peer=unconfined,
 
@@ -106,15 +126,21 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
         include <abstractions/dri>
         include <abstractions/glycin-bwrap>
 
-        /dev/dri/render*                                    rw,
+        /dev/dri/render*                                                  rw,
 
-        owner /dev/shm/.org.chromium.Chromium.*             rw,
+        owner /dev/shm/.org.chromium.Chromium.*                           rw,
 
-        owner @{HOME}/.config/chromium/Default/**           rw,
-        owner @{HOME}/.config/chromium/Subresource*/**      rw,
-        owner @{HOME}/.config/chromium/{,Gr}ShaderCache/*   rw,
-        owner @{HOME}/.config/chromium/GraphiteDawnCache/*  rw,
-        owner @{HOME}/.config/chromium/BrowserMetrics/*.pma rw,
+        owner @{run}/user/@{uid}/chrome_temp_profile/Default/**           rw,
+        owner @{run}/user/@{uid}/chrome_temp_profile/Subresource*/**      rw,
+        owner @{run}/user/@{uid}/chrome_temp_profile/{,Gr}ShaderCache/*   rw,
+        owner @{run}/user/@{uid}/chrome_temp_profile/GraphiteDawnCache/*  rw,
+        owner @{run}/user/@{uid}/chrome_temp_profile/BrowserMetrics/*.pma rw,
+
+        owner @{HOME}/.config/chromium/Default/**                         rw,
+        owner @{HOME}/.config/chromium/Subresource*/**                    rw,
+        owner @{HOME}/.config/chromium/{,Gr}ShaderCache/*                 rw,
+        owner @{HOME}/.config/chromium/GraphiteDawnCache/*                rw,
+        owner @{HOME}/.config/chromium/BrowserMetrics/*.pma               rw,
     }
 
     include if exists <local/usr.bin.chromium>

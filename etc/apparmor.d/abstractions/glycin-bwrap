@@ -71,7 +71,7 @@ owner @{HOME}/.config/chromium/GraphiteDawnCache/* rw,
 
 owner /newroot/{,**}                               w,
 
-/bin/true                                          ix,
+/{usr/,}bin/true                                   ix,
 /usr/lib/glycin-loaders/2+/glycin-*                ix,
 
 mount               options=(rw rbind)                         -> /newroot/{,**},

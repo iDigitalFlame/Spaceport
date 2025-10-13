@@ -58,6 +58,7 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
 
     /sys/{bus,class}/                           r,
     /sys/bus/pci/devices                        r,
+    /sys/devices/pci*/uevent                    r,
     /sys/devices/virtual/dmi/id/bios_vendor     r,
 
     owner @{CONFIG}/vesktop/themes/*.css        r,
