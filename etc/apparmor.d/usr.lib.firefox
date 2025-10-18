@@ -58,6 +58,7 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
 
     /sys/devices/system/cpu/cpu*/topology/{core_cpus,thread_siblings}  r,
 
+    owner /proc/@{pid}/mem                                             r,
     owner /proc/@{pid}/smaps                                           r,
     owner /proc/@{pid}/task/@{tid}/stat                                r,
 

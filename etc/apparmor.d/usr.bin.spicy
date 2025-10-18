@@ -60,6 +60,7 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
 
     /dev/                                                                               r,
     /dev/shm/                                                                           r,
+    /dev/media*                                                                         r,
     /dev/bus/usb/                                                                       r,
 
     /sys/{bu,clas}s/                                                                    r,
