@@ -521,12 +521,12 @@ class Multi(object):
     def _next(self):
         v = nulexec(self._cmds.pop(0))
         nulexec(
-            ["/usr/bin/renice", "-n", "15", "--pid", f"{v.pid}"],
+            ["/usr/bin/renice", "--priority", "15", "--pid", f"{v.pid}"],
             wait=True,
             errors=False,
         )
         nulexec(
-            ["/usr/bin/ionice", "-c", "3", "-p", f"{v.pid}"],
+            ["/usr/bin/ionice", "--class", "3", "--pid", f"{v.pid}"],
             wait=True,
             errors=False,
         )
