@@ -57,6 +57,7 @@ profile kitty /usr/bin/kitty flags=(enforce) {
 
     owner /proc/@{pid}/stat            r,
     owner /proc/@{pid}/cgroup          r,
+    owner /proc/@{pid}/mountinfo       r,
 
     owner @{run}/user/@{uid}/          r,
 
