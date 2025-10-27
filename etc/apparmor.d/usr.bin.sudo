@@ -100,7 +100,7 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
 
     owner /var/lib/extrausers/shadow                         r,
 
-    /dev/ptmx                                                rwk,
+    /dev/{tty,ptmx}                                          rwk,
     /dev/bus/usb/*/{,*}                                      rwk,
 
     /sys/devices/**/usb*/{,**}                               rw,

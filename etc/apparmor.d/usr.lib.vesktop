@@ -66,6 +66,7 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
     owner @{HOME}/.config/vesktop/{,**}         rwk,
 
     /usr/bin/slurp                              ix,
+    /usr/bin/xdg-mime                           Pxr -> xdg-mime,
     /usr/bin/xdg-open                           Pix -> xdg-open,
     /usr/bin/electron*                          ixr,
     /usr/bin/xdg-email                          Pix -> xdg-email,

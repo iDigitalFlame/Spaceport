@@ -51,6 +51,8 @@ profile kmod /usr/bin/{kmod,lsmod,depmod,insmod,rmmod,modinfo,modprobe} flags=(e
 
     network                                   inet raw,
 
+    signal receive set=(int, hup, kill, term, winch),
+
     @{sysconfig}/etc/modules-load.d/{,*}      r,
     @{sysconfig}/etc/modprobe.d/{,*.conf}     r,
 

@@ -48,6 +48,8 @@ profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected,
     /usr/bin/slack                                           r,
     /usr/lib/slack/resources/**                              rm,
 
+    /sys/devices/virtual/sound/*/uevent                      r,
+
     owner /proc/@{pid}/mem                                   r,
 
     owner @{HOME}/                                           r,
