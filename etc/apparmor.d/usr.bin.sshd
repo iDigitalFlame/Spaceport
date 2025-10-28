@@ -38,7 +38,8 @@ include <tunables/spaceport>
 
 profile sshd /usr/bin/sshd flags=(enforce) {
     # Used to stop "sshd" from running.
-    audit deny /usr/bin/sshd rm,
+    deny /usr/bin/sshd rm,
+    # Using "audit deny" causes an assertion in apparmor_parser.
 
     include if exists <local/usr.bin.sshd>
 }
