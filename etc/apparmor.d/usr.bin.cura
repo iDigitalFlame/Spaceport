@@ -68,8 +68,10 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
     /sys/module/compression                      r,
     /sys/devices/p{ci,np}*/**                    r,
     /sys/module/*/{,coresize,refcnt}             r,
+    /sys/kernel/mm/transparent_hugepage/enabled  r,
 
     /proc/{cmdline,modules}                      r,
+    /proc/sys/vm/nr_hugepages                    r,
 
     owner /proc/@{pid}/fd/                       r,
     owner /proc/@{pid}/mounts                    r,
