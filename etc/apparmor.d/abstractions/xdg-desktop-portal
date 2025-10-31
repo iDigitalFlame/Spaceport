@@ -60,6 +60,7 @@ ptrace read,
 /                                            r,
 /etc/sysconfig/proxy                         r,
 /usr/lib/xdg-desktop-portal                  rm,
+/etc/xdg-desktop-portal/.conf                r,
 /usr/share/xdg-desktop-portal/**             r,
 
 /sys/devices/virtual/dmi/id/*_{name,vendor}  r,

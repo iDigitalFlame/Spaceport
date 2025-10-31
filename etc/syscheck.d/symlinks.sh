@@ -64,6 +64,10 @@ linkcheck "/etc/tmpfiles.d/polkit-tmpfiles.conf"             "/dev/null"
 linkcheck "/etc/udev/rules.d/80-net-setup-link.rules"        "/dev/null"
 linkcheck "/etc/pacman.d/hooks/update-desktop-database.hook" "/dev/null"
 
+# XDG Portal Links
+linkcheck "/etc/xdg-desktop-portal/gtk-portals.conf"  "/etc/xdg-desktop-portal/portals.conf"
+linkcheck "/etc/xdg-desktop-portal/sway-portals.conf" "/etc/xdg-desktop-portal/portals.conf"
+
 # SMD PowerCTL Links
 for i in $(/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO ${BASE_DIR}/usr/lib/smd/bin/powerctl modules 2> /dev/null | grep -v log); do
     linkcheck "/usr/local/bin/${i}"    "${BASE_DIR}/usr/lib/smd/bin/powerctl"
