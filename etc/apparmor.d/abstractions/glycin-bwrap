@@ -40,39 +40,37 @@ include <abstractions/base>
 include <abstractions/fonts>
 include <abstractions/private-files>
 
-capability                                         setpcap,
-capability                                         net_admin,
-capability                                         sys_admin,
-capability                                         sys_ptrace,
+capability                                     setpcap,
+capability                                     net_admin,
+capability                                     sys_admin,
+capability                                     sys_ptrace,
 
-network                                            netlink raw,
+network                                        netlink raw,
 
 signal receive set=(int, kill, quit, term),
 
-/                                                  r,
-/usr/bin/bwrap                                     r,
-/usr/share/glycin-loaders/2+/conf.d{/,/*.conf}     r,
+/                                              r,
+/usr/bin/bwrap                                 r,
+/usr/share/glycin-loaders/2+/conf.d{/,/*.conf} r,
 
-/proc/sys/kernel/overflow{g,u}id                   r,
-/proc/sys/user/max_user_namespaces                 r,
-/proc/sys/kernel/seccomp/actions_avail             r,
+/proc/sys/kernel/overflow{g,u}id               r,
+/proc/sys/user/max_user_namespaces             r,
+/proc/sys/kernel/seccomp/actions_avail         r,
 
-owner /proc/@{pid}/fd/                             r,
-owner /proc/@{pid}/mountinfo                       r,
+owner /proc/@{pid}/fd/                         r,
+owner /proc/@{pid}/mountinfo                   r,
 
-/tmp/{new,old}root{,/}                             rw,
+owner @{HOME}/.cache/thumbnails/**             r,
 
-owner /proc/@{pid}/setgroups                       rw,
-owner /proc/@{pid}/{g,u}id_map                     rw,
+/tmp/{new,old}root{,/}                         rw,
 
-owner @{HOME}/.config/librewolf/*/.parentlock      w,
-owner @{HOME}/.config/chromium/{,Gr}ShaderCache/*  rw,
-owner @{HOME}/.config/chromium/GraphiteDawnCache/* rw,
+owner /proc/@{pid}/setgroups                   rw,
+owner /proc/@{pid}/{g,u}id_map                 rw,
 
-owner /newroot/{,**}                               w,
+owner /newroot/{,**}                           w,
 
-/{usr/,}bin/true                                   ix,
-/usr/lib/glycin-loaders/2+/glycin-*                ix,
+/{usr/,}bin/true                               ix,
+/usr/lib/glycin-loaders/2+/glycin-*            ix,
 
 mount               options=(rw rbind)                         -> /newroot/{,**},
 mount               options=(rw rbind)           /tmp/newroot/ -> /tmp/newroot/,
