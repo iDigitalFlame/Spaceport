@@ -53,6 +53,7 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
 
     /usr/bin/zsh                      ix,
     /usr/bin/wl-copy                  ix,
+    /usr/bin/swaymsg                  ix,
 
     owner @{HOMEDOTS}/.local/bin/crop Pxr -> cropgui,
 
