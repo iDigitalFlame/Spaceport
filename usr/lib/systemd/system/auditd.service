@@ -53,7 +53,7 @@ ConditionKernelCommandLine = !audit=off
 [Service]
 Type                       = forking
 Restart                    = on-failure
-PIDFile                    = /run/auditd.pid
+PIDFile                    = /run/audit/auditd.pid
 ExecStart                  = /usr/bin/auditd -l
 ExecStartPost              = -/usr/bin/auditctl -R /etc/audit/audit.rules
 LockPersonality            = true

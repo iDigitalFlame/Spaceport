@@ -35,8 +35,8 @@
 #
 
 include <tunables/cache>
-include <tunables/mounts>
 include <tunables/global>
+include <tunables/mounts>
 
 @{GPG_SYS_DIR}=/etc/pacman.d/gnupg /var/db/pacman/gnupg
 @{GPG_DIR}=@{HOME}/.gnupg @{HOME}/.local/share/gnupg @{HOME}/.dotfiles/.local/share/gnupg

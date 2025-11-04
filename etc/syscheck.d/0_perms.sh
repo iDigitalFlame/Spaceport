@@ -189,9 +189,9 @@ chmod 0750      "/var/cache/smd/backup" 2> /dev/null
 
 # AuditD Permissions
 chmod -h 0440 "/etc/audit/"*           2> /dev/null
-chmod -h 0550 "/etc/audit/rules.d"
+chmod -h 0550 "/etc/audit/rules.d"     2> /dev/null
 chmod -h 0440 "/etc/audit/rules.d/"*   2> /dev/null
-chmod -h 0550 "/etc/audit/plugins.d"
+chmod -h 0550 "/etc/audit/plugins.d"   2> /dev/null
 chmod -h 0440 "/etc/audit/plugins.d"/* 2> /dev/null
 
 # AppArmor Permissions

@@ -61,14 +61,15 @@ profile auditd /usr/bin/auditd flags=(enforce, attach_disconnected) {
     owner /proc/@{pid}/sessionid     r,
     owner /proc/@{pid}/attr/current  r,
 
-    /var/log/audit/{,**}             rw,
+    /var/log/audit{,/,/**}           rw,
 
-    @{run}/log/audit/{,**}           rw,
+    @{run}/audit{,/}                 rw,
+    @{run}/log/audit{,/}             rw,
+    @{run}/log/audit/audit.*         rw,
+    @{run}/{,audit}/auditd.pid       rwl,
+    @{run}/{,audit}/auditd.state     rw,
 
     owner /proc/@{pid}/oom_score_adj rw,
-
-    owner @{run}/auditd.pid          rwl,
-    owner @{run}/auditd.state        rw,
 
     deny /etc/audit/{,**}            w,
 

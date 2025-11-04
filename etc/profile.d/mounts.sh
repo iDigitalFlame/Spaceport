@@ -35,10 +35,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-if ! [ -d "/tmp/.mounts/${USER}" ]; then
-    mkdir "/tmp/.mounts/${USER}" 2> /dev/null
-    chmod 1750 "/tmp/.mounts/${USER}"
-fi
 if [ ! -z "${XDG_RUNTIME_DIR}" ] && [ ! -d "${XDG_RUNTIME_DIR}/mounts" ]; then
     mkdir "${XDG_RUNTIME_DIR}/mounts" 2> /dev/null
     chmod 0750 "${XDG_RUNTIME_DIR}/mounts"
