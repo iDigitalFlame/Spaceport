@@ -100,6 +100,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     deny /sys/devices/virtual/devlink/**                     r,
     deny /sys/devices/system/{cpu,edac}/**                   r,
     deny /sys/devices/virtual/dmi/id/uevent                  r,
+    deny /sys/devices/platform/USBC*/uevent                  r,
     deny /sys/devices/virtual/firmware-*/**                  r,
     deny /sys/devices/platform/microcode/**                  r,
     deny /sys/devices/system/machinecheck/**                 r,

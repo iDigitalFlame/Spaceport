@@ -49,6 +49,9 @@ audit deny /opt/secureboot/{,*}     rw,
 signal receive peer=smd-{client,daemon} set=(cont, int, kill, quit, term, stop),
 signal receive peer=unconfined          set=(cont, int, kill, quit, term, stop, hup, pipe, segv),
 signal         peer=@{profile_name},
+signal receive peer=shell               set=(cont, int, kill, quit, term, stop),
+# Ability to kill hanging processes.
+
 
 # Disconnected Paths
 deny /apparmor/.null                rw,

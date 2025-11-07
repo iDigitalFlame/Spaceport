@@ -207,6 +207,7 @@ mkdir    "/usr/lib/firmware/amdgpu"           2> /dev/null
 mkdir    "/usr/lib/firmware/radeon"           2> /dev/null
 mkdir -p "/usr/lib/firmware/nvidia/gp100/acr" 2> /dev/null
 
+touch "/usr/lib/firmware/cs42l43.bin"
 touch "/usr/lib/firmware/qat_6xxx.bin"
 touch "/usr/lib/firmware/ql2500_fw.bin"
 touch "/usr/lib/firmware/aic94xx-seq.fw"
