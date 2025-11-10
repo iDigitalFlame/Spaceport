@@ -130,7 +130,7 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     owner /proc/@{pid}/task/@{tid}/comm                       rw,
 
     owner /tmp/*.tmp                                          rwm,
-    owner /tmp/jna-*/{,*}                                     rwm,
+    owner /tmp/{jna-,opus4j}*/{,*}                            rwm,
     owner /{tmp,var/run}/hsperfdata_*/                        rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
     owner /tmp/lwjgl*/{,*/,*/*.so,*/.lwjgl.test}              rwmk,

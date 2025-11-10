@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce) {
+profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/fonts>
@@ -99,6 +99,9 @@ profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce) {
     /usr/bin/*{,-}thumbnailer                                                       ix,
     /usr/lib/glycin-loaders/2+/glycin-*                                             ix,
     /usr/lib/{,gstreamer1.0}gstreamer1.0/gstreamer-1.0/gst-plugin-scanner           ix,
+
+    deny /apparmor/.null                                                            rw,
+    deny /systemd/journal/stdout                                                    rw,
 
     include if exists <local/usr.lib.tumblerd>
 }
