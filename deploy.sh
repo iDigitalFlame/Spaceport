@@ -61,7 +61,7 @@ cat<<EOF | sudo -i --
     rsync --ignore-times --recursive \
           --exclude=.git* --exclude=*.md --exclude=.vscode --exclude="deploy.sh" \
           --exclude="LICENSE" --exclude=*.code-workspace \
-          --exclude ".github" --exclude ".vscode" "${DIR_BASE}/" "${DIR_DEST}/"
+          --exclude=".github" --exclude=".vscode" "${DIR_BASE}/" "${DIR_DEST}/"
     printf '\e[0;37;41mSyncing permissions..\x1b[0m\n'
     syslink
     printf '\e[0;37;41mFile Diff:\x1b[0m\n'

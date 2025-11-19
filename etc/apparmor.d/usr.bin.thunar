@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile thunar /usr/bin/{T,t}hunar flags=(enforce) {
+profile thunar /usr/bin/{T,t}hunar flags=(enforce, attach_disconnected) {
     include <abstractions/gtk>
     include <abstractions/dconf>
     include <abstractions/consoles>
@@ -65,6 +65,7 @@ profile thunar /usr/bin/{T,t}hunar flags=(enforce) {
     /usr/bin/xdg-settings                                 PUx,
     /usr/lib/gio-launch-desktop                           PUx,
 
+    deny /systemd/journal/stdout                          rw,
     deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml          w,
     deny @{HOMEDOTS}/.local/share/applications/mimeapps.* w,
 

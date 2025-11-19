@@ -60,10 +60,15 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
 
     /sys/bus/                                             r,
     /sys/class/{,input/}                                  r,
+    /sys/devices/pci*/uevent                              r,
+    /sys/devices/platform/uevent                          r,
+    /sys/devices/LNXSYSTM*/{,**/}uevent                   r,
     /sys/devices/virtual/input/mice/uevent                r,
+    /sys/devices/platform/i8042/{,**/}uevent              r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6              r,
     /sys/devices/system/cpu/{kernel_max,present}          r,
     /sys/devices/**/input*/input*/{,event*/}uevent        r,
+    /sys/devices/platform/{INTC1051,PNP0}*/{,**/}uevent   r,
     /sys/devices/platform/**/input/input*/mouse*/uevent   r,
 
     @{run}/udev/data/c13:*                                r,
@@ -79,6 +84,7 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
 
     owner @{HOME}/.local/share/mcpelauncher{,/**}         rwk,
     owner @{HOME}/.local/share/mcpelauncher/mods/*.so     rm,
+    owner @{HOME}/.local/share/mcpelauncher/mods/**/*.so  rm,
     owner @{HOME}/.local/share/mcpelauncher/versions/*/** rwm,
 
     /usr/bin/dash                                         ix,

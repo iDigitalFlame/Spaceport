@@ -37,6 +37,7 @@
 include <tunables/spaceport>
 
 profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce, attach_disconnected) {
+    include <abstractions/video>
     include <abstractions/cgroup>
     include <abstractions/chromium>
     include <abstractions/user-home>

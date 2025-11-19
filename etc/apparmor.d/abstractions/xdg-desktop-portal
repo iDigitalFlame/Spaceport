@@ -117,4 +117,6 @@ dbus receive bus=system  path=/org/freedesktop/NetworkManager{,/**} interface=or
 dbus receive bus=system  path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=Updated peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
 dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={CheckPermissions,DeviceAdded,DeviceRemoved,StateChanged} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
 
+deny /.flatpak-info                          r,
+
 include if exists <abstractions/xdg-desktop-portal.d>
