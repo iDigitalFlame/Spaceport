@@ -36,11 +36,20 @@
 
 [Trigger]
 Type        = Path
-Target      = usr/lib/modules/*/vmlinuz
+Target      = usr/bin/lvm
 Target      = usr/lib/initcpio/*
 Target      = usr/lib/firmware/*
+Target      = usr/bin/cryptsetup
 Target      = usr/src/*/dkms.conf
+Target      = usr/lib/systemd/systemd
+Target      = usr/lib/modules/*/extramodules/
 Operation   = Remove
+Operation   = Install
+Operation   = Upgrade
+
+[Trigger]
+Type        = Path
+Target      = usr/lib/modules/*/vmlinuz
 Operation   = Install
 Operation   = Upgrade
 

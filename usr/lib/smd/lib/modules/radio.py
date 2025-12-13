@@ -56,6 +56,7 @@ from lib.constants import (
     MSG_CONFIG,
     MSG_STATUS,
     HOOK_STARTUP,
+    HOOK_SUSPEND,
     HOOK_SHUTDOWN,
     HOOK_HIBERNATE,
 )
@@ -63,6 +64,7 @@ from lib.constants import (
 HOOKS_SERVER = {
     HOOK_RADIO: "Radio.hook",
     HOOK_STARTUP: "Radio.startup",
+    HOOK_SUSPEND: "Radio.hook",
     HOOK_SHUTDOWN: "Radio.hook",
     HOOK_HIBERNATE: "Radio.hook",
 }
@@ -123,17 +125,20 @@ class Radio(object):
                     continue
                 self._set(server, i, False, True)
             return
-        if message.header() == HOOK_HIBERNATE:
+        if message.header() == HOOK_HIBERNATE or message.header() == HOOK_SUSPEND:
             if message.uid() != 0:
                 return server.warning(
-                    "[m/radio]: Ignoring Hibernate request from a non-root user."
+                    "[m/radio]: Ignoring Suspend/Hibernate request from a non-root user."
                 )
             a = message.type == MSG_POST
+            server.debug("[m/radio]: Updating radio config for Suspend/Hibernate..")
             for k, v in self._states.items():
                 if not v:
                     continue
                 self._set(server, k, a, True, update=False)
             del a
+            return
+        if message.header() != HOOK_RADIO:
             return
         if not a2z(message.radio):
             return server.warning("[m/radio]: Ignoring invalid Radio name!")
