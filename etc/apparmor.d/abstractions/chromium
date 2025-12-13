@@ -119,5 +119,6 @@ owner @{HOME}/.local/lib/pki/nssdb/{,**}                             rwk,
 
 deny /proc/@{pid}/task/@{tid}/status                                 r,
 deny /usr/lib/chromium/extensions{,/,/**}                            w,
+deny /sys/devices/virtual/sound/{ctl-led,timer}/uevent               r,
 
 include if exists <abstractions/chromium.d>
