@@ -38,7 +38,8 @@
 vet() {
     isort --color --no-sections --length-sort --force-sort-within-sections \
           --multi-line=3 --line-length=88 --order-by-type --combine-as \
-          --trailing-comma --case-sensitive --float-to-top --use-parentheses "$1"
+          --trailing-comma --case-sensitive --float-to-top --use-parentheses \
+          --honor-noqa "$1"
     black -q "$1"
 }
 

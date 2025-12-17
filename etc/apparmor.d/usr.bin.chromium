@@ -84,6 +84,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     /usr/bin/xdg-settings                                    Pix -> xdg-settings,
     /usr/bin/chrom{e,ium}                                    ix,
     /usr/lib/chrom{e,ium}/chrom{e,ium}                       ix,
+    /usr/lib/chrom{e,ium}/chrom{e,ium}_crashpad_handler      ix,
 
     # Chrome fuck off
     deny @{HOME}/.config/                                    r,
