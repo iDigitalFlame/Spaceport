@@ -36,9 +36,10 @@
 
 abi <abi/4.0>,
 
-/sys/fs/cgroup/user.slice/cpu.max                              r,
-/sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max            r,
-/sys/fs/cgroup/user.slice/user-*.slice/session-*.scope/cpu.max r,
+/sys/fs/cgroup/user.slice/cpu.max                                                   r,
+/sys/fs/cgroup/user.slice/user-@{uid}.slice/cpu.max                                 r,
+/sys/fs/cgroup/user.slice/user-*.slice/session-*.scope/cpu.max                      r,
+/sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/kitty.slice/cpu.max r,
 
-@{CGROUP}/{,app.slice/}cpu.max                                 r,
-@{CGROUP}/app.slice/sway.service/memory.{high,max}             r,
+@{CGROUP}/{,app.slice/}cpu.max                                                      r,
+@{CGROUP}/app.slice/sway.service/memory.{high,max}                                  r,

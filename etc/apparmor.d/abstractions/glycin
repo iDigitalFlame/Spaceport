@@ -43,6 +43,8 @@ signal send set=(int, kill, term) peer=glycin,
 signal send set=(int, kill, term) peer=/usr/bin/bwrap,
 signal send set=(int, kill, term) peer=@{profile_name}//glycin,
 
+signal receive set=(hup, int, kill, term),
+
 /                                              r,
 /usr/share/glycin-loaders/2+/conf.d{/,/*.conf} r,
 

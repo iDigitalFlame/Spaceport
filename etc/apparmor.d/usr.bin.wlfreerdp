@@ -36,26 +36,36 @@
 
 include <tunables/spaceport>
 
-profile freerdp /usr/bin/{,wl,x}freerdp flags=(enforce) {
+profile freerdp /usr/bin/{sdl-,wl,x}freerdp{,2,3} flags=(enforce) {
+    include <abstractions/dri>
     include <abstractions/gui>
+    include <abstractions/mesa>
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
     include <abstractions/nameservice>
 
-    network                                       inet  stream,
-    network                                       inet6 stream,
+    network                                               inet  stream,
+    network                                               inet6 stream,
 
-    /usr/bin/{x,wl}freerdp                        rm,
+    mount fstype=fuse options=(rw nosuid nodev) -> /tmp/com.freerdp.client.cliprdr.*{,/},
 
-    @{run}/user/@{uid}/#*                         rw,
+    /usr/bin/{sdl-,wl,x}freerdp{,2,3}                     rm,
 
-    owner /dev/shm/com.freerdp.xfreerdp.*         rw,
+    /dev/fuse                                             rw,
 
-    owner @{HOME}/.config/freerdp/                rw,
-    owner @{HOME}/.config/freerdp/known_hosts{,2} rwk,
+    @{run}/user/@{uid}/#*                                 rw,
 
-    deny @{HOME}/.{dotfiles,private}{,/}          r,
+    owner /dev/shm/com.freerdp.{sdl-,wl,x}freerdp{,2,3}.* rw,
+
+    owner /tmp/com.freerdp.client.cliprdr.*{,/}           rw,
+
+    owner @{HOME}/.config/freerdp{,2,3}/                  rw,
+    owner @{HOME}/.config/freerdp{,2,3}/known_hosts{,2,3} rwk,
+
+    /usr/bin/fusermount*                                  Px -> fusermount,
+
+    deny @{HOME}/.{dotfiles,private}{,/}                  r,
 
     include if exists <local/usr.bin.wlfreerdp>
 }

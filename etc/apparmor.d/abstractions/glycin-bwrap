@@ -47,7 +47,7 @@ capability                                     sys_ptrace,
 
 network                                        netlink raw,
 
-signal receive set=(int, kill, quit, term),
+signal receive set=(hup, int, kill, quit, term),
 
 /                                              r,
 /usr/bin/bwrap                                 r,

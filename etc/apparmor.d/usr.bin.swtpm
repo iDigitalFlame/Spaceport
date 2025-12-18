@@ -48,7 +48,7 @@ profile swtpm /usr/bin/swtpm flags=(enforce) {
     capability                      dac_override,
     capability                      dac_read_search,
 
-    signal receive set=(int, cont, stop, term) peer=smd-daemon,
+    signal receive set=(cont, int, stop, term) peer=smd-daemon,
 
     /usr/bin/swtpm                                rm,
     # Read TPM Images

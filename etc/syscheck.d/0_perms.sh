@@ -295,6 +295,7 @@ chmod 0400 /usr/share/applications/org.telegram.desktop.desktop         2> /dev/
 chmod 0400 /usr/share/applications/cura-modern-appimage.desktop         2> /dev/null
 chmod 0400 /usr/share/applications/jconsole-java-openjdk.desktop        2> /dev/null
 chmod 0400 /usr/share/applications/youtube-music-desktop.desktop        2> /dev/null
+chmod 0400 /usr/share/applications/org.gnome.Connections.desktop        2> /dev/null
 chmod 0400 /usr/share/applications/xfce4-terminal-settings.desktop      2> /dev/null
 chmod 0400 /usr/share/applications/org.keepassxc.KeePassXC.desktop      2> /dev/null
 chmod 0400 /usr/share/applications/net.sourceforge.liferea.desktop      2> /dev/null

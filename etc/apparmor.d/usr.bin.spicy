@@ -42,6 +42,7 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/video>
+    include <abstractions/cgroup>
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/no-network>
@@ -52,46 +53,45 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     include <abstractions/freedesktop.org>
 
     # For USB redirection.
-    capability                                                                          fowner,
+    capability                                    fowner,
 
-    /etc/machine-id                                                                     r,
-    /usr/share/hwdata/usb.ids                                                           r,
-    /usr/share/glib-2.0/schemas/gschemas.compiled                                       r,
+    /etc/machine-id                               r,
+    /usr/share/hwdata/usb.ids                     r,
+    /usr/share/glib-2.0/schemas/gschemas.compiled r,
 
-    /dev/                                                                               r,
-    /dev/shm/                                                                           r,
-    /dev/media*                                                                         r,
-    /dev/bus/usb/                                                                       r,
+    /dev/                                         r,
+    /dev/shm/                                     r,
+    /dev/media*                                   r,
+    /dev/bus/usb/                                 r,
 
-    /sys/{bu,clas}s/                                                                    r,
-    /sys/bus/media/devices/                                                             r,
-    /sys/devices/pci*/uevent                                                            r,
-    /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/kitty.slice/cpu.max r,
+    /sys/{bu,clas}s/                              r,
+    /sys/bus/media/devices/                       r,
+    /sys/devices/pci*/uevent                      r,
 
-    /proc/@{pid}/stat                                                                   r,
-    /proc/@{pid}/fdinfo/@{tid}{,/,/comm}                                                r,
+    /proc/@{pid}/stat                             r,
+    /proc/@{pid}/fdinfo/@{tid}{,/,/comm}          r,
 
-    owner /proc/@{pid}/fd/                                                              r,
+    owner /proc/@{pid}/fd/                        r,
 
-    owner @{CONFIG}/spicy/settings                                                      r,
+    owner @{CONFIG}/spicy/settings                r,
 
-    owner @{HOME}/.local/share/                                                         r,
+    owner @{HOME}/.local/share/                   r,
 
-    /dev/bus/usb/*/*                                                                    rw,
+    /dev/bus/usb/*/*                              rw,
 
-    /sys/bus/usb/devices/{,*/**}                                                        rw,
+    /sys/bus/usb/devices/{,*/**}                  rw,
 
-    @{run}/udev/data/c*:*                                                               rw,
-    @{run}/smd/hydra/*.spice                                                            rw,
-    @{run}/udev/data/+usb{,-serial}:*                                                   rw,
+    @{run}/udev/data/c*:*                         rw,
+    @{run}/smd/hydra/*.spice                      rw,
+    @{run}/udev/data/+usb{,-serial}:*             rw,
 
-    /tmp/orcexec.*                                                                      rwm,
+    /tmp/orcexec.*                                rwm,
 
-    owner @{CACHE}/gstreamer-1.0/registry.*                                             rw,
+    owner @{CACHE}/gstreamer-1.0/registry.*       rw,
 
-    /usr/bin/spicy-s{creenshot,tats}                                                    ix,
-    /usr/lib/gstreamer-1.0/gst-plugin-scanner                                           ix,
-    /usr/lib/spice-client-glib-usb-acl-helper                                           ix,
+    /usr/bin/spicy-s{creenshot,tats}              ix,
+    /usr/lib/gstreamer-1.0/gst-plugin-scanner     ix,
+    /usr/lib/spice-client-glib-usb-acl-helper     ix,
 
     dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=polkitd),
     dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=*, label=polkitd),
@@ -101,9 +101,9 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
 
     dbus receive bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=Changed peer=(name=*, label=polkitd),
 
-    deny @{HOME}/orcexec{,*}                                                            rw,
-    deny @{CONFIG}/spicy/settings{,*}                                                   w,
-    deny @{run}/user/@{uid}/orcexec{,*}                                                 rw,
+    deny @{HOME}/orcexec{,*}                      rw,
+    deny @{CONFIG}/spicy/settings{,*}             w,
+    deny @{run}/user/@{uid}/orcexec{,*}           rw,
 
     include if exists <local/usr.bin.spicy>
 }

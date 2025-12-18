@@ -47,9 +47,9 @@ audit deny /opt/secureboot/{,*}     rw,
 # Allow confined processes to signal they are shutting down to smd-client
 # and smd-daemon.
 signal receive peer=smd-{client,daemon} set=(cont, int, kill, quit, term, stop),
-signal receive peer=unconfined          set=(cont, int, kill, quit, term, stop, hup, pipe, segv),
+signal receive peer=unconfined          set=(cont, hup, int, kill, pipe, quit, segv, stop, term),
 signal         peer=@{profile_name},
-signal receive peer=shell               set=(cont, int, kill, quit, term, stop),
+signal receive peer=shell               set=(cont, hup, int, kill, quit, term, stop),
 # Ability to kill hanging processes.
 
 

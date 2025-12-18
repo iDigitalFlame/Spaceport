@@ -46,7 +46,7 @@ profile gnome-keyring-daemon /usr/bin/gnome-keyring-daemon flags=(enforce, attac
     capability                               ipc_lock,
 
     signal send    set=(term)       peer=ssh-agent,
-    signal receive set=(term, cont) peer=unconfined,
+    signal receive set=(cont, term) peer=unconfined,
 
     /usr/bin/gnome-keyring-daemon            rm,
 

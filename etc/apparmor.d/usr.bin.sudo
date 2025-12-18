@@ -61,7 +61,7 @@ profile sudo /usr/bin/sudo flags=(enforce, attach_disconnected) {
     network                                                  netlink raw,
 
     signal send    set=(hup, term, winch),
-    signal receive set=(int, hup, kill, term),
+    signal receive set=(hup, int, kill, term),
 
     ptrace read,
 

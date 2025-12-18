@@ -36,22 +36,33 @@
 
 include <tunables/spaceport>
 
-profile swayidle /usr/bin/swayidle flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/wayland>
+profile gnome-connections /usr/bin/gnome-connections flags=(enforce, attach_disconnected) {
+    include <abstractions/dri>
+    include <abstractions/dconf>
+    include <abstractions/gnome>
+    include <abstractions/cgroup>
     include <abstractions/consoles>
     include <abstractions/no-network>
+    include <abstractions/glycin-base>
     include <abstractions/private-files>
 
-    signal receive set=(cont, int, kill, quit, stop, term, usr1),
+    mount fstype=fuse options=(rw nosuid nodev) -> @{run}/user/@{uid}/clipboard-*/,
 
-    @{sysconfig}/usr/lib/smd/libexec/smd-locker Px -> smd-locker,
+    /usr/bin/gnome-connections                rm,
 
-    /usr/bin/swayidle                           rm,
+    /proc/sys/net/ipv6/conf/all/disable_ipv6  r,
 
-    /usr/bin/swaymsg                            ix,
-    /usr/bin/{,ba,da}sh                         ix,
-    /usr/lib/smd/libexec/smd-locker             Px -> smd-locker,
+    owner @{HOME}/.config{,/}                 r,
 
-    include if exists <local/usr.bin.swayidle>
+    /dev/fuse                                 rw,
+
+    owner @{run}/user/@{uid}/clipboard-*/     rw,
+
+    owner @{HOME}/.config/connections.db{,.*} rw,
+
+    /usr/bin/vncviewer                        Px -> vncviewer,
+    /usr/bin/fusermount*                      Px -> fusermount,
+    /usr/bin/{wl,x}freerdp{,2,3}              Px -> freerdp,
+
+    include if exists <local/usr.bin.gnome-connections>
 }
