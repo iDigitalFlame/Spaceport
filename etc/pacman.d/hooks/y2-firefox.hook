@@ -42,6 +42,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "rm -f /usr/lib/firefox/browser/features/*.xpi; rm -f /usr/lib/librewolf/browser/features/*.xpi; rm -f /usr/lib/firefox/libonnxruntime.so"
+When        = PostTransaction
 Description = Applying Firefox/LibreWolf hardening..

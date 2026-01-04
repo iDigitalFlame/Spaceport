@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Boot Remount Unit
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,32 +34,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After                   = systemd-boot-random-seed.service boot.mount
-Requires                = systemd-boot-random-seed.service boot.mount
-Description             = System Management Daemon Boot Remount
+include <tunables/spaceport>
 
-[Service]
-Type                    = oneshot
-ExecStart               = /usr/bin/mount -o ro,remount /boot
-PrivateTmp              = true
-KeyringMode             = private
-ProtectHome             = true
-PrivatePIDs             = true
-ProtectClock            = true
-PrivateUsers            = false
-ProtectSystem           = strict
-PrivateDevices          = false
-NoNewPrivileges         = true
-LockPersonality         = true
-RestrictRealtime        = true
-RestrictSUIDSGID        = true
-ProtectKernelLogs       = true
-RestrictNamespaces      = true
-ProtectControlGroups    = true
-ProtectKernelModules    = true
-ProtectKernelTunables   = true
-RestrictAddressFamilies =
+profile utils /{,usr/}bin/{bat,cat,diff,echo,grep,ls,lsd,pgrep,printf,*sum} flags=(enforce) {
+    include <abstractions/command>
 
-[Install]
-WantedBy                = multi-user.target
+    capability dac_override,
+    capability dac_read_search,
+
+    include if exists <local/usr.bin.utils>
+}

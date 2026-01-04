@@ -38,9 +38,9 @@
 Description = System Management Daemon Backup
 
 [Timer]
+OnCalendar  = *-*-* 02:00:00
 Persistent  = true
 WakeSystem  = true
-OnCalendar  = *-*-* 02:00:00
 AccuracySec = 15m
 
 [Install]

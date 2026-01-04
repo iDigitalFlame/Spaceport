@@ -41,6 +41,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/sed -i'' -e 's/DEBUG 2 "Selected DE $DE"/DEBUG 2 "Selected DE $DE"\n. "\/etc\/xdg\/xdg-open-shim.sh"/g' /usr/bin/xdg-open
+When        = PostTransaction
 Description = Patching xdg-open..

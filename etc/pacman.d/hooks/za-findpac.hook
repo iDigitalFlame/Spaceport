@@ -41,6 +41,6 @@ Operation   = Remove
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/find /etc -xdev -type f -name *.pac* -ls
+When        = PostTransaction
 Description = Looking for *.pac* files..

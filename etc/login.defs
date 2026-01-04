@@ -36,8 +36,8 @@
 
 UMASK                  0027
 MAIL_DIR               /var/spool/mail
-MOTD_FILE
 HOME_MODE              0700
+MOTD_FILE
 FAIL_DELAY             3
 CREATE_HOME            no
 NONEXISTENT            /nonexistent
@@ -66,23 +66,23 @@ PASS_WARN_AGE          14
 LOGIN_RETRIES          5
 LOGIN_TIMEOUT          120
 
-UID_MIN                1000
 UID_MAX                60000
+UID_MIN                1000
 
-GID_MIN                1000
 GID_MAX                60000
+GID_MIN                1000
 
-SYS_UID_MIN            500
-SYS_UID_MAX            999
-SUB_UID_MIN            100000
 SUB_UID_MAX            600100000
+SUB_UID_MIN            100000
+SYS_UID_MAX            999
+SYS_UID_MIN            500
 SUB_UID_COUNT          65536
 
-SYS_GID_MIN            500
-SYS_GID_MAX            999
-SUB_GID_MIN            100000
 SUB_GID_MAX            600100000
+SUB_GID_MIN            100000
+SYS_GID_MAX            999
+SYS_GID_MIN            500
 SUB_GID_COUNT          65536
 
-SHA_CRYPT_MIN_ROUNDS   5000
 SHA_CRYPT_MAX_ROUNDS   5000
+SHA_CRYPT_MIN_ROUNDS   5000

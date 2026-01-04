@@ -42,6 +42,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PreTransaction
 Exec        = /usr/bin/mount -o remount,rw /
+When        = PreTransaction
 Description = Mounting / as read/write..

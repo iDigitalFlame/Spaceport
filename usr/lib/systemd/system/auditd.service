@@ -40,8 +40,10 @@
 #            only root. Why not autogenerate rules in a temp dir or something?
 
 [Unit]
-After                      = local-fs.target systemd-tmpfiles-setup.service
-Before                     = sysinit.target shutdown.target
+After                      = local-fs.target
+After                      = systemd-tmpfiles-setup.service
+Before                     = sysinit.target
+Before                     = shutdown.target
 Conflicts                  = shutdown.target
 Description                = Security Audit Logging Service
 Documentation              = man:auditd(8) https://github.com/linux-audit/audit-documentation
@@ -52,8 +54,8 @@ ConditionKernelCommandLine = !audit=off
 
 [Service]
 Type                       = forking
-Restart                    = on-failure
 PIDFile                    = /run/audit/auditd.pid
+Restart                    = on-failure
 ExecStart                  = /usr/bin/auditd -l
 ExecStartPost              = -/usr/bin/auditctl -R /etc/audit/audit.rules
 LockPersonality            = true

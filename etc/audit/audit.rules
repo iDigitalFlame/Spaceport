@@ -34,17 +34,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+-a exclude,always -F exe=/usr/bin/sudo
 -a exclude,always -F msgtype=BPF
 -a exclude,always -F msgtype=SYSCALL
--a exclude,always -F msgtype=USER_END
 -a exclude,always -F msgtype=CRED_ACQ
--a exclude,always -F msgtype=PROCTITLE
+-a exclude,always -F msgtype=USER_END
 -a exclude,always -F msgtype=CRED_DISP
--a exclude,always -F exe=/usr/bin/sudo
+-a exclude,always -F msgtype=PROCTITLE
 -a exclude,always -F msgtype=USER_ACCT
 -a exclude,always -F msgtype=CRED_REFR
--a exclude,always -F msgtype=USER_START
 -a exclude,always -F msgtype=ANOM_ABEND
+-a exclude,always -F msgtype=USER_START
 -a exclude,always -F msgtype=DAEMON_END
 -a exclude,always -F msgtype=SYSTEM_BOOT
 -a exclude,always -F msgtype=DAEMON_START

@@ -37,8 +37,10 @@
 #
 
 [Unit]
-After                   = home.mount network.target smd-daemon.service
-Requires                = home.mount network.target smd-daemon.service
+After                   = network.target
+After                   = smd-daemon.service
+Requires                = network.target
+Requires                = smd-daemon.service
 Description             = System Management Daemon Hydra SMB Support
 
 [Service]
@@ -49,14 +51,13 @@ ExecReload              = /usr/bin/kill -HUP $MAINPID
 PrivateTmp              = true
 KeyringMode             = private
 PrivatePIDs             = true
-ProtectClock            = false
 PrivateUsers            = false
+ProtectClock            = false
 ProtectSystem           = full
-ReadWritePaths          = /home
 PrivateDevices          = false
-# False for AppArmor Profiles
-NoNewPrivileges         = false
+ReadWritePaths          = /home
 LockPersonality         = true
+NoNewPrivileges         = false
 RestrictRealtime        = true
 RestrictSUIDSGID        = true
 ProtectKernelLogs       = true

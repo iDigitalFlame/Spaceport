@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Audio Module Configuration
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,5 +34,26 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-options snd_hda_intel enable=1 index=-1 power_save=1 power_save_controller=1
-options snd_usb_audio enable=1
+include <tunables/spaceport>
+
+profile ss /{,usr/}bin/{netstat,ss} flags=(enforce) {
+    include <abstractions/command>
+    include <abstractions/nameservice>
+
+    capability                                      sys_ptrace,
+    capability                                      dac_override,
+    capability                                      dac_read_search,
+
+    ptrace read,
+
+    /usr/bin/{netstat,ss}                           rm,
+
+    /proc/                                          r,
+    /proc/@{pid}/fd/                                r,
+    /proc/@{pid}/{cmdline,stat}                     r,
+    /proc/sys/net/ipv4/ip_local_port_range          r,
+    /proc/sys/net/ipv6/conf/all/disable_ipv6        r,
+    /proc/@{pid}/net/{raw,tcp,udp,udplite,unix}{,6} r,
+
+    include if exists <local/usr.bin.ss>
+}

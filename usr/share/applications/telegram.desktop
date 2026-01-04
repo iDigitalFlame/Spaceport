@@ -35,8 +35,8 @@
 #
 
 [Desktop Entry]
-Name      = telegramdesktop
-Icon      = telegram
-Type      = Application
 Exec      = /usr/bin/ghr firewall-web /usr/bin/telegram-desktop -- %U
+Icon      = telegram
+Name      = telegramdesktop
+Type      = Application
 NoDisplay = true

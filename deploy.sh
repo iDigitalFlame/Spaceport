@@ -56,11 +56,11 @@ cat<<EOF | sudo -i --
     set -u
     mount -o rw,remount /
     rm -f  "/etc/.pwd.lock" "/root/.bash_history"
-    rm -rf "${DIR_DEST}/.git" "${DIR_DEST}/.github" "${DIR_DEST}/.vscode" "${DIR_DEST}/*.md"
+    rm -rf "${DIR_DEST}/.git" "${DIR_DEST}/.github" "${DIR_DEST}/.vscode" "${DIR_DEST}/*.save" "${DIR_DEST}/*.md"
     printf '\e[0;37;41mCopying "\e[1;37;42m%s\e[0;37;41m" to "\e[1;37;44m%s\e[0;37;41m"..\x1b[0m\n' "$DIR_BASE" "$DIR_DEST"
     rsync --ignore-times --recursive \
-          --exclude=.git* --exclude=*.md --exclude=.vscode --exclude="deploy.sh" \
-          --exclude="LICENSE" --exclude=*.code-workspace \
+          --exclude=.git* --exclude=*.save --exclude=.vscode --exclude="deploy.sh" \
+          --exclude="LICENSE" --exclude="README.md" --exclude=*.code-workspace \
           --exclude=".github" --exclude=".vscode" "${DIR_BASE}/" "${DIR_DEST}/"
     printf '\e[0;37;41mSyncing permissions..\x1b[0m\n'
     syslink
@@ -71,19 +71,19 @@ cat<<EOF | sudo -i --
     printf '\e[0;37;41mSync Complete!\x1b[0m\n'
 EOF
 
-cp "/etc/fstab"                  "${DIR_BASE}/fstab.md"
-cp "${DIR_DEST}/units.md"        "${DIR_BASE}/units.md"
-cp "${DIR_DEST}/masked.md"       "${DIR_BASE}/masked.md"
-cp "${DIR_DEST}/packages.md"     "${DIR_BASE}/packages.md"
-cp "${DIR_DEST}/indirect.md"     "${DIR_BASE}/indirect.md"
-cp "${DIR_DEST}/packages-aur.md" "${DIR_BASE}/packages-aur.md"
+cp "/etc/fstab"                    "${DIR_BASE}/fstab.save"
+cp "${DIR_DEST}/units.save"        "${DIR_BASE}/units.save"
+cp "${DIR_DEST}/masked.save"       "${DIR_BASE}/masked.save"
+cp "${DIR_DEST}/packages.save"     "${DIR_BASE}/packages.save"
+cp "${DIR_DEST}/indirect.save"     "${DIR_BASE}/indirect.save"
+cp "${DIR_DEST}/packages-aur.save" "${DIR_BASE}/packages-aur.save"
 
-chmod 0660 "${DIR_BASE}/fstab.md"
-chmod 0660 "${DIR_BASE}/units.md"
-chmod 0660 "${DIR_BASE}/masked.md"
-chmod 0660 "${DIR_BASE}/packages.md"
-chmod 0660 "${DIR_BASE}/indirect.md"
-chmod 0660 "${DIR_BASE}/packages-aur.md"
+chmod 0660 "${DIR_BASE}/fstab.save"
+chmod 0660 "${DIR_BASE}/units.save"
+chmod 0660 "${DIR_BASE}/masked.save"
+chmod 0660 "${DIR_BASE}/packages.save"
+chmod 0660 "${DIR_BASE}/indirect.save"
+chmod 0660 "${DIR_BASE}/packages-aur.save"
 
 if [ "$1" = "reload" ]; then
     printf '\e[0;36;40mReloading services..\x1b[0m\n'

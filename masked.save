@@ -50,6 +50,7 @@ systemd-vmspawn@.service
 systemd-volatile-root.service
 gpsd.socket
 sshd-unix-local.socket
+systemd-factory-reset.socket
 systemd-importd.socket
 systemd-journal-remote.socket
 systemd-machined.socket
@@ -59,4 +60,5 @@ emergency.target
 factory-reset-now.target
 factory-reset.target
 first-boot-complete.target
+imports.target
 ssh-access.target

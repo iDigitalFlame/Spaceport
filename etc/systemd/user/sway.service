@@ -35,8 +35,8 @@
 #
 
 [Unit]
-Wants           = default.target
 After           = default.target
+Wants           = default.target
 BindsTo         = graphical-session.target
 Description     = Sway Desktop
 

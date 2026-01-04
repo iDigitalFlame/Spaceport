@@ -105,18 +105,18 @@ fi
 if ! [ -d "${XDG_RUNTIME_DIR}/slack" ]; then
     mkdir "${XDG_RUNTIME_DIR}/slack" 2> /dev/null
 fi
-if ! [ -d "${XDG_RUNTIME_DIR}/discord" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/discord" 2> /dev/null
-fi
 if ! [ -d "${XDG_RUNTIME_DIR}/screen" ]; then
     mkdir "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
     chmod 0700 "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
 fi
-if ! [ -d "${XDG_RUNTIME_DIR}/mesa_db" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/mesa_db" 2> /dev/null
+if ! [ -d "${XDG_RUNTIME_DIR}/discord" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/discord" 2> /dev/null
 fi
 if ! [ -d "${XDG_RUNTIME_DIR}/firefox" ]; then
     mkdir "${XDG_RUNTIME_DIR}/firefox" 2> /dev/null
+fi
+if ! [ -d "${XDG_RUNTIME_DIR}/mesa_db" ]; then
+    mkdir "${XDG_RUNTIME_DIR}/mesa_db" 2> /dev/null
 fi
 if ! [ -d "${XDG_RUNTIME_DIR}/chromium_cache" ]; then
     mkdir "${XDG_RUNTIME_DIR}/chromium_cache" 2> /dev/null

@@ -40,7 +40,7 @@ Target      = pacman-mirrorlist
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "env XDG_CACHE_HOME=/var/cache/pacman PYTHONPYCACHEPREFIX=/var/cache/python /usr/bin/python -X pycache_prefix=/var/cache/python -u -OO /usr/bin/reflector --protocol https --latest 50 --number 20 --sort rate --country 'United States' --save /var/cache/pacman/mirrorlist; rm -f /etc/pacman.d/mirrorlist.pacnew 2> /dev/null"
+When        = PostTransaction
 Depends     = reflector
 Description = Updating pacman-mirrorlist with reflector and removing pacnew..

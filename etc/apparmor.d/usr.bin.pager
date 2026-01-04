@@ -38,17 +38,12 @@ include <tunables/spaceport>
 
 profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_disconnected) {
     include <abstractions/base>
+    include <abstractions/command>
     include <abstractions/consoles>
-    include <abstractions/no-network>
     include <abstractions/private-files>
 
     capability                        dac_override,
     capability                        dac_read_search,
-
-    signal receive set=(cont, hup, kill, stop, term),
-
-    # Required for pagers to work
-    /**                               r,
 
     @{sysconfig}/etc/sysless{,key}    r,
 

@@ -62,7 +62,6 @@ chmod -hR "=0555"   "${BASE_DIR}"
 
 # Change /boot Permissions
 chmod -h  0500      "/boot"
-chmod -h  0500      "/boot/loader"
 chmod -h  0500      "/boot/esp"                        2> /dev/null
 find "/boot" -xdev         -exec chown root:root {} \; 2> /dev/null
 find "/boot" -xdev -type f -exec chmod 0400 {} \;,     2> /dev/null
@@ -81,7 +80,8 @@ done
 
 # Remove "Everyone" Permissions
 ## Directories / Sub-files
-_chmod 0550 "/etc/audit"
+_chmod 0550 "/etc/NetworkManager"
+_chmod 0550 "/etc/audit"             0400
 _chmod 0550 "/etc/initcpio"
 _chmod 0550 "/etc/initcpio/post"     0550
 _chmod 0550 "/etc/kernel"            0440
@@ -90,33 +90,29 @@ _chmod 0550 "/etc/mkinitcpio.d"      0440
 _chmod 0550 "/etc/modprobe.d"        0440
 _chmod 0550 "/etc/modules-load.d"    0440
 _chmod 0550 "/etc/pacman.d/hooks"    0440
-_chmod 0550 "/etc/security/limits.d" 0440
+_chmod 0550 "/etc/pacman.d/hooks"    0440
 _chmod 0550 "/etc/polkit-1"
 _chmod 0550 "/etc/polkit-1/rules.d"
+_chmod 0550 "/etc/security/limits.d" 0440
 _chmod 0550 "/etc/squid"             0440
 _chmod 0500 "/etc/sudoers.d"         0400
 _chmod 0500 "/etc/sysctl.d"          0400
 _chmod 0550 "/etc/tmpfiles.d"        0440
 _chmod 0550 "/etc/udev/rules.d"      0440
 _chmod 0550 "/usr/lib/smd/sbin"      0550
-_chmod 0550 "/etc/modprobe.d"        0440
-_chmod 0550 "/etc/udev/rules.d"      0440
-_chmod 0550 "/etc/modules-load.d"    0440
-_chmod 0550 "/etc/NetworkManager"
-_chmod 0550 "/etc/pacman.d/hooks"    0440
 
 ## Files
 chmod -h 0444 "/etc/ssh/"*.pub
-chmod -h 0440 "${BASE_DIR}/etc/locale.gen"
-chmod -h 0440 "${BASE_DIR}/etc/libaudit.conf"
-chmod -h 0440 "${BASE_DIR}/etc/nftables.conf"
-chmod -h 0440 "${BASE_DIR}/etc/vconsole.conf"
-chmod -h 0440 "${BASE_DIR}/etc/logrotate.conf"
-chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
-chmod -h 0440 "${BASE_DIR}/etc/mkinitcpio.conf"
-chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
-chmod -h 0440 "${BASE_DIR}/etc/polkit-1/rules.d/spaceport.rules"
 chmod -h 0440 "${BASE_DIR}/etc/NetworkManager/NetworkManager.conf"
+chmod -h 0440 "${BASE_DIR}/etc/libaudit.conf"
+chmod -h 0440 "${BASE_DIR}/etc/locale.gen"
+chmod -h 0440 "${BASE_DIR}/etc/logrotate.conf"
+chmod -h 0440 "${BASE_DIR}/etc/mkinitcpio.conf"
+chmod -h 0440 "${BASE_DIR}/etc/nftables.conf"
+chmod -h 0440 "${BASE_DIR}/etc/polkit-1/rules.d/spaceport.rules"
+chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
+chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
+chmod -h 0440 "${BASE_DIR}/etc/vconsole.conf"
 
 ## Might Not Exist
 chmod -h 0550 "/usr/local/share/polkit-1"         2> /dev/null
@@ -142,13 +138,13 @@ chmod -h 0440 "/etc/cups/"*.conf.default 2> /dev/null
 # Ownership Updates
 chown -hR root:cups    "/etc/cups"
 chown -hR root:cups    "${BASE_DIR}/etc/cups"
+chown -hR root:polkitd "/etc/polkit-1"
+chown -hR root:polkitd "${BASE_DIR}/etc/polkit-1"
+chown -hR root:polkitd "/usr/local/share/polkit-1"
 chown -hR root:proxy   "/etc/squid"
 chown -hR root:proxy   "${BASE_DIR}/etc/squid"
 chown -h  root:root    "/usr/share/applications/mimeinfo.cache"
 chown -h  root:root    "${BASE_DIR}/usr/share/applications/mimeinfo.cache"
-chown -hR root:polkitd "/etc/polkit-1"
-chown -hR root:polkitd "${BASE_DIR}/etc/polkit-1"
-chown -hR root:polkitd "/usr/local/share/polkit-1"
 
 # Group Helper Permissions
 chown -h root:root "/bin/ghr"
@@ -156,27 +152,27 @@ chown -h root:root "${BASE_DIR}/bin/ghr"
 chmod -h 4755      "${BASE_DIR}/bin/ghr"
 
 # SMD Permissions
-chmod -h 0500  "/etc/smd"
-chmod -h 0400  "/etc/smd/"*
-chmod -h 0640  "/var/cache/smd/"*.json
-chmod -h 0640  "/var/cache/smd/hydra"
-chmod -h 0640  "/var/cache/smd/hydra/"* 2> /dev/null
+chmod -h  0500  "/etc/smd"
+chmod -h  0400  "/etc/smd/"*
+chmod -h  0640  "/var/cache/smd/"*.json
+chmod -h  0640  "/var/cache/smd/hydra"
+chmod -h  0640  "/var/cache/smd/hydra/"* 2> /dev/null
 chmod -hR 0555 "${BASE_DIR}/usr/lib/smd/libexec"
-chmod -h 0444  "${BASE_DIR}/var/cache/smd/constants.json"
-chmod -h 0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-entries"
-chmod -h 0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-extract"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-add"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-key-eject"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-low"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-remove"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-pre"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-post"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-pre"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-post"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-attached"
-chmod -h 0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-detached"
+chmod -h  0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-entries"
+chmod -h  0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-extract"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-key-eject"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-post"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-pre"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-attached"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-detached"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-low"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-post"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-pre"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-add"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-remove"
+chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
+chmod -h  0444  "${BASE_DIR}/var/cache/smd/constants.json"
 
 # Secureboot Permissions
 chown -hR root:root "/opt/secureboot"
@@ -189,10 +185,10 @@ chmod 0750      "/var/cache/smd/backup" 2> /dev/null
 
 # AuditD Permissions
 chmod -h 0440 "/etc/audit/"*           2> /dev/null
-chmod -h 0550 "/etc/audit/rules.d"     2> /dev/null
-chmod -h 0440 "/etc/audit/rules.d/"*   2> /dev/null
 chmod -h 0550 "/etc/audit/plugins.d"   2> /dev/null
 chmod -h 0440 "/etc/audit/plugins.d"/* 2> /dev/null
+chmod -h 0550 "/etc/audit/rules.d"     2> /dev/null
+chmod -h 0440 "/etc/audit/rules.d/"*   2> /dev/null
 
 # AppArmor Permissions
 chmod -h  0500 "/etc/apparmor.d"
@@ -201,25 +197,25 @@ find "${BASE_DIR}/etc/apparmor.d" -xdev -type f -exec chmod -h 0400 {} \;
 
 # Fill Empty Modules
 
+mkdir    "/usr/lib/firmware/amdgpu"           2> /dev/null
+mkdir -p "/usr/lib/firmware/nvidia/gp100/acr" 2> /dev/null
 mkdir    "/usr/lib/firmware/qed"              2> /dev/null
 mkdir    "/usr/lib/firmware/qlogic"           2> /dev/null
-mkdir    "/usr/lib/firmware/amdgpu"           2> /dev/null
 mkdir    "/usr/lib/firmware/radeon"           2> /dev/null
-mkdir -p "/usr/lib/firmware/nvidia/gp100/acr" 2> /dev/null
 
-touch "/usr/lib/firmware/cs42l43.bin"
-touch "/usr/lib/firmware/qat_6xxx.bin"
-touch "/usr/lib/firmware/ql2500_fw.bin"
 touch "/usr/lib/firmware/aic94xx-seq.fw"
-touch "/usr/lib/firmware/wd719x-risc.bin"
-touch "/usr/lib/firmware/qlogic/12160.bin"
-touch "/usr/lib/firmware/ast_dp501_fw.bin"
-touch "/usr/lib/firmware/ct2fw-3.2.5.1.bin"
-touch "/usr/lib/firmware/renesas_usb_fw.mem"
-touch "/usr/lib/firmware/radeon/R520_cp.bin"
 touch "/usr/lib/firmware/amdgpu/navi12_gpu_info.bin"
+touch "/usr/lib/firmware/ast_dp501_fw.bin"
+touch "/usr/lib/firmware/cs42l43.bin"
+touch "/usr/lib/firmware/ct2fw-3.2.5.1.bin"
 touch "/usr/lib/firmware/nvidia/gp100/acr/ucode_load.bin"
+touch "/usr/lib/firmware/qat_6xxx.bin"
 touch "/usr/lib/firmware/qed/qed_init_values_zipped-8.59.1.0.bin"
+touch "/usr/lib/firmware/ql2500_fw.bin"
+touch "/usr/lib/firmware/qlogic/12160.bin"
+touch "/usr/lib/firmware/radeon/R520_cp.bin"
+touch "/usr/lib/firmware/renesas_usb_fw.mem"
+touch "/usr/lib/firmware/wd719x-risc.bin"
 
 # Remove Drun Permissions
 chmod 0400 /usr/share/applications/exo-*                                2> /dev/null

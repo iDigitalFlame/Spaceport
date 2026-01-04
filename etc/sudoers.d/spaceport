@@ -34,8 +34,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+Cmnd_Alias SYSTEM    = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
 Cmnd_Alias UTILITIES = /usr/bin/nmap, /usr/bin/umount -t cifs, /usr/bin/sync, /usr/lib/smd/sbin/smb, /usr/bin/netstat
-Cmnd_Alias SYSTEM = /usr/bin/systemctl hibernate, /usr/bin/systemctl suspend, /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
 
 Defaults   env_reset
 Defaults   env_keep += "LANG LANGUAGE LC_* _XKB_CHARSET"
@@ -43,30 +43,31 @@ Defaults   env_keep += "HOME"
 Defaults   env_keep += "LESSSECURE=1"
 Defaults   env_keep -= "PS1"
 Defaults   env_delete += "PS1"
-Defaults   tty_tickets
+
+Defaults   editor = "/usr/bin/rnano"
+Defaults   insults
 Defaults   log_allowed
 Defaults   log_denied
-Defaults   sudoedit_checkdir
-Defaults   insults
-Defaults   use_pty
-Defaults   !setenv
-Defaults   !log_host
-Defaults   !fqdn
-Defaults   !env_editor
-Defaults   !fast_glob
-Defaults   !requiretty
-Defaults   !root_sudo
-Defaults   !rootpw
-Defaults   !sudoedit_follow
-Defaults   !visiblepw
-Defaults   !pwfeedback
 Defaults   lecture = "never"
 Defaults   listpw = "always"
 Defaults   passwd_tries = 3
-Defaults   verifypw = "always"
-Defaults   timestamp_timeout = 1
-Defaults   editor = "/usr/bin/rnano"
 Defaults   secure_path = "/usr/lib/smd/sbin:/usr/bin"
+Defaults   sudoedit_checkdir
+Defaults   timestamp_timeout = 1
+Defaults   tty_tickets
+Defaults   use_pty
+Defaults   verifypw = "always"
+Defaults   !env_editor
+Defaults   !fast_glob
+Defaults   !fqdn
+Defaults   !log_host
+Defaults   !pwfeedback
+Defaults   !requiretty
+Defaults   !root_sudo
+Defaults   !rootpw
+Defaults   !setenv
+Defaults   !sudoedit_follow
+Defaults   !visiblepw
 
 dij ALL=(root) ALL
 dij ALL=(root) NOPASSWD: SYSTEM

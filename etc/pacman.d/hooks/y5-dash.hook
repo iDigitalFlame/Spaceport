@@ -42,7 +42,7 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "rm -f '/usr/bin/sh'; ln -sfT '/usr/bin/dash' '/usr/bin/sh'"
+When        = PostTransaction
 Depends     = dash
 Description = Re-pointing "/bin/sh" symlink to dash..

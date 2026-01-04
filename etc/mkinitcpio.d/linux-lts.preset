@@ -35,10 +35,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+PRESETS=( "default" "fallback" )
+
 ALL_config="/etc/mkinitcpio.conf"
 ALL_kver="/boot/vmlinuz-linux-lts"
-
-PRESETS=( "default" "fallback" )
 
 default_uki="/boot/efi/Linux/$(hostname)-lts.efi"
 default_options="--splash /usr/lib/smd/assets/boot-logo.bmp"

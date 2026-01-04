@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Audio Module Configuration
+## SystemD Boot Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,5 +34,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-options snd_hda_intel enable=1 index=-1 power_save=1 power_save_controller=1
-options snd_usb_audio enable=1
+beep               off
+editor             no
+default            spaceport-zen
+timeout            0
+log-level          warning
+auto-reboot        no
+auto-entries       no
+console-mode       max
+auto-firmware      no
+auto-poweroff      no
+reboot-on-error    no
+secure-boot-enroll off

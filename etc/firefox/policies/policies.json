@@ -36,12 +36,12 @@
         "along with this program.  If not, see <https://www.gnu.org/licenses/>."
     ],
     "policies": {
-        "AllowedDomainsForApps": "",
         "AllowFileSelectionDialogs": true,
+        "AllowedDomainsForApps": "",
         "AppAutoUpdate": false,
         "Authentication": {},
-        "AutofillCreditCardEnabled": false,
         "AutoLaunchProtocolsFromOrigins": [],
+        "AutofillCreditCardEnabled": false,
         "BlockAboutAddons": false,
         "BlockAboutProfiles": false,
         "BlockAboutSupport": false,
@@ -68,13 +68,13 @@
         "DisableTelemetry": true,
         "DontCheckDefaultBrowser": true,
         "EnableTrackingProtection": {
-            "Value": true,
-            "Locked": false,
+            "Category": "strict",
             "Cryptomining": true,
-            "Fingerprinting": true,
             "EmailTracking": true,
+            "Fingerprinting": true,
+            "Locked": false,
             "SuspectedFingerprinting": true,
-            "Category": "strict"
+            "Value": true
         },
         "EncryptedMediaExtensions": {
             "Enabled": true,
@@ -97,19 +97,19 @@
         "OfferToSaveLoginsDefault": false,
         "OverrideFirstRunPage": "",
         "OverridePostUpdatePage": "",
-        "PasswordManagerEnabled": false,
         "PDFjs": {
-            "Enabled": true,
-            "EnablePermissions": false
+            "EnablePermissions": false,
+            "Enabled": true
         },
+        "PasswordManagerEnabled": false,
         "Permissions": {
-            "Camera": {
+            "Autoplay": {
                 "Allow": [],
                 "Block": [],
-                "BlockNewRequests": true,
+                "Default": "block-audio-video",
                 "Locked": true
             },
-            "Microphone": {
+            "Camera": {
                 "Allow": [],
                 "Block": [],
                 "BlockNewRequests": true,
@@ -121,25 +121,25 @@
                 "BlockNewRequests": true,
                 "Locked": true
             },
+            "Microphone": {
+                "Allow": [],
+                "Block": [],
+                "BlockNewRequests": true,
+                "Locked": true
+            },
             "Notifications": {
                 "Allow": [],
                 "Block": [],
                 "BlockNewRequests": true,
                 "Locked": true
             },
-            "Autoplay": {
-                "Allow": [],
-                "Block": [],
-                "Default": "block-audio-video",
-                "Locked": true
-            },
-            "VirtualReality": {
+            "ScreenShare": {
                 "Allow": [],
                 "Block": [],
                 "BlockNewRequests": true,
                 "Locked": true
             },
-            "ScreenShare": {
+            "VirtualReality": {
                 "Allow": [],
                 "Block": [],
                 "BlockNewRequests": true,
@@ -164,13 +164,13 @@
         "SearchEngines": {
             "Add": [
                 {
-                    "Name": "DuckDuckGo",
-                    "URLTemplate": "https://duckduckgo.com/q={searchTerms}",
-                    "Method": "GET",
-                    "IconURL": "https://duckduckgo.com/favicon.ico",
                     "Alias": "duck",
                     "Description": "DuckDuckGo",
-                    "PostData": ""
+                    "IconURL": "https://duckduckgo.com/favicon.ico",
+                    "Method": "GET",
+                    "Name": "DuckDuckGo",
+                    "PostData": "",
+                    "URLTemplate": "https://duckduckgo.com/q={searchTerms}"
                 }
             ],
             "Default": "",

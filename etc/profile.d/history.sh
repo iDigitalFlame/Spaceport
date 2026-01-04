@@ -37,8 +37,8 @@
 
 if [ "$USER" = "root" ]; then
     export HISTSIZE=500
-    export HISTFILESIZE=0
     export HISTFILE="/dev/null"
+    export HISTFILESIZE=0
 fi
 
 export LESSKEY="/etc/sysless"

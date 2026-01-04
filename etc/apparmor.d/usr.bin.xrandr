@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Audio Module Configuration
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2025 iDigitalFlame
 #
@@ -34,5 +34,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-options snd_hda_intel enable=1 index=-1 power_save=1 power_save_controller=1
-options snd_usb_audio enable=1
+include <tunables/spaceport>
+
+profile xrandr /usr/bin/xrandr flags=(enforce) {
+    include <abstractions/X>
+    include <abstractions/base>
+    include <abstractions/no-network>
+    include <abstractions/private-files>
+
+    capability dac_read_search,
+
+    /usr/bin/xrandr rm,
+
+    include if exists <local/usr.bin.xrandr>
+}

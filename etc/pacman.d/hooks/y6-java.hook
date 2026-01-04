@@ -41,6 +41,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/rm "/usr/bin/orbd" "/usr/bin/pack200" "/usr/bin/rmid" "/usr/bin/servertool" "/usr/bin/tnameserv" "/usr/bin/unpack200" "/usr/bin/javah" "/usr/bin/rmic" "/usr/bin/schemagen" "/usr/bin/wsgen" "/usr/bin/wsimport" "/usr/bin/xjc"
+When        = PostTransaction
 Description = Removing Java Runtime broken links..

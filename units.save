@@ -5,7 +5,6 @@ NetworkManager-dispatcher.service
 NetworkManager-wait-online.service
 NetworkManager.service
 nftables.service
-smd-boot.service
 smd-daemon.service
 smd-hibernate-post.service
 smd-hibernate-pre.service

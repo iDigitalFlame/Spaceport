@@ -119,7 +119,7 @@ keys, so that'll have to be a manual install.
 To do this, we'll follow [this](https://wiki.archlinux.org/title/QEMU#Enabling_Secure_Boot)
 guide on the ArchLinux Wiki.
 
-Download the file [here](http://archive.ubuntu.com/ubuntu/pool/main/e/edk2/ovmf_2024.02-2_all.deb)
+Download the file [located here](http://archive.ubuntu.com/ubuntu/pool/main/e/edk2/ovmf_2024.02-2_all.deb)
 and extract it to get the `OVMF_VARS_4M.ms.fd` file, which can then be copied to
 `/usr/share/edk2/x64/OVMF_VARS.ms.4m.fd` to get the pre-enrolled image.
 

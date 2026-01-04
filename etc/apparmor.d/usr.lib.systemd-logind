@@ -61,8 +61,8 @@ profile systemd-logind /usr/lib/systemd/systemd-logind flags=(enforce, attach_di
 
     /boot/                                                             r,
     /boot/**/*.efi                                                     r,
-    /boot/loader/loader.conf                                           r,
     /boot/{efi,EFI,esp/EFI}/Linux/                                     r,
+    /boot/{,esp}/loader/loader.conf                                    r,
 
     /                                                                  r,
     /etc/machine-id                                                    r,

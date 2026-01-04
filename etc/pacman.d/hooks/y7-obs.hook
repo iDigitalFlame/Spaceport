@@ -41,6 +41,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/rm "/usr/lib/obs-plugins/obs-websocket.so" "/usr/lib/obs-plugins/frontend-tools.so"
+When        = PostTransaction
 Description = Removing un-needed OBS plugins..

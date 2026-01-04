@@ -41,6 +41,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/lib/smd/sbin/bootsign
+When        = PostTransaction
 Description = Signing kernels..

@@ -40,7 +40,7 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
-rm "/etc/.updated" "/etc/.pwd.lock"            2> /dev/null
+rm    "/etc/.updated" "/etc/.pwd.lock"         2> /dev/null
 rmdir "/etc/NetworkManager/system-connections" 2> /dev/null
 
 linkcheck "/etc/ld.so.cache"                       "/var/cache/ld.so.cache"
@@ -59,29 +59,29 @@ chown -hR root:root "/var/lib/NetworkManager/system-connections"
 
 chown -hR root:root "/var/cache/fontconfig"
 chmod -hR 2755      "/var/cache/fontconfig"
-chmod -h 2644       "/var/cache/fontconfig/"*
+chmod -h  2644      "/var/cache/fontconfig/"*
 
 chown -hR alpm:root "/var/cache/pacman/pkg"
 chmod -hR 2750      "/var/cache/pacman/pkg"
-chmod -h 2660       "/var/cache/pacman/pkg/"*
+chmod -h  2660      "/var/cache/pacman/pkg/"*
 
 chown -hR root:root "/var/lib/pacman/sync"
-chmod -h 2755       "/var/lib/pacman/sync"
-chmod -h 2644       "/var/lib/pacman/sync/"*.db
+chmod -h  2755      "/var/lib/pacman/sync"
+chmod -h  2644      "/var/lib/pacman/sync/"*.db
 
 chown -hR root:root "/var/lib/pacman/local"
 chmod -hR 2755      "/var/lib/pacman/local"
 find "/var/lib/pacman/local" -xdev -type f -exec chmod -h 0644 {} \;
 
 chown -hR root:root "/var/cache/ldconfig"
-chmod -h 2700       "/var/cache/ldconfig"
+chmod -h  2700       "/var/cache/ldconfig"
 
 chown -hR root:makepkg "/var/cache/makepkg"
-chmod -h 3775          "/var/cache/makepkg"
-chmod -h 3640          "/var/cache/makepkg/"* 2> /dev/null
+chmod -h  3775         "/var/cache/makepkg"
+chmod -h  3640         "/var/cache/makepkg/"* 2> /dev/null
 
 chown -h root:root "/var/cache/python"
 chmod -h 3777      "/var/cache/python"
 
 chown -hR root:smd "/var/cache/python/usr/lib/smd"
-chmod -h 2770      "/var/cache/python/usr/lib/smd"
+chmod -h  2770     "/var/cache/python/usr/lib/smd"

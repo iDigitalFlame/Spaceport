@@ -58,8 +58,8 @@ Type        = Package
 Target      = linux
 Target      = linux-*
 Target      = systemd
-Target      = intel-ucode
 Target      = mkinitcpio
+Target      = intel-ucode
 Target      = mkinitcpio-git
 Target      = mkinitcpio-busybox
 Operation   = Remove
@@ -67,6 +67,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/mount -ro remount,ro /boot/esp
+When        = PostTransaction
 Description = Mounting /boot/esp as read only..

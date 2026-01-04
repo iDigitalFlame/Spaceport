@@ -40,6 +40,6 @@ Target      = systemd
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "mount -o remount,rw /sys/firmware/efi/efivars; bootctl update --esp-path=/boot/esp; mount -o remount,ro /sys/firmware/efi/efivars"
+When        = PostTransaction
 Description = Updating systemd-boot..

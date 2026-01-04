@@ -41,8 +41,8 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/lib/smd/sbin/aa-notify-patch
+When        = PostTransaction
 Description = Patching aa-notify..
 
 # TODO(dij): Update this once the upstream AppArmor patch hits the Arch repos.

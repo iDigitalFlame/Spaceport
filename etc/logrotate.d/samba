@@ -40,6 +40,6 @@
     copytruncate
 
     create 640 root root
-    weekly 0
     rotate 0
+    weekly 0
 }

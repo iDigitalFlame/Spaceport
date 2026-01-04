@@ -41,8 +41,8 @@ include <abstractions/python>
 include <abstractions/consoles>
 include <abstractions/nameservice>
 
-capability                                dac_override,
-capability                                dac_read_search,
+capability                                        dac_override,
+capability                                        dac_read_search,
 
 @{sysconfig}/usr/lib/smd/{,s}bin{,/*}             r,
 @{sysconfig}/usr/lib/smd/lib{,exec}{,/**}         r,

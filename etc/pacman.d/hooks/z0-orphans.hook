@@ -41,6 +41,6 @@ Operation   = Remove
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "pacman -Qtdq || echo 'No orphans found.'"
+When        = PostTransaction
 Description = Finding orphan packages..

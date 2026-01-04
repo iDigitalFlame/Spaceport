@@ -35,19 +35,19 @@
 #
 
 Host *
-    Port                            22
     MACs                            hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
+    Port                            22
     Tunnel                          no
     Ciphers                         chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
     Protocol                        2
     BatchMode                       no
     ForwardX11                      no
     CheckHostIP                     yes
-    IdentityFile                    ~/.ssh/nope
     ForwardAgent                    no
+    IdentityFile                    ~/.ssh/nope
+    AddressFamily                   any
     KexAlgorithms                   curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
     VisualHostKey                   yes
-    AddressFamily                   any
     ConnectTimeout                  30
     HashKnownHosts                  yes
     HostKeyAlgorithms               ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-ed25519,ssh-rsa

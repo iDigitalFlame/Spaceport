@@ -42,6 +42,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "ps aux | grep -v 'grep' | grep -q 'yay' || [ ! -z $SYSBATCH ] && exit 0; (mount -ro remount,ro / 2> /dev/null || mount -Rro remount,ro /)"
+When        = PostTransaction
 Description = Mounting / as read only..

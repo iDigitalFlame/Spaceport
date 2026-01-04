@@ -67,6 +67,7 @@ profile upowerd /usr/lib/upowerd flags=(enforce, attach_disconnected) {
 
     @{run}/udev/data/                             r,
     @{run}/udev/data/c*:*                         r,
+    @{run}/udev/data/+leds:*                      r,
     @{run}/udev/data/+serio:*                     r,
     @{run}/udev/data/+platform:*                  r,
     @{run}/udev/data/+{acp,pc}i:*                 r,

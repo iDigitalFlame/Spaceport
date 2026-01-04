@@ -42,6 +42,6 @@ Operation   = Install
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "[ ${SYSUPDATE:-0} -eq 0 ] && syslink || exit 0"
+When        = PostTransaction
 Description = Fixing permissions for system files..

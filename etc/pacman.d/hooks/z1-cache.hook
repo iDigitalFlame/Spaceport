@@ -41,6 +41,6 @@ Operation   = Remove
 Operation   = Upgrade
 
 [Action]
-When        = PostTransaction
 Exec        = /usr/bin/dash -c "paccache -rk4; paccache -ruk0"
+When        = PostTransaction
 Description = Removing old cached packages..

@@ -36,9 +36,9 @@
 
 MUSIC=Music
 VIDEOS=Videos
-DESKTOP=
-PICTURES=Pictures
+DESKTOP=""
 DOWNLOAD=Downloads
+PICTURES=Pictures
 DOCUMENTS=Documents
 TEMPLATES=Documents/Templates
 PUBLICSHARE=Documents/Public
