@@ -1,6 +1,6 @@
 #!/usr/bin/dash
 ################################
-### iDigitalFlame  2016-2025 ###
+### iDigitalFlame  2016-2026 ###
 #                              #
 #            -/`               #
 #            -yy-   :/`        #
@@ -18,7 +18,7 @@
 ########## SPACEPORT ###########
 ### Spaceport + SMD
 #
-# Copyright (C) 2016 - 2025 iDigitalFlame
+# Copyright (C) 2016 - 2026 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ fi
 relink "$SYSCONFIG" /
 
 pacman -Qeqn 1> "${SYSCONFIG}/packages.save"
-pacman -Qqm | grep -vE '^smd$|^(smd|dij)-([a-zA-Z-])$' 1> "${SYSCONFIG}/packages-aur.save"
+pacman -Qqm | grep -vE '^smd$|^(smd|dij)-([a-zA-Z-]+)$' 1> "${SYSCONFIG}/packages-aur.save"
 systemctl list-unit-files --plain --full --no-pager --legend=false | grep "masked" | awk '{print $1}' 1> "${SYSCONFIG}/masked.save"
 systemctl list-unit-files --plain --full --no-pager --legend=false | awk '{print $1" "$2}' | grep "enabled" | grep -vE ".target|enabled-runtime|@" | awk '{print $1}' 1> "${SYSCONFIG}/units.save"
 systemctl list-units --plain --full --no-pager --legend=false | grep "@." | grep -vE "dead|exited|etc-pacman\.d-gnupg\.service" | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." 1> "${SYSCONFIG}/indirect.save"

@@ -1,6 +1,5 @@
-#!/usr/bin/false
 ################################
-### iDigitalFlame  2016-2025 ###
+### iDigitalFlame  2016-2026 ###
 #                              #
 #            -/`               #
 #            -yy-   :/`        #
@@ -18,7 +17,7 @@
 ########## SPACEPORT ###########
 ### Spaceport + SMD
 #
-# Copyright (C) 2016 - 2025 iDigitalFlame
+# Copyright (C) 2016 - 2026 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -111,7 +110,7 @@ def powerctl():
     a = m.parse_args()
     if a.version:
         print(
-            f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2025\n\n"
+            f"System Management Daemon (v{VERSION})\n- iDigitalFlame (c) 2016 - 2026\n\n"
             f"System: {NAME} ({NAME_SERVER} / {NAME_CLIENT})"
         )
         print("\nPowerCTL Modules:")
@@ -266,7 +265,7 @@ def _load_powerctl(parser, directory):
             )
         r.set_defaults(func=f, subs=w)
         e[n] = r
-        del w, r, f, i, a, d, n
+        del a, d, f, i, n, r, w
     del x
     m = s.add_parser("modules", description="Loaded Modules List")
     m.set_defaults(func=lambda _: print(NEWLINE.join(e.keys())))

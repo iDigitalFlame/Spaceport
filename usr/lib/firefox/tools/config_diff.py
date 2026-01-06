@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO
 ################################
-### iDigitalFlame  2016-2025 ###
+### iDigitalFlame  2016-2026 ###
 #                              #
 #            -/`               #
 #            -yy-   :/`        #
@@ -19,7 +19,7 @@
 ### Spaceport + SMD
 ## Firefox/LibreWolf Configuration Diff Tool
 #
-# Copyright (C) 2016 - 2025 iDigitalFlame
+# Copyright (C) 2016 - 2026 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from sys import argv, stdout, stderr, exit
+from sys import argv, exit, stderr, stdout
 
 
 def split(d, file):

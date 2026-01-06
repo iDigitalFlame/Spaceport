@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## UDev Video Trigger
+## AppArmor Configuration
 #
 # Copyright (C) 2016 - 2026 iDigitalFlame
 #
@@ -34,4 +34,32 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-SUBSYSTEM=="drm", KERNEL=="card0", RUN+="/usr/lib/smd/libexec/smd-video"
+include <tunables/spaceport>
+
+profile rofi /{,usr/}bin/rofi flags=(enforce) {
+    include <abstractions/gui>
+    include <abstractions/no-network>
+    include <abstractions/glycin-base>
+    include <abstractions/xdg-desktop>
+    include <abstractions/private-files>
+
+    /usr/bin/rofi                                 rm,
+    /usr/share/thumbnailers/{,*}                  r,
+
+    /usr/bin/**                                   pux,
+    /opt/notesnook/**                             pux,
+    /usr/lib{,32,64}/**                           puxm,
+    /opt/vscodium-bin/**                          pux,
+    /opt/ultimaker-cura/**                        pux,
+    /{usr,opt/spaceport}/bin/**                   pux,
+
+    owner @{CONFIG}/rofi/*                        r,
+
+    owner @{run}/user/@{uid}/rofi.pid             rwk,
+    owner @{run}/user/@{uid}/rofi-wayland-surface rw,
+
+    owner @{HOME}/.local/{apps,bin,lib}/**        pux,
+    owner @{HOMEDOTS}/.local/{apps,bin,lib}/**    pux,
+
+    include if exists <local/usr.bin.rofi>
+}

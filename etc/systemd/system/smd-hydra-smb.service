@@ -1,5 +1,5 @@
 ################################
-### iDigitalFlame  2016-2025 ###
+### iDigitalFlame  2016-2026 ###
 #                              #
 #            -/`               #
 #            -yy-   :/`        #
@@ -20,7 +20,7 @@
 ## Split from smd-daemon.service to allow write privileges for Hydra while
 ## limiting the primary daemon access. Only to be started on-demand by Hydra.
 #
-# Copyright (C) 2016 - 2025 iDigitalFlame
+# Copyright (C) 2016 - 2026 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

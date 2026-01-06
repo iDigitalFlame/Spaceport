@@ -1,6 +1,5 @@
-#!/usr/bin/false
 ################################
-### iDigitalFlame  2016-2025 ###
+### iDigitalFlame  2016-2026 ###
 #                              #
 #            -/`               #
 #            -yy-   :/`        #
@@ -18,7 +17,7 @@
 ########## SPACEPORT ###########
 ### Spaceport + SMD
 #
-# Copyright (C) 2016 - 2025 iDigitalFlame
+# Copyright (C) 2016 - 2026 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

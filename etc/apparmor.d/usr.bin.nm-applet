@@ -1,5 +1,5 @@
 ################################
-### iDigitalFlame  2016-2025 ###
+### iDigitalFlame  2016-2026 ###
 #                              #
 #            -/`               #
 #            -yy-   :/`        #
@@ -18,7 +18,7 @@
 ### Spaceport + SMD
 ## AppArmor Configuration
 #
-# Copyright (C) 2016 - 2025 iDigitalFlame
+# Copyright (C) 2016 - 2026 iDigitalFlame
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile nm-applet /usr/bin/nm-applet flags=(enforce) {
+profile nm-applet /usr/bin/nm-{applet,connection-editor} flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/dconf>
     include <abstractions/p11-kit>
@@ -70,7 +70,7 @@ profile nm-applet /usr/bin/nm-applet flags=(enforce) {
     owner @{HOME}/.config/openvpn/nm-openvpn/*.{crt*,pem*} rw,
 
     /usr/bin/openvpn                                       Px -> openvpn,
-    /usr/bin/nm-connection-editor                          ix,
+    /usr/bin/nm-connection-editor                          ixr,
     /usr/lib/nm-openvpn-auth-dialog                        Pix -> nm-openvpn-auth-dialog,
 
     include if exists <local/usr.bin.nm-applet>
