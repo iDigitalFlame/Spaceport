@@ -59,6 +59,7 @@ profile aa-notify /usr/bin/aa-notify flags=(enforce) {
 
     owner /proc/@{pid}/stat               r,
     owner /proc/@{pid}/cmdline            r,
+    owner /proc/@{pid}/mount{info,s}      r,
 
     owner /{,var/}tmp/*                   rw,
 

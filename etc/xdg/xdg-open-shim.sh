@@ -36,8 +36,8 @@
 #
 
 get_key() {
-    local file="${1}"
     local key="${2}"
+    local file="${1}"
     local desktop_entry=""
 
     IFS_="${IFS}"
@@ -56,8 +56,7 @@ get_key() {
             # Match with spaces
             "${key}"*"="*)
                 # Only match Desktop Entry group
-                if [ -n "${desktop_entry}" ]
-                then
+                if [ -n "${desktop_entry}" ]; then
                     # Remove leading whitespaces
                     echo "${line}" | cut -d= -f 2- | sed 's/^[[:space:]]*//'
                 fi

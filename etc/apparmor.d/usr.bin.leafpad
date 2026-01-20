@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile leafpad /usr/bin/leafpad flags=(enforce) {
+profile leafpad /usr/bin/leafpad flags=(enforce, attach_disconnected) {
     include <abstractions/gnome>
     include <abstractions/user-data>
     include <abstractions/no-network>

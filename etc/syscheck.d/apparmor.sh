@@ -42,8 +42,8 @@ fi
 
 chown -hR root:root "/var/cache/apparmor"
 
-chmod -h 0500  "/var/cache/apparmor"
-chmod -h 0444  "/etc/apparmor/"*
+chmod -h  0500 "/var/cache/apparmor"
+chmod -h  0444 "/etc/apparmor/"*
 chmod -hR 0500 "/etc/apparmor.d"
 
 find "/etc/apparmor.d" -xdev -type f -exec chmod -h 0400 {} \;

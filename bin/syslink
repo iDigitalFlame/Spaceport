@@ -56,11 +56,11 @@ fi
 
 relink "$SYSCONFIG" /
 
-pacman -Qeqn 1> "${SYSCONFIG}/packages.save"
-pacman -Qqm | grep -vE '^smd$|^(smd|dij)-([a-zA-Z-]+)$' 1> "${SYSCONFIG}/packages-aur.save"
-systemctl list-unit-files --plain --full --no-pager --legend=false | grep "masked" | awk '{print $1}' 1> "${SYSCONFIG}/masked.save"
-systemctl list-unit-files --plain --full --no-pager --legend=false | awk '{print $1" "$2}' | grep "enabled" | grep -vE ".target|enabled-runtime|@" | awk '{print $1}' 1> "${SYSCONFIG}/units.save"
-systemctl list-units --plain --full --no-pager --legend=false | grep "@." | grep -vE "dead|exited|etc-pacman\.d-gnupg\.service" | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." 1> "${SYSCONFIG}/indirect.save"
+pacman -Qeqn | sort -n 1> "${SYSCONFIG}/packages.save"
+pacman -Qqm | grep -vE '^smd$|^(smd|dij)-([a-zA-Z-]+)$' | sort -n 1> "${SYSCONFIG}/packages-aur.save"
+systemctl list-unit-files --plain --full --no-pager --legend=false | grep "masked" | awk '{print $1}' | sort -n 1> "${SYSCONFIG}/masked.save"
+systemctl list-unit-files --plain --full --no-pager --legend=false | awk '{print $1" "$2}' | grep "enabled" | grep -vE ".target|enabled-runtime|@" | awk '{print $1}' | sort -n 1> "${SYSCONFIG}/units.save"
+systemctl list-units --plain --full --no-pager --legend=false | grep "@." | grep -vE "dead|exited|etc-pacman\.d-gnupg\.service" | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." | sort -n 1> "${SYSCONFIG}/indirect.save"
 
 if [ -d "/etc/syscheck.d" ]; then
     for entry in /etc/syscheck.d/*.sh; do

@@ -36,7 +36,7 @@
 
 [Unit]
 After                   = hibernate.target
-Description             = System Management Daemon Post Hibernate Trigger
+Description             = System Management Daemon Post-Hibernate Trigger
 
 [Service]
 Type                    = oneshot

@@ -66,6 +66,7 @@ ptrace read,
 /sys/devices/virtual/dmi/id/*_{name,vendor}  r,
 
 /proc/                                       r,
+/proc/@{pid}/                                r,
 /proc/cmdline                                r,
 /proc/1/cgroup                               r,
 /proc/pressure/                              r,

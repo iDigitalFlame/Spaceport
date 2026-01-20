@@ -1306,7 +1306,7 @@ ARGS = {
             ("-i", "--increase"),
             {
                 "dest": "increase",
-                "help": "increase the current Brightness level by 5%",
+                "help": "increase the current Brightness level by 5%%",
                 "action": "store_true",
                 "required": False,
             },
@@ -1315,7 +1315,7 @@ ARGS = {
             ("-d", "--decrease"),
             {
                 "dest": "decrease",
-                "help": "decrease the current Brightness level by 5%",
+                "help": "decrease the current Brightness level by 5%%",
                 "action": "store_true",
                 "required": False,
             },

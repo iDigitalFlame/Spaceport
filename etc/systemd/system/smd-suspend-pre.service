@@ -37,7 +37,7 @@
 [Unit]
 Before                  = suspend.target
 Before                  = systemd-suspend.service
-Description             = System Management Daemon Pre Suspend Trigger
+Description             = System Management Daemon Pre-Suspend Trigger
 
 [Service]
 Type                    = oneshot

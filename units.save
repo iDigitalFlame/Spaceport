@@ -1,10 +1,15 @@
-cups.path
 apparmor.service
 auditd.service
+cups.path
+cups.socket
+fstrim.timer
+logrotate.timer
 NetworkManager-dispatcher.service
-NetworkManager-wait-online.service
 NetworkManager.service
+NetworkManager-wait-online.service
 nftables.service
+pcscd.socket
+smd-backup.timer
 smd-daemon.service
 smd-hibernate-post.service
 smd-hibernate-pre.service
@@ -12,9 +17,4 @@ smd-suspend-post.service
 smd-suspend-pre.service
 systemd-resolved.service
 systemd-timesyncd.service
-cups.socket
-pcscd.socket
-fstrim.timer
-logrotate.timer
-smd-backup.timer
 xfs_scrub_all.timer

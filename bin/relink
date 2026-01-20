@@ -46,12 +46,12 @@ list() {
     if [ $# -ne 2 ]; then
         return 1
     fi
-    list_src=${2%/}
-    list_target=${1%/}
-    find "$list_target" -type f -not -wholename "$list_target"/.git/\* -print | while IFS= read -r list_file; do
-        list_name=$(printf "%s" "$list_file" | awk "{gsub(\"${list_target}\", \"\"); print \$0}")
-        if ! echo "$list_name" | grep -qE '.(nlk|nolink)$|^/.git(|ignore$|config$|hub$)|^/(LICENSE|license|.vscode)$|^/[a-zA-Z0-9_.-]+.(md|save|vscode|MD|code-workspace)$'; then
-            check "${list_src}${list_name}" "${list_target}${list_name}"
+    local target=${1%/}
+    local source=${2%/}
+    find "$target" -type f -not -wholename "$target"/.git/\* -print | while IFS= read -r file; do
+        local name=$(printf "%s" "$file" | awk "{gsub(\"${target}\", \"\"); print \$0}")
+        if ! echo "$name" | grep -qE '.(nlk|nolink)$|^/.git(|ignore$|config$|hub$)|^/(LICENSE|license|.vscode)$|^/[a-zA-Z0-9_.-]+.(md|save|vscode|MD|code-workspace)$'; then
+            check "${source}${name}" "${target}${name}"
         fi
     done
     return 0
@@ -61,21 +61,21 @@ link() {
         return 1
     fi
     rm -f "$1" 2> /dev/null
-    link_target="$(dirname "$1")"
+    local target="$(dirname "$1")"
     if ! [ -d "$target" ]; then
         if [ $DRY -eq 0 ]; then
-            printf 'Making "%s"..\n' "$link_target"
-            if ! mkdir -p "$link_target" 2> /dev/null; then
-                printf 'Cannot create directory "%s"!\n' "$link_target"
+            printf 'Making "%s"..\n' "$target"
+            if ! mkdir -p "$target" 2> /dev/null; then
+                printf 'Cannot create directory "%s"!\n' "$target"
                 exit 1
             fi
             if [ "$UID" = "0" ]; then
-                chmod 0555 "$link_target"
+                chmod 0555 "$target"
             else
-                chmod 0755 "$link_target"
+                chmod 0755 "$target"
             fi
         else
-            printf 'Would make "%s"..\n' "$link_target"
+            printf 'Would make "%s"..\n' "$target"
         fi
     fi
     if [ $DRY -ne 0 ]; then

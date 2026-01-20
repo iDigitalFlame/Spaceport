@@ -80,7 +80,7 @@ def _main(args):
 
 
 if __name__ == "__main__":
-    p = ArgumentParser(description="System Management Daemon Locker Controller")
+    p = ArgumentParser(description="System Management Daemon Lock Controller")
     p.add_argument(
         "command",
         type=str,

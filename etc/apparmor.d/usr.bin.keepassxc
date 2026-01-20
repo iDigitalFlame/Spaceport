@@ -51,6 +51,7 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
     include <abstractions/dbus-accessibility-strict>
 
     /usr/bin/                                                  r,
+    /usr/bin/keepassxc                                         rm,
     /usr/share/keepassxc/**                                    r,
 
     /dev/                                                      r,

@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Remount /boot Pacman Hook
+## Remount /boot/esp Pacman Hook
 #
 # Copyright (C) 2016 - 2026 iDigitalFlame
 #

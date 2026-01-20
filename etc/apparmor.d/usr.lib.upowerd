@@ -46,6 +46,7 @@ profile upowerd /usr/lib/upowerd flags=(enforce, attach_disconnected) {
     /usr/lib/upowerd                              rm,
     /var/lib/upower/{,**}                         r,
     /etc/UPower/UPower.conf                       r,
+    /etc/UPower/UPower.conf.d{,/,/*.conf}         r,
 
     /dev/                                         r,
     /dev/bus/usb/                                 r,

@@ -37,7 +37,7 @@
 [Unit]
 Before                  = hibernate.target
 Before                  = systemd-hibernate.service
-Description             = System Management Daemon Pre Hibernate Trigger
+Description             = System Management Daemon Pre-Hibernate Trigger
 
 [Service]
 Type                    = oneshot

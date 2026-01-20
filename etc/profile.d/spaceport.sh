@@ -47,15 +47,15 @@ export ERRFILE="/dev/null"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export POWERSHELL_TELEMETRY_OPTOUT=1
 
-export NO_AT_BRIDGE=1
 export SCREENRC="${HOME}/.screen/screenrc"
+export NO_AT_BRIDGE=1
 export GTK_RC_FILES="${HOME}/.config/gtk-1.0/gtkrc"
 export GTK2_RC_FILES="${HOME}/.config/gtk-2.0/gtkrc"
 export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
 
 # *Just Wayland Things*
-export XDG_CURRENT_DESKTOP=sway
 export QT_QPA_PLATFORM="wayland;xcb"
+export XDG_CURRENT_DESKTOP=sway
 export _JAVA_AWT_WM_NONREPARENTING="1"
 export ELECTRON_OZONE_PLATFORM_HINT="wayland"
 
@@ -63,24 +63,24 @@ export ELECTRON_OZONE_PLATFORM_HINT="wayland"
 export PYTHONUTF8=1
 export PYTHON_COLORS=1
 export PYTHONOPTIMIZE=2
+export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export PYTHONCOERCECLOCALE="en_US.UTF-8"
 export PYTHONPYCACHEPREFIX="/var/cache/python"
-export PYTHONUSERBASE="${HOME}/.local/lib/python"
 
 # XDG User Items Export
-export XDG_DESKTOP_DIR="${HOME}"
-export XDG_CACHE_HOME="${HOME}/.cache"
-export XDG_CONFIG_HOME="${HOME}/.config"
-export XDG_PICTURES_DIR="${HOME}/Pictures"
 export XDG_DATA_HOME="${HOME}/.local/share"
+export XDG_MUSIC_DIR="${HOME}/Documents/Music"
+export XDG_CACHE_HOME="${HOME}/.cache"
+export XDG_STATE_HOME="${HOME}/.local/share"
+export XDG_VIDEOS_DIR="${HOME}/Documents/Videos"
+export XDG_CONFIG_HOME="${HOME}/.config"
+export XDG_DESKTOP_DIR="${HOME}"
+export XDG_RUNTIME_DIR="/run/user/$(/usr/bin/id --user)"
+export XDG_PICTURES_DIR="${HOME}/Pictures"
 export XDG_DOWNLOAD_DIR="${HOME}/Downloads"
 export XDG_DOCUMENTS_DIR="${HOME}/Documents"
-export XDG_STATE_HOME="${HOME}/.local/share"
-export XDG_MUSIC_DIR="${HOME}/Documents/Music"
-export XDG_VIDEOS_DIR="${HOME}/Documents/Videos"
-export XDG_PUBLICSHARE_DIR="${HOME}/Documents/Public"
 export XDG_TEMPLATES_DIR="${HOME}/Documents/Templates"
-export XDG_RUNTIME_DIR="/run/user/$(/usr/bin/id --user)"
+export XDG_PUBLICSHARE_DIR="${HOME}/Documents/Public"
 
 if [ -d "${HOME}/.local/bin" ] && [ ! "$USER" = "root" ]; then
     PATH=$PATH:${HOME}/.local/bin

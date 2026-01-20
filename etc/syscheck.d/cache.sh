@@ -74,7 +74,7 @@ chmod -hR 2755      "/var/lib/pacman/local"
 find "/var/lib/pacman/local" -xdev -type f -exec chmod -h 0644 {} \;
 
 chown -hR root:root "/var/cache/ldconfig"
-chmod -h  2700       "/var/cache/ldconfig"
+chmod -h  2700      "/var/cache/ldconfig"
 
 chown -hR root:makepkg "/var/cache/makepkg"
 chmod -h  3775         "/var/cache/makepkg"

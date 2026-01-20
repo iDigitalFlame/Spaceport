@@ -38,7 +38,7 @@
 After        = sway.service
 After        = graphical-session.target
 Requires     = graphical-session.target
-Description  = System Management Usermode Client
+Description  = System Management Client
 
 [Service]
 Type         = simple

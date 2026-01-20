@@ -36,8 +36,8 @@
 #
 
 if [ "$USER" = "root" ]; then
-    export HISTSIZE=500
     export HISTFILE="/dev/null"
+    export HISTSIZE=500
     export HISTFILESIZE=0
 fi
 
