@@ -35,18 +35,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-args="$*"
-install=$(echo "$args" | grep -qE '\-S\s|-U\s'; echo $?)
-
-if [ "$install" -eq 0 ]; then
-    mount -o remount,rw /
-fi
-
-sg firewall-web "env PYTHONPYCACHEPREFIX=/var/cache/python PYTHONOPTIMIZE=2 /usr/bin/pacman $args"
-ret=$?
-
-if [ "$install" -eq 0 ] && [ -z "$SYSBATCH" ]; then
-    mount -ro remount,ro / 2> /dev/null || mount -Rro remount,ro /
-fi
-
-exit $ret
+exec /usr/bin/sg firewall-web "env PYTHONPYCACHEPREFIX=/var/cache/python PYTHONOPTIMIZE=2 /usr/bin/pacman $*"
