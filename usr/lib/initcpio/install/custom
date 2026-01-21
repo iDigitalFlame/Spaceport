@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 ################################
 ### iDigitalFlame  2016-2026 ###
 #                              #
@@ -16,7 +17,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Mkinitcpio Configuration
+## Fix for Mkinitcpio Complaining
 #
 # Copyright (C) 2016 - 2026 iDigitalFlame
 #
@@ -34,25 +35,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-HOOKS=(systemd keyboard autodetect microcode modconf kms sd-vconsole block sd-encrypt lvm2 custom btrfs filesystems)
-MODULES=(intel_agp i915 tpm tpm_tis usbhid intel_hid sparse_keymap)
-BINARIES=(btrfs)
-COMPRESSION="zstd"
-MODULES_DECOMPRESS="yes"
-COMPRESSION_OPTIONS=(-T0 -7 --long)
-
-FILES=(
-    /usr/bin/btrfs
-    /etc/vconsole.conf
-    /etc/modprobe.d/wifi.conf
-    /etc/modprobe.d/audio.conf
-    /etc/modprobe.d/video.conf
-    /etc/modprobe.d/pcspkr.conf
-    /etc/modprobe.d/watchdog.conf
-    /opt/spaceport/etc/vconsole.conf
-    /opt/spaceport/etc/modprobe.d/wifi.conf
-    /opt/spaceport/etc/modprobe.d/audio.conf
-    /opt/spaceport/etc/modprobe.d/video.conf
-    /opt/spaceport/etc/modprobe.d/pcspkr.conf
-    /opt/spaceport/etc/modprobe.d/watchdog.conf
-)
+build() {
+    # Add the "dash" binary as "ash" since the btrfs hook uses it and
+    # complains that it's not there.
+    add_binary dash /usr/bin/ash
+}
