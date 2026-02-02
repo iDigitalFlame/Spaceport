@@ -45,6 +45,7 @@ Type                   = simple
 UMask                  = 0027
 ExecStart              = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
 KillSignal             = SIGINT
+Environment            = PYTHONOPTIMIZE=2
 Environment            = PYTHONPYCACHEPREFIX="/var/cache/python"
 ExecStartPre           = /usr/lib/smd/libexec/smd-wait-sway
 MemoryDenyWriteExecute = true

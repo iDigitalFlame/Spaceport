@@ -63,7 +63,6 @@ RestrictRealtime        = true
 RestrictSUIDSGID        = true
 SystemCallFilter        = ~@debug
 SystemCallFilter        = ~@obsolete
-InaccessiblePaths       = /dev/shm
 ProtectKernelLogs       = true
 RestrictNamespaces      = true
 ProtectControlGroups    = true

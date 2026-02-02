@@ -96,6 +96,7 @@ edk2-arm
 edk2-ovmf
 efitools
 elfutils
+enchant
 exo
 expat
 faad2
@@ -189,12 +190,14 @@ guile
 gumbo-parser
 gzip
 harfbuzz
+harfbuzz-icu
 hicolor-icon-theme
 hidapi
 highway
 hunspell
 hunspell-en_us
 hwdata
+hyphen
 iana-etc
 icu
 ijs
@@ -330,6 +333,7 @@ libldap
 libliftoff
 liblqr
 libmakepkg-dropins
+libmanette
 libmaxminddb
 libmd
 libmfx
@@ -843,6 +847,7 @@ vulkan-mesa-implicit-layers
 wavpack
 waybar
 wayland
+webkit2gtk-4.1
 webrtc-audio-processing-1
 wget
 which
@@ -850,6 +855,7 @@ wireless-regdb
 wireplumber
 wl-clipboard
 wlroots0.19
+woff2
 wolfssl
 wpa_supplicant
 x264
@@ -863,6 +869,7 @@ xcb-util-image
 xcb-util-keysyms
 xcb-util-renderutil
 xcb-util-wm
+xdg-dbus-proxy
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-wlr
