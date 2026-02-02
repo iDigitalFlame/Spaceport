@@ -35,18 +35,19 @@
 #
 
 [Unit]
-After        = sway.service
-After        = graphical-session.target
-Requires     = graphical-session.target
-Description  = System Management Client
+After                  = sway.service
+After                  = graphical-session.target
+Requires               = graphical-session.target
+Description            = System Management Client
 
 [Service]
-Type         = simple
-UMask        = 0027
-ExecStart    = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
-KillSignal   = SIGINT
-Environment  = PYTHONPYCACHEPREFIX="/var/cache/python"
-ExecStartPre = /usr/lib/smd/libexec/smd-wait-sway
+Type                   = simple
+UMask                  = 0027
+ExecStart              = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
+KillSignal             = SIGINT
+Environment            = PYTHONPYCACHEPREFIX="/var/cache/python"
+ExecStartPre           = /usr/lib/smd/libexec/smd-wait-sway
+MemoryDenyWriteExecute = true
 
 [Install]
-WantedBy     = graphical-session.target
+WantedBy               = graphical-session.target

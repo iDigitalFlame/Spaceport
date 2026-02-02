@@ -46,11 +46,11 @@ _chmod() {
     if [ $# -lt 2 ]; then
         return 0
     fi
-    chmod -h $1 "$2"
-    chmod -h $1 "${BASE_DIR}$2"
+    chmod $1 "$2"
+    chmod $1 "${BASE_DIR}$2"
     if [ $# -eq 3 ]; then
-        chmod -h $3 "$2/"*            2> /dev/null
-        chmod -h $3 "${BASE_DIR}$2/"* 2> /dev/null
+        find "$2"            -xdev -maxdepth 1 -not -type l -exec chmod $3 {} \;
+        find "${BASE_DIR}$2" -xdev -maxdepth 1 -not -type l -exec chmod $3 {} \;
     fi
 }
 
@@ -58,82 +58,76 @@ _chmod() {
 ## Remove SUID/SGID
 ## Owned by root:root / 0555
 chown -hR root:root "${BASE_DIR}"
-chmod -hR "=0555"   "${BASE_DIR}"
+find "${BASE_DIR}" -xdev -not -type l -exec chmod "=0555" {} \;
 
 # Change /boot Permissions
-chmod -h  0500      "/boot"
-chmod -h  0500      "/boot/esp"                        2> /dev/null
+chmod 0500 "/boot"
+chmod 0500 "/boot/esp" 2> /dev/null
+
 find "/boot" -xdev         -exec chown root:root {} \; 2> /dev/null
-find "/boot" -xdev -type f -exec chmod 0400 {} \;,     2> /dev/null
+find "/boot" -xdev -type f -exec chmod 0400      {} \; 2> /dev/null
 
 # Permission Fixes
-## Starting 0444 Permission
-find "${BASE_DIR}/" -xdev -type f -exec chmod -h 0444 {} \;
-## Group Fixes
-find "/" -xdev -group firewall-web -exec chgrp -h root {} \;
+find "/"            -xdev -group firewall-web -exec chgrp -h root {} \;
+find "${BASE_DIR}/" -xdev -type f             -exec chmod 0444    {} \;
 
 ## Update Targets with root:root / 0555
 for i in $(find "${BASE_DIR}/" -xdev -type d -not -path "${BASE_DIR}/" -print); do
-    chown -h root:root "${i#$BASE_DIR}"
-    chmod -h 0555      "${i#$BASE_DIR}"
+    chown root:root "${i#$BASE_DIR}"
+    chmod 0555      "${i#$BASE_DIR}"
 done
+
+# Recursive Execute
+_chmod  0555 "/etc/profile.d"   0555
+_chmod  0555 "/etc/syscheck.d"  0555
+_chmod  0555 "/usr/lib/smd/bin" 0555
+chmod -R 0555 "${BASE_DIR}/bin"
 
 # Remove "Everyone" Permissions
 ## Directories / Sub-files
 _chmod 0550 "/etc/NetworkManager"
-_chmod 0550 "/etc/audit"             0400
 _chmod 0550 "/etc/initcpio"
 _chmod 0550 "/etc/initcpio/post"     0550
 _chmod 0550 "/etc/kernel"            0440
 _chmod 0550 "/etc/logrotate.d"       0440
-_chmod 0550 "/etc/mkinitcpio.d"      0440
-_chmod 0550 "/etc/modprobe.d"        0440
-_chmod 0550 "/etc/modules-load.d"    0440
-_chmod 0550 "/etc/pacman.d/hooks"    0440
-_chmod 0550 "/etc/pacman.d/hooks"    0440
+_chmod 0500 "/etc/mkinitcpio.d"      0400
+_chmod 0500 "/etc/modprobe.d"        0400
+_chmod 0500 "/etc/modules-load.d"    0400
+_chmod 0500 "/etc/pacman.d/hooks"    0400
 _chmod 0550 "/etc/polkit-1"
 _chmod 0550 "/etc/polkit-1/rules.d"
-_chmod 0550 "/etc/security/limits.d" 0440
+_chmod 0500 "/etc/security/limits.d" 0400
 _chmod 0550 "/etc/squid"             0440
 _chmod 0500 "/etc/sudoers.d"         0400
 _chmod 0500 "/etc/sysctl.d"          0400
 _chmod 0550 "/etc/tmpfiles.d"        0440
 _chmod 0550 "/etc/udev/rules.d"      0440
-_chmod 0550 "/usr/lib/smd/sbin"      0550
+_chmod 0500 "/usr/lib/smd/sbin"      0500
 
 ## Files
-chmod -h 0444 "/etc/ssh/"*.pub
-chmod -h 0440 "${BASE_DIR}/etc/NetworkManager/NetworkManager.conf"
-chmod -h 0440 "${BASE_DIR}/etc/libaudit.conf"
-chmod -h 0440 "${BASE_DIR}/etc/locale.gen"
-chmod -h 0440 "${BASE_DIR}/etc/logrotate.conf"
-chmod -h 0440 "${BASE_DIR}/etc/mkinitcpio.conf"
-chmod -h 0440 "${BASE_DIR}/etc/nftables.conf"
-chmod -h 0440 "${BASE_DIR}/etc/polkit-1/rules.d/spaceport.rules"
-chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
-chmod -h 0440 "${BASE_DIR}/etc/ssh/sshd_config"
-chmod -h 0440 "${BASE_DIR}/etc/vconsole.conf"
+find "/etc/ssh/" -xdev -maxdepth 1 -type f -name *.pub -exec chmod 0444 {} \;
+chmod 0440 "${BASE_DIR}/etc/NetworkManager/NetworkManager.conf"
+chmod 0400 "${BASE_DIR}/etc/conf.d/sysuser-audit"
+chmod 0440 "${BASE_DIR}/etc/libaudit.conf"
+chmod 0440 "${BASE_DIR}/etc/locale.gen"
+chmod 0440 "${BASE_DIR}/etc/logrotate.conf"
+chmod 0400 "${BASE_DIR}/etc/mkinitcpio.conf"
+chmod 0400 "${BASE_DIR}/etc/nftables.conf"
+chmod 0440 "${BASE_DIR}/etc/polkit-1/rules.d/spaceport.rules"
+chmod 0400 "${BASE_DIR}/etc/ssh/sshd_config"
+chmod 0444 "${BASE_DIR}/etc/ssh/ssh_config"
+chmod 0440 "${BASE_DIR}/etc/vconsole.conf"
 
 ## Might Not Exist
-chmod -h 0550 "/usr/local/share/polkit-1"         2> /dev/null
-chmod -h 0550 "/usr/local/share/polkit-1/rules.d" 2> /dev/null
-chmod -h 0444 "/var/cache/librewolf.cfg.bak"      2> /dev/null
-
-# Recursive Execute
-chmod -hR 0555 "${BASE_DIR}/bin"
-chmod -hR 0555 "/etc/profile.d"
-chmod -hR 0555 "${BASE_DIR}/etc/profile.d"
-chmod -hR 0555 "/etc/syscheck.d"
-chmod -hR 0555 "${BASE_DIR}/etc/syscheck.d"
-chmod -hR 0555 "/usr/lib/smd/bin"
-chmod -hR 0555 "${BASE_DIR}/usr/lib/smd/bin"
+chmod 0550 "/usr/local/share/polkit-1"         2> /dev/null
+chmod 0550 "/usr/local/share/polkit-1/rules.d" 2> /dev/null
+chmod 0444 "/var/cache/librewolf.cfg.bak"      2> /dev/null
 
 # CUPS Permissions
-chmod -h 0550 "/etc/cups"
-chmod -h 0770 "/etc/cups/ppd"
-chmod -h 0550 "/etc/cups/ssl"
-chmod -h 0440 "/etc/cups/"*.conf         2> /dev/null
-chmod -h 0440 "/etc/cups/"*.conf.default 2> /dev/null
+chmod 0550 "/etc/cups"
+chmod 0770 "/etc/cups/ppd"
+chmod 0550 "/etc/cups/ssl"
+find "/etc/cups" -xdev -type f -name *.conf* -exec chmod 0440 {} \; 2> /dev/null
 
 # Ownership Updates
 chown -hR root:cups    "/etc/cups"
@@ -147,56 +141,62 @@ chown -h  root:root    "/usr/share/applications/mimeinfo.cache"
 chown -h  root:root    "${BASE_DIR}/usr/share/applications/mimeinfo.cache"
 
 # Group Helper Permissions
-chown -h root:root "/bin/ghr"
-chown -h root:root "${BASE_DIR}/bin/ghr"
-chmod -h 4755      "${BASE_DIR}/bin/ghr"
+chown root:root "/bin/ghr"
+chown root:root "${BASE_DIR}/bin/ghr"
+chmod 4755      "${BASE_DIR}/bin/ghr"
 
 # SMD Permissions
-chmod -h  0500  "/etc/smd"
-chmod -h  0400  "/etc/smd/"*
-chmod -h  0640  "/var/cache/smd/"*.json
-chmod -h  0640  "/var/cache/smd/hydra"
-chmod -h  0640  "/var/cache/smd/hydra/"* 2> /dev/null
-chmod -hR 0555 "${BASE_DIR}/usr/lib/smd/libexec"
-chmod -h  0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-entries"
-chmod -h  0555  "${BASE_DIR}/usr/lib/smd/assets/smb-backup-extract"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-key-eject"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-post"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-pre"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-attached"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-detached"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-power-low"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-post"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-pre"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-add"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-remove"
-chmod -h  0550  "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
-chmod -h  0444  "${BASE_DIR}/var/cache/smd/constants.json"
+chmod    0500 "/etc/smd"
+chmod    0400 "/etc/smd/"*
+chmod    0640 "/var/cache/smd/"*.json
+chmod    0640 "/var/cache/smd/hydra"
+chmod    0640 "/var/cache/smd/hydra/"* 2> /dev/null
+chmod    0555 "${BASE_DIR}/usr/lib/smd/assets/smb-backup-entries"
+chmod    0555 "${BASE_DIR}/usr/lib/smd/assets/smb-backup-extract"
+chmod -R 0555 "${BASE_DIR}/usr/lib/smd/libexec"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-key-eject"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-post"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-pre"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-attached"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-detached"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-low"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-post"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-pre"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-add"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-remove"
+chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
+chmod    0444 "${BASE_DIR}/var/cache/smd/constants.json"
 
 # Secureboot Permissions
-chown -hR root:root "/opt/secureboot"
-chmod -hR 0500      "/opt/secureboot"
-chmod -h  0400      "/opt/secureboot/"*
+chown -R root:root "/opt/secureboot"
+chmod    0500      "/opt/secureboot"
+chmod    0400      "/opt/secureboot/"*
 
 # Backup Cache Permissions
-chown root:root "/var/cache/smd/backup" 2> /dev/null
-chmod 0750      "/var/cache/smd/backup" 2> /dev/null
+chown root:root "/var/cache/smd/backup"   2> /dev/null
+chmod 0750      "/var/cache/smd/backup"   2> /dev/null
+chmod 0640      "/var/cache/smd/backup/"* 2> /dev/null
 
 # AuditD Permissions
-chmod -h 0440 "/etc/audit/"*           2> /dev/null
-chmod -h 0550 "/etc/audit/plugins.d"   2> /dev/null
-chmod -h 0440 "/etc/audit/plugins.d"/* 2> /dev/null
-chmod -h 0550 "/etc/audit/rules.d"     2> /dev/null
-chmod -h 0440 "/etc/audit/rules.d/"*   2> /dev/null
+_chmod 0550 "/etc/audit"             0440
+chmod  0550 "/etc/audit/rules.d"          2> /dev/null
+chmod  0550 "/etc/audit/plugins.d"        2> /dev/null
+if [ -d "/etc/audit/rules.d" ]; then
+    find "/etc/audit/rules.d" -xdev -type d -exec chmod 0550 {} \;
+    find "/etc/audit/rules.d" -xdev -type f -exec chmod 0440 {} \;
+fi
+if [ -d "/etc/audit/plugins.d" ]; then
+    find "/etc/audit/plugins.d" -xdev -type d -exec chmod 0550 {} \;
+    find "/etc/audit/plugins.d" -xdev -type f -exec chmod 0440 {} \;
+fi
 
 # AppArmor Permissions
-chmod -h  0500 "/etc/apparmor.d"
-chmod -hR 0500 "${BASE_DIR}/etc/apparmor.d"
-find "${BASE_DIR}/etc/apparmor.d" -xdev -type f -exec chmod -h 0400 {} \;
+chmod 0500 "${BASE_DIR}/etc/apparmor.d"
+find "${BASE_DIR}/etc/apparmor.d" -xdev -type d -exec chmod 0500 {} \;
+find "${BASE_DIR}/etc/apparmor.d" -xdev -type f -exec chmod 0400 {} \;
 
 # Fill Empty Modules
-
 mkdir    "/usr/lib/firmware/amdgpu"           2> /dev/null
 mkdir -p "/usr/lib/firmware/nvidia/gp100/acr" 2> /dev/null
 mkdir    "/usr/lib/firmware/qed"              2> /dev/null

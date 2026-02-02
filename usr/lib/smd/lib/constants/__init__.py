@@ -42,7 +42,7 @@
 # Base Constants
 EMPTY = str()
 NEWLINE = "\n"
-VERSION = "SMD-7.9_Tank_v2"
+VERSION = "SMD-8.0_Tank_v2"
 BOOLEANS = [
     "0",
     "1",
@@ -169,6 +169,7 @@ BACKUP_STATE_NAMES = [
     "Compress",
     "Manifest",
     "Manifest",
+    "Hashing",
     "Hashing",
     "Packing",
     "Upload",

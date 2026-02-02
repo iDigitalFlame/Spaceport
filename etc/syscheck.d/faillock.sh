@@ -40,7 +40,7 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
-FILE_HASH="b629b2d4469a74490350dc254e15b9d7"
+FILE_HASH="4c5e3222b401ab5dd72bd9efbdc174eb"
 
 # Only replace this file if it does not exist or match our hash.
 if ! [ -f "/etc/security/faillock.conf" ] || ! [ "$(md5sum "/etc/security/faillock.conf" | awk '{print $1}')" = "$FILE_HASH" ]; then
@@ -53,9 +53,10 @@ fail_interval = 600
 
 audit
 silent
+no_log_info
 local_users_only
 EOF
 fi
 
-chown -h root:root "/etc/security/faillock.conf"
-chmod -h 0444      "/etc/security/faillock.conf"
+chown root:root "/etc/security/faillock.conf"
+chmod 0444      "/etc/security/faillock.conf"

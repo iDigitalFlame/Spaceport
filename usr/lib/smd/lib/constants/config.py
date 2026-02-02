@@ -143,6 +143,7 @@ HYDRA_BRIDGE_NETWORK = "172.16.172.0/26"
 HYDRA_DIR = f"{DIRECTORY_TEMP}/hydra"
 HYDRA_DIR_USB = "/sys/bus/usb/devices/*/idVendor"
 HYDRA_DIR_DHCP = f"{DIRECTORY_CONFIG}/hydra"
+HYDRA_DIR_USER = "/opt/hydra"
 HYDRA_DIR_SNAPS = f"{HYDRA_DIR_DHCP}/snaps"
 HYDRA_DIR_DEVICES = "/dev/bus/usb"
 

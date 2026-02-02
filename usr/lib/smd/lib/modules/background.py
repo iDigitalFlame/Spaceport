@@ -43,7 +43,7 @@ from lib.util.exec import stop, nulexec
 from os import mkdir, unlink, listdir, symlink
 from lib.util import nes, num, boolean, cancel_nul
 from lib.util.file import expand, hash_file, remove_file
-from os.path import isdir, isfile, islink, lexists, splitext
+from os.path import isdir, exists, isfile, islink, lexists, splitext
 from lib.constants.config import (
     DIRECTORY_LIBEXEC,
     BACKGROUND_PATH_CACHE,
@@ -222,6 +222,10 @@ class Background(object):
                     f'[m/background]: Cannot unlink the symlink path "{self._lockscreen}"!',
                     err,
                 )
+        if exists(self._lockscreen) and not islink(self._lockscreen):
+            return server.error(
+                f'[m/background]: Not removing non-symlink file "{self._lockscreen}"!'
+            )
         remove_file(self._lockscreen, True)
         try:
             symlink(image, self._lockscreen)

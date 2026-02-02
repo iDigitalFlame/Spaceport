@@ -1,0 +1,175 @@
+#!/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO
+################################
+### iDigitalFlame  2016-2026 ###
+#                              #
+#            -/`               #
+#            -yy-   :/`        #
+#         ./-shho`:so`         #
+#    .:- /syhhhh//hhs` `-`     #
+#   :ys-:shhhhhhshhhh.:o- `    #
+#   /yhsoshhhhhhhhhhhyho`:/.   #
+#   `:yhyshhhhhhhhhhhhhh+hd:   #
+#     :yssyhhhhhyhhhhhhhhdd:   #
+#    .:.oyshhhyyyhhhhhhddd:    #
+#    :o+hhhhhyssyhhdddmmd-     #
+#     .+yhhhhyssshdmmddo.      #
+#       `///yyysshd++`         #
+#                              #
+########## SPACEPORT ###########
+### Spaceport + SMD
+## Audits SystemD-Sysusers Config vs Current State
+#
+# Copyright (C) 2016 - 2026 iDigitalFlame
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+from glob import glob
+from traceback import format_exc
+from sys import argv, exit, stderr, stdout
+from os.path import exists, expanduser, expandvars
+
+CONFIG = "/etc/conf.d/sysuser-audit"
+
+SYSUSER_CONFIG = [
+    "/etc/sysusers.d/*.conf",
+    "/run/sysusers.d/*.conf",
+    "/usr/lib/sysusers.d/*.conf",
+    "/usr/local/lib/sysusers.d/*.conf",
+]
+
+
+def _main():
+    c = CONFIG
+    if len(argv) >= 2:
+        c = argv[1]
+    a, b, v = Set.from_local(), Set.from_sysusers(), Set.from_config(c)
+    del c
+    d = a.diff(b).diff(v).sync()
+    del a, b, v
+    d.print()
+    del d
+
+
+class Set(object):
+    __slots__ = ("users", "groups")
+
+    def __init__(self):
+        self.users, self.groups = set(), set()
+
+    def sync(self):
+        self.groups.difference_update(self.users)
+        return self
+
+    @staticmethod
+    def from_local():
+        x = Set()
+        x._local("/etc/group", True)
+        x._local("/etc/passwd", False)
+        return x
+
+    @staticmethod
+    def from_config(v):
+        x, f = Set(), expanduser(expandvars(v))
+        if exists(f):
+            x._config(f)
+        del f
+        return x
+
+    @staticmethod
+    def from_sysusers():
+        x = Set()
+        for i in SYSUSER_CONFIG:
+            e = glob(i)
+            for v in e:
+                with open(v) as f:
+                    x._sysuser(f)
+            del e
+        return x
+
+    def diff(self, other):
+        x = Set()
+        x.users = self.users.difference(other.users)
+        x.groups = self.groups.difference(other.groups)
+        return x
+
+    def _sysuser(self, f):
+        d = f.read().split("\n")
+        for i in d:
+            if len(i) == 0 or i[0] == "#":
+                continue
+            v = i.strip()
+            if len(v) == 0 or (v[0] != "g" and v[0] != "m" and v[0] != "u"):
+                continue
+            n = v.split()
+            if v[0] == "m" and len(n) >= 3:
+                self.users.add(n[1])
+                self.groups.add(n[2])
+            elif v[0] == "g":
+                self.groups.add(n[1])
+            elif v[0] == "u":
+                self.users.add(n[1])
+                self.groups.add(n[1])
+            del n, v
+        del d
+
+    def _config(self, file):
+        with open(file) as f:
+            d = f.read().split("\n")
+            for i in d:
+                if len(i) == 0 or i[0] == "#":
+                    continue
+                e = i.strip()
+                if len(e) < 2 or e[1] != " " or (e[0] != "u" and e[0] != "g"):
+                    continue
+                v = e[2:].strip()
+                if e[0] == "u":
+                    self.users.add(v)
+                self.groups.add(v)
+                del e, v
+            del d
+
+    def print(self, file=stdout):
+        if len(self.users) > 0:
+            print("Potentially unused Users:")
+            for i in sorted(self.users):
+                print(f"  - {i}", file=file)
+        if len(self.groups) > 0:
+            print("Potentially unused Groups:")
+            for i in sorted(self.groups):
+                print(f"  - {i}", file=file)
+
+    def _local(self, file, group):
+        with open(file) as f:
+            d = f.read().split("\n")
+            for i in d:
+                if len(i) == 0 or i[0] == "#":
+                    continue
+                e = i.find(":")
+                if e is None or e <= 1:
+                    continue
+                if group:
+                    self.groups.add(i[0:e].strip())
+                else:
+                    self.users.add(i[0:e].strip())
+            del d
+
+
+if __name__ == "__main__":
+    try:
+        _main()
+    except Exception as err:
+        print(f"Error: {err}!", file=stderr)
+        print(format_exc(limit=3), file=stderr)
+        exit(1)

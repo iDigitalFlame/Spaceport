@@ -66,6 +66,7 @@ from lib.constants.config import (
     HYDRA_RESERVE,
     HYDRA_VM_ARCH,
     HYDRA_DIR_DHCP,
+    HYDRA_DIR_USER,
     HYDRA_EXEC_DNS,
     HYDRA_EXEC_SMB,
     HYDRA_FILE_DNS,
@@ -297,6 +298,26 @@ def _key_send(s, c, k, m):
     del e, b
     s.sendall(b"\r\n")
     _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
+
+
+def _expand_path(p, d, u):
+    if not nes(p):
+        return None
+    # Try to expand "HYDRA:/" and ":/" special paths to the user's Hydra
+    # directory and "@:/", "@/" and "@" to the VM directory path.
+    if p.startswith("HYDRA:/"):
+        v = f"{HYDRA_DIR_USER}/{u}/{p[7:]}"
+    elif p.startswith(":/"):
+        v = f"{HYDRA_DIR_USER}/{u}/{p[2:]}"
+    elif p.startswith("@:/"):
+        v = f"{d}/{p[3:]}"
+    elif p.startswith("@/"):
+        v = f"{d}/{p[2:]}"
+    elif len(p) > 2 and p[0] == "@":
+        v = f"{d}/{p[1:]}"
+    else:
+        v = p
+    return expand_abs(v, d)
 
 
 def _read_full(sock, size):
@@ -1601,7 +1622,7 @@ class VM(Storage):
             0o7022, 0, 0, req=0o0755, hide=True
         )
         d = dirname(self.path())
-        f = expand_abs(self.get("bios.file"), d)
+        f = _expand_path(self.get("bios.file"), d, u.pw_name)
         if nes(f):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1612,7 +1633,7 @@ class VM(Storage):
         else:
             # Set to None to remove anything else.
             f = None
-        q = expand_abs(self.get("bios.vars"), d)
+        q = _expand_path(self.get("bios.vars"), d, u.pw_name)
         if nes(q):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1623,7 +1644,8 @@ class VM(Storage):
         else:
             # Set to None to remove anything else.
             q = None
-        t, c = expand_abs(self.get("dev.tpm.path"), d), self.get("dev.tpm.software")
+        t = _expand_path(self.get("dev.tpm.path"), d, u.pw_name)
+        c = self.get("dev.tpm.software")
         if c and not nes(t):
             t = self.set("dev.tpm.path", f"{d}/tpm.raw")
         if nes(t):
@@ -1682,7 +1704,7 @@ class VM(Storage):
             # Set to None to remove anything else.
             t = None
         del c
-        k = expand_abs(self.get("dev.kernel"), d)
+        k = _expand_path(self.get("dev.kernel"), d, u.pw_name)
         if nes(k):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1694,7 +1716,7 @@ class VM(Storage):
         else:
             # Set to None to remove anything else.
             k = None
-        y = expand_abs(self.get("dev.initrd"), d)
+        y = _expand_path(self.get("dev.initrd"), d, u.pw_name)
         if nes(y):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1706,7 +1728,7 @@ class VM(Storage):
         else:
             # Set to None to remove anything else.
             d = None
-        o = expand_abs(self.get("dev.devicetree"), d)
+        o = _expand_path(self.get("dev.devicetree"), d, u.pw_name)
         if nes(o):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1757,9 +1779,9 @@ class VM(Storage):
                 continue
             if "type" not in d:
                 raise Error(f'drive "{n}" is missing the "type" value')
-            # Expanded forms do NOT get re-saved back to the file so
-            # they can be evaluated again.
-            p = expand_abs(d.get("file"), z)
+            # Expanded forms do NOT get re-saved back to the file so they can be
+            # evaluated again.
+            p = _expand_path(d.get("file"), z, user)
             if not nes(p):
                 server.warning(
                     f'[m/hydra/VM({self.vmid})]: Skipping drive "{n}" with a missing "file" entry!'
@@ -1891,15 +1913,20 @@ class VM(Storage):
                         d["format"] = k[1:]
                     else:
                         d["format"] = "raw"
+            # Store translated path here, it won't be saved.
+            d["_path"] = p
             w[n] = d
             del d, p
-        del i, b
+        del b, i
         i, r, a, k = 0, list(), False, 0
         # This loop will re-save all formatted drive entries.
         for n, d in w.items():
+            # Skip drives not evaluated or not evaluated correctly
+            if "_path" not in d:
+                continue
             f = d["type"] if d["type"].endswith("flash") else "none"
             s = (
-                f'id={n},file={d["file"]},format={d["format"]},index={d["index"]},'
+                f'id={n},file={d["_path"]},format={d["format"]},index={d["index"]},'
                 f"if={f},detect-zeroes=unmap"
             )
             del f
@@ -1973,6 +2000,7 @@ class VM(Storage):
                 else:
                     i += 1
                 del t, v
+            del d["_path"]
             self.drives[n] = d
         del i, a, k, w
         return r

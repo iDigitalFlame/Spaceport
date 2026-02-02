@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Client Exit Trigger Unit
+## Sysusers Audit Pacman Hook
 #
 # Copyright (C) 2016 - 2026 iDigitalFlame
 #
@@ -34,13 +34,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-Description            = System Management Client Exit Trigger
+[Trigger]
+Type        = Path
+Target      = usr/lib/sysusers.d/*.conf
+Operation   = Remove
+Operation   = Install
+Operation   = Upgrade
 
-[Service]
-Type                   = oneshot
-ExecStart              = /usr/bin/systemctl --user stop smd-client.service
-MemoryDenyWriteExecute = true
-
-[Install]
-WantedBy               = exit.target
+[Action]
+Exec        = /usr/bin/python3 -X pycache_prefix=/var/cache/python -OO /usr/lib/smd/sbin/sysusers-audit
+When        = PostTransaction
+Description = Checking sysusers configuration..

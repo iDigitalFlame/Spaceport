@@ -40,14 +40,6 @@ if ! [ "$USER" = "root" ]; then
     exit 1
 fi
 
-chown -hR root:root "/var/cache/apparmor"
-
-chmod -h  0500 "/var/cache/apparmor"
-chmod -h  0444 "/etc/apparmor/"*
-chmod -hR 0500 "/etc/apparmor.d"
-
-find "/etc/apparmor.d" -xdev -type f -exec chmod -h 0400 {} \;
-
 ln -sT "/etc/apparmor.d/rpm"                                 "/etc/apparmor.d/disable/rpm"                                  2> /dev/null
 ln -sT "/etc/apparmor.d/tup"                                 "/etc/apparmor.d/disable/tup"                                  2> /dev/null
 ln -sT "/etc/apparmor.d/cam"                                 "/etc/apparmor.d/disable/cam"                                  2> /dev/null
@@ -191,4 +183,11 @@ ln -sT "/etc/apparmor.d/usr.lib.dovecot.doveadm-server"      "/etc/apparmor.d/di
 ln -sT "/etc/apparmor.d/usr.lib.dovecot.managesieve-login"   "/etc/apparmor.d/disable/usr.lib.dovecot.managesieve-login"    2> /dev/null
 ln -sT "/etc/apparmor.d/usr.lib.apache2.mpm-prefork.apache2" "/etc/apparmor.d/disable/usr.lib.apache2.mpm-prefork.apache2"  2> /dev/null
 
-chown -h root:root "/etc/apparmor.d/disable/"*
+chown -hR root:root "/etc/apparmor.d"
+chown -hR root:root "/var/cache/apparmor"
+
+chmod 0500 "/etc/apparmor.d"
+chmod 0500 "/var/cache/apparmor"
+
+find "/etc/apparmor.d" -xdev -type d -exec chmod 0500 {} \;
+find "/etc/apparmor.d" -xdev -type f -exec chmod 0400 {} \;

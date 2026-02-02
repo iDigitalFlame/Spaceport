@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## Watchdog Module Configuration
+## SystemdD-Sysusers Audit Configuration
 #
 # Copyright (C) 2016 - 2026 iDigitalFlame
 #
@@ -34,4 +34,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-blacklist iTCO_wdt
+u dij
+
+# Utility Groups
+g audit
+g makepkg
+
+# SMD Groups
+g smd
+
+# Firewall Groups
+g firewall-all
+g firewall-ctl
+g firewall-db
+g firewall-ftp
+g firewall-icmp
+g firewall-mail
+g firewall-ssh
+g firewall-voice
+g firewall-web

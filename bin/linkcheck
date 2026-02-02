@@ -34,7 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# Enable Strict Mode
 set -u
 
 if [ $# -ne 2 ]; then
@@ -42,8 +41,8 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-_target="$(readlink "$1" 2> /dev/null)"
-if [ $? -eq 0 ] && [ "$_target" = "$2" ]; then
+target="$(readlink "$1" 2> /dev/null)"
+if [ $? -eq 0 ] && [ "$target" = "$2" ]; then
     if [ "$USER" = "root" ]; then
         chown root:root "$1"
     fi

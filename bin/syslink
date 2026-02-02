@@ -34,7 +34,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# Enable Strict Mode
 set -u
 
 . "/etc/sysconfig.conf" 2> /dev/null
@@ -75,4 +74,3 @@ sync
 echo "Broken Links Found:"
 find / -xdev -not -path '/proc/*' -not -path '/tmp/*' -not -path '/run/*' -xtype l 2> /dev/null | grep -vE "/proc|/tmp|/run"
 echo "Done!"
-exit 0

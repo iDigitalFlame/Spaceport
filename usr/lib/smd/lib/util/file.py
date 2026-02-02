@@ -55,6 +55,7 @@ from os.path import (
     islink,
     dirname,
     relpath,
+    normpath,
     realpath,
     expanduser,
 )
@@ -376,10 +377,11 @@ def _expand_custom(path, env=None):
 def expand_abs(path, dir, env=None):
     if not nes(path):
         return None
-    v = expand(path, env)
+    # Fixup path after expand and replace any backslashes with forward slashes.
+    v = expand(path, env).replace("\\", "/")
     if not isabs(v):
-        return f"{dir}/{v}"
-    return v
+        return normpath(f"{dir}/{v}")
+    return normpath(v)
 
 
 def read_json(path, errors=True, sym=False):
