@@ -61,6 +61,7 @@ profile top /usr/bin/top flags=(enforce) {
     /sys/devices/system/node/node*/meminfo    r,
 
     /proc/                                    r,
+    /proc/@{pid}{,/}                          r,
     /proc/tty/drivers                         r,
     /proc/@{pid}/task/                        r,
     /proc/@{pid}/stat{,m}                     r,
