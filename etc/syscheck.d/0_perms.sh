@@ -49,8 +49,8 @@ _chmod() {
     chmod $1 "$2"
     chmod $1 "${BASE_DIR}$2"
     if [ $# -eq 3 ]; then
-        find "$2"            -xdev -maxdepth 1 -not -type l -exec chmod $3 {} \;
-        find "${BASE_DIR}$2" -xdev -maxdepth 1 -not -type l -exec chmod $3 {} \;
+        find "$2"            -xdev -maxdepth 1 -not -path "$2"            -not -type l -exec chmod $3 {} \;
+        find "${BASE_DIR}$2" -xdev -maxdepth 1 -not -path "${BASE_DIR}$2" -not -type l -exec chmod $3 {} \;
     fi
 }
 

@@ -36,13 +36,14 @@
 
 include <tunables/spaceport>
 
-profile utils /{,usr/}bin/{bat,cat,diff,echo,grep,ls,lsd,pgrep,printf,*sum} flags=(enforce) {
+profile utils /{,usr/}bin/{bat,cat,diff,echo,grep,ls,lsd,pgrep,printf,*sum} flags=(enforce, attach_disconnected) {
     include <abstractions/command>
 
+    capability sys_ptrace,
     capability dac_override,
     capability dac_read_search,
 
-    ptrace read peer=shell,
+    ptrace read,
 
     include if exists <local/usr.bin.utils>
 }

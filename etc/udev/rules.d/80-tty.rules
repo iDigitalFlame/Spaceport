@@ -16,7 +16,7 @@
 #                              #
 ########## SPACEPORT ###########
 ### Spaceport + SMD
-## SMD Client Daemon Unit
+## UDev UART/TTY Configuration
 #
 # Copyright (C) 2016 - 2026 iDigitalFlame
 #
@@ -34,20 +34,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-[Unit]
-After        = sway.service
-After        = graphical-session.target
-Requires     = graphical-session.target
-Description  = System Management Client
-
-[Service]
-Type         = simple
-UMask        = 0027
-ExecStart    = /usr/lib/smd/libexec/smd-client --foreground --journal --wait 1
-KillSignal   = SIGINT
-Environment  = PYTHONOPTIMIZE=2
-Environment  = PYTHONPYCACHEPREFIX="/var/cache/python"
-ExecStartPre = /usr/lib/smd/libexec/smd-wait-sway
-
-[Install]
-WantedBy     = graphical-session.target
+ACTION=="add", SUBSYSTEM=="tty", ATTRS{idVendor}=="1546", ATTRS{idProduct}=="01a9", SYMLINK+="ttyGPS0"

@@ -35,12 +35,11 @@
 #
 
 [Unit]
-Description            = System Management Client Exit Trigger
+Description = System Management Client Exit Trigger
 
 [Service]
-Type                   = oneshot
-ExecStart              = /usr/bin/systemctl --user stop smd-client.service
-MemoryDenyWriteExecute = true
+Type        = oneshot
+ExecStart   = /usr/bin/systemctl --user stop smd-client.service
 
 [Install]
-WantedBy               = exit.target
+WantedBy    = exit.target

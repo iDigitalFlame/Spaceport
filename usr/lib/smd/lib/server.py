@@ -179,20 +179,22 @@ class Server(Service):
         except Exception as err:
             self.error(f'[main]: Cannot resolve the group "{SOCKET_GROUP}"!', err)
             return self._stop()
+        d = dirname(self._path)
         try:
             self._socket = socket(AF_UNIX, SOCK_STREAM)
             self._socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self._socket.bind(self._path)
             self._socket.listen(SOCKET_BACKLOG)
             chown(self._path, 0, g)
-            chown(dirname(self._path), 0, g)
+            chown(d, 0, g)
+            chmod(d, 0o0750)
             chmod(self._path, 0o0660)
             self._socket.setblocking(False)
         except OSError as err:
             self.error(f'[main]: Cannot listen on socket "{self._path}"!', err)
             return self.stop()
         finally:
-            del g
+            del d, g
         self._dispatcher.start()
         p = epoll()
         p.register(self._socket.fileno(), EPOLLIN | EPOLLHUP | EPOLLERR)
