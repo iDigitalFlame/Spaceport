@@ -78,9 +78,9 @@ for i in $(find "${BASE_DIR}/" -xdev -type d -not -path "${BASE_DIR}/" -print); 
 done
 
 # Recursive Execute
-_chmod  0555 "/etc/profile.d"   0555
-_chmod  0555 "/etc/syscheck.d"  0555
-_chmod  0555 "/usr/lib/smd/bin" 0555
+_chmod   0555 "/etc/profile.d"   0555
+_chmod   0555 "/etc/syscheck.d"  0555
+_chmod   0555 "/usr/lib/smd/bin" 0555
 chmod -R 0555 "${BASE_DIR}/bin"
 
 # Remove "Everyone" Permissions

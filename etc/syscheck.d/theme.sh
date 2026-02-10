@@ -47,11 +47,11 @@ if ! [ -d "/usr/share/icons/MoonlightSky" ]; then
     dash "/usr/share/themes/MoonlightSky/build-icons.sh"
 fi
 
-find "/usr/share/icons" -xdev -xtype l -delete
-find "/usr/share/themes" -xdev -xtype l -delete
-find "/usr/share/icons/DarkSky" -xdev -type f -name .directory -delete
-find "/usr/share/themes/DarkSky" -xdev -type f -name .directory -delete
-find "/usr/share/icons/MoonlightSky" -xdev -type f -name .directory -delete
+find "/usr/share/icons"               -xdev -xtype l -delete
+find "/usr/share/themes"              -xdev -xtype l -delete
+find "/usr/share/icons/DarkSky"       -xdev -type f -name .directory -delete
+find "/usr/share/themes/DarkSky"      -xdev -type f -name .directory -delete
+find "/usr/share/icons/MoonlightSky"  -xdev -type f -name .directory -delete
 find "/usr/share/themes/MoonlightSky" -xdev -type f -name .directory -delete
 
 # Application Icon Links
