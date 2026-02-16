@@ -44,8 +44,6 @@ if [ -z "$SYSCONFIG" ]; then
     exit 1
 fi
 
-SYSCONFIG="/opt/spaceport"
-
 _chmod() {
     if [ $# -lt 2 ]; then
         return 0
