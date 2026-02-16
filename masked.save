@@ -15,6 +15,7 @@ first-boot-complete.target
 gpsd.service
 gpsd.socket
 imports.target
+kbrequest.target
 nslcd.service
 plymouth-quit-wait.service
 plymouth-start.service

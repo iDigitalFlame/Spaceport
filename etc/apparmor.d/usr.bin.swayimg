@@ -52,10 +52,23 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     owner /dev/shm/swayimg_*          rwk,
 
     /usr/bin/zsh                      ix,
-    /usr/bin/wl-copy                  ix,
+    /usr/bin/magick                   Cx -> magick,
     /usr/bin/swaymsg                  ix,
+    /usr/bin/wl-copy                  ix,
 
     owner @{HOMEDOTS}/.local/bin/crop Pxr -> cropgui,
+
+    profile magick flags=(enforce) {
+        include <abstractions/base>
+        include <abstractions/user-home>
+        include <abstractions/no-network>
+
+        /etc/ImageMagick-*/*.xml       r,
+        /usr/share/ImageMagick-*/*.xml r,
+
+        /usr/bin/convert               ixr,
+        /usr/bin/{jpegtran,magick}     ixrm,
+    }
 
     include if exists <local/usr.bin.swayimg>
 }

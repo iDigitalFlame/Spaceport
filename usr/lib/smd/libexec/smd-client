@@ -64,7 +64,6 @@ from lib import Client, print_error
 from lib.constants import VERSION, LOG_LEVELS
 from lib.constants.config import SOCKET, LOG_LEVEL, CONFIG_CLIENT, LOG_PATH_CLIENT
 
-
 HELP_TEXT = """System Management Client (v{version})
 
 User-level service process for the System Management Daemon. This can be ran using

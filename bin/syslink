@@ -62,6 +62,7 @@ systemctl list-unit-files --plain --full --no-pager --legend=false | awk '{print
 systemctl list-units --plain --full --no-pager --legend=false | grep "@." | grep -vE "dead|exited|etc-pacman\.d-gnupg\." | awk '{print $1}' | grep -vE "getty|user|blockdev" | grep "@." | sort -n 1> "${SYSCONFIG}/indirect.save"
 
 if [ -d "/etc/syscheck.d" ]; then
+    export SYSCONFIG
     for entry in /etc/syscheck.d/*.sh; do
         if [ -f "$entry" ]; then
             printf 'Processing script "%s"..\n' "$entry"

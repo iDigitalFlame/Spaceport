@@ -39,15 +39,17 @@ if ! [ "$USER" = "root" ]; then
     echo "Error: root is required!"
     exit 1
 fi
-
-BASE_DIR="/opt/spaceport"
+if [ -z "$SYSCONFIG" ]; then
+    echo "Error: SYSCONFIG not found!"
+    exit 1
+fi
 
 # Firefox Links
 linkcheck "/etc/librewolf"                                 "/etc/firefox"
-linkcheck "/usr/lib/firefox/firefox.cfg"                   "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
-linkcheck "/usr/lib/librewolf/librewolf.cfg"               "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
+linkcheck "/usr/lib/firefox/firefox.cfg"                   "${SYSCONFIG}/usr/lib/firefox/defaults/pref/firefox.cfg"
+linkcheck "/usr/lib/librewolf/librewolf.cfg"               "${SYSCONFIG}/usr/lib/firefox/defaults/pref/firefox.cfg"
 linkcheck "/usr/lib/librewolf/browser/extensions"          "/usr/lib/firefox/browser/extensions"
-linkcheck "/usr/lib/librewolf/defaults/pref/librewolf.cfg" "${BASE_DIR}/usr/lib/firefox/defaults/pref/firefox.cfg"
+linkcheck "/usr/lib/librewolf/defaults/pref/librewolf.cfg" "${SYSCONFIG}/usr/lib/firefox/defaults/pref/firefox.cfg"
 
 # Less/Syskey Links
 linkcheck "/etc/syslesskey"           "/etc/sysless"
@@ -69,7 +71,7 @@ linkcheck "/etc/xdg-desktop-portal/gtk-portals.conf"  "/etc/xdg-desktop-portal/p
 linkcheck "/etc/xdg-desktop-portal/sway-portals.conf" "/etc/xdg-desktop-portal/portals.conf"
 
 # SMD PowerCTL Links
-for i in $(/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO ${BASE_DIR}/usr/lib/smd/bin/powerctl modules 2> /dev/null | grep -v log); do
-    linkcheck "/usr/local/bin/${i}"    "${BASE_DIR}/usr/lib/smd/bin/powerctl"
-    linkcheck "/usr/local/bin/${i}ctl" "${BASE_DIR}/usr/lib/smd/bin/powerctl"
+for i in $(/usr/bin/python3 -X pycache_prefix=/var/cache/python -OO ${SYSCONFIG}/usr/lib/smd/bin/powerctl modules 2> /dev/null | grep -v log); do
+    linkcheck "/usr/local/bin/${i}"    "${SYSCONFIG}/usr/lib/smd/bin/powerctl"
+    linkcheck "/usr/local/bin/${i}ctl" "${SYSCONFIG}/usr/lib/smd/bin/powerctl"
 done

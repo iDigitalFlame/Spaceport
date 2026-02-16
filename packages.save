@@ -99,6 +99,7 @@ elfutils
 enchant
 exo
 expat
+f2fs-tools
 faad2
 fakeroot
 ffmpeg
@@ -247,9 +248,11 @@ libadwaita
 libaio
 libappindicator
 libarchive
+libasan
 libass
 libassuan
 libasyncns
+libatomic
 libavc1394
 libavif
 libayatana-appindicator
@@ -302,11 +305,14 @@ libfontenc
 libfreeaptx
 libftdi
 libfyaml
+libgcc
 libgcrypt
 libgee
+libgfortran
 libgirepository
 libgit2
 libglvnd
+libgomp
 libgpg-error
 libgtop
 libgudev
@@ -332,6 +338,7 @@ libldac
 libldap
 libliftoff
 liblqr
+liblsan
 libmakepkg-dropins
 libmanette
 libmaxminddb
@@ -361,6 +368,7 @@ libnma-common
 libnma-gtk4
 libnotify
 libnsl
+libobjc
 libogg
 libopenmpt
 libp11-kit
@@ -378,6 +386,7 @@ libproxy
 libpsl
 libpulse
 libpwquality
+libquadmath
 libraqm
 libraw
 libraw1394
@@ -400,6 +409,7 @@ libsoxr
 libsrtp
 libssh
 libssh2
+libstdc++
 libstemmer
 libsysprof-capture
 libtasn1
@@ -413,6 +423,8 @@ libtool
 libtpms
 libtraceevent
 libtracefs
+libtsan
+libubsan
 libunibreak
 libunistring
 libunwind
@@ -642,6 +654,7 @@ python-packaging
 python-pathspec
 python-pillow
 python-pip
+python-pkg_resources
 python-platformdirs
 python-psutil
 python-pycodestyle
@@ -655,7 +668,6 @@ python-requests
 python-setuptools
 python-soupsieve
 python-sqlparse
-python-tomli
 python-typeguard
 python-typing_extensions
 python-urllib3

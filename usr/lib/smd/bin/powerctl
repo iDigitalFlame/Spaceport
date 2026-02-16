@@ -64,6 +64,5 @@ sys.path.insert(0, "/usr/lib/smd")
 
 from lib import powerctl
 
-
 if __name__ == "__main__":
     powerctl()

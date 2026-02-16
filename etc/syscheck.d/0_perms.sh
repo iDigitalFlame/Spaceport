@@ -39,26 +39,30 @@ if ! [ "$USER" = "root" ]; then
     echo "Error: root is required!"
     exit 1
 fi
+if [ -z "$SYSCONFIG" ]; then
+    echo "Error: SYSCONFIG not found!"
+    exit 1
+fi
 
-BASE_DIR="/opt/spaceport"
+SYSCONFIG="/opt/spaceport"
 
 _chmod() {
     if [ $# -lt 2 ]; then
         return 0
     fi
     chmod $1 "$2"
-    chmod $1 "${BASE_DIR}$2"
+    chmod $1 "${SYSCONFIG}$2"
     if [ $# -eq 3 ]; then
-        find "$2"            -xdev -maxdepth 1 -not -path "$2"            -not -type l -exec chmod $3 {} \;
-        find "${BASE_DIR}$2" -xdev -maxdepth 1 -not -path "${BASE_DIR}$2" -not -type l -exec chmod $3 {} \;
+        find "$2"             -xdev -maxdepth 1 -not -path "$2"             -not -type l -exec chmod $3 {} \;
+        find "${SYSCONFIG}$2" -xdev -maxdepth 1 -not -path "${SYSCONFIG}$2" -not -type l -exec chmod $3 {} \;
     fi
 }
 
 # Setup Base Permissions
 ## Remove SUID/SGID
 ## Owned by root:root / 0555
-chown -hR root:root "${BASE_DIR}"
-find "${BASE_DIR}" -xdev -not -type l -exec chmod "=0555" {} \;
+chown -hR root:root "${SYSCONFIG}"
+find "${SYSCONFIG}" -xdev -not -type l -exec chmod "=0555" {} \;
 
 # Change /boot Permissions
 chmod 0500 "/boot"
@@ -68,20 +72,20 @@ find "/boot" -xdev         -exec chown root:root {} \; 2> /dev/null
 find "/boot" -xdev -type f -exec chmod 0400      {} \; 2> /dev/null
 
 # Permission Fixes
-find "/"            -xdev -group firewall-web -exec chgrp -h root {} \;
-find "${BASE_DIR}/" -xdev -type f             -exec chmod 0444    {} \;
+find "/"             -xdev -group firewall-web -exec chgrp -h root {} \;
+find "${SYSCONFIG}/" -xdev -type f             -exec chmod 0444    {} \;
 
 ## Update Targets with root:root / 0555
-for i in $(find "${BASE_DIR}/" -xdev -type d -not -path "${BASE_DIR}/" -print); do
-    chown root:root "${i#$BASE_DIR}"
-    chmod 0555      "${i#$BASE_DIR}"
+for i in $(find "${SYSCONFIG}/" -xdev -type d -not -path "${SYSCONFIG}/" -print); do
+    chown root:root "${i#$SYSCONFIG}"
+    chmod 0555      "${i#$SYSCONFIG}"
 done
 
 # Recursive Execute
 _chmod   0555 "/etc/profile.d"   0555
 _chmod   0555 "/etc/syscheck.d"  0555
 _chmod   0555 "/usr/lib/smd/bin" 0555
-chmod -R 0555 "${BASE_DIR}/bin"
+chmod -R 0555 "${SYSCONFIG}/bin"
 
 # Remove "Everyone" Permissions
 ## Directories / Sub-files
@@ -106,17 +110,17 @@ _chmod 0500 "/usr/lib/smd/sbin"      0500
 
 ## Files
 find "/etc/ssh/" -xdev -maxdepth 1 -type f -name *.pub -exec chmod 0444 {} \;
-chmod 0440 "${BASE_DIR}/etc/NetworkManager/NetworkManager.conf"
-chmod 0400 "${BASE_DIR}/etc/conf.d/sysuser-audit"
-chmod 0440 "${BASE_DIR}/etc/libaudit.conf"
-chmod 0440 "${BASE_DIR}/etc/locale.gen"
-chmod 0440 "${BASE_DIR}/etc/logrotate.conf"
-chmod 0400 "${BASE_DIR}/etc/mkinitcpio.conf"
-chmod 0400 "${BASE_DIR}/etc/nftables.conf"
-chmod 0440 "${BASE_DIR}/etc/polkit-1/rules.d/spaceport.rules"
-chmod 0400 "${BASE_DIR}/etc/ssh/sshd_config"
-chmod 0444 "${BASE_DIR}/etc/ssh/ssh_config"
-chmod 0440 "${BASE_DIR}/etc/vconsole.conf"
+chmod 0440 "${SYSCONFIG}/etc/NetworkManager/NetworkManager.conf"
+chmod 0400 "${SYSCONFIG}/etc/conf.d/sysuser-audit"
+chmod 0440 "${SYSCONFIG}/etc/libaudit.conf"
+chmod 0440 "${SYSCONFIG}/etc/locale.gen"
+chmod 0440 "${SYSCONFIG}/etc/logrotate.conf"
+chmod 0400 "${SYSCONFIG}/etc/mkinitcpio.conf"
+chmod 0400 "${SYSCONFIG}/etc/nftables.conf"
+chmod 0440 "${SYSCONFIG}/etc/polkit-1/rules.d/spaceport.rules"
+chmod 0400 "${SYSCONFIG}/etc/ssh/sshd_config"
+chmod 0444 "${SYSCONFIG}/etc/ssh/ssh_config"
+chmod 0440 "${SYSCONFIG}/etc/vconsole.conf"
 
 ## Might Not Exist
 chmod 0550 "/usr/local/share/polkit-1"         2> /dev/null
@@ -131,19 +135,19 @@ find "/etc/cups" -xdev -type f -name *.conf* -exec chmod 0440 {} \; 2> /dev/null
 
 # Ownership Updates
 chown -hR root:cups    "/etc/cups"
-chown -hR root:cups    "${BASE_DIR}/etc/cups"
+chown -hR root:cups    "${SYSCONFIG}/etc/cups"
 chown -hR root:polkitd "/etc/polkit-1"
-chown -hR root:polkitd "${BASE_DIR}/etc/polkit-1"
+chown -hR root:polkitd "${SYSCONFIG}/etc/polkit-1"
 chown -hR root:polkitd "/usr/local/share/polkit-1"
 chown -hR root:proxy   "/etc/squid"
-chown -hR root:proxy   "${BASE_DIR}/etc/squid"
+chown -hR root:proxy   "${SYSCONFIG}/etc/squid"
 chown -h  root:root    "/usr/share/applications/mimeinfo.cache"
-chown -h  root:root    "${BASE_DIR}/usr/share/applications/mimeinfo.cache"
+chown -h  root:root    "${SYSCONFIG}/usr/share/applications/mimeinfo.cache"
 
 # Group Helper Permissions
 chown root:root "/bin/ghr"
-chown root:root "${BASE_DIR}/bin/ghr"
-chmod 4755      "${BASE_DIR}/bin/ghr"
+chown root:root "${SYSCONFIG}/bin/ghr"
+chmod 4755      "${SYSCONFIG}/bin/ghr"
 
 # SMD Permissions
 chmod    0500 "/etc/smd"
@@ -151,22 +155,22 @@ chmod    0400 "/etc/smd/"*
 chmod    0640 "/var/cache/smd/"*.json
 chmod    0640 "/var/cache/smd/hydra"
 chmod    0640 "/var/cache/smd/hydra/"* 2> /dev/null
-chmod    0555 "${BASE_DIR}/usr/lib/smd/assets/smb-backup-entries"
-chmod    0555 "${BASE_DIR}/usr/lib/smd/assets/smb-backup-extract"
-chmod -R 0555 "${BASE_DIR}/usr/lib/smd/libexec"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-daemon"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-key-eject"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-post"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-hibernate-pre"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-attached"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-detached"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-power-low"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-post"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-suspend-pre"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-add"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-usb-remove"
-chmod    0550 "${BASE_DIR}/usr/lib/smd/libexec/smd-video"
-chmod    0444 "${BASE_DIR}/var/cache/smd/constants.json"
+chmod    0555 "${SYSCONFIG}/usr/lib/smd/assets/smb-backup-entries"
+chmod    0555 "${SYSCONFIG}/usr/lib/smd/assets/smb-backup-extract"
+chmod -R 0555 "${SYSCONFIG}/usr/lib/smd/libexec"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-daemon"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-key-eject"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-hibernate-post"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-hibernate-pre"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-power-attached"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-power-detached"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-power-low"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-suspend-post"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-suspend-pre"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-usb-add"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-usb-remove"
+chmod    0550 "${SYSCONFIG}/usr/lib/smd/libexec/smd-video"
+chmod    0444 "${SYSCONFIG}/var/cache/smd/constants.json"
 
 # Secureboot Permissions
 chown -R root:root "/opt/secureboot"
@@ -192,9 +196,9 @@ if [ -d "/etc/audit/plugins.d" ]; then
 fi
 
 # AppArmor Permissions
-chmod 0500 "${BASE_DIR}/etc/apparmor.d"
-find "${BASE_DIR}/etc/apparmor.d" -xdev -type d -exec chmod 0500 {} \;
-find "${BASE_DIR}/etc/apparmor.d" -xdev -type f -exec chmod 0400 {} \;
+chmod 0500 "${SYSCONFIG}/etc/apparmor.d"
+find "${SYSCONFIG}/etc/apparmor.d" -xdev -type d -exec chmod 0500 {} \;
+find "${SYSCONFIG}/etc/apparmor.d" -xdev -type f -exec chmod 0400 {} \;
 
 # Fill Empty Modules
 mkdir    "/usr/lib/firmware/amdgpu"           2> /dev/null

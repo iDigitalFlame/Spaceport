@@ -61,6 +61,7 @@ profile cropgui /{usr,@{HOMEDOTS}/.local}/bin/crop{,gui} flags=(enforce, attach_
     owner @{HOME}/                    r,
     owner @{HOMEDOTS}/.local/bin/crop r,
 
+    /usr/bin/magick                   ix,
     /usr/bin/cropgui                  ix,
     /usr/bin/c{p,onvert}              ix,
     /usr/bin/{dash,printf}            ixr,

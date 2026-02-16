@@ -227,7 +227,7 @@ def _key_next(buf, x, n):
                 return (True, i + 1, v.lower(), False)
             del v
         del i
-    (c, k) = _key_translate(buf[x])
+    c, k = _key_translate(buf[x])
     return (False, x + 1, c, k)
 
 
@@ -845,7 +845,7 @@ class VM(Storage):
         _, s = self._cmd(server, "input-send-event", {"events": []}, close=False)
         try:
             while x < len(b):
-                (z, i, c, k) = _key_next(b, x, len(b))
+                z, i, c, k = _key_next(b, x, len(b))
                 if z:
                     _key_send(s, {"type": "qcode", "data": c.lower()}, False, caps)
                 else:
