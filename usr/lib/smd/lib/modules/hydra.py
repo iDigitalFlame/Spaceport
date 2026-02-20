@@ -1194,8 +1194,8 @@ class VM(Storage):
             else:
                 b = self.set("dev.bus", "pci")
         o, c = self.get("cpu.options", list()), self.get("cpu.type", "host")
-        i, m = c == "host", self.get("cpu.saveable", False)
-        h = self.get("vm.hide", False)
+        m = self.get("cpu.saveable", False) or self.get("cpu.savable", False)
+        i, h = c == "host", self.get("vm.hide", False)
         if h:
             c, i = "host", True
         if x.intel and self.get("cpu.auto_options", True):

@@ -175,7 +175,7 @@ _SCHEMA = """# HydraVM Schema v4-release
                           Supplied flags that are not valid for the CPU or host will
                           cause the VM to fail during startup.
         "saveable"       <Boolean, Optional[Default = false]>
-                          If true, any automatic CPU flags added that prevent snapshots
+        "savable"         If true, any automatic CPU flags added that prevent snapshots
                           of restoring a VM will be removed and will allow for snapshots
                           of to be created. If false, the VM cannot be snapshotted,
                           but will allow the incompatible CPU flags to be set.
