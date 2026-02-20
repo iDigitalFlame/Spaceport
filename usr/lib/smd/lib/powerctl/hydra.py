@@ -83,7 +83,7 @@ from lib.constants import (
 )
 
 _CACHE = dict()
-_SCHEMA = """# HydraVM Schema v3-release
+_SCHEMA = """# HydraVM Schema v4-release
 {
     [BIOS Information, Section is Optional but Recommended]
     "bios": {
@@ -110,6 +110,18 @@ _SCHEMA = """# HydraVM Schema v3-release
                           Enables the secure boot enabled UEFI vars file, if
                           avaliable. Does nothing if "bios.file" is specified or
                           if "uefi" is false.
+
+        "sm"             <String[File Path], Optional>
+                          Supported values: Any valid file path.
+
+                          This can be used to specify the DMI/SMBIOS data for
+                          the VM to emulate. This is similar to the "native"
+                          flag, but allows for specifying a specific file
+                          instead of using the host's data.
+
+                          This file must exist or the VM will fail during startup
+                          and must have the permissions 0o0644 if not owned, or
+                          0o0600 if owned.
 
         "type"           <Integer, Optional[Default = 1]>
                           Supported values: Integer in the range 0 - 41.
@@ -140,6 +152,15 @@ _SCHEMA = """# HydraVM Schema v3-release
                           in "cpu.options" will still be respected when true. For
                           greater control of the CPU flags, this may be set to false
                           to prevent any flags from being added automatically.
+
+        "hide_hv_flag"  <Boolean, Optional[Default = false]
+                          If true, this will add the "-hypervisor" flag to the
+                          current CPU options. This has no affect if "vm.hide" is
+                          enabled.
+
+                          This does not 100% hide the VM status, but allows for
+                          installing or enabling things that require bare-metal
+                          machines, such as Hyper-V or ESXi.
 
         "options"        <List[String], Optional>
                           The value contains a string list of CPU flags that will be
@@ -209,11 +230,13 @@ _SCHEMA = """# HydraVM Schema v3-release
                           VM.
 
         "input"          <String, Optional[Default = "virtio"]>
-                          Supported values: "virtio" | "tablet" | "usb" | "mouse"
+                          Supported values: "virtio" | "tablet" | "usb" | "mouse" | "none"
 
                           Specify the input device driver used. The default "virtio"
                           driver will work for most VMs, but the "usb" or "tablet"
                           driver may work better in some specific configurations.
+                          The special value "none" can be used to not connect any
+                          direct input devices.
 
         "iommu"          <Boolean, Optional[Default = true]>
                           If IOMMU is enabled on the host, setting this value to
@@ -290,10 +313,13 @@ _SCHEMA = """# HydraVM Schema v3-release
                           Supported values: Any valid file or device path.
 
             "format"     <String, Required[Default = "raw"]>
-                          Supported values: "raw" | "qcow" | "qcow2" | "vmdk"
+                          Supported values: "raw" | "qcow" | "qcow2" | "vmdk" | "cd" | "iso"
 
                           Specify the disk format type. This will determine the
                           featureset and read/write speeds avaliable.
+
+                          The "iso" and "cd" values are special and will specifically
+                          mount the drive as an IDE disk drive in read only mode.
 
                           QCOW/QCOW2 disks have the ability to capture and restore
                           snapshots, but are slower than "raw", which has no
@@ -325,7 +351,7 @@ _SCHEMA = """# HydraVM Schema v3-release
 
             "type"       <String, Required[Default = "ide"]>
                           Supported values: "ide" | "cd" | "iso" | "sata" | "scsi" |
-                           "virtio" | "flash"
+                           "virtio" | "flash" | "nvme"
 
                           Specify the bus connection type for this disk. Some bus
                           connection types will not have support without an installed
@@ -387,6 +413,25 @@ _SCHEMA = """# HydraVM Schema v3-release
 
                           The "--debug" command line flag, enables this option only
                           for the specific VM runtime.
+
+        "hide":          <Boolean, Optional[Default = false]>
+                          Restricts many of the VM functions to prevent VM detection
+                          via common identifiers. This includes converting VirtIO
+                          devices into Intel or other "normal" PC devices.
+
+                          This will disable the Ballon, Guest and RNG devices, but
+                          not Spice unless specified.
+
+                          This overrides the following options:
+                          - CPU = "host"
+                          - All NIC Types = "e1000e"
+                          - Adds "-hypervisor" CPU Flag
+                          - Audio = "intel" (if Audio is enabled)
+                          - Input = "usb" (if Input is NOT "none")
+                          - Snapshots are disabled.
+
+                          This option does NOT affect the VM Storage or Display
+                          options, they must be set separately.
 
         "name"           <String, Optional>
                           Specify a well-known name to be used by this VM that

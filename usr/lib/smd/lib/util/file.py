@@ -47,18 +47,8 @@ from typing import NamedTuple
 from lib.constants import EMPTY
 from string import digits, ascii_letters
 from json import JSONDecodeError, dumps, loads
-from os import stat, chmod, chown, fspath, remove, environ, makedirs
-from os.path import (
-    isabs,
-    exists,
-    isfile,
-    islink,
-    dirname,
-    relpath,
-    normpath,
-    realpath,
-    expanduser,
-)
+from os import stat, chmod, chown, fspath, getuid, remove, environ, makedirs
+from os.path import isabs, exists, isfile, islink, dirname, relpath, normpath, realpath
 
 _VAR_CHARS = ascii_letters + digits + "_-"
 
@@ -261,15 +251,26 @@ def import_file(path):
     del v
 
 
-def expand(path, env=None):
-    if not nes(path):
-        return None
-    try:
-        return _expand_custom(expanduser(path), env)
-    except TypeError:
-        return None
-    except ValueError:
+def _expand_user(path, env, home):
+    if len(path) < 2 or path[0] != "~" or path[1] != "/":
         return path
+    if nes(home):
+        p = home
+    elif isinstance(env, dict) and "HOME" in env:
+        p = env["HOME"]
+    elif "HOME" in environ:
+        p = environ["HOME"]
+    else:
+        try:
+            p = getpwuid(getuid()).pw_dir
+        except KeyError:
+            return path
+    if len(p) >= 1 and p[-1] == "/":
+        v = f"{p[:-1]}/{path[2:]}"
+    else:
+        v = f"{p}/{path[2:]}"
+    del p
+    return v
 
 
 def clean(path, root, links=False):
@@ -374,14 +375,15 @@ def _expand_custom(path, env=None):
     return r
 
 
-def expand_abs(path, dir, env=None):
+def expand(path, env=None, home=None):
     if not nes(path):
         return None
-    # Fixup path after expand and replace any backslashes with forward slashes.
-    v = expand(path, env).replace("\\", "/")
-    if not isabs(v):
-        return normpath(f"{dir}/{v}")
-    return normpath(v)
+    try:
+        return _expand_custom(_expand_user(path, env, home), env)
+    except TypeError:
+        return None
+    except ValueError:
+        return path
 
 
 def read_json(path, errors=True, sym=False):
@@ -416,6 +418,16 @@ def ensure_dir(file, mode=0o0755, sym=False):
         makedirs(d, mode, True)
     finally:
         del d
+
+
+def expand_abs(path, dir, env=None, home=None):
+    if not nes(path):
+        return None
+    # Fixup path after expand and replace any backslashes with forward slashes.
+    v = expand(path, env, home).replace("\\", "/")
+    if not isabs(v):
+        return normpath(f"{dir}/{v}")
+    return normpath(v)
 
 
 def hash_file(path, block=4096, errors=True, hasher=md5):

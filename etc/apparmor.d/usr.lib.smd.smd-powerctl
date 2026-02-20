@@ -52,6 +52,7 @@ profile powerctl flags=(enforce) {
     /sys/devices/system/cpu/{,**}                          r,
     /sys/class/net/*/{flag,wireles}s                       r,
     /sys/class/bluetooth/*/rfkill*/state                   r,
+    /sys/devices/pci*/*/usb*/*/*bluetooth/hci*{,/,/hci*/}  r,
     /sys/class/backlight/intel_backlight/{,max_}brightness r,
 
     include if exists <local/usr.lib.smd.smd-powerctl>

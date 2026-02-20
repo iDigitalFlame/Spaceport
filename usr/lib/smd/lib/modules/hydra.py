@@ -149,7 +149,6 @@ HOOKS_SERVER = {
 _HYDRA_IPC = b'{"execute": "qmp_capabilities"}\r\n'
 _HYDRA_USER = None
 
-Error = OSError
 Interface = namedtuple("Interface", ["auto", "bridge", "device"])
 Restricted = namedtuple(
     "Restricted",
@@ -160,6 +159,7 @@ Restricted = namedtuple(
         "reserve",
         "bios",
         "bios_vars",
+        "bios_sm",
         "tpm",
         "kernel",
         "initrd",
@@ -247,11 +247,11 @@ def _command_response(v):
         try:
             d = loads(e)
         except JSONDecodeError as err:
-            raise Error(f"invalid JSON response: {err}")
+            raise OSError(f"invalid JSON response: {err}")
         if not isinstance(d, dict):
             return None
         if "error" in d:
-            raise Error(d["error"])
+            raise OSError(d["error"])
         r.append(d)
         del d
     del b
@@ -306,9 +306,9 @@ def _expand_path(p, d, u):
     # Try to expand "HYDRA:/" and ":/" special paths to the user's Hydra
     # directory and "@:/", "@/" and "@" to the VM directory path.
     if p.startswith("HYDRA:/"):
-        v = f"{HYDRA_DIR_USER}/{u}/{p[7:]}"
+        v = f"{HYDRA_DIR_USER}/{u.pw_name}/{p[7:]}"
     elif p.startswith(":/"):
-        v = f"{HYDRA_DIR_USER}/{u}/{p[2:]}"
+        v = f"{HYDRA_DIR_USER}/{u.pw_name}/{p[2:]}"
     elif p.startswith("@:/"):
         v = f"{d}/{p[3:]}"
     elif p.startswith("@/"):
@@ -317,7 +317,7 @@ def _expand_path(p, d, u):
         v = f"{d}/{p[1:]}"
     else:
         v = p
-    return expand_abs(v, d)
+    return expand_abs(v, d, home=u.pw_dir)
 
 
 def _read_full(sock, size):
@@ -462,11 +462,11 @@ class VM(Storage):
             or path.startswith("/sys")
             or path.startswith("/proc")
         ):
-            raise Error(f'path "{path}" is invalid')
+            raise OSError(f'path "{path}" is invalid')
         try:
             i = info(path, sym=False)
         except OSError as err:
-            raise Error(f'cannot read "{path}": {err}')
+            raise OSError(f'cannot read "{path}": {err}')
         # We don't wrap these as they're the same as an Error and they already
         # provide context.
         #
@@ -484,7 +484,7 @@ class VM(Storage):
         if self.vmid is None:
             self.vmid = hash(self.get("vm.uuid")) % 512
         elif not isinstance(self.vmid, int) or self.vmid <= 0:
-            raise Error("vmid must be a positive non-zero number")
+            raise OSError("vmid must be a positive non-zero number")
         self._usb = dict()
         self._path = f"{HYDRA_DIR}/{self.vmid}"
         self._proc = None
@@ -555,7 +555,7 @@ class VM(Storage):
 
     def _ip(self, server):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to check GA")
+            raise OSError("invalid state to check GA")
         try:
             r, _ = self._cmd(server, "guest-network-get-interfaces", ga=True)
         except Exception as err:
@@ -590,7 +590,7 @@ class VM(Storage):
 
     def _ping(self, server):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to check GA")
+            raise OSError("invalid state to check GA")
         s = self._status()
         try:
             self._cmd(server, "guest-ping", ga=True)
@@ -621,9 +621,9 @@ class VM(Storage):
         if self._state == HYDRA_STATE_STOPPED:
             return
         if self._state == HYDRA_STATE_WAITING:
-            raise Error("cannot hibernate while waiting")
+            raise OSError("cannot hibernate while waiting")
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to hibernate")
+            raise OSError("invalid state to hibernate")
         if not self._agent:
             server.debug(
                 f"[m/hydra/VM({self.vmid})]: QEMU Guest Agent was not detected, trying anyway.."
@@ -642,7 +642,7 @@ class VM(Storage):
         try:
             with open(f"{HYDRA_DIR_SNAPS}/{self.vmid}") as f:
                 return f.read().strip()
-        except Error as err:
+        except OSError as err:
             return server.error(
                 f'[m/hydra/VM({self.vmid})]: Cannot load Snapshot state file "{HYDRA_DIR_SNAPS}/{self.vmid}": {err}!',
                 err,
@@ -650,7 +650,7 @@ class VM(Storage):
 
     def _snap_list(self, server):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to query Snapshots")
+            raise OSError("invalid state to query Snapshots")
         r, _ = self._cmd(server, "query-block")
         d = dict()
         if not isinstance(r, list) or len(r) == 0:
@@ -693,11 +693,11 @@ class VM(Storage):
 
     def _sleep(self, server, sleep):
         if sleep and self._state == HYDRA_STATE_SLEEPING:
-            raise Error("already sleeping")
+            raise OSError("already sleeping")
         if not sleep and self._state != HYDRA_STATE_SLEEPING:
-            raise Error("not currently sleeping")
+            raise OSError("not currently sleeping")
         if self._state != HYDRA_STATE_RUNNING and self._state != HYDRA_STATE_SLEEPING:
-            raise Error("invalid state to sleep")
+            raise OSError("invalid state to sleep")
         if sleep:
             server.debug(f"[m/hydra/VM({self.vmid})]: Entering sleep")
             self._cmd(server, "stop")
@@ -838,7 +838,7 @@ class VM(Storage):
 
     def _input(self, server, data, caps):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to add USB devices")
+            raise OSError("invalid state to add USB devices")
         if not nes(data):
             return
         x, b = 0, data.encode("UTF-8")
@@ -854,7 +854,7 @@ class VM(Storage):
                 del z, i, c, k
             del b, x
         except (OSError, UnicodeError) as err:
-            raise Error(err)
+            raise OSError(err)
         finally:
             s.close()
             del s
@@ -865,7 +865,7 @@ class VM(Storage):
                 try:
                     self._cmd(server, "device_del", {"id": f"usb-dev-{v}"})
                 except OSError as err:
-                    raise Error(f'cannot remove device "{v}": {err}')
+                    raise OSError(f'cannot remove device "{v}": {err}')
                 # NOTE(dij): We remove from the "self._usb" dict here just in case
                 #            line above fails and we don't leave it in a quasi-weird
                 #            half state of USB devices already removed.
@@ -915,6 +915,8 @@ class VM(Storage):
                 s = "vgamem_mb=64,vram_size_mb=64,ram_size_mb=64"
             elif g == "vmware":
                 s = "vmware-svga,vgamem_mb=64M"
+            elif g == "vga-full":
+                s = "VGA,vgamem_mb=64,xres=1920,yres=1080"
             else:
                 s = "VGA,vgamem_mb=64"
             v = True
@@ -941,66 +943,13 @@ class VM(Storage):
         del g, s, v
         return r
 
-    def _build_adapters(self, server, bus):
-        if not isinstance(self.network, dict):
-            self.network = dict()
-            return server.debug(
-                f"[m/hydra/VM({self.vmid})]: Network value was not found, skipping interface setup."
-            )
-        if len(self.network) == 0:
-            return server.debug(
-                f"[m/hydra/VM({self.vmid})]: Network value was empty, skipping interface setup."
-            )
-        r = list()
-        self._adapters.clear()
-        for n, a in self.network.items():
-            if not isinstance(a, dict) or len(a) == 0:
-                server.warning(
-                    f'[m/hydra/VM({self.vmid})]: Skipping invalid network interface "{n}"!'
-                )
-                continue
-            if "type" not in a:
-                a["type"] = "intel"
-            if "bridge" in a:
-                b = a["bridge"]
-            else:
-                b = HYDRA_BRIDGE
-            if "device" in a:
-                d, k = a["device"], False
-            else:
-                d, k = f"{HYDRA_BRIDGE}s{self.vmid}n{len(self._adapters)}", True
-            self._adapters.append(Interface(k, b, d))
-            del b, k
-            if "mac" not in a:
-                a["mac"] = (
-                    "2c:af:01:"
-                    + f"{randint(0, 255):02x}:{randint(0, 255):02x}:{randint(0, 255):02x}"
-                )
-            if a["type"] == "intel":
-                x = "e1000"
-            elif a["type"] == "virtio":
-                x = "virtio-net-pci"
-            elif a["type"] == "vmware":
-                x = "vmxnet3"
-            else:
-                x = a["type"]
-            r += [
-                "-netdev",
-                f"type=tap,id={n},ifname={d},script=no,downscript=no,vhost=on",
-                "-device",
-                f'{x},mac={a["mac"]},netdev={n},bus={bus}.0,addr={hex(0x14 + len(self._adapters))},id={n}-dev',
-            ]
-            del d, x
-            self.network[n] = a
-        return r
-
     def _restart(self, server, reset=False):
         if self._state == HYDRA_STATE_STOPPED:
             return
         if self._state == HYDRA_STATE_WAITING:
-            raise Error("cannot restart/reset while waiting")
+            raise OSError("cannot restart/reset while waiting")
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("not able to restart/reset")
+            raise OSError("not able to restart/reset")
         if reset:
             server.debug(f"[m/hydra/VM({self.vmid})]: Forcefully resetting VM!")
             try:
@@ -1023,7 +972,9 @@ class VM(Storage):
             )
 
     def _build_bios(self, server, info, uid):
-        if self.get("bios.native"):
+        if nes(info.bios_sm):
+            s = info.bios_sm
+        elif self.get("bios.native") or self.get("vm.hide"):
             if not exists(HYDRA_FILE_SMBIOS):
                 server.warning(
                     '[m/hydra/VM({self.vmid})]: Ignoring "bios.native" as no SMBIOS file "'
@@ -1040,7 +991,7 @@ class VM(Storage):
                         perms=0o0440,
                     )
                 except OSError as err:
-                    raise Error(
+                    raise OSError(
                         f'Cannot copy system SMBIOS file "{HYDRA_FILE_SMBIOS}": {err}'
                     )
                 s = f"{self._path}.bios"
@@ -1081,7 +1032,7 @@ class VM(Storage):
                 )
                 del u
             except OSError as err:
-                raise Error(f'Cannot create VM specific UEFI vars file "{v}": {err}')
+                raise OSError(f'Cannot create VM specific UEFI vars file "{v}": {err}')
             else:
                 self.bios["vars"] = v
         return [
@@ -1094,7 +1045,7 @@ class VM(Storage):
 
     def _usb_reconnect(self, server, manager):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to reconnect USB devices")
+            raise OSError("invalid state to reconnect USB devices")
         server.info(f"[m/hydra/VM({self.vmid})]: Reconnecting all USB devices..")
         for k, v in self._usb.items():
             server.debug(f'[m/hydra/VM({self.vmid})]: Reconnecting device "{k}"..')
@@ -1140,6 +1091,61 @@ class VM(Storage):
         del r
         return dict(sorted(d.items()))
 
+    def _build_adapters(self, server, bus, hide):
+        if not isinstance(self.network, dict):
+            self.network = dict()
+            return server.debug(
+                f"[m/hydra/VM({self.vmid})]: Network value was not found, skipping interface setup."
+            )
+        if len(self.network) == 0:
+            return server.debug(
+                f"[m/hydra/VM({self.vmid})]: Network value was empty, skipping interface setup."
+            )
+        r = list()
+        self._adapters.clear()
+        for n, a in self.network.items():
+            if not isinstance(a, dict) or len(a) == 0:
+                server.warning(
+                    f'[m/hydra/VM({self.vmid})]: Skipping invalid network interface "{n}"!'
+                )
+                continue
+            if "type" not in a:
+                a["type"] = "intel"
+            if "bridge" in a:
+                b = a["bridge"]
+            else:
+                b = HYDRA_BRIDGE
+            if "device" in a:
+                d, k = a["device"], False
+            else:
+                d, k = f"{HYDRA_BRIDGE}s{self.vmid}n{len(self._adapters)}", True
+            self._adapters.append(Interface(k, b, d))
+            del b, k
+            if "mac" not in a:
+                a["mac"] = (
+                    "2c:af:01:"
+                    + f"{randint(0, 255):02x}:{randint(0, 255):02x}:{randint(0, 255):02x}"
+                )
+            if a["type"] == "intel":
+                x = "e1000"
+            elif a["type"] == "virtio":
+                x = "virtio-net-pci"
+            elif a["type"] == "vmware":
+                x = "vmxnet3"
+            else:
+                x = a["type"]
+            if hide:
+                x = "e1000e"
+            r += [
+                "-netdev",
+                f"type=tap,id={n},ifname={d},script=no,downscript=no,vhost=on",
+                "-device",
+                f'{x},mac={a["mac"]},netdev={n},bus={bus}.0,addr={hex(0x14 + len(self._adapters))},id={n}-dev',
+            ]
+            del d, x
+            self.network[n] = a
+        return r
+
     def _snap_done(self, server, job, name, err):
         if self._state == HYDRA_STATE_SNAP:
             s = "Snapshot"
@@ -1154,7 +1160,7 @@ class VM(Storage):
                 try:
                     with open(f"{HYDRA_DIR_SNAPS}/{self.vmid}", "w") as f:
                         f.write(name)
-                except Error as err:
+                except OSError as err:
                     server.error(
                         f"[m/hydra/VM({self.vmid})]: Cannot save Snapshot state "
                         f'file "{HYDRA_DIR_SNAPS}/{self.vmid}": {err}!',
@@ -1189,46 +1195,52 @@ class VM(Storage):
                 b = self.set("dev.bus", "pci")
         o, c = self.get("cpu.options", list()), self.get("cpu.type", "host")
         i, m = c == "host", self.get("cpu.saveable", False)
-        h = self.get("cpu.hide_vm", False)
+        h = self.get("vm.hide", False)
+        if h:
+            c, i = "host", True
         if x.intel and self.get("cpu.auto_options", True):
-            c = (
-                f"{c},kvm={'off' if h else 'on'},+kvm_pv_unhalt,+kvm_pv_eoi,+hv-evmcs,+hv-tlbflush,+kvmclock,+aes,"
-                "+pdpe1gb,hv_ipi,hv_relaxed,hv_frequencies,hv_synic,hv_reenlightenment,hv_vpindex,hv_spinlocks=0x1FFF,"
-                "hv_vapic,hv_time,hv_stimer,hv_reset,hv_runtime"
-            )
-            if m:
+            if h:
+                c = f"{c},kvm=off,+aes,+pdpe1gb"
+            else:
+                c = (
+                    f"{c},kvm=on,+aes,+pdpe1gb,"
+                    "kvmclock,kvm_nopiodelay,kvm_steal_time,kvm_pv_eoi,kvm_pv_unhalt,"
+                    "kvm_pv_tlb_flush,kvm_pv_ipi,kvm_poll_control,kvm_pv_sched_yield,"
+                    "kvm_asyncpf_int,kvmclock_stable_bit,"
+                    "hv_relaxed,hv_vapic,hv_spinlocks=0x1FFF,hv_vpindex,hv_runtime,hv_time,hv_synic,"
+                    "hv_stimer,hv_tlbflush,hv_ipi,hv_frequencies,hv_reenlightenment,hv_evmcs,"
+                    "hv_stimer_direct,hv_avic,hv_emsr_bitmap,hv_xmm_input,hv_tlbflush_ext,hv_tlbflush_direct"
+                )
+            if m and not h:
                 c += ",migratable=yes,-invtsc"
             elif i or c == "max" or c.startswith("kvm") or c.startswith("qemu"):
                 # TODO(dij): Should we expand this list? ^
                 #            There might be more CPUs that can support this value, but
                 #            we'd need a test criteria.
-                c += ",migratable=no,hv_passthrough"
-            else:
-                c += ",hv_passthrough"
-        if h:
+                c += ",migratable=no"
+        if h or self.get("cpu.hide_hv_flag", False):
             c = f"{c},-hypervisor"
         if i:
             c = f"{c},l3-cache=on"
-        del h, i, m
+        del i, m
         try:
             if isinstance(o, list) and len(o) > 0:
                 c = f'{c},{",".join(o)}'
         except TypeError:
-            raise Error('"cpu.options" list can only contain string values')
+            raise OSError('"cpu.options" list can only contain string values')
         # These two lines /could/ fail just in case, luckily we haven't done
         # /much/ yet.
         try:
             d = self._build_drives(
                 server,
-                uid,
                 x.user,
                 b,
                 t,
                 opts,
             )
-            a = self._build_adapters(server, b)
+            a = self._build_adapters(server, b, h)
         except KeyError as err:
-            raise Error(f'building requires the missing value "{err}"')
+            raise OSError(f'building requires the missing value "{err}"')
         n = self.get("cpu.sockets", 1)
         r = [
             x.bin,
@@ -1245,10 +1257,10 @@ class VM(Storage):
             "-boot",
             "order=cdn,menu=on,splash-time=0,reboot-timeout=1000,strict=on",
             "-rtc",
-            "base=localtime,clock=host",
+            f'base=localtime,clock=host{",driftfix=slew" if x.intel else ""}',
             "-machine",
             f'type={t},mem-merge=on,dump-guest-core=off,nvdimm=off,{"hpet=off,vmport=on," if x.intel else ""}'
-            f'hmat=off,suppress-vmdesc=on,accel={self.get("dev.accel", "kvm")}',
+            f'hmat=off,spcr=on,suppress-vmdesc=on,accel={self.get("dev.accel", "kvm")}',
             "-m",
             f"size={x.memory}",
             "-cpu",
@@ -1266,18 +1278,34 @@ class VM(Storage):
             "password=off,power-control=on,share=ignore",
             "-qmp",
             f"unix:{self._path}.sock,server=on,wait=off,mux=on",
-            "-chardev",
-            f"socket,id=qga0,path={self._path}.qga,server=on,wait=off",
-            "-device",
-            f"virtio-serial-pci,id=qga0,bus={b}.0,addr=0x9",
-            "-device",
-            "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
             "-object",
             "iothread,id=iothread0",
-            "-device",
-            f"virtio-balloon-pci,id=ballon0,bus={b}.0,addr=0x0c",
-            "-device",
-            f"virtio-keyboard-pci,id=keyboard0,bus={b}.0,addr=0x11",
+        ]
+        if not h or self.get("vm.hide_use_guest", False):
+            r += [
+                "-chardev",
+                f"socket,id=qga0,path={self._path}.qga,server=on,wait=off",
+                "-device",
+                f"virtio-serial-pci,id=qga0,bus={b}.0,addr=0x9",
+                "-device",
+                "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
+            ]
+        if not h:
+            v = "/dev/hwrng"
+            if not exists(v):
+                v = "/dev/urandom"
+            r += [
+                "-device",
+                f"virtio-balloon-pci,id=ballon0,bus={b}.0,addr=0x0c",
+                "-device",
+                f"virtio-keyboard-pci,id=keyboard0,bus={b}.0,addr=0x11",
+                "-object",
+                f"rng-random,filename={v},id=rng0",
+                "-device",
+                f"virtio-rng-pci,rng=rng0,bus={b}.0,max-bytes=1024,period=1000,addr=0x08",
+            ]
+            del v
+        r += [
             "-device",
             f"qemu-xhci,multifunction=on,streams=on,id=usb-bus3,bus={b}.0,addr=0x12",
             "-device",
@@ -1288,10 +1316,6 @@ class VM(Storage):
             f"pci-bridge,id=pci-bridge1,chassis_nr=1,bus={b}.0,addr=0x0f",
             "-device",
             f"pci-bridge,id=pci-bridge2,chassis_nr=2,bus={b}.0,addr=0x10",
-            "-object",
-            "rng-random,filename=/dev/urandom,id=rng0",
-            "-device",
-            f"virtio-rng-pci,rng=rng0,bus={b}.0,addr=0x08",
             "-sandbox",
             "on,obsolete=deny,spawn=deny",
         ]
@@ -1372,6 +1396,8 @@ class VM(Storage):
                 "-audiodev",
                 f"driver=pa,id=audio0,server=/var/run/user/{uid}/pulse/native",
             ]
+            if h:
+                s = "intel"
             if s == "virtio":
                 # Untested, does NOT work on Windows, audio driver is Linux only!
                 r += [
@@ -1399,6 +1425,8 @@ class VM(Storage):
                 ]
                 del v
         i = self.get("dev.input", "virtio")
+        if h and i != "none":
+            i = "usb"
         if i == "tablet":
             r += ["-device", "usb-tablet,id=input0,bus=usb-bus2.0,port=1"]
         elif i == "mouse":
@@ -1413,14 +1441,14 @@ class VM(Storage):
                 "-device",
                 "usb-kbd,id=input1,bus=usb-bus2.0,port=2",
             ]
-        else:
+        elif i != "none":
             if i != "virtio":
                 self.set("dev.input", "virtio")
             r += [
                 "-device",
                 f"virtio-tablet-pci,id=input0,bus={b}.0,addr=0x0a",
             ]
-        del i
+        del h, i
         if self.get("vm.spice", True):
             # NOTE(dij): We're adding the lines to add USB redirect support
             #            via SPICE, but Hydra won't know about the added devices
@@ -1520,10 +1548,10 @@ class VM(Storage):
 
     def _snap_delete(self, server, manager, name):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to delete a Snapshot")
+            raise OSError("invalid state to delete a Snapshot")
         d = self._snap_drives(server, True)
         if len(d) == 0:
-            raise Error("no disks avaliable with Snapshots")
+            raise OSError("no disks avaliable with Snapshots")
         v = list(d.values())
         a = {
             "tag": name,
@@ -1537,10 +1565,10 @@ class VM(Storage):
 
     def _snap_restore(self, server, manager, name):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to revert to a Snapshot")
+            raise OSError("invalid state to revert to a Snapshot")
         d = self._snap_drives(server, True)
         if len(d) == 0:
-            raise Error("no disks avaliable to restore")
+            raise OSError("no disks avaliable to restore")
         v = list(d.values())
         a = {
             "tag": name,
@@ -1555,10 +1583,10 @@ class VM(Storage):
 
     def _snap_capture(self, server, manager, name):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to Snapshot")
+            raise OSError("invalid state to Snapshot")
         d = self._snap_drives(server)
         if len(d) == 0:
-            raise Error("no disks avaliable to Snapshot")
+            raise OSError("no disks avaliable to Snapshot")
         v = list(d.values())
         a = {
             "tag": name,
@@ -1577,20 +1605,20 @@ class VM(Storage):
         except KeyError:
             # NOTE(dij): This shouldn't really fail but *shrug* if it does, it
             #            means something is horribly wrong or we're getting bs'd.
-            raise Error(f'cannot find user for "{uid}"')
+            raise OSError(f'cannot find user for "{uid}"')
         # We don't expand any vars in the "vm.binary" option as it must be a
         # full path.
         x, v = self.get("vm.binary"), server.get("hydra.unsafe.enabled", False, True)
         if nes(x):
             if not v:
-                raise Error(
+                raise OSError(
                     'cannot use "vm.binary" when "hydra.unsafe.enabled" is false or unset'
                 )
             if not isabs(x):
-                raise Error('"vm.binary" must be an absolute path')
+                raise OSError('"vm.binary" must be an absolute path')
             a = server.get("hydra.unsafe.allowed_binaries", list(), True)
             if not isinstance(a, list) or x not in a:
-                raise Error(f'binary "{x}" is not in "hydra.unsafe.allowed_binaries"')
+                raise OSError(f'binary "{x}" is not in "hydra.unsafe.allowed_binaries"')
             del a
         else:
             k = self.get("vm.arch")
@@ -1601,11 +1629,11 @@ class VM(Storage):
         e = self.get("vm.extra")
         if isinstance(e, list) and len(e) > 0:
             if not v:
-                raise Error(
+                raise OSError(
                     'cannot use "vm.extra" when "hydra.unsafe.enabled" is false or unset'
                 )
             if not server.get("hydra.unsafe.extra", False, True):
-                raise Error(
+                raise OSError(
                     'cannot use "vm.extra" when "hydra.unsafe.extra" is false or unset'
                 )
             server.info(
@@ -1622,29 +1650,43 @@ class VM(Storage):
             0o7022, 0, 0, req=0o0755, hide=True
         )
         d = dirname(self.path())
-        f = _expand_path(self.get("bios.file"), d, u.pw_name)
+        f = _expand_path(self.get("bios.file"), d, u)
         if nes(f):
             # Security Check:
             #             Can only be a file owned by the calling user that
-            #             has 0o0400 permissions.
+            #             has 0o0400 permissions or a non-owned file that
+            #             has 0o0644 permissions.
             info(f, False, hide=True).check_if_owner(
                 0o7177, uid=uid, req=0o0400, hide=True
             ).check_if_not_owner(uid, 0o7133, req=0o0644, hide=True).only(file=True)
         else:
             # Set to None to remove anything else.
             f = None
-        q = _expand_path(self.get("bios.vars"), d, u.pw_name)
+        q = _expand_path(self.get("bios.vars"), d, u)
         if nes(q):
             # Security Check:
             #             Can only be a file owned by the calling user that
-            #             has 0o0600 permissions.
+            #             has 0o0600 permissions or a non-owned file that
+            #             has 0o0644 permissions.
             info(q, False, hide=True).check(
                 0o7137, uid, hide=True, req=0o600, own_gid=True
             ).only(file=True)
         else:
             # Set to None to remove anything else.
             q = None
-        t = _expand_path(self.get("dev.tpm.path"), d, u.pw_name)
+        s = _expand_path(self.get("bios.sm"), d, u)
+        if nes(s):
+            # Security Check:
+            #             Can only be a file owned by the calling user that
+            #             has 0o0400 permissions or a non-owned file that
+            #             has 0o0644 permissions.
+            info(s, False, hide=True).check_if_owner(
+                0o7177, uid=uid, req=0o0400, hide=True
+            ).check_if_not_owner(uid, 0o7133, req=0o0644, hide=True).only(file=True)
+        else:
+            # Set to None to remove anything else.
+            s = None
+        t = _expand_path(self.get("dev.tpm.path"), d, u)
         c = self.get("dev.tpm.software")
         if c and not nes(t):
             t = self.set("dev.tpm.path", f"{d}/tpm.raw")
@@ -1664,7 +1706,7 @@ class VM(Storage):
             i = info(t, False, hide=True)
             if i.isfile:
                 if not c:
-                    raise Error(
+                    raise OSError(
                         f'TPM device "{t}" is a file but "dev.tpm.software" is not set as "true"'
                     )
                 # Security Check:
@@ -1681,21 +1723,21 @@ class VM(Storage):
                 #             device must have 0o0660 permissions.
                 i.check(0o7117, req=0o0660, hide=True).only(char=True)
                 if i.uid != uid:
-                    raise Error(
+                    raise OSError(
                         f'character device "{f}" cannot have a non-system owner'
                     )
                 if i.uid == 0:
-                    raise Error(f'character device "{t}" cannot be owned by root')
+                    raise OSError(f'character device "{t}" cannot be owned by root')
                 try:
                     v = getpwuid(i.uid)
                 except KeyError:
-                    raise Error(f'cannot find user "{i.uid}" for "{t}"')
+                    raise OSError(f'cannot find user "{i.uid}" for "{t}"')
                 try:
                     g = getgrgid(v.pw_gid)
                 except KeyError:
-                    raise Error(f'cannot find group "{v.pw_gid}" for "{t}"')
+                    raise OSError(f'cannot find group "{v.pw_gid}" for "{t}"')
                 if u.pw_name not in g.gr_mem:
-                    raise Error(
+                    raise OSError(
                         f'user "{u.pw_name}" must be in the group "{g.gr_name}" for "{t}"'
                     )
                 del v, g
@@ -1704,7 +1746,7 @@ class VM(Storage):
             # Set to None to remove anything else.
             t = None
         del c
-        k = _expand_path(self.get("dev.kernel"), d, u.pw_name)
+        k = _expand_path(self.get("dev.kernel"), d, u)
         if nes(k):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1716,7 +1758,7 @@ class VM(Storage):
         else:
             # Set to None to remove anything else.
             k = None
-        y = _expand_path(self.get("dev.initrd"), d, u.pw_name)
+        y = _expand_path(self.get("dev.initrd"), d, u)
         if nes(y):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1728,7 +1770,7 @@ class VM(Storage):
         else:
             # Set to None to remove anything else.
             d = None
-        o = _expand_path(self.get("dev.devicetree"), d, u.pw_name)
+        o = _expand_path(self.get("dev.devicetree"), d, u)
         if nes(o):
             # Security Check:
             #             Can only be a file owned by the calling user that
@@ -1743,24 +1785,22 @@ class VM(Storage):
         del d
         n = self.get("memory.size", 1024)
         if not isinstance(n, int) or n <= 0:
-            raise Error("memory size must be a non-zero positive number")
+            raise OSError("memory size must be a non-zero positive number")
         if self.get("memory.reserve", True):
             r = f"/dev/hugepages/{self.vmid}.ram"
             if exists(r):
                 try:
                     remove(r)
                 except OSError:
-                    raise Error(f'memory reserve file "{r}" already exists')
+                    raise OSError(f'memory reserve file "{r}" already exists')
             server.debug(f"[m/hydra/VM({self.vmid})]: Reserving {n}MB of memory..")
             manager.pages(server, self.vmid, round(n / HYDRA_RESERVE_SIZE))
         else:
             # Set to None to remove anything else.
             r = None
-        return Restricted(
-            x, e, n, r, f, q, t, k, y, o, u.pw_name, x.endswith("-x86_64")
-        )
+        return Restricted(x, e, n, r, f, q, s, t, k, y, o, u, x.endswith("-x86_64"))
 
-    def _build_drives(self, server, uid, user, bus, machine, opts):
+    def _build_drives(self, server, user, bus, machine, opts):
         if not isinstance(self.drives, dict):
             self.drives = dict()
             return server.debug(
@@ -1778,7 +1818,7 @@ class VM(Storage):
                 )
                 continue
             if "type" not in d:
-                raise Error(f'drive "{n}" is missing the "type" value')
+                raise OSError(f'drive "{n}" is missing the "type" value')
             # Expanded forms do NOT get re-saved back to the file so they can be
             # evaluated again.
             p = _expand_path(d.get("file"), z, user)
@@ -1790,7 +1830,7 @@ class VM(Storage):
             try:
                 v = info(p, False, hide=True)
             except OSError as err:
-                raise Error(
+                raise OSError(
                     f'drive "{n}" file "{p}" does not exist or is not a file: {err}'
                 )
             # Security Check:
@@ -1818,7 +1858,7 @@ class VM(Storage):
             if v.isfile:
                 if d["type"] == "cd" or d["type"] == "iso":
                     v.check(0o7133, req=0o0400)
-                elif v.uid == uid:
+                elif v.uid == user.pw_uid:
                     v.check_if(d.get("readonly", False), 0o7133, req=0o0440).check_if(
                         not d.get("readonly", False),
                         0o7177,
@@ -1840,7 +1880,7 @@ class VM(Storage):
                     g = getgrgid(v.gid)
                 except KeyError:
                     raise PermissionError(f'cannot find group "{v.gid}" for "{p}"')
-                if user not in g.gr_mem:
+                if user.pw_name not in g.gr_mem:
                     server.info(
                         f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as user is not '
                         f'in group "{g.gr_name}".'
@@ -1851,26 +1891,26 @@ class VM(Storage):
                     try:
                         m = _parse_mounted()
                         if p in m:
-                            raise Error(
+                            raise OSError(
                                 f'drive "{n}" block dev "{p}" is currently mounted'
                             )
                         # Check submounts, meaning we should deter using a
                         # blockdev that has partitions of itself mounted.
                         for i in m:
                             if i.startswith(p):
-                                raise Error(
+                                raise OSError(
                                     f'drive "{n}" block dev "{p}" is currently sub-mounted'
                                 )
                         del m
                     except OSError:
-                        raise Error(
+                        raise OSError(
                             f'drive "{n}" block dev "{p}" cannot be checked for mount status'
                         )
                 del g
             else:
                 # This shouldn't reach here, but catch any non-file/blockdev disk
                 # mount attempts.
-                raise Error(
+                raise OSError(
                     f'drive "{n}" file "{p}" is not a valid file or block device'
                 )
             del v
@@ -1902,7 +1942,7 @@ class VM(Storage):
                 i += 1
             del t
             if i > 4:
-                raise Error("max limit of 4 IDE devices reached")
+                raise OSError("max limit of 4 IDE devices reached")
             if "format" not in d:
                 if d["type"] == "cd" or d["type"] == "iso":
                     d["format"] = "raw"
@@ -1913,6 +1953,8 @@ class VM(Storage):
                         d["format"] = k[1:]
                     else:
                         d["format"] = "raw"
+            elif d["format"] == "cd" or d["format"] == "iso":
+                d["format"] = "raw"
             # Store translated path here, it won't be saved.
             d["_path"] = p
             w[n] = d
@@ -1924,12 +1966,13 @@ class VM(Storage):
             # Skip drives not evaluated or not evaluated correctly
             if "_path" not in d:
                 continue
-            f = d["type"] if d["type"].endswith("flash") else "none"
-            s = (
-                f'id={n},file={d["_path"]},format={d["format"]},index={d["index"]},'
-                f"if={f},detect-zeroes=unmap"
-            )
-            del f
+            if d["type"].endswith("flash"):
+                s = f'id={n},file={d["_path"]},format={d["format"]},if=pflash'
+            else:
+                s = (
+                    f'id={n},file={d["_path"]},format={d["format"]},index={d["index"]},'
+                    f"if=none,detect-zeroes=unmap"
+                )
             # Determine how we handle the drive based on the type and driver.
             if not d.get("direct", True):
                 s += ",aio=io_uring"
@@ -1937,21 +1980,19 @@ class VM(Storage):
                 s += ",aio=native,cache.direct=on"
             else:
                 s += ",aio=threads,cache=writeback"
-            u = False
-            # CDs and ISOs are always read only.
-            if d.get("readonly", False) or d["type"] == "cd" or d["type"] == "iso":
-                s += ",readonly=on"
-                u = True
             if d.get("discard", False):
                 if d["type"] == "scsi":
                     s += ",discard=on"
                 else:
                     s += ",discard=unmap"
+            u = False
+            # CDs and ISOs are always read only.
+            if d.get("readonly", False) or d["type"] == "cd" or d["type"] == "iso":
+                s, u = s + ",readonly=on", True
             if opts.temp and not u:
                 server.debug(
                     f'[m/hydra/VM({self.vmid})]: Setting drive "{n}" as a temporary drive due to startup option.'
                 )
-            # Gate to readonly. Can't be temporary if we can't write to it anyway.
             if (d.get("temp", False) or opts.temp) and not u:
                 s += ",snapshot=on"
             del u
@@ -1969,13 +2010,18 @@ class VM(Storage):
                     ]
                 r += [
                     "-device",
-                    f"scsi-hd,bus=scsi0.0,channel=0,scsi-id=0,lun={i},drive={n},id=scsi-{i},rotation_rate=1",
+                    f"scsi-hd,id=scsi-{i},bus=scsi0.0,channel=0,scsi-id=0,lun={i},drive={n},rotation_rate=1",
                 ]
                 i += 1
             elif d["type"] == "virtio":
                 r += [
                     "-device",
                     f'virtio-blk-pci,id={n}-dev,drive={n},bus={bus}.0,bootindex={d["index"]}',
+                ]
+            elif d["type"] == "nvme":
+                r += [
+                    "-device",
+                    f'nvme,id={n}-dev,drive={n},bus={bus}.0,bootindex={d["index"]},serial="",use-intel-id=on',
                 ]
             elif not d["type"].endswith("flash"):
                 # Treat q35 and older machines differently. Q35 will default to
@@ -2002,7 +2048,7 @@ class VM(Storage):
                 del t, v
             del d["_path"]
             self.drives[n] = d
-        del i, a, k, w
+        del a, i, k, w
         return r
 
     def _stop(self, server, manager, force, timeout=90, tap=False):
@@ -2010,7 +2056,7 @@ class VM(Storage):
             return
         if not force and tap:
             if self._state == HYDRA_STATE_SLEEPING:
-                raise Error("cannot ACPI shutdown while suspended")
+                raise OSError("cannot ACPI shutdown while suspended")
             server.debug(
                 f'[m/hydra/VM({self.vmid})]: "Tapping" the power button for ACPI shutdown.'
             )
@@ -2018,22 +2064,22 @@ class VM(Storage):
                 return self._cmd(server, "guest-shutdown", ga=True)
             try:
                 self._cmd(server, "guest-shutdown", ga=True, timeout=1)
-            except Error:
+            except OSError:
                 self._cmd(server, "system_powerdown")
             return
         if not force and self._state == HYDRA_STATE_WAITING:
-            raise Error("cannot non-force stop while waiting")
+            raise OSError("cannot non-force stop while waiting")
         if not force and self._running():
             if self._event is not None:
-                raise Error("soft shutdown already in progress")
+                raise OSError("soft shutdown already in progress")
             if self._state == HYDRA_STATE_SLEEPING:
-                raise Error("cannot ACPI shutdown while suspended")
+                raise OSError("cannot ACPI shutdown while suspended")
             try:
                 t = num(timeout, False)
             except ValueError:
-                raise Error("timeout must be a non-zero positive number")
+                raise OSError("timeout must be a non-zero positive number")
             if t == 0:
-                raise Error("timeout must be a non-zero positive number")
+                raise OSError("timeout must be a non-zero positive number")
             if self._state == HYDRA_STATE_SLEEPING:
                 self._sleep(server, False)
             if self._agent:
@@ -2041,7 +2087,7 @@ class VM(Storage):
             else:
                 try:
                     self._cmd(server, "guest-shutdown", ga=True)
-                except Error:
+                except OSError:
                     self._cmd(server, "system_powerdown")
             self._event = server.task(t, self._stop, (server, manager, True))
             server.debug(
@@ -2136,7 +2182,7 @@ class VM(Storage):
         try:
             if self.get("memory.reserve", True):
                 manager.pages(server, self.vmid, None, True)
-        except Error as err:
+        except OSError as err:
             server.warning(
                 f"HYDRA: VM({self.vmid}) Error removing reserved memory!", err
             )
@@ -2144,22 +2190,22 @@ class VM(Storage):
 
     def _usb_add(self, server, manager, vendor, product, slow=False):
         if self._state != HYDRA_STATE_RUNNING:
-            raise Error("invalid state to add USB devices")
+            raise OSError("invalid state to add USB devices")
         if not nes(vendor) or not nes(product):
-            raise Error("device vendor and product cannot be empty")
+            raise OSError("device vendor and product cannot be empty")
         d, i = get_devices(), f"{vendor}:{product}".lower()
         k = d.get(i)
         if k is None:
-            raise Error(f'device "{i}" not found')
+            raise OSError(f'device "{i}" not found')
         del d
         if not self._running():
-            raise Error("cannot add a device while stopped")
+            raise OSError("cannot add a device while stopped")
         if i in self._usb:
-            raise Error(
+            raise OSError(
                 f'device "{k.name}" is already mounted as "usb-dev-{self._usb[i]}"'
             )
         if i in manager._usb:
-            raise Error(
+            raise OSError(
                 f'device "{k.name}" is already mounted to VM({manager._usb[i]})'
             )
         n = 1 if len(self._usb) == 0 else max(self._usb.values()) + 1
@@ -2182,7 +2228,7 @@ class VM(Storage):
                 },
             )
         except (ValueError, OSError) as err:
-            raise Error(f'cannot add device "{k.name}": {err}')
+            raise OSError(f'cannot add device "{k.name}": {err}')
         self._usb[i], manager._usb[i] = n, self.vmid
         v = get_device_name(i, k.name)
         del i, k
@@ -2204,7 +2250,7 @@ class VM(Storage):
             #            shit happening.
             return (None, None)
         if not nes(command) and not isinstance(command, dict):
-            raise Error('"command" must be a dict or string')
+            raise OSError('"command" must be a dict or string')
         if ga and self._state == HYDRA_STATE_SLEEPING:
             server.warning(
                 f"[m/hydra/VM({self.vmid})]: Sending a GA command to a sleeping VM might not work!"
@@ -2215,7 +2261,7 @@ class VM(Storage):
         try:
             p = dumps(d).encode("UTF-8")
         except (TypeError, UnicodeDecodeError):
-            raise Error("invalid payload data")
+            raise OSError("invalid payload data")
         f = f'{self._path}.{"qga" if ga else "sock"}'
         server.debug(f'[m/hydra/VM({self.vmid})]: Sending "{d}" to "{f}".')
         del d
@@ -2232,7 +2278,7 @@ class VM(Storage):
                 s.sendall(_HYDRA_IPC)
                 r = _command_response(_read_full(s, HYDRA_SOCK_BUF_SIZE))
                 if r is None:
-                    raise Error("invalid hello response")
+                    raise OSError("invalid hello response")
                 server.debug(f'[m/hydra/VM({self.vmid})]: Hello response "{r}".')
                 del r
             # Now send our command
@@ -2257,9 +2303,9 @@ class VM(Storage):
             try:
                 i = num(usb, False)
             except ValueError:
-                raise Error("device ID must be a non-zero positive number")
+                raise OSError("device ID must be a non-zero positive number")
             if i not in self._usb.values():
-                raise Error(f'cannot find device with ID "{i}"')
+                raise OSError(f'cannot find device with ID "{i}"')
             n = None
             for k, v in self._usb.items():
                 # Grab the device vendor:product from the ID
@@ -2267,24 +2313,24 @@ class VM(Storage):
                     n = k
                     break
             if n is None:
-                raise Error(f'cannot find device with ID "{i}"')
+                raise OSError(f'cannot find device with ID "{i}"')
         elif nes(vendor) and nes(prod):
             n = f"{vendor}:{prod}".lower()
             i = self._usb.get(n)
             if i is None:
-                raise Error(f'device "{n}" is not connected')
+                raise OSError(f'device "{n}" is not connected')
         elif nes(full):
             n = full.lower()
             i = self._usb.get(n)
             if i is None:
-                raise Error(f'device "{n}" is not connected')
+                raise OSError(f'device "{n}" is not connected')
         else:
-            raise Error("device ID or device vendor/product must be specified")
+            raise OSError("device ID or device vendor/product must be specified")
         if self._running():
             try:
                 self._cmd(server, "device_del", {"id": f"usb-dev-{i}"})
             except OSError as err:
-                raise Error(f'cannot remove device "{i}": {err}')
+                raise OSError(f'cannot remove device "{i}": {err}')
         v = get_device_name(n, n)
         server.debug(
             f'[m/hydra/VM({self.vmid})]: Removed USB device "{n}" with ID {i}.'
@@ -2335,7 +2381,7 @@ class Snapper(object):
             if r:
                 return None
             return "unknown result"
-        except Error as err:
+        except OSError as err:
             server.error(
                 f"[m/hydra/VM({self.vm.vmid})]: Cannot read Snapper result: {err}!", err
             )
@@ -2361,7 +2407,7 @@ class Snapper(object):
                 del v
             del r
             return False
-        except Error as err:
+        except OSError as err:
             server.error(
                 f"[m/hydra/VM({self.vm.vmid})]: Cannot read Snapper result: {err}!", err
             )
@@ -2650,7 +2696,7 @@ class HydraServer(object):
                 v.vm._snap_done(server, v.job, v.name, v.result(server))
                 v.close()
                 del v
-        except Error as err:
+        except OSError as err:
             server.error(f"[m/hydra]: Cannot poll running Snappers: {err}!", err)
 
     def hook(self, server, message):
@@ -2681,7 +2727,7 @@ class HydraServer(object):
                 )
                 try:
                     x._usb_remove(server, self, full=message.dev)
-                except Error as err:
+                except OSError as err:
                     server.error(
                         f'[m/hydra/VM({x.vmid})]: Cannot auto remove USB device "{message.dev}"!',
                         err,
@@ -2709,7 +2755,7 @@ class HydraServer(object):
                         i._hibernate(server)
                     elif message.type == HYDRA_WAKE or message.type == HYDRA_SLEEP:
                         i._sleep(server, message.type == HYDRA_SLEEP)
-                except Error as err:
+                except OSError as err:
                     if message.type == HYDRA_STOP:
                         server.error(
                             f"[m/hydra/VM({i.vmid})]: Cannot stop the VM!", err
@@ -2733,7 +2779,7 @@ class HydraServer(object):
             return {"vms": [vm._status() for vm in self._vms.values()]}
         try:
             x, i = self._get_vm(server, message)
-        except Error as err:
+        except OSError as err:
             server.error("[m/hydra]: Cannot load the VM!", err)
             return as_error(f"cannot load VM: {err}")
         if message.user:
@@ -2760,7 +2806,7 @@ class HydraServer(object):
                     return as_error(f"cannot start VM {x.vmid}: Server setup failed")
                 x._start(server, self, message.uid(), message)
                 self._vms[x.vmid] = x
-            except Error as err:
+            except OSError as err:
                 # Remove VM as it failed on launch.
                 if x.vmid in self._vms and (
                     not x._running() or x._state != HYDRA_STATE_RUNNING
@@ -2783,14 +2829,14 @@ class HydraServer(object):
         if message.type == HYDRA_TAP:
             try:
                 x._stop(server, self, False, message.get("timeout", 90), tap=True)
-            except Error as err:
+            except OSError as err:
                 server.error(f'[m/hydra/VM({x.vmid})]: Cannot ACPI "tap" the VM!', err)
                 return as_error(f"cannot ACPI tap VM {x.vmid}: {err}")
             return True
         if message.type == HYDRA_GA_IP:
             try:
                 return x._ip(server)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot check the VM Guest Agent interfaces!",
                     err,
@@ -2799,7 +2845,7 @@ class HydraServer(object):
         if message.type == HYDRA_GA_PING:
             try:
                 return x._ping(server)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f'[m/hydra/VM({x.vmid})]: Cannot "ping" check the VM Guest Agent!',
                     err,
@@ -2808,7 +2854,7 @@ class HydraServer(object):
         if message.type == HYDRA_RESTART:
             try:
                 x._restart(server, message.force)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot restart/reset the VM!", err
                 )
@@ -2817,7 +2863,7 @@ class HydraServer(object):
         if message.type == HYDRA_HIBERNATE:
             try:
                 x._hibernate(server)
-            except Error as err:
+            except OSError as err:
                 server.error(f"[m/hydra/VM({x.vmid})]: Cannot Hibernate the VM!", err)
                 return as_error(f"cannot Hibernate VM {x.vmid}: {err}")
             return True
@@ -2826,7 +2872,7 @@ class HydraServer(object):
             try:
                 v["snaps"] = x._snap_list(server)
                 v["snap_current"] = x._snap_last(server)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot read the Snapshot data!", err
                 )
@@ -2835,7 +2881,7 @@ class HydraServer(object):
         if message.type == HYDRA_SEND_INPUT:
             try:
                 x._input(server, message.input, message.caps)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot send input to the VM!", err
                 )
@@ -2845,13 +2891,13 @@ class HydraServer(object):
         if message.type == HYDRA_STOP:
             try:
                 x._stop(server, self, message.force, message.get("timeout", 90))
-            except Error as err:
+            except OSError as err:
                 server.error(f"[m/hydra/VM({x.vmid})]: Cannot stop the VM!", err)
                 return as_error(f"cannot stop VM {x.vmid}: {err}")
         elif message.type == HYDRA_USB_ADD:
             try:
                 x._usb_add(server, self, message.vendor, message.product, message.slow)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot add USB device to the VM!", err
                 )
@@ -2859,7 +2905,7 @@ class HydraServer(object):
         elif message.type == HYDRA_USB_CLEAN:
             try:
                 x._usb_clean(server, self)
-            except Error as err:
+            except OSError as err:
                 server.error(f"[m/hydra/VM({x.vmid})]: Cannot remove USB devices!", err)
                 return as_error(f"cannot remove USB devices from VM {x.vmid}: {err}")
         elif message.type == HYDRA_SNAP_TAKE:
@@ -2870,7 +2916,7 @@ class HydraServer(object):
                 return as_error("invalid Snapshot name")
             try:
                 x._snap_capture(server, self, message.name)
-            except Error as err:
+            except OSError as err:
                 server.error(f"[m/hydra/VM({x.vmid})]: Cannot Snapshot the VM!", err)
                 return as_error(f"cannot take Snapshot for VM {x.vmid}: {err}")
         elif message.type == HYDRA_USB_DELETE:
@@ -2878,7 +2924,7 @@ class HydraServer(object):
                 x._usb_remove(
                     server, self, message.vendor, message.product, message.usb
                 )
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot remove USB device from the VM!",
                     err,
@@ -2887,7 +2933,7 @@ class HydraServer(object):
         elif message.type == HYDRA_USB_RECONNECT:
             try:
                 x._usb_reconnect(server, self)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot reconnect USB devices to the VM!",
                     err,
@@ -2901,7 +2947,7 @@ class HydraServer(object):
                 return as_error("invalid Snapshot name")
             try:
                 x._snap_delete(server, self, message.name)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot delete the VM Snapshot!", err
                 )
@@ -2914,7 +2960,7 @@ class HydraServer(object):
                 return as_error("invalid Snapshot name")
             try:
                 x._snap_restore(server, self, message.name)
-            except Error as err:
+            except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot restore the VM Snapshot!", err
                 )
@@ -2922,7 +2968,7 @@ class HydraServer(object):
         elif message.type == HYDRA_SLEEP or message.type == HYDRA_WAKE:
             try:
                 x._sleep(server, message.type == HYDRA_SLEEP)
-            except Error as err:
+            except OSError as err:
                 if message.type == HYDRA_SLEEP:
                     server.error(f"[m/hydra/VM({x.vmid})]: Cannot suspend the VM!", err)
                     return as_error(f"cannot suspend VM {x.vmid}: {err}")
@@ -2937,7 +2983,7 @@ class HydraServer(object):
             try:
                 i = num(message.vmid)
             except ValueError:
-                raise Error(f'invalid VMID "{message.vmid}"')
+                raise OSError(f'invalid VMID "{message.vmid}"')
             v = self._vms.get(i)
             if v is not None:
                 return v, False
@@ -2945,10 +2991,10 @@ class HydraServer(object):
         if nes(message.file):
             p = load_vm(message.file, server=True)
             if not nes(p):
-                raise Error(f'no valid config at "{message.file}"')
+                raise OSError(f'no valid config at "{message.file}"')
             v = VM(p, message.uid())
         else:
-            raise Error("no VMID or path supplied")
+            raise OSError("no VMID or path supplied")
         if v.vmid in self._vms and self._vms[v.vmid]._running():
             server.debug(
                 f'[m/hydra/VM({v.vmid})]: Loaded from file "{v.path()}", but returning running instace!'
@@ -2970,7 +3016,7 @@ class HydraServer(object):
                 if x._state == HYDRA_STATE_SLEEPING:
                     continue
                 x._sleep(server, True)
-            except Error as err:
+            except OSError as err:
                 server.error(f"[m/hydra/VM({x.vmid})]: Cannot suspend the VM!", err)
 
     def pages(self, server, vmid, size, remove=False):
@@ -2986,7 +3032,7 @@ class HydraServer(object):
             try:
                 write(HYDRA_RESERVE, f"{x}")
             except OSError as err:
-                raise Error(f"cannot reserve {x} pages: {err}")
+                raise OSError(f"cannot reserve {x} pages: {err}")
             if size >= n:
                 remove_file(f"/dev/hugepages/{vmid}.ram")
                 del self._pages[vmid]
@@ -3000,7 +3046,7 @@ class HydraServer(object):
         try:
             write(HYDRA_RESERVE, f"{x}")
         except OSError as err:
-            raise Error(f"cannot reserve {x} pages: {err}")
+            raise OSError(f"cannot reserve {x} pages: {err}")
         if vmid not in self._pages:
             self._pages[vmid] = size
         else:
