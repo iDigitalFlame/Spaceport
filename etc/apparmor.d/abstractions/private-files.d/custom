@@ -59,6 +59,7 @@ audit deny @{HOME}/.local/.ssh/{,**}                                      mrwkl,
 audit deny @{HOME}/.config/Yubico{,/**}                                   mrwkl,
 audit deny @{HOME}/.config/openvpn/{,**}                                  mrwkl,
 audit deny @{HOME}/.local/share/gnupg/{,**}                               mrwkl,
+audit deny @{HOME}/.local/lib/rust/cargo/credentials.toml                 mrwkl,
 
 audit deny @{HOMEDATA}/.local/bin/{,**}                                   wl,
 audit deny @{HOMEDATA}/.local/share/applications/{,**}                    wl,
