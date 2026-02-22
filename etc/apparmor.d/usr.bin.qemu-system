@@ -66,6 +66,8 @@ profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) 
 
     /dev/                                                                  r,
     /dev/shm/                                                              r,
+    /dev/hwrng                                                             r,
+    /dev/{,u}random                                                        r,
     /dev/bus/{,usb/}                                                       r,
 
     /sys/bus/usb/                                                          r,

@@ -43,6 +43,7 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     include <abstractions/dconf>
     include <abstractions/gnome>
     include <abstractions/video>
+    include <abstractions/cgroup>
     include <abstractions/p11-kit>
     include <abstractions/version>
     include <abstractions/xdg-open>
@@ -62,9 +63,10 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     /sys/devices/virtual/dmi/id/bios_vendor         r,
     /sys/kernel/mm/transparent_hugepage/enabled     r,
 
+    /proc/zoneinfo                                  r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6        r,
 
-    owner /proc/@{pid}/{cmdline,stat}               r,
+    owner /proc/@{pid}/{cmdline,stat,statm}         r,
 
     owner /proc/@{pid}/comm                         rw,
     owner /proc/@{pid}/task/@{tid}/comm             rw,
@@ -72,6 +74,7 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     owner @{run}/user/@{uid}/qtwayland-*            rwk,
     owner @{run}/user/@{uid}/*-wayland{,.lock}      rwk,
 
+    owner @{HOME}/.cache/TelegramDesktop{,/**}      rw,
     owner @{HOME}/.local/share/TelegramDesktop/**   rwkl,
     owner @{HOME}/.local/share/TelegramDesktop/{,*} rw,
 
@@ -79,6 +82,7 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     /usr/bin/xdg-email                              Pix -> xdg-email,
     /usr/bin/xdg-settings                           Pix -> xdg-settings,
     /usr/bin/{T,t}elegram{,-desktop}                ixr,
+    /usr/lib/webkit2gtk-4.1/WebKit*Process          Pix -> webkit,
 
     deny /sys/class/power_supply/                   r,
     deny @{HOME}/.local/share/applications/**       w,

@@ -51,3 +51,5 @@ signal receive set=(hup, int, kill, term),
 owner /proc/@{pid}/cgroup                      r,
 
 owner /tmp/gdk-pixbuf-glycin-tmp.*             rw,
+
+deny @{HOME}/.cache/glycin{,/**}               w,

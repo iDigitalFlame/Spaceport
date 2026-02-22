@@ -40,14 +40,14 @@
 #   SMD may generate during runtime.
 
 HYDRA_CONFIG_DNS = """port=53
-no-hosts
 bind-dynamic
 expand-hosts
-user={user}
+no-hosts
 group={user}
 interface={interface}
 listen-address={ip}
 resolv-file=/var/run/systemd/resolve/resolv.conf
+user={user}
 domain={name}.com,{network}
 local=/{name}.com/
 address=/vm.{name}.com/{ip}
@@ -57,51 +57,79 @@ address=/vmhost/{ip}
 address=/hypervisor.{name}.com/{ip}
 address=/hypervisor/{ip}
 dhcp-lease-max=64
+dhcp-leasefile={dir}/dhcp.leases
 dhcp-option=vendor:MSFT,2,1i
 dhcp-option=option:router,{ip}
-dhcp-leasefile={dir}/dhcp.leases
 dhcp-option=option:ntp-server,{ip}
 dhcp-option=option:dns-server,{ip}
-dhcp-range={start},{end},{netmask},12h
 dhcp-option=option:domain-search,{name}.com
+dhcp-range={start},{end},{netmask},12h
 """
 HYDRA_CONFIG_SMB = """[global]
-workgroup = VM-{name}
-server string = VM-{name}
-server role = standalone server
+bind interfaces only = yes
+disable netbios
+dns proxy = no
+encrypt passwords = yes
+eventlog list =
 hosts allow = {network} 127.0.0.1/32
+interfaces = {ip}/32
+lanman auth = no
 log file = /dev/null
 log level = 0
 logging =
 max log size = 0
-bind interfaces only = yes
-realm = VM.{name}.COM
+ntlm auth = ntlmv2-only
+null passwords = no
 passdb backend = tdbsam
-interfaces = {ip}/32
-wins support = no
-wins proxy = no
-dns proxy = no
-eventlog list =
+realm = vm.{name}.com
+require strong key = yes
+security = user
+server role = standalone server
+server smb transports = tcp, nbt
+server string = VM-{name_upper}
 usershare allow guests = no
 usershare max shares = 0
+wins proxy = no
+wins support = no
+workgroup = VM-{name_upper}
 [User]
 comment = Home Directories
-path = /home
+ea support = no
+follow symlinks = yes
+fstype = NTFS
 guest ok = no
-writable = yes
-read only = no
+hide dot files = yes
+hide special files = no
+hide unreadable = no
+hide unwriteable files = no
+map acl inherit = no
+map hidden = no
+map system = no
+path = /home
 printable = no
 public = no
-follow symlinks = yes
+read only = no
+server smb encrypt = default
+writable = yes
 [UserRo]
 comment = Home Directories Read Only
-path = /home
+ea support = no
+follow symlinks = no
+fstype = NTFS
 guest ok = no
-writable = no
-read only = yes
+hide dot files = yes
+hide special files = no
+hide unreadable = no
+hide unwriteable files = no
+map acl inherit = no
+map hidden = no
+map system = no
+path = /home
 printable = no
 public = no
-follow symlinks = no
+read only = yes
+server smb encrypt = default
+writable = no
 """
 
 BACKUP_RESTORE_SCRIPT = """#!/bin/bash

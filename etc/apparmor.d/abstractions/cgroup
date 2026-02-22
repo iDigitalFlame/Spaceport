@@ -42,4 +42,4 @@ abi <abi/4.0>,
 /sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service/kitty.slice/cpu.max r,
 
 @{CGROUP}/{,app.slice/}cpu.max                                                      r,
-@{CGROUP}/app.slice/sway.service/memory.{high,max}                                  r,
+@{CGROUP}/app.slice/sway.service/memory.{current,high,max}                          r,

@@ -90,3 +90,5 @@ remount /newroot/{,**},
 
 pivot_root oldroot=/newroot/     /newroot/,
 pivot_root oldroot=/tmp/oldroot/ /tmp/,
+
+deny @{HOME}/.cache/glycin{,/**}               w,

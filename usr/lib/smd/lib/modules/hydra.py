@@ -2566,7 +2566,10 @@ class HydraServer(object):
                 )
             server.debug("[m/hydra]: Creating Samba configuration..")
             s = HYDRA_CONFIG_SMB.format(
-                ip=f"{n[1]}", name=NAME, network=HYDRA_BRIDGE_NETWORK
+                ip=f"{n[1]}",
+                name=NAME,
+                network=HYDRA_BRIDGE_NETWORK,
+                name_upper=NAME.upper(),
             )
             try:
                 write(HYDRA_FILE_SMB, s, 0o0640)
