@@ -525,6 +525,7 @@ mingw-w64-gcc
 mingw-w64-headers
 mingw-w64-winpthreads
 minizip
+minizip-ng
 mkinitcpio
 mkinitcpio-busybox
 mobile-broadband-provider-info
@@ -563,6 +564,7 @@ opencore-amr
 openexr
 openh264
 openjpeg2
+openjph
 openssh
 openssl
 openvpn
