@@ -62,7 +62,7 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
     owner @{CONFIG}/theme/**                                r,
 
     owner @{HOME}/Pictures/Backgrounds{,/}                  r,
-    owner @{HOME}/Pictures/Backgrounds/*.{bmp,jpg,jpeg,png} r,
+    owner @{HOME}/Pictures/Backgrounds/*.@{IMAGES}          r,
 
     owner @{run}/user/@{uid}/smd-client-*.log               rw,
 

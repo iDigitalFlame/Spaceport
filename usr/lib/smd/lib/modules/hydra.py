@@ -36,11 +36,13 @@
 # Module: System/HydraServer, User/user_alias
 #   Provisions and monitors Virtual Machines on the system.
 
+from glob import glob
 from time import time
 from uuid import uuid4
 from grp import getgrgid
 from shutil import rmtree
 from random import randint
+from lib.sway import displays
 from ipaddress import IPv4Network
 from collections import namedtuple
 from pwd import getpwnam, getpwuid
@@ -51,8 +53,8 @@ from lib.util import nes, num, cancel_nul
 from lib.util.exec import run, stop, nulexec
 from json import JSONDecodeError, dumps, loads
 from socket import AF_UNIX, SOCK_STREAM, socket
-from os import stat, chmod, chown, mkdir, remove
 from select import EPOLLIN, EPOLLERR, EPOLLHUP, epoll
+from os import stat, chmod, chown, mkdir, remove, environ
 from lib.constants.files import HYDRA_CONFIG_DNS, HYDRA_CONFIG_SMB
 from os.path import isabs, isdir, exists, isfile, dirname, splitext
 from lib.util.file import copy, info, read, write, expand_abs, remove_file
@@ -62,6 +64,7 @@ from lib.constants.config import (
     HYDRA_DIR,
     HYDRA_USER,
     HYDRA_BRIDGE,
+    HYDRA_DISPLAY,
     HYDRA_EXEC_VM,
     HYDRA_RESERVE,
     HYDRA_VM_ARCH,
@@ -72,6 +75,7 @@ from lib.constants.config import (
     HYDRA_FILE_DNS,
     HYDRA_FILE_SMB,
     HYDRA_TPM_SIZE,
+    HYDRA_DIR_CACHE,
     HYDRA_DIR_SNAPS,
     HYDRA_FILE_UEFI,
     HYDRA_WAIT_TIME,
@@ -156,7 +160,6 @@ Restricted = namedtuple(
         "bin",
         "extra",
         "memory",
-        "reserve",
         "bios",
         "bios_vars",
         "bios_sm",
@@ -438,9 +441,53 @@ def _is_snapshot_done(last, jobs):
     return (v["status"] == "concluded", v.get("error"))
 
 
+def _screen_size(vmid, server, uid):
+    server.debug(
+        f"[m/hydra/VM({vmid})]: Full size requested, looking up Display sizes.."
+    )
+    v = glob(f"/var/run/user/{uid}/sway-ipc.{uid}.*.sock")
+    if len(v) == 0:
+        server.warning(
+            f'[m/hydra/VM({vmid})]: No Displays found, using default "{HYDRA_DISPLAY[0]}x'
+            f'{HYDRA_DISPLAY[1]}" size!'
+        )
+        return f",xres={HYDRA_DISPLAY[0]},yres={HYDRA_DISPLAY[1]}"
+    if len(v) > 1:
+        server.debug(
+            f"[m/hydra/VM({vmid})]: Detected more than one Sway socket, using the first found."
+        )
+    server.debug(
+        f'[m/hydra/VM({vmid})]: Found active Sway socket at "{v[0]}", querying Display info..'
+    )
+    try:
+        x, y = 0, 0
+        for i in displays(sock=v[0]):
+            if not i.active or i.width == 0 or i.height == 0:
+                continue
+            if i.width > x:
+                x = i.width
+            if i.height > y:
+                y = i.height
+    except Exception as err:
+        server.error(
+            f"[m/hydra/VM({vmid})]: Failed to find the max display size: {err}"
+        )
+    finally:
+        del v
+    if x == 0 or y == 0:
+        server.warning(
+            f'[m/hydra/VM({vmid})]: No screen size found, using default "{HYDRA_DISPLAY[0]}x'
+            f'{HYDRA_DISPLAY[1]}" size.'
+        )
+        return f",xres={HYDRA_DISPLAY[0]},yres={HYDRA_DISPLAY[1]}"
+    server.debug(f'[m/hydra/VM({vmid})]: Using the screen size "{x}x{y}".')
+    return f",xres={x},yres={y}"
+
+
 class VM(Storage):
     __slots__ = (
         "_usb",
+        "_vnc",
         "_path",
         "_proc",
         "_wait",
@@ -486,6 +533,7 @@ class VM(Storage):
         elif not isinstance(self.vmid, int) or self.vmid <= 0:
             raise OSError("vmid must be a positive non-zero number")
         self._usb = dict()
+        self._vnc = True
         self._path = f"{HYDRA_DIR}/{self.vmid}"
         self._proc = None
         self._wait = 0
@@ -543,6 +591,7 @@ class VM(Storage):
         return {
             "pid": self._proc.pid if self._running() else None,
             "usb": self._usb,
+            "vnc": self._vnc,
             "vmid": self.vmid,
             "file": self.path(),
             "name": self._name,
@@ -602,19 +651,27 @@ class VM(Storage):
         return s
 
     def _socket_perms_set(self):
+        if self._vnc:
+            try:
+                chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
+            except OSError:
+                return False
+            try:
+                chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
+            except OSError:
+                pass  # Spice might not be enabled.
+        else:
+            try:
+                chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
+            except OSError:
+                return False
         try:
-            chmod(f"{self._path}.vnc", 0o0762, follow_symlinks=False)
-            chmod(f"{self._path}.spice", 0o0762, follow_symlinks=False)
-        except OSError:
-            return False
-        try:
-            a, b = stat(f"{self._path}.vnc"), stat(f"{self._path}.spice")
-            if a.st_mode & 0o0762 == 0o0762 and b.st_mode & 0o0762 == 0o0762:
+            if not self._vnc:
+                return stat(f"{self._path}.spice").st_mode & 0o0762 == 0o0762
+            if stat(f"{self._path}.vnc").st_mode & 0o0762 == 0o0762:
                 return True
         except OSError:
             return False
-        finally:
-            del a, b
         return False
 
     def _hibernate(self, server):
@@ -876,73 +933,6 @@ class VM(Storage):
         self._usb.clear()
         server.debug(f"[m/hydra/VM({self.vmid})]: Removed All USB devices.")
 
-    def _build_displays(self, server, bus):
-        r, g = list(), self.get("dev.display", "virtio").lower()
-        try:
-            n = int(self.get("dev.display_count", 1))
-        except ValueError:
-            n = self.set("dev.display_count", 1)
-        if n <= 0 or n > 4:
-            server.warning(
-                f"[m/hydra/VM({self.vmid})]: Clamping display count at 4 (instead of {n})."
-            )
-            n = 1
-        if nes(g):
-            if g == "none":
-                return r
-            if g == "std":
-                s = "std"
-            elif g == "cirrus":
-                s = "cirrus-vga"
-            elif g == "virtio" or g == "virtio-vga":
-                # NOTE(dij): VirtIO VGA drivers are REALLY buggy on Windows. They cause
-                #            BSODs randomally. It's driver related as if the driver isn't
-                #            installed, the BSODs stop. However, this limits your maximum
-                #            screen resolution to 1200x1080.
-                server.warning(
-                    f"[m/hydra/VM({self.vmid})]: The drivers for the VirtIO VGA device have compatibility issues with"
-                    " Windows, your VM may BSOD!"
-                )
-                if g == "virtio-vga":
-                    s = "virtio-vga"
-                else:
-                    s = "virtio-gpu-pci"
-                s = (
-                    f"{s},disable-modern=off,disable-legacy=auto,iommu_platform=on,"
-                    f"hostmem=256M,xres=1920,yres=1080,max_outputs={n}"
-                )
-            elif g == "qxl":
-                s = "vgamem_mb=64,vram_size_mb=64,ram_size_mb=64"
-            elif g == "vmware":
-                s = "vmware-svga,vgamem_mb=64M"
-            elif g == "vga-full":
-                s = "VGA,vgamem_mb=64,xres=1920,yres=1080"
-            else:
-                s = "VGA,vgamem_mb=64"
-            v = True
-        else:
-            s, v = "std", False
-        if s.startswith("virtio"):
-            r += ["-device", f"{s},bus={bus}.0"]
-        else:
-            q = g == "qxl"
-            for i in range(0, n):
-                if q:
-                    r.append("-device")
-                    # Multiple QXL displays must use "qxl" instead of "qxl-vga" when
-                    # they are NOT the first display.
-                    if i == 0:
-                        r.append(f"qxl-vga,{s},bus={bus}.0")
-                    else:
-                        r.append(f"qxl,{s},bus={bus}.0")
-                elif v:
-                    r += ["-device", f"{s},bus={bus}.0"]
-                else:
-                    r += ["-vga", s]
-            del q
-        del g, s, v
-        return r
-
     def _restart(self, server, reset=False):
         if self._state == HYDRA_STATE_STOPPED:
             return
@@ -1074,6 +1064,85 @@ class VM(Storage):
                     )
         server.debug(f"[m/hydra/VM({self.vmid})]: Reconnecting done!")
 
+    def _build_displays(self, server, bus, uid):
+        d = self.get("dev.display")
+        # Check for "false"
+        if isinstance(d, bool) and not d:
+            return None, True
+        g = "std"  # "true" get "std"
+        if nes(d):
+            g = d.lower()
+        del d
+        if g == "none":
+            return None, True
+        try:
+            n = int(self.get("dev.display_count", 1))
+        except ValueError:
+            n = self.set("dev.display_count", 1)
+        if n <= 0:
+            server.warning(
+                f"[m/hydra/VM({self.vmid})]: Ignoring zero or negative display count!"
+            )
+            n = 1
+        elif n > 4:
+            server.warning(
+                f"[m/hydra/VM({self.vmid})]: Clamping display count at 4 (instead of {n})."
+            )
+            n = 4
+        try:
+            m = int(self.get("dev.display_memory", 64))
+        except ValueError:
+            m = self.set("dev.display_memory", 64)
+        if m <= 0:
+            server.warning(
+                f'[m/hydra/VM({self.vmid})]: Ignoring invalid "dev.display_memory" value "{m}", using "64".'
+            )
+            m = 64
+        s = ""
+        if g.endswith("-full"):
+            g, s = g[:-5], _screen_size(self.vmid, server, uid)
+        if g.startswith("virtio") or g.startswith("gl"):
+            if g == "gl" or g == "virtio":
+                s, a = f"virtio-gpu-gl-pci{s}", False
+            elif g == "gl-vga" or g == "virtio-vga-gl":
+                s, a = f"virtio-vga-gl{s}", False
+            elif g == "virtio-vga":
+                s, a = f"virtio-vga{s}", True
+            else:
+                s, a = f"virtio-gpu-pci{s}", True
+            del g
+            return (
+                [
+                    "-device",
+                    f"{s},multifunction=on,disable-legacy=auto,disable-modern=off,blob=on,"
+                    f"iommu_platform=on,hostmem={m}M,max_outputs={n}",
+                ],
+                a,
+            )
+        if g == "qxl":
+            s = f"vgamem_mb={m},vram_size_mb={m},ram_size_mb={m},multifunction=on{s}"
+        elif g == "cirrus":
+            s = "cirrus-vga"
+        elif g == "vmware":
+            s = f"vmware-svga,vgamem_mb={m}{s}"
+        else:
+            s = f"VGA,vgamem_mb={m}{s}"
+        del m
+        q, r = g == "qxl", list()
+        for i in range(0, n):
+            if q:
+                r.append("-device")
+                # Multiple QXL displays must use "qxl" instead of "qxl-vga" when
+                # they are NOT the first display.
+                if i == 0:
+                    r.append(f"qxl-vga,{s},bus={bus}.0")
+                else:
+                    r.append(f"qxl,{s},bus={bus}.0")
+            else:
+                r += ["-device", f"{s},bus={bus}.0"]
+        del g, n, q, s
+        return r, True
+
     def _snap_drives(self, server, snaps=False):
         r, _ = self._cmd(server, "query-block")
         d = dict()
@@ -1184,8 +1253,8 @@ class VM(Storage):
         del s
 
     def _build(self, server, manager, uid, opts):
-        # Do stuff that requires a bunch of checking first.
         x = self._build_restriced(server, manager, uid)
+        # Do stuff that requires a bunch of checking first.
         # If the above passes, we should be good!
         b, t = self.get("dev.bus"), self.get("dev.type", "q35")
         if not nes(b):
@@ -1242,14 +1311,21 @@ class VM(Storage):
         except KeyError as err:
             raise OSError(f'building requires the missing value "{err}"')
         n = self.get("cpu.sockets", 1)
+        w = self._name if nes(self._name) else f"hydra-vm-{self.vmid}"
+        m = f"memory-backend-memfd,dump=off,id=mem0,size={x.memory}M"
+        if self.get("memory.ksm", True):
+            m += ",share=on"
         r = [
             x.bin,
             "-run-with",
             f"user={HYDRA_USER}",
             "-smbios",
         ] + self._build_bios(server, x, uid)
-        w = self._name if nes(self._name) else f"hydra-vm-{self.vmid}"
+        if self.get("memory.reserve", True):
+            m += ",reserve=on,hugetlb=on,hugetlbsize=2M,prealloc=on"
         r += [
+            "-object",
+            m,
             "-enable-kvm",
             "-nographic",
             "-no-user-config",
@@ -1259,8 +1335,8 @@ class VM(Storage):
             "-rtc",
             f'base=localtime,clock=host{",driftfix=slew" if x.intel else ""}',
             "-machine",
-            f'type={t},mem-merge=on,dump-guest-core=off,nvdimm=off,{"hpet=off,vmport=on," if x.intel else ""}'
-            f'hmat=off,spcr=on,suppress-vmdesc=on,accel={self.get("dev.accel", "kvm")}',
+            f'type={t},mem-merge=on,dump-guest-core=off,nvdimm=off,{"" if not x.intel or h else "hpet=off,vmport=on,"}'
+            f'hmat=off,spcr=on,suppress-vmdesc=on,accel={self.get("dev.accel", "kvm")},memory-backend=mem0,smm=auto',
             "-m",
             f"size={x.memory}",
             "-cpu",
@@ -1273,14 +1349,12 @@ class VM(Storage):
             f'"{w}",debug-threads=off',
             "-pidfile",
             f"{self._path}.pid",
-            "-display",
-            f"vnc=unix:{self._path}.vnc,connections=512,lock-key-sync=on,"
-            "password=off,power-control=on,share=ignore",
             "-qmp",
             f"unix:{self._path}.sock,server=on,wait=off,mux=on",
             "-object",
             "iothread,id=iothread0",
         ]
+        del m, w
         if not h or self.get("vm.hide_use_guest", False):
             r += [
                 "-chardev",
@@ -1319,9 +1393,6 @@ class VM(Storage):
             "-sandbox",
             "on,obsolete=deny,spawn=deny",
         ]
-        del w
-        if x.reserve is not None:
-            r += ["-mem-path", x.reserve, "-mem-prealloc"]
         if x.bios is not None:
             r += ["-bios", x.bios]
         if x.tpm is not None:
@@ -1383,7 +1454,16 @@ class VM(Storage):
             # the "extra" tag.
             r += ["-device", f"isa-applesmc,osk={s}"]
         del s
-        r += self._build_displays(server, b)
+        v, x = self._build_displays(server, b, uid)
+        if x:
+            r += [
+                "-display",
+                f"vnc=unix:{self._path}.vnc,connections=512,lock-key-sync=on,"
+                "password=off,power-control=on,share=ignore",
+            ]
+        if v is not None:
+            r += v
+        del v
         s = self.get("dev.sound", True)
         # "dev.sound" = false will disable this.
         # When it's true, we use the default sound device.
@@ -1402,7 +1482,13 @@ class VM(Storage):
                 # Untested, does NOT work on Windows, audio driver is Linux only!
                 r += [
                     "-device",
-                    f"virtio-sound-pci,audiodev=audio0,id=sound1,bus={b}.0,addr=0x0b",
+                    f"virtio-sound-pci,audiodev=audio0,id=sound1,bus={b}.0,addr=0x0b"
+                    "multifunction=on,disable-legacy=auto,disable-modern=off",
+                ]
+            elif s == "ac97":
+                r += [
+                    "-device",
+                    "ac97,audiodev=audio0,id=sound1,multifunction=on",
                 ]
             elif s == "output":
                 # Use Intel ich6 (older chipset) for output only.
@@ -1449,10 +1535,10 @@ class VM(Storage):
                 f"virtio-tablet-pci,id=input0,bus={b}.0,addr=0x0a",
             ]
         del h, i
-        if self.get("vm.spice", True):
+        if x or self.get("vm.spice", True):
             # NOTE(dij): We're adding the lines to add USB redirect support
             #            via SPICE, but Hydra won't know about the added devices
-            #            it shouldn't be an issue, but documenting it incase
+            #            it shouldn't be an issue, but documenting it in case
             #            it does.
             r += [
                 "-spice",
@@ -1487,7 +1573,7 @@ class VM(Storage):
         self._debug = self.get("vm.debug", False) or opts.debug
         if self._debug:
             server.dump(f'[m/hydra/VM({self.vmid})]: Runtime command: [{" ".join(r)}]')
-        return r
+        return r, x
 
     def _start(self, server, manager, uid, opts):
         if self._running():
@@ -1502,7 +1588,7 @@ class VM(Storage):
                 f'[m/hydra/VM({self.vmid})]: "_start" called on invalid state 0x{self._state:X}!'
             )
         self._state, self._proc = HYDRA_STATE_STOPPED, None
-        x = self._build(server, manager, uid, opts)
+        x, self._vnc = self._build(server, manager, uid, opts)
         if nes(self.path()):
             self.save(perms=0o600)
             server.debug(f'[m/hydra/VM({self.vmid})]: Saved config to "{self.path()}".')
@@ -1517,8 +1603,13 @@ class VM(Storage):
             #                 OSError.
             self._init_adapters(server)
         self._wait = 0
+        e = environ.copy()
+        e["HOME"] = HYDRA_DIR_CACHE
+        # Pre-write the PID file to prevent any race from the directory not existing
+        # or the QEMU process not seeing it.
+        write(f"{self._path}.pid", "", errors=False, perms=0o0660)
         try:
-            self._proc = run(x, out=self._debug)
+            self._proc = run(x, out=self._debug, e=e)
         except OSError as err:
             server.notify(
                 "Hydra VM Status", f"VM({self.vmid}) failed to start!", "variety"
@@ -1526,6 +1617,8 @@ class VM(Storage):
             self._state = HYDRA_STATE_STOPPED
             self._stop(manager, server, True)
             raise err
+        finally:
+            del e
         server.watch(self._proc, self.__stop)
         if not self._running():
             self._state = HYDRA_STATE_WAITING
@@ -1658,7 +1751,7 @@ class VM(Storage):
             #             has 0o0644 permissions.
             info(f, False, hide=True).check_if_owner(
                 0o7177, uid=uid, req=0o0400, hide=True
-            ).check_if_not_owner(uid, 0o7133, req=0o0644, hide=True).only(file=True)
+            ).check_if_not_owner(uid, 0o7133, req=0o0444, hide=True).only(file=True)
         else:
             # Set to None to remove anything else.
             f = None
@@ -1682,7 +1775,7 @@ class VM(Storage):
             #             has 0o0644 permissions.
             info(s, False, hide=True).check_if_owner(
                 0o7177, uid=uid, req=0o0400, hide=True
-            ).check_if_not_owner(uid, 0o7133, req=0o0644, hide=True).only(file=True)
+            ).check_if_not_owner(uid, 0o7133, req=0o0444, hide=True).only(file=True)
         else:
             # Set to None to remove anything else.
             s = None
@@ -1787,18 +1880,9 @@ class VM(Storage):
         if not isinstance(n, int) or n <= 0:
             raise OSError("memory size must be a non-zero positive number")
         if self.get("memory.reserve", True):
-            r = f"/dev/hugepages/{self.vmid}.ram"
-            if exists(r):
-                try:
-                    remove(r)
-                except OSError:
-                    raise OSError(f'memory reserve file "{r}" already exists')
             server.debug(f"[m/hydra/VM({self.vmid})]: Reserving {n}MB of memory..")
             manager.pages(server, self.vmid, round(n / HYDRA_RESERVE_SIZE))
-        else:
-            # Set to None to remove anything else.
-            r = None
-        return Restricted(x, e, n, r, f, q, s, t, k, y, o, u, x.endswith("-x86_64"))
+        return Restricted(x, e, n, f, q, s, t, k, y, o, u, x.endswith("-x86_64"))
 
     def _build_drives(self, server, user, bus, machine, opts):
         if not isinstance(self.drives, dict):
@@ -1847,26 +1931,23 @@ class VM(Storage):
             #            read permissions and the file is not executable.
             #
             #            If the target is a file not owned by the calling user
-            #            it must have the permissions of 0o0644 and will be
-            #            mounted as read only.
+            #            it must have the permissions of atleast 0o0444 and will
+            #            be mounted as read only.
             #
             #            There is an exception if the device is an ISO/CD as
             #            these are always marked as read only. So these files
             #            can realistically have any permissions and owner, but
-            #            we'll at least expect 0o0640.
+            #            we'll at least expect 0o0444.
             v.no(dir=False, link=False, char=False, hide=True)
             if v.isfile:
-                if d["type"] == "cd" or d["type"] == "iso":
-                    v.check(0o7133, req=0o0400)
+                if d.get("readonly", False) or d["type"] == "cd" or d["type"] == "iso":
+                    v.check_if_owner(
+                        user.pw_uid, 0o7023, req=0o0400
+                    ).check_if_not_owner(user.pw_uid, 0o7023, req=0o0444, hide=True)
                 elif v.uid == user.pw_uid:
-                    v.check_if(d.get("readonly", False), 0o7133, req=0o0440).check_if(
-                        not d.get("readonly", False),
-                        0o7177,
-                        req=0o0600,
-                        own_gid=True,
-                    )
+                    v.check(0o7177, v.uid, req=0o0600, own_gid=True)
                 else:
-                    v.check(0o7133, req=0o0644, hide=True)
+                    v.check(0o7133, req=0o0444, hide=True)
                     server.info(
                         f'[m/hydra/VM({self.vmid})]: Mounting drive "{n}" target "{p}" as read only as the user '
                         f'does not have write permissions to "{p}".'
@@ -1979,7 +2060,7 @@ class VM(Storage):
             elif d["format"] == "raw" and d["type"] == "virtio":
                 s += ",aio=native,cache.direct=on"
             else:
-                s += ",aio=threads,cache=writeback"
+                s += ",aio=threads,cache=none"
             if d.get("discard", False):
                 if d["type"] == "scsi":
                     s += ",discard=on"
@@ -2006,7 +2087,7 @@ class VM(Storage):
                     a = True
                     r += [
                         "-device",
-                        f"virtio-scsi-pci,id=scsi0,bus={bus}.0,addr=0x5,iothread=iothread0",
+                        f"virtio-scsi-pci,iothread=iothread0,id=scsi0,bus={bus}.0,addr=0x5,multifunction=on",
                     ]
                 r += [
                     "-device",
@@ -2016,12 +2097,14 @@ class VM(Storage):
             elif d["type"] == "virtio":
                 r += [
                     "-device",
-                    f'virtio-blk-pci,id={n}-dev,drive={n},bus={bus}.0,bootindex={d["index"]}',
+                    f'virtio-blk-pci,iothread=iothread0,id={n}-dev,drive={n},bus={bus}.0,bootindex={d["index"]},'
+                    "multifunction=on",
                 ]
             elif d["type"] == "nvme":
                 r += [
                     "-device",
-                    f'nvme,id={n}-dev,drive={n},bus={bus}.0,bootindex={d["index"]},serial="",use-intel-id=on',
+                    f'nvme,id={n}-dev,drive={n},bus={bus}.0,bootindex={d["index"]},serial="",use-intel-id=on,'
+                    "multifunction=on",
                 ]
             elif not d["type"].endswith("flash"):
                 # Treat q35 and older machines differently. Q35 will default to
@@ -2132,8 +2215,7 @@ class VM(Storage):
         if self._output is None:
             self._output = (e, r)
         server.info(f"[m/hydra/VM({self.vmid})]: Stopping and cleaning up..")
-        if self._stpm is not None:
-            stop(self._stpm)
+        stop(self._stpm)
         stop(self._proc)
         if self._proc is not None:
             try:
@@ -2595,6 +2677,14 @@ class HydraServer(object):
             server.warning(
                 "[m/hydra]: Samba is not installed, VMs will lack file sharing!"
             )
+        if exists("/sys/kernel/mm/ksm/run"):
+            server.debug("[m/hydra]: Enabling Kernel Same-page Merging..")
+            try:
+                write("/sys/kernel/mm/ksm/run", "1")
+            except OSError as err:
+                server.warning(
+                    f"[m/hydra]: Cannot enable Kernel Same-page Merging: {err}!"
+                )
         del n, i
         self._running = True
         server.info("[m/hydra]: Startup complete.")
@@ -2678,6 +2768,7 @@ class HydraServer(object):
                 rmtree(HYDRA_DIR)
             except OSError as err:
                 server.error("[m/hydra]: Cannot remove the Hydra directory!", err)
+        write("/sys/kernel/mm/ksm/run", "0", errors=False)
         if self._running:
             server.debug("[m/hydra]: Shutdown complete.")
         self._running = False

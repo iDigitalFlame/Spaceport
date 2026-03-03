@@ -681,8 +681,11 @@ qemu-chardev-spice
 qemu-common
 qemu-hw-display-qxl
 qemu-hw-display-virtio-gpu
+qemu-hw-display-virtio-gpu-gl
 qemu-hw-display-virtio-gpu-pci
+qemu-hw-display-virtio-gpu-pci-gl
 qemu-hw-display-virtio-vga
+qemu-hw-display-virtio-vga-gl
 qemu-hw-usb-host
 qemu-hw-usb-redirect
 qemu-img
@@ -819,6 +822,7 @@ vapoursynth
 vde2
 vid.stab
 vimix-cursors
+virglrenderer
 virtiofsd
 vlc
 vlc-cli

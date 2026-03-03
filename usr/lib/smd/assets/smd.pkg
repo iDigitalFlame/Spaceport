@@ -36,7 +36,7 @@
 # Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
 pkgrel=1
-pkgver=1.5.4
+pkgver=1.5.5
 pkgname="smd"
 pkgdesc="System Management Daemon base packages"
 
@@ -81,8 +81,11 @@ depends=(
     "qemu-chardev-spice"
     "qemu-hw-display-qxl"
     "qemu-hw-display-virtio-gpu"
+    "qemu-hw-display-virtio-gpu-gl"
     "qemu-hw-display-virtio-gpu-pci"
+    "qemu-hw-display-virtio-gpu-pci-gl"
     "qemu-hw-display-virtio-vga"
+    "qemu-hw-display-virtio-vga-gl"
     "qemu-hw-usb-host"
     "qemu-hw-usb-redirect"
     "samba"

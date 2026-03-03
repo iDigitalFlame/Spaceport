@@ -55,6 +55,7 @@ _VAR_CHARS = ascii_letters + digits + "_-"
 
 class Stat(NamedTuple):
     stat: object
+    perms: int
     uid: int
     gid: int
     isfile: bool
@@ -165,17 +166,17 @@ class Stat(NamedTuple):
             if hide:
                 raise FileNotFoundError(f'"{self.path}" does not exist')
             raise PermissionError(f'"{self.path}" group is not "{n}"')
-        if isinstance(mask, int) and (self.stat.st_mode & mask) != 0:
+        if isinstance(mask, int) and (self.perms & mask) != 0:
             if hide:
                 raise FileNotFoundError(f'"{self.path}" does not exist')
             raise PermissionError(
-                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the mask ({mask:0o})'
+                f'"{self.path}" permissions ({self.perms:0o}) do not match the mask ({mask:0o})'
             )
-        if isinstance(req, int) and (self.stat.st_mode & req) < req:
+        if isinstance(req, int) and (self.perms & req) < req:
             if hide:
                 raise FileNotFoundError(f'"{self.path}" does not exist')
             raise PermissionError(
-                f'"{self.path}" permissions ({self.stat.st_mode:0o}) do not match the required permissions ({req:0o})'
+                f'"{self.path}" permissions ({self.perms:0o}) do not match the required permissions ({req:0o})'
             )
         if own_gid:
             g = getpwuid(self.uid).pw_gid
@@ -472,13 +473,16 @@ def info(path, sym=True, st=None, no_fail=False, hide=False):
             if hide:
                 raise FileNotFoundError(f'"{path}" does not exist')
             if no_fail:
-                return Stat(None, None, None, False, False, False, False, False, path)
+                return Stat(
+                    None, None, None, None, False, False, False, False, False, path
+                )
             raise err
     else:
         s = st
     m = s.st_mode & 0o170000
     return Stat(
         s,
+        s.st_mode & 0o7777,
         s.st_uid,
         s.st_gid,
         m == 0o100000,  # isfile

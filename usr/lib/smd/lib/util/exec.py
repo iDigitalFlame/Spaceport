@@ -118,11 +118,11 @@ def split(val, single=False, env=None):
     return o
 
 
-def nulexec(cmd, wait=False, timeout=5, cwd=None, ret=False, errors=True):
-    return run(cmd, wait, timeout, cwd, ret, errors, False)
+def nulexec(cmd, wait=False, timeout=5, cwd=None, ret=False, errors=True, e=None):
+    return run(cmd, wait, timeout, cwd, ret, errors, False, e)
 
 
-def run(cmd, wait=False, timeout=5, cwd=None, ret=False, errors=True, out=True):
+def run(cmd, wait=False, timeout=5, cwd=None, ret=False, errors=True, out=True, e=None):
     if isinstance(cmd, str):
         if len(cmd) == 0:
             if not errors:
@@ -145,7 +145,7 @@ def run(cmd, wait=False, timeout=5, cwd=None, ret=False, errors=True, out=True):
         r = Popen(
             c,
             cwd=cwd,
-            env=environ,
+            env=e if isinstance(e, dict) else environ,
             text=t,
             shell=False,
             stdin=DEVNULL,
@@ -167,10 +167,10 @@ def run(cmd, wait=False, timeout=5, cwd=None, ret=False, errors=True, out=True):
     if not wait:
         return r
     try:
-        e = r.wait(timeout)
+        c = r.wait(timeout)
         if ret:
-            return e
-        del e
+            return c
+        del c
     except OSError as err:
         if not errors:
             return None

@@ -47,7 +47,7 @@ profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce, attach_disconnec
     include <abstractions/user-data-ro>
 
     # Device wide thumbnails for picture formats.
-    /**/*.{jpg,png,ico,svg,jpeg,heic,bmp,gif,HEIC}                                  r,
+    /**/*.@{IMAGES}                                                                 r,
 
     /var/tmp/                                                                       r,
     /etc/fstab                                                                      r,

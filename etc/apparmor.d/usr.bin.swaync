@@ -68,7 +68,7 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     owner @{CONFIG}/swaync/config.json                r,
 
     owner @{HOME}/                                    r,
-    owner @{HOME}/Pictures/Screenshots/*.{jpg,png}    r,
+    owner @{HOME}/Pictures/Screenshots/*.@{IMAGES}    r,
 
     /usr/bin/sudo                                     Px -> sudo,
     /usr/bin/wlay                                     Px -> wlay,

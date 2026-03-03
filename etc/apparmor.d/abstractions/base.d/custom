@@ -34,15 +34,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{sysconfig}/etc/ld.so.preload      r,
+@{sysconfig}/etc/ld.so.preload                      r,
 
-/etc/timezone                       r,
-/etc/gnutls/config                  r,
-/etc/ld.so.preload                  r,
+/etc/timezone                                       r,
+/etc/gnutls/config                                  r,
+/etc/ld.so.preload                                  r,
 
-/var/cache/ld.so.cache              rm,
+/var/cache/ld.so.cache                              rm,
 
-audit deny /opt/secureboot/{,*}     rw,
+audit deny /opt/secureboot/{,*}                     rw,
 
 # Allow confined processes to signal they are shutting down to smd-client
 # and smd-daemon.
@@ -52,11 +52,14 @@ signal         peer=@{profile_name},
 signal receive peer=shell               set=(cont, hup, int, kill, quit, term, stop),
 # Ability to kill hanging processes.
 
-
 # Disconnected Paths
-deny /apparmor/.null                rw,
+deny /apparmor/.null                                rw,
 
-deny /etc/ld.so.preload             w,
-deny @{sysconfig}/etc/ld.so.preload w,
+deny /etc/ld.so.preload                             w,
+deny @{sysconfig}/etc/ld.so.preload                 w,
+
+deny @{HOME}/.recently-used.xbel{,*}                w,
+deny @{HOME}/.local/share/recently-used.xbel        w,
+deny @{HOME}/.local/share/recently-used.xbel.?????? w,
 
 deny signal send peer=unconfined,

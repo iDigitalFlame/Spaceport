@@ -194,15 +194,15 @@ class Background(object):
             for i in displays():
                 if not i.active or i.width == 0 or i.height == 0:
                     continue
-                if x is None or i.width > x:
+                if i.width > x:
                     x = i.width
-                if y is None or i.height > y:
+                if i.height > y:
                     y = i.height
         except OSError as err:
             return server.error(
                 "[m/background]: Cannot not get Display size details!", err
             )
-        if x is None or y is None or x == 0 or y == 0:
+        if x == 0 or y == 0:
             return server.error("[m/background]: Cannot detect any active Displays!")
         self._size = (x, y)
         server.debug(f"[m/background]: Detected a max Display size of {x}x{y}.")
@@ -319,7 +319,7 @@ class Background(object):
             h = hash_file(bg)
         except OSError as err:
             return server.error(f'[m/background]: Cannot hash the file "{bg}"!', err)
-        t = f"{self._dir}/{h}.jpg"
+        t = f"{self._dir}/{h}.webp"
         del h
         if isfile(t):
             self._link(server, t)

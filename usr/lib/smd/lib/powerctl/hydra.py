@@ -229,6 +229,13 @@ _SCHEMA = """# HydraVM Schema v4-release
                           Specify the number of virtual displays attached to the
                           VM.
 
+        "display_memory" <Integer, Optional[Default= 64]>
+                          Specify the amount of memory given to the graphics devices
+                          in megabytes (MB).
+
+                          This will default to 64MB if omitted or if an invalid
+                          value (anything zero and below).
+
         "input"          <String, Optional[Default = "virtio"]>
                           Supported values: "virtio" | "tablet" | "usb" | "mouse" | "none"
 
@@ -375,10 +382,19 @@ _SCHEMA = """# HydraVM Schema v4-release
                           driver. If preallocation fails, the VM will fail during
                           startup.
 
+        "share"          <Boolean, Optional[Default = true]>
+                          Enable or disable the participation of the VM in KSM.
+                          If enabled (the default), some memory pages may be shared
+                          with other VMs if they are the same, to save memory usage.
+
+                          To prevent any security issues that may occur, the VM
+                          may opt-out of KSM by setting this value to "false".
+
         "size"           <Integer, Required[Default= 1024]>
                           Supported values: Integer greater than zero.
 
-                          Size of memory allocated for the Virtual Machine in MB.
+                          Size of memory allocated for the Virtual Machine in megabytes
+                          (MB).
 
                           Values larger than the host memory will cause the VM
                           to fail during startup.
@@ -1263,13 +1279,15 @@ def vm_connect(args, vm=None, vnc=False):
         return print_error("Cannot start the VM!", err)
     check_error(r)
     del vm
-    if not args.no_fork and fork() != 0:
-        return True
+    if (args.connect_vnc or vnc) and not r.vnc:
+        return print_error("VNC is not enabled for the VM!")
     if r.status == "waiting":
         sleep(2)
+    if not args.no_fork and fork() != 0:
+        return True
     v = f"{HYDRA_DIR}/{r.vmid}.{'vnc' if args.connect_vnc or vnc else 'spice'}"
-    for _ in range(0, 20):
-        # Try to open the socket up to 20 times to wait for the permissions to
+    for _ in range(0, 10):
+        # Try to open the socket up to 10 times to wait for the permissions to
         # be fixed.
         try:
             s = socket(AF_UNIX, SOCK_STREAM)

@@ -144,6 +144,7 @@ HYDRA_DIR = f"{DIRECTORY_TEMP}/hydra"
 HYDRA_DIR_USB = "/sys/bus/usb/devices/*/idVendor"
 HYDRA_DIR_DHCP = f"{DIRECTORY_CONFIG}/hydra"
 HYDRA_DIR_USER = "/opt/hydra"
+HYDRA_DIR_CACHE = "/var/cache/hydra"
 HYDRA_DIR_SNAPS = f"{HYDRA_DIR_DHCP}/snaps"
 HYDRA_DIR_DEVICES = "/dev/bus/usb"
 
@@ -180,6 +181,8 @@ HYDRA_FILE_USB_DEVICES = "/usr/share/hwdata/usb.ids"
 HYDRA_RESERVE = "/proc/sys/vm/nr_hugepages"
 HYDRA_RESERVE_SIZE = 2
 
+HYDRA_DISPLAY = (1920, 1080)
+
 ## CPU Module Constants
 CPU_PATH = "/sys/devices/system/cpu"
 CPU_PATH_MIN = "cpufreq/cpuinfo_min_freq"
@@ -212,7 +215,7 @@ NOTIFY_ICONS = {
     "warn": "dialog-warning.png",
     "warning": "dialog-warning.png",
 }
-NOTIFY_EXTENSIONS = [".png", ".svg", ".jpg", ".gif", ".ico"]
+NOTIFY_EXTENSIONS = [".gif", ".ico", ".jpg", ".png", ".svg", ".webp"]
 
 ## Radio Module Constants
 RADIO_PATH_WIFI = "/sys/class/net"
@@ -248,7 +251,16 @@ BACKUP_EXCLUDE = ["/dev", "/proc", "/run", "/sys", "/tmp", "/var/run"]
 
 ## Background Module Constants
 BACKGROUND_PATH_CACHE = "${HOME}/.cache/smd"
-BACKGROUND_PATH_EXTENSIONS = [".jpg", ".png", ".jpeg", ".bmp"]
+BACKGROUND_PATH_EXTENSIONS = [
+    ".bmp",
+    ".heic",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".tga",
+    ".tiff",
+    ".webp",
+]
 
 LOCKER_TYPE_NAMES = {
     LOCKER_TYPE_KEY: "Yubikey",

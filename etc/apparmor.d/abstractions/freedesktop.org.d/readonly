@@ -36,7 +36,3 @@
 
 owner @{HOME}/.recently-used.xbel{,*}               r,
 owner @{HOME}/.local/share/recently-used.xbel       r,
-
-deny @{HOME}/.recently-used.xbel{,*}                w,
-deny @{HOME}/.local/share/recently-used.xbel        w,
-deny @{HOME}/.local/share/recently-used.xbel.?????? w,
