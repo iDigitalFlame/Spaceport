@@ -1313,7 +1313,7 @@ class VM(Storage):
         n = self.get("cpu.sockets", 1)
         w = self._name if nes(self._name) else f"hydra-vm-{self.vmid}"
         m = f"memory-backend-memfd,dump=off,id=mem0,size={x.memory}M"
-        if self.get("memory.ksm", True):
+        if self.get("memory.share", True):
             m += ",share=on"
         r = [
             x.bin,
