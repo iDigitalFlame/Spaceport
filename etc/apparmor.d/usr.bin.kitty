@@ -53,6 +53,8 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     ptrace read  peer=kitty,
     ptrace trace peer=kitty,
 
+    /usr/bin/kitty                     rm,
+
     /proc/                             r,
 
     owner /proc/@{pid}/stat            r,

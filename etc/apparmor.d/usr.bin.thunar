@@ -57,13 +57,14 @@ profile thunar /usr/bin/{T,t}hunar flags=(enforce, attach_disconnected) {
 
     owner /tmp/**                                         rwkl,
 
-    /usr/bin/ffmpegthumbnailer                            ix,
-
-    # NOTE(dij): Thunar has unrestricted open permissions as it's needed to
-    #            open any file when using it to browse the filesystem.
+    /usr/bin/dash                                         ix,
+    /usr/bin/kitty                                        Px -> kitty,
     /usr/bin/xdg-open                                     PUx,
     /usr/bin/xdg-settings                                 PUx,
+    /usr/bin/ffmpegthumbnailer                            ix,
     /usr/lib/gio-launch-desktop                           PUx,
+    # NOTE(dij): ^ Thunar has unrestricted open permissions as it's needed to
+    #            open any file when using it to browse the filesystem.
 
     deny /systemd/journal/stdout                          rw,
     deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml          w,
