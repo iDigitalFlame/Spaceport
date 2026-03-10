@@ -1305,6 +1305,9 @@ def vm_connect(args, vm=None, vnc=False):
                 HYDRA_EXEC_VNC,
                 basename(HYDRA_EXEC_VNC),
                 "FullscreenSystemKeys=0",
+                "AlwaysCursor=0",
+                "CompressLevel=0",
+                "SendClipboard=1",
                 "Shared=1",
                 v,
             )
@@ -1316,6 +1319,7 @@ def vm_connect(args, vm=None, vnc=False):
         execl(
             HYDRA_EXEC_SPICE,
             basename(HYDRA_EXEC_SPICE),
+            "--spice-smartcard",
             f"--title=VM{r.vmid}",
             f"--uri=spice+unix://{v}",
         )
