@@ -76,6 +76,7 @@ profile systemd-coredump /usr/lib/systemd/systemd-coredump flags=(enforce, attac
     /proc/@{pid}/mountinfo                                               r,
     /proc/@{pid}/stat{,us}                                               r,
     /proc/@{pid}/setgroups                                               r,
+    /proc/@{pid}/{g,u}id_map                                             r,
     /proc/sys/kernel/osrelease                                           r,
     /proc/1/{cgroup,environ,sched}                                       r,
     /proc/sys/kernel/random/boot_id                                      r,

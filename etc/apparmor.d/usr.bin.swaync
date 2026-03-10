@@ -42,6 +42,7 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     include <abstractions/mesa>
     include <abstractions/audio>
     include <abstractions/dconf>
+    include <abstractions/opengl>
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/no-network>

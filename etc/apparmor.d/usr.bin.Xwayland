@@ -41,6 +41,7 @@ profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
     include <abstractions/base>
     include <abstractions/mesa>
     include <abstractions/fonts>
+    include <abstractions/opengl>
     include <abstractions/vulkan>
     include <abstractions/wayland>
     include <abstractions/consoles>

@@ -43,6 +43,7 @@ profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnec
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
+    capability                                          bpf,
     capability                                          kill,
     capability                                          setgid,
     capability                                          setuid,

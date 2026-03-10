@@ -36,6 +36,7 @@
 
 abi <abi/4.0>,
 
+include <abstractions/tty>
 include <abstractions/base>
 include <abstractions/consoles>
 include <abstractions/no-network>
@@ -43,5 +44,3 @@ include <abstractions/no-network>
 signal receive set=(cont, hup, kill, stop, term),
 
 /{,**}     r,
-
-/dev/pts/* rk,

@@ -38,15 +38,12 @@ include <tunables/spaceport>
 
 profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_disconnected) {
     include <abstractions/command>
-    include <abstractions/consoles>
     include <abstractions/private-files>
 
     capability                        dac_override,
     capability                        dac_read_search,
 
     @{sysconfig}/etc/sysless{,key}    r,
-
-    /dev/pts/*                        rk,
 
     /etc/sysless{,key}                r,
     /usr/bin/{head,tail}              rm,
