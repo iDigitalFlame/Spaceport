@@ -53,17 +53,17 @@ chmod 0644 "/var/cache/ld.so.cache"
 chmod 0444 "/var/cache/pacman/mirrorlist"
 chmod 0600 "/var/cache/cups/printers.conf"
 chmod 0700 "/var/lib/NetworkManager/system-connections"
-chmod 0600 "/var/lib/NetworkManager/system-connections/"* 2> /dev/null
+chmod 0600 "/var/lib/NetworkManager/system-connections/"*.* 2> /dev/null
 
 chown -R root:root "/var/lib/NetworkManager/system-connections"
 
 chown -R root:root "/var/cache/fontconfig"
 chmod -R 2755      "/var/cache/fontconfig"
-chmod    2644      "/var/cache/fontconfig/"* 2> /dev/null
+chmod    2644      "/var/cache/fontconfig/"*.* 2> /dev/null
 
 chown -R alpm:root "/var/cache/pacman/pkg"
 chmod -R 2750      "/var/cache/pacman/pkg"
-chmod    2660      "/var/cache/pacman/pkg/"* 2> /dev/null
+chmod    2660      "/var/cache/pacman/pkg/"*.* 2> /dev/null
 
 chown -R root:root "/var/lib/pacman/sync"
 chmod    2755      "/var/lib/pacman/sync"
@@ -78,7 +78,7 @@ chmod    2700      "/var/cache/ldconfig"
 
 chown -R root:makepkg "/var/cache/makepkg"
 chmod    3775         "/var/cache/makepkg"
-chmod    3640         "/var/cache/makepkg/"* 2> /dev/null
+chmod    3640         "/var/cache/makepkg/"*.* 2> /dev/null
 
 chown root:root "/var/cache/python"
 chmod 3777      "/var/cache/python"

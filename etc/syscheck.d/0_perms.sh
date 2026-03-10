@@ -149,10 +149,10 @@ chmod 4755      "${SYSCONFIG}/bin/ghr"
 
 # SMD Permissions
 chmod    0500 "/etc/smd"
-chmod    0400 "/etc/smd/"*
+chmod    0400 "/etc/smd/"*.*
 chmod    0640 "/var/cache/smd/"*.json
 chmod    0640 "/var/cache/smd/hydra"
-chmod    0640 "/var/cache/smd/hydra/"* 2> /dev/null
+chmod    0640 "/var/cache/smd/hydra/"*.* 2> /dev/null
 chmod    0555 "${SYSCONFIG}/usr/lib/smd/assets/smb-backup-entries"
 chmod    0555 "${SYSCONFIG}/usr/lib/smd/assets/smb-backup-extract"
 chmod -R 0555 "${SYSCONFIG}/usr/lib/smd/libexec"
@@ -172,13 +172,12 @@ chmod    0444 "${SYSCONFIG}/var/cache/smd/constants.json"
 
 # Secureboot Permissions
 chown -R root:root "/opt/secureboot"
-chmod    0500      "/opt/secureboot"
-chmod    0400      "/opt/secureboot/"*
+chmod -R 0400      "/opt/secureboot"
 
 # Backup Cache Permissions
-chown root:root "/var/cache/smd/backup"   2> /dev/null
-chmod 0750      "/var/cache/smd/backup"   2> /dev/null
-chmod 0640      "/var/cache/smd/backup/"* 2> /dev/null
+chown root:root "/var/cache/smd/backup"     2> /dev/null
+chmod 0750      "/var/cache/smd/backup"     2> /dev/null
+chmod 0640      "/var/cache/smd/backup/"*.* 2> /dev/null
 
 # AuditD Permissions
 _chmod 0550 "/etc/audit"             0440
