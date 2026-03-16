@@ -43,6 +43,7 @@ profile obs /usr/bin/obs flags=(enforce, attach_disconnected) {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/video>
+    include <abstractions/opengl>
     include <abstractions/vulkan>
     include <abstractions/openssl>
     include <abstractions/consoles>
@@ -63,9 +64,10 @@ profile obs /usr/bin/obs flags=(enforce, attach_disconnected) {
     /proc/@{pid}/net/unix                   r,
 
     owner /proc/@{pid}/stat{,m}             r,
-    owner /proc/@{pid}/task/@{tid}/**       r,
 
     owner @{HOME}/.config/QtProject.conf    r,
+
+    owner /proc/@{pid}/task/@{tid}/**       rw,
 
     owner @{HOME}/.config/obs-studio/{,**}  rw,
 

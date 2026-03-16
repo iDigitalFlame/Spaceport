@@ -42,6 +42,7 @@ profile webkit /usr/lib/webkit2gtk-*/WebKit*Process flags=(enforce, attach_disco
     include <abstractions/dconf>
     include <abstractions/video>
     include <abstractions/cgroup>
+    include <abstractions/opengl>
     include <abstractions/version>
 
     network                                                                        inet  stream,

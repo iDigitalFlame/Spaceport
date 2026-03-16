@@ -45,10 +45,14 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
 
+    capability                                         sys_ptrace,
+
     network                                            netlink   raw,
     network                                            bluetooth raw,
     network                                            bluetooth seqpacket,
     network                                            bluetooth stream,
+
+    ptrace read,
 
     @{sysconfig}/etc/wireplumber/**                    r,
 
