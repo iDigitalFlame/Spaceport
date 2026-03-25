@@ -71,6 +71,7 @@ find "/boot" -xdev -type f -exec chmod 0400      {} \; 2> /dev/null
 
 # Permission Fixes
 find "/"             -xdev -group firewall-web -exec chgrp -h root {} \;
+find "/var"          -xdev -group firewall-web -exec chgrp -h root {} \;
 find "${SYSCONFIG}/" -xdev -type f             -exec chmod 0444    {} \;
 
 ## Update Targets with root:root / 0555
