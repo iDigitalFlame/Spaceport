@@ -218,8 +218,7 @@ class DispatchExecuter(Thread):
     def run(self):
         self._service.debug("[dispatch/exec]: Starting processing Thread..")
         while not self._signal.is_set():
-            for h in self._hooks:
-                h.run(self._service, None, None)
+            self._run_threads()
             self._run_sched()
             self._check_entries()
             self._signal.wait(1)
@@ -251,6 +250,12 @@ class DispatchExecuter(Thread):
             return
         alarm(TIMEOUT_SEC_HOOK)
         self._sched.run(blocking=False)
+        alarm(0)
+
+    def _run_threads(self):
+        alarm(TIMEOUT_SEC_HOOK)
+        for h in self._hooks:
+            h.run(self._service, None, None)
         alarm(0)
 
     def _check_entries(self):

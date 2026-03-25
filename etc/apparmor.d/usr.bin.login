@@ -65,6 +65,7 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
 
     @{sysconfig}/etc/motd                  r,
 
+    /                                      r,
     /etc/motd                              r,
     /etc/shells                            r,
     /usr/bin/login                         rm,

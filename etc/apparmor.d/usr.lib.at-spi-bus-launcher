@@ -55,6 +55,7 @@ profile at-spi-bus-launcher /usr/lib/at-spi-bus-launcher flags=(enforce, attach_
 
     ptrace read,
 
+    /                                                r,
     /etc/machine-id                                  r,
     /var/lib/dbus/machine-id                         r,
     /usr/share/defaults/at-spi2/{,**}                r,

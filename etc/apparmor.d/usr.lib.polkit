@@ -54,6 +54,7 @@ profile polkit /usr/lib/{,polkit-1}/polkitd flags=(enforce, attach_disconnected)
 
     @{sysconfig}/etc/polkit-1/rules.d/spaceport.rules r,
 
+    /                                                 r,
     /etc/machine-id                                   r,
     /etc/polkit-1/rules.d/                            r,
     /usr/share/polkit-1/actions/                      r,

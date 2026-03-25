@@ -58,6 +58,7 @@ profile systemd-resolved /usr/lib/systemd/systemd-resolved flags=(enforce, attac
 
     @{sysconfig}/etc/systemd/resolved.conf                               r,
 
+    /                                                                    r,
     /etc/systemd/resolved.conf                                           r,
     /usr/lib/systemd/systemd-resolved                                    rm,
     /etc/systemd/resolved.conf.d/{,**}                                   r,

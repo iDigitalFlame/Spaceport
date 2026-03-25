@@ -53,6 +53,7 @@ profile systemd-timesyncd /usr/lib/systemd/systemd-timesyncd flags=(enforce, att
 
     @{sysconfig}/etc/systemd/timesyncd.conf                               r,
 
+    /                                                                     r,
     /etc/systemd/timesyncd.conf                                           r,
     /usr/lib/systemd/systemd-timesyncd                                    rm,
     /etc/systemd/timesyncd.conf.d/{,**}                                   r,

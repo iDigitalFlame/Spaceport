@@ -60,6 +60,7 @@ profile systemd-journald /usr/lib/systemd/systemd-journald flags=(enforce, attac
 
     @{sysconfig}/etc/systemd/journald.conf                               r,
 
+    /                                                                    r,
     /etc/machine-id                                                      r,
     /var/lib/dbus/machine-id                                             r,
     /etc/systemd/journald.conf                                           r,

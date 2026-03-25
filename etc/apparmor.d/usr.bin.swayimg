@@ -74,14 +74,14 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
         include <abstractions/no-network>
         include <abstractions/private-files>
 
-        /etc/ImageMagick-*/*.xml           r,
-        /usr/share/ImageMagick-*/*.xml     r,
+        /etc/ImageMagick-*/*.xml            r,
+        /usr/share/ImageMagick-*/*.xml      r,
 
-        owner @{HOME}/**/*.@{IMAGES}{,*}   rw,
-        owner @{MOUNTS}/**/*.@{IMAGES}{,*} rw,
+        owner @{HOME}/{,**/}*.@{IMAGES}{,*} rw,
+        owner @{MOUNTS}/**/*.@{IMAGES}{,*}  rw,
 
-        /usr/bin/convert                   ixr,
-        /usr/bin/{jpegtran,magick}         ixrm,
+        /usr/bin/convert                    ixr,
+        /usr/bin/{jpegtran,magick}          ixrm,
     }
 
     include if exists <local/usr.bin.swayimg>

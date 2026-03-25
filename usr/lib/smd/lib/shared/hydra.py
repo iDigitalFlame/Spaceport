@@ -37,16 +37,43 @@
 #   Used to keep links un-borken for non-default configurations of directories
 
 from glob import glob
+from time import time
 from lib.util import nes
+from datetime import datetime
 from collections import namedtuple
 from os import getcwd, getuid, environ
-from lib.util.file import info, read, expand, read_json
 from os.path import isabs, exists, isfile, dirname, basename
+from lib.util.file import info, read, expand, read_json, write_json
 from lib.constants.config import HYDRA_DIR_USB, HYDRA_VM_CONFIGS, HYDRA_FILE_USB_DEVICES
 
 _DEVICES = None
 
 Device = namedtuple("Device", ["name", "path", "vendor", "product"])
+Snapshot = namedtuple("Snapshot", ["id", "sec", "parent", "depth", "cur", "tag"])
+
+
+def _time(n, s):
+    if not isinstance(s, (float, int)) or s == 0:
+        return ""
+    v = datetime.fromtimestamp(s)
+    if v.year < 1971:
+        return ""
+    if n == v:
+        return "0s"
+    if (n - v).days > 0:
+        return v.strftime("%H:%M %m/%d/%y")
+    m, y = divmod((n - v).seconds, 60)
+    h, m = divmod(m, 60)
+    if h > 12:
+        if h >= n.hour:
+            return v.strftime("%H:%M %m/%d/%y")
+        return v.strftime("%H:%M")
+    del v
+    if h > 0:
+        return f"{h}h {m}m"
+    if m > 0:
+        return f"{m}m {y}s"
+    return f"{y}s"
 
 
 def get_devices():
@@ -94,6 +121,19 @@ def valid_snap_name(v):
             continue
         return False
     return True
+
+
+def _print_snap(e, c, n):
+    if c == 0:
+        if e.cur:
+            print(f"- *{e.tag} - {_time(n, e.sec)} [Base Snapshot] (You are Here)")
+        else:
+            print(f"- {e.tag} - {_time(n, e.sec)} [Base Snapshot]")
+    else:
+        if e.cur:
+            print(f'{" " * c}- *{e.tag} - {_time(n, e.sec)} (You are Here)')
+        else:
+            print(f'{" " * c}- {e.tag} - {_time(n, e.sec)}')
 
 
 def _load_usb_device_names():
@@ -200,3 +240,140 @@ def load_vm(path, config_path=None, server=False):
     if isfile(path):
         return path
     return None
+
+
+class Snapshots(list):
+    __slots__ = ()
+
+    def __init__(self):
+        list.__init__(self)
+
+    def cur(self):
+        for x in range(0, len(self)):
+            if self[x].cur:
+                return (self[x], x)
+        return (None, None)
+
+    def _new(self):
+        v = 0
+        if len(self) == 0:
+            return v
+        for i in self:
+            if v > i.id:
+                continue
+            v = i.id
+        return v + 1
+
+    def depth(self):
+        v, _ = self.cur()
+        if v is None:
+            return 0
+        return v.depth
+
+    def print(self):
+        if len(self) == 0:
+            return
+        b, n = self[0], datetime.now()
+        _print_snap(b, 0, n)
+        for x in range(1, len(self)):
+            _print_snap(self[x], self[x].depth - b.depth, n)
+        del b, n
+
+    def add(self, tag):
+        c, p = self.cur()
+        i = self._new()
+        if c is None:
+            self.append(Snapshot(i, int(time()), 0, 0, True, tag))
+            return
+        self[p] = self[p]._replace(cur=False)
+        while p + 1 < len(self) and self[p + 1].parent >= c.id:
+            p += 1
+        self.insert(p + 1, Snapshot(i, int(time()), c.id, c.depth + 1, True, tag))
+        del c, i
+        return
+
+    def find(self, id):
+        for x in range(0, len(self)):
+            if self[x].id == id:
+                return (self[x], x)
+        return (None, None)
+
+    def save(self, file):
+        write_json(file, self, perms=0o600)
+
+    def delete(self, tag):
+        v, p = self.find_by_tag(tag)
+        if v is None:
+            return
+        del self[p], p
+        if len(self) == 0:
+            return
+        e = len(self) - 1
+        for x in range(0, len(self)):
+            if self[x].parent == v.id:
+                self[x], e = self[x]._replace(parent=v.parent), x
+        if not v.cur:
+            return
+        _, p = self.find(v.parent)
+        if p is None:
+            self[e] = self[e]._replace(cur=True)
+        else:
+            self[p] = self[p]._replace(cur=True)
+        del e, p, v
+
+    def revert(self, tag):
+        _, v = self.find_by_tag(tag)
+        if v is None:
+            return
+        _, c = self.cur()
+        if v == c:
+            return
+        if c is not None:
+            self[c] = self[c]._replace(cur=False)
+        self[v] = self[v]._replace(cur=True)
+
+    def find_by_tag(self, tag):
+        for x in range(0, len(self)):
+            if self[x].tag == tag:
+                return (self[x], x)
+        return (None, None)
+
+    def load(self, data, file=None):
+        if nes(file) and data is None:
+            return self.load(read_json(file))
+        if not isinstance(data, list) or len(data) == 0:
+            return
+        self.clear()
+        for i in data:
+            if not isinstance(i, (list, tuple)) or len(i) != 6:
+                continue
+            self.append(Snapshot(*i))
+
+    def sync(self, server, vmid, e):
+        d, r = list(), dict()
+        for i in e:
+            r[i["name"]] = [i, 0]
+        for i in self:
+            if i.tag not in r:
+                d.append(i.tag)
+                continue
+            r[i.tag][1] += 1
+        for i in d:
+            server.debug(f'[m/hydra/VM({vmid})]: Deleting un-synced Snapshot "{i}"..')
+            self.delete(i)
+        del d
+        for k, v in r.items():
+            if v[1] == 0:
+                server.warning(
+                    f'[m/hydra/VM({vmid})]: Snapshot "{k}" was not found in cache, but present on storage!'
+                )
+        del r
+
+    def verify_tag(self, tag, exists=True):
+        if len(self) == 0:
+            return not exists
+        x, _ = self.find_by_tag(tag)
+        if (exists and x is None) or (not exists and x is not None):
+            return False
+        del x
+        return True

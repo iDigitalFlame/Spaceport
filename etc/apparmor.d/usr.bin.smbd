@@ -63,6 +63,7 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
 
     signal send set=term peer=samba-bgqd,
 
+    /                                             r,
     /etc/mtab                                     r,
     /etc/samba/*                                  rk,
     /etc/netgroup                                 r,

@@ -56,6 +56,7 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
 
     @{sysconfig}/etc/wireplumber/**                    r,
 
+    /                                                  r,
     /etc/asound.conf                                   r,
     /usr/share/alsa/**                                 r,
     /etc/wireplumber/**                                r,
@@ -94,6 +95,8 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     /sys/devices/**/video4linux/video*/uevent          r,
     /sys/devices/virtual/dmi/id/{bios,sys}_vendor      r,
 
+    /proc/@{pid}/                                      r,
+
     @{run}/systemd/users/{*,*/}                        r,
     @{run}/udev/data/{c*,+sound:card*,+usb:*}          r,
 
@@ -117,10 +120,9 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     /sys/devices/**/usb*/{,**}                         rw,
 
     /proc/asound/**                                    rw,
+    /proc/@{pid}/task/@{tid}/comm                      rw,
 
     owner /dev/shm/pulse-shm-*                         rw,
-
-    owner /proc/@{pid}/task/@{tid}/comm                rw,
 
     owner @{run}/user/@{uid}/pipewire-*                rw,
     owner @{run}/user/@{uid}/pulse{,/,/native}         rw,

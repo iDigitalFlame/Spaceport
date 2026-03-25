@@ -43,6 +43,7 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     include <abstractions/dconf>
     include <abstractions/video>
     include <abstractions/cgroup>
+    include <abstractions/opengl>
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/no-network>

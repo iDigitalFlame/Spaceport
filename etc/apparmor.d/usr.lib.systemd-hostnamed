@@ -49,6 +49,7 @@ profile systemd-hostnamed /usr/lib/systemd/systemd-hostnamed flags=(enforce, att
 
     @{sysconfig}/etc/hostname                                            r,
 
+    /                                                                    r,
     /etc/hostname                                                        r,
     /etc/machine-id                                                      r,
     /etc/os-release                                                      r,

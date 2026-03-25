@@ -47,6 +47,7 @@ from lib.constants.config import (
     LOG_LEVEL,
     LOG_FORMAT,
     LOG_FRAME_LIMIT,
+    LOG_DEFAULT_PERMS,
     LOG_FORMAT_JOURNAL,
 )
 
@@ -93,7 +94,7 @@ class Logger(object):
             f.setFormatter(_FORMAT)
             f.setLevel(self._log.level)
             self._log.addHandler(f)
-            chmod(file, 0o0644, follow_symlinks=True)
+            chmod(file, LOG_DEFAULT_PERMS, follow_symlinks=True)
             del f
         except OSError as err:
             raise OSError(f'cannot create log file "{file}": {err}')

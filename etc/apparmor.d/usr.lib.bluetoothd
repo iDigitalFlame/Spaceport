@@ -53,6 +53,7 @@ profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconne
 
     @{sysconfig}/etc/bluetooth/{,*.conf}     r,
 
+    /                                        r,
     /etc/bluetooth/{,*.conf}                 r,
     /var/lib/bluetooth/{,**}                 rw,
     /usr/lib/bluetooth/bluetoothd            rm,

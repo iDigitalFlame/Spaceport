@@ -56,6 +56,7 @@ profile journalctl /usr/bin/journalctl flags=(enforce) {
 
     ptrace read,
 
+    /                                             r,
     /usr/bin/journalctl                           rm,
     /usr/share/terminfo/{,**}                     r,
 

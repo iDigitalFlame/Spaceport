@@ -58,7 +58,13 @@ from os import stat, chmod, chown, mkdir, remove, environ
 from lib.constants.files import HYDRA_CONFIG_DNS, HYDRA_CONFIG_SMB
 from os.path import isabs, isdir, exists, isfile, dirname, splitext
 from lib.util.file import copy, info, read, write, expand_abs, remove_file
-from lib.shared.hydra import load_vm, get_devices, get_device_name, valid_snap_name
+from lib.shared.hydra import (
+    Snapshots,
+    load_vm,
+    get_devices,
+    get_device_name,
+    valid_snap_name,
+)
 from lib.constants.config import (
     NAME,
     HYDRA_DIR,
@@ -88,6 +94,7 @@ from lib.constants.config import (
     HYDRA_SOCK_BUF_SIZE,
     HYDRA_BRIDGE_NETWORK,
     HYDRA_FILE_UEFI_VARS,
+    HYDRA_SNAP_MAX_DEPTH,
 )
 from lib.constants import (
     EMPTY,
@@ -153,6 +160,7 @@ HOOKS_SERVER = {
 _HYDRA_IPC = b'{"execute": "qmp_capabilities"}\r\n'
 _HYDRA_USER = None
 
+Drives = namedtuple("Drives", ["host", "targets"])
 Interface = namedtuple("Interface", ["auto", "bridge", "device"])
 Restricted = namedtuple(
     "Restricted",
@@ -217,6 +225,65 @@ def _key_translate(v):
     except KeyError:
         pass
     return (None, None)
+
+
+def _block_snaps(v, t):
+    if len(v) == 0:
+        return None
+    for i, s in v:
+        if nes(t) and t == i:
+            return s
+    if nes(t):
+        return None
+    if len(v) > 1:
+        v.sort(key=lambda x: x[0])
+    return v[0][1]
+
+
+def _is_job_done(v, id):
+    if not isinstance(v, list) or len(v) == 0:
+        return (False, None)
+    d = None
+    for i in v:
+        if "id" not in i:
+            continue
+        if i["id"] == id:
+            d = i
+            break
+    if not isinstance(d, dict) or "status" not in d:
+        return (False, None)
+    return (d["status"] == "concluded", d.get("error"))
+
+
+def _is_snapshotable(v):
+    if not isinstance(v, dict) or len(v) == 0 or "inserted" not in v:
+        return False
+    if "device" not in v or v["device"].startswith("efi") or v.get("locked", False):
+        return False
+    d = v["inserted"]
+    if (
+        not isinstance(d, dict)
+        or len(d) == 0
+        or d.get("ro", False)
+        or "drv" not in d
+        or "file" not in d
+        or "image" not in d
+        or "node-name" not in d
+        or not d.get("active", True)
+    ):
+        return False
+    return d["drv"].startswith("qcow") or d["drv"] == "vdmk"
+
+
+def _is_job_ready(v, id):
+    if not isinstance(v, dict):
+        return False
+    if "event" not in v or "data" not in v or v["event"] != "JOB_STATUS_CHANGE":
+        return False
+    d = v["data"]
+    if not isinstance(d, dict) or len(d) == 0 or "id" not in d:
+        return False
+    return d.get("status") == "concluded" and d["id"] == id
 
 
 def _key_next(buf, x, n):
@@ -340,26 +407,6 @@ def _read_full(sock, size):
     return b
 
 
-def _is_snapshotable(drive):
-    if not isinstance(drive, dict) or len(drive) == 0 or "inserted" not in drive:
-        return False
-    if (
-        "device" not in drive
-        or drive["device"].startswith("efi")
-        or drive.get("locked", False)
-    ):
-        return False
-    v = drive["inserted"]
-    return (
-        isinstance(v, dict)
-        and len(v) > 0
-        and (v.get("drv", "").startswith("qcow") or v.get("drv", "") == "vdmk")
-        and "file" in v
-        and "node-name" in v
-        and not v.get("ro", False)
-    )
-
-
 def user_mode(server, message):
     if not message.user:
         return
@@ -424,23 +471,6 @@ def user_mode(server, message):
     }
 
 
-def _is_snapshot_done(last, jobs):
-    if not isinstance(jobs, list) or len(jobs) == 0:
-        return (False, None)
-    v = None
-    for i in jobs:
-        if "id" not in i:
-            continue
-        if i["id"] == last:
-            v = i
-            break
-    if not isinstance(v, dict):
-        return (False, None)
-    if "status" not in v:
-        return (False, None)
-    return (v["status"] == "concluded", v.get("error"))
-
-
 def _screen_size(vmid, server, uid):
     server.debug(
         f"[m/hydra/VM({vmid})]: Full size requested, looking up Display sizes.."
@@ -488,35 +518,41 @@ class VM(Storage):
     __slots__ = (
         "_usb",
         "_vnc",
+        "_name",
         "_path",
         "_proc",
-        "_wait",
         "_stpm",
-        "_name",
-        "_state",
-        "_event",
+        "_wait",
         "_agent",
         "_debug",
+        "_event",
+        "_snaps",
+        "_state",
         "_output",
         "_adapters",
     )
 
     def __init__(self, path, uid):
+        if not nes(path):
+            raise OSError("path must be a string")
+        # Prevent any system directories from being used.
         if (
-            not nes(path)
-            or path.startswith("/etc")
+            path.startswith("/bin")
             or path.startswith("/dev")
+            or path.startswith("/etc")
+            or path.startswith("/lib")
+            or path.startswith("/srv")
             or path.startswith("/sys")
+            or path.startswith("/boot")
             or path.startswith("/proc")
+            or path.startswith("/root")
+            or path.startswith("/sbin")
         ):
             raise OSError(f'path "{path}" is invalid')
         try:
             i = info(path, sym=False)
         except OSError as err:
             raise OSError(f'cannot read "{path}": {err}')
-        # We don't wrap these as they're the same as an Error and they already
-        # provide context.
-        #
         # Must be owner with exclusive access.
         i.only(file=True).check(0o7177, uid, req=0o600, own_gid=True)
         # Verify that the host directory is also owned by the user and has
@@ -534,15 +570,16 @@ class VM(Storage):
             raise OSError("vmid must be a positive non-zero number")
         self._usb = dict()
         self._vnc = True
+        self._name = self.get("vm.name")
         self._path = f"{HYDRA_DIR}/{self.vmid}"
         self._proc = None
-        self._wait = 0
         self._stpm = None
-        self._name = self.get("vm.name")
-        self._state = HYDRA_STATE_STOPPED
-        self._event = None
-        self._debug = False
+        self._wait = 0
         self._agent = False
+        self._debug = False
+        self._event = None
+        self._snaps = None
+        self._state = HYDRA_STATE_STOPPED
         self._output = None
         self._adapters = list()
 
@@ -693,60 +730,11 @@ class VM(Storage):
                 f"[m/hydra/VM({self.vmid})]: Hibernate request timed-out but may have still worked.."
             )
 
-    def _snap_last(self, server):
-        if not isfile(f"{HYDRA_DIR_SNAPS}/{self.vmid}"):
-            return None
-        try:
-            with open(f"{HYDRA_DIR_SNAPS}/{self.vmid}") as f:
-                return f.read().strip()
-        except OSError as err:
-            return server.error(
-                f'[m/hydra/VM({self.vmid})]: Cannot load Snapshot state file "{HYDRA_DIR_SNAPS}/{self.vmid}": {err}!',
-                err,
-            )
-
     def _snap_list(self, server):
-        if self._state != HYDRA_STATE_RUNNING:
+        if self._state < HYDRA_STATE_RUNNING or self._state >= HYDRA_STATE_FAILED:
             raise OSError("invalid state to query Snapshots")
-        r, _ = self._cmd(server, "query-block")
-        d = dict()
-        if not isinstance(r, list) or len(r) == 0:
-            return d
-        for i in r:
-            if not _is_snapshotable(i):
-                continue
-            v = i["inserted"]
-            s = v.get("image", dict()).get("snapshots")
-            if not isinstance(s, list) or len(s) == 0:
-                d[i["device"]] = {
-                    "file": v["file"],
-                    "name": v["node-name"],
-                    "snaps": list(),
-                }
-                continue
-            e = list()
-            for x in s:
-                if not isinstance(x, dict) or len(x) == 0 or "date-sec" not in x:
-                    continue
-                if "id" not in x or "name" not in x or "vm-clock-sec" not in x:
-                    continue
-                e.append(
-                    {
-                        "id": x["id"],
-                        "name": x["name"],
-                        "date": x["date-sec"],
-                        "order": x["vm-clock-sec"],
-                    }
-                )
-            e.sort(key=lambda y: (y["id"], y["order"]))
-            d[i["device"]] = {
-                "file": v["file"],
-                "name": v["node-name"],
-                "snaps": e,
-            }
-            del e, v, s
-        del r
-        return d
+        self._snap_fetch(server)
+        return self._snaps
 
     def _sleep(self, server, sleep):
         if sleep and self._state == HYDRA_STATE_SLEEPING:
@@ -756,7 +744,7 @@ class VM(Storage):
         if self._state != HYDRA_STATE_RUNNING and self._state != HYDRA_STATE_SLEEPING:
             raise OSError("invalid state to sleep")
         if sleep:
-            server.debug(f"[m/hydra/VM({self.vmid})]: Entering sleep")
+            server.debug(f"[m/hydra/VM({self.vmid})]: Entering sleep.")
             self._cmd(server, "stop")
             self._proc.send_signal(SIGSTOP)
             # Sleep the STPM process also.
@@ -764,7 +752,7 @@ class VM(Storage):
                 self._stpm.send_signal(SIGSTOP)
             self._state = HYDRA_STATE_SLEEPING
             return
-        server.debug(f"[m/hydra/VM({self.vmid})]: Resuming from sleep")
+        server.debug(f"[m/hydra/VM({self.vmid})]: Resuming from sleep.")
         # Wake the STPM process also.
         if self._stpm is not None:
             self._stpm.send_signal(SIGCONT)
@@ -932,6 +920,39 @@ class VM(Storage):
                 )
         self._usb.clear()
         server.debug(f"[m/hydra/VM({self.vmid})]: Removed All USB devices.")
+
+    def _snap_done(self, server, job, err):
+        # Make sure Snapshot data is loaded before doing anything.
+        self._snap_fetch(server)
+        if self._state == HYDRA_STATE_SNAP:
+            if err is None:
+                self._snaps.add(job.tag)
+            s = "Snapshot"
+        elif self._state == HYDRA_STATE_SNAP_LOAD:
+            if err is None:
+                self._snaps.revert(job.tag)
+            s = "Revert"
+        else:
+            if err is None:
+                self._snaps.delete(job.tag)
+            s = "Snapshot Delete"
+        if err is not None:
+            server.error(
+                f'[m/hydra/VM({self.vmid})]: Snapper Job "{job.id}" failed with error: {err}!'
+            )
+            self._state = HYDRA_STATE_RUNNING
+            return server.notify(
+                "Hydra VM Snapshot", f"VM({self.vmid}) {s} failed!\n{err}", "variety"
+            )
+        r = _block_snaps(job.block, self.get("dev.state_storage"))
+        if r is not None:
+            server.debug(f"[m/hydra/VM({self.vmid})]: Syncing Snapshot data..")
+            self._snaps.sync(server, self.vmid, r)
+        del r
+        self._snap_fetch(server, save=True)
+        server.info(f'[m/hydra/VM({self.vmid})]: Snapper Job "{job.id}" completed!')
+        self._state = HYDRA_STATE_RUNNING
+        server.notify("Hydra VM Snapshot", f"VM({self.vmid}) {s} complete!", "variety")
 
     def _restart(self, server, reset=False):
         if self._state == HYDRA_STATE_STOPPED:
@@ -1102,7 +1123,7 @@ class VM(Storage):
         if g.endswith("-full"):
             g, s = g[:-5], _screen_size(self.vmid, server, uid)
         if g.startswith("virtio") or g.startswith("gl"):
-            if g == "gl" or g == "virtio":
+            if g == "gl" or g == "virtio-gl":
                 s, a = f"virtio-gpu-gl-pci{s}", False
             elif g == "gl-vga" or g == "virtio-vga-gl":
                 s, a = f"virtio-vga-gl{s}", False
@@ -1145,20 +1166,35 @@ class VM(Storage):
 
     def _snap_drives(self, server, snaps=False):
         r, _ = self._cmd(server, "query-block")
-        d = dict()
         if not isinstance(r, list) or len(r) == 0:
-            return d
+            return None
+        d, h, t = list(), None, self.get("dev.state_storage")
         for i in r:
             if not _is_snapshotable(i):
                 continue
             if snaps:
-                s = i["inserted"].get("image", dict()).get("snapshots")
+                s = i["inserted"]["image"].get("snapshots")
                 if not isinstance(s, list) or len(s) == 0:
                     continue
                 del s
-            d[i["device"]] = i["inserted"]["node-name"]
+            v = i["inserted"]["node-name"]
+            if h is None and nes(t) and t == i["device"]:
+                h = v
+            d.append((i["device"], v))
+            del v
         del r
-        return dict(sorted(d.items()))
+        if len(d) == 0:
+            return None
+        if len(d) > 1:
+            d.sort(key=lambda x: x[0])
+        if h is None:
+            # Fail if the user sets the Snapshot storage location, but if it's
+            # unset, we revert to using the first Snapshot-able disk we find
+            # (after sorting).
+            if nes(t):
+                raise OSError(f'"dev.state_storage" device "{t}" not found')
+            h = d[0][1]
+        return Drives(h, [i for _, i in d])
 
     def _build_adapters(self, server, bus, hide):
         if not isinstance(self.network, dict):
@@ -1214,43 +1250,6 @@ class VM(Storage):
             del d, x
             self.network[n] = a
         return r
-
-    def _snap_done(self, server, job, name, err):
-        if self._state == HYDRA_STATE_SNAP:
-            s = "Snapshot"
-        elif self._state == HYDRA_STATE_SNAP_LOAD:
-            s = "Revert"
-        else:
-            s = "Snapshot Delete"
-        p = self._state != HYDRA_STATE_SNAP_DEL
-        self._state = HYDRA_STATE_RUNNING
-        if err is None:
-            if p:
-                try:
-                    with open(f"{HYDRA_DIR_SNAPS}/{self.vmid}", "w") as f:
-                        f.write(name)
-                except OSError as err:
-                    server.error(
-                        f"[m/hydra/VM({self.vmid})]: Cannot save Snapshot state "
-                        f'file "{HYDRA_DIR_SNAPS}/{self.vmid}": {err}!',
-                        err,
-                    )
-            server.info(f'[m/hydra/VM({self.vmid})]: Snapper Job "{job}" completed!')
-            return server.notify(
-                "Hydra VM Snapshot",
-                f"VM({self.vmid}) {s} complete!",
-                "variety",
-            )
-        del p
-        server.error(
-            f'[m/hydra/VM({self.vmid})]: Snapper Job "{job}" failed with error: {err}!'
-        )
-        server.notify(
-            "Hydra VM Snapshot",
-            f"VM({self.vmid}) {s} failed!\n{err}",
-            "variety",
-        )
-        del s
 
     def _build(self, server, manager, uid, opts):
         x = self._build_restriced(server, manager, uid)
@@ -1639,58 +1638,74 @@ class VM(Storage):
         self._socket_perms_set()
         return self._proc.pid
 
-    def _snap_delete(self, server, manager, name):
+    def _snap_delete(self, server, manager, tag):
         if self._state != HYDRA_STATE_RUNNING:
             raise OSError("invalid state to delete a Snapshot")
-        d = self._snap_drives(server, True)
-        if len(d) == 0:
-            raise OSError("no disks avaliable with Snapshots")
-        v = list(d.values())
+        n = tag.lower()
+        self._snap_fetch(server, force=True)
+        if not self._snaps.verify_tag(n):
+            raise OSError(f'snap "{n}" does not exist')
+        v = self._snap_drives(server, True)
+        if v is None:
+            raise OSError("no Snapshots locations found")
         a = {
-            "tag": name,
-            "job-id": f"snap-job-{self.vmid}-{int(time()):X}",
-            "devices": v,
+            "tag": n,
+            "job-id": f"snap-{self.vmid}-{int(time()):X}",
+            "devices": v.targets,
         }
+        del v
         _, s = self._cmd(server, "snapshot-delete", a, timeout=5, close=False)
-        manager._register_snap(server, self, a["job-id"], s, name)
+        manager._register_snap(server, self, a["job-id"], s, n)
         self._state = HYDRA_STATE_SNAP_DEL
-        del a, s, v
+        del a, n, s
 
-    def _snap_restore(self, server, manager, name):
-        if self._state != HYDRA_STATE_RUNNING:
-            raise OSError("invalid state to revert to a Snapshot")
-        d = self._snap_drives(server, True)
-        if len(d) == 0:
-            raise OSError("no disks avaliable to restore")
-        v = list(d.values())
-        a = {
-            "tag": name,
-            "job-id": f"snap-job-{self.vmid}-{int(time()):X}",
-            "devices": v,
-            "vmstate": v[0],
-        }
-        _, s = self._cmd(server, "snapshot-load", a, timeout=5, close=False)
-        manager._register_snap(server, self, a["job-id"], s, name)
-        self._state = HYDRA_STATE_SNAP_LOAD
-        del a, s, v
-
-    def _snap_capture(self, server, manager, name):
+    def _snap_capture(self, server, manager, tag):
         if self._state != HYDRA_STATE_RUNNING:
             raise OSError("invalid state to Snapshot")
-        d = self._snap_drives(server)
-        if len(d) == 0:
+        n = tag.lower()
+        self._snap_fetch(server, force=True)
+        if not self._snaps.verify_tag(n, exists=False):
+            raise OSError(f'snap "{n}" already exists')
+        if self._snaps.depth() > HYDRA_SNAP_MAX_DEPTH:
+            raise OSError(
+                f'snap depth "{self._snaps.depth()}" cannot be greater than "{HYDRA_SNAP_MAX_DEPTH}"'
+            )
+        v = self._snap_drives(server)
+        if v is None:
             raise OSError("no disks avaliable to Snapshot")
-        v = list(d.values())
         a = {
-            "tag": name,
-            "job-id": f"snap-job-{self.vmid}-{int(time()):X}",
-            "devices": v,
-            "vmstate": v[0],
+            "tag": n,
+            "job-id": f"snap-{self.vmid}-{int(time()):X}",
+            "devices": v.targets,
+            "vmstate": v.host,
         }
+        del v
         _, s = self._cmd(server, "snapshot-save", a, timeout=5, close=False)
-        manager._register_snap(server, self, a["job-id"], s, name)
+        manager._register_snap(server, self, a["job-id"], s, n)
         self._state = HYDRA_STATE_SNAP
-        del a, s, v
+        del a, n, s
+
+    def _snap_restore(self, server, manager, tag):
+        if self._state != HYDRA_STATE_RUNNING:
+            raise OSError("invalid state to revert to a Snapshot")
+        n = tag.lower()
+        self._snap_fetch(server, force=True)
+        if not self._snaps.verify_tag(n):
+            raise OSError(f'snap "{n}" does not exist')
+        v = self._snap_drives(server, True)
+        if v is None:
+            raise OSError("no Snapshots locations found")
+        a = {
+            "tag": n,
+            "job-id": f"snap-{self.vmid}-{int(time()):X}",
+            "devices": v.targets,
+            "vmstate": v.host,
+        }
+        del v
+        _, s = self._cmd(server, "snapshot-load", a, timeout=5, close=False)
+        manager._register_snap(server, self, a["job-id"], s, n)
+        self._state = HYDRA_STATE_SNAP_LOAD
+        del a, n, s
 
     def _build_restriced(self, server, manager, uid):
         try:
@@ -1786,8 +1801,13 @@ class VM(Storage):
         if nes(t):
             if c and not exists(t):
                 # Security Check:
-                #             Virtual TPM file. Don't need to check here as
-                #             we check on creation of the VM object anyway.
+                #             Virtual TPM file. Check to make sure the target
+                #             path is a directory that the user can write to.
+                #             Specifically, it must have at least 0o0600 permissions
+                #             and be owned by the user and the user's primary group.
+                info(dirname(t), False, hide=True).check(
+                    0o7177, uid, req=0o0600, own_gid=True
+                ).only(dir=True)
                 server.debug(
                     f'[m/hydra/VM({self.vmid})]: Creating no-existant software TPM file "{t}".'
                 )
@@ -1884,9 +1904,45 @@ class VM(Storage):
             manager.pages(server, self.vmid, round(n / HYDRA_RESERVE_SIZE))
         return Restricted(x, e, n, f, q, s, t, k, y, o, u, x.endswith("-x86_64"))
 
+    def _snap_fetch(self, server, save=False, force=False):
+        v = f"{HYDRA_DIR_SNAPS}/{self.vmid}"
+        if save:
+            if self._snaps is None:
+                return
+            server.debug(f'[m/hydra/VM({self.vmid})]: Saving Snapshots to "{v}"..')
+            try:
+                self._snaps.save(v)
+            except OSError as err:
+                server.error(
+                    f'[m/hydra/VM({self.vmid})]: Cannot save Snapshots to "{v}": {err}.',
+                    err,
+                )
+            finally:
+                del v
+            return
+        if self._snaps is not None and not force:
+            return
+        if self._snaps is None:
+            self._snaps = Snapshots()
+        if not isfile(v):
+            return
+        server.debug(f'[m/hydra/VM({self.vmid})]: Reloading Snapshots from "{v}"..')
+        try:
+            self._snaps.load(None, file=v)
+        except OSError as err:
+            return server.error(
+                f'[m/hydra/VM({self.vmid})]: Cannot load Snapshots from "{v}": {err}.',
+                err,
+            )
+        finally:
+            del v
+        server.debug(
+            f"[m/hydra/VM({self.vmid})]: {len(self._snaps)} Snapshots loaded from cache."
+        )
+
     def _build_drives(self, server, user, bus, machine, opts):
         if not isinstance(self.drives, dict):
-            self.drives = dict()
+            self.set("drives", dict())
             return server.debug(
                 f"[m/hydra/VM({self.vmid})]: Drives value was not found, skipping drive setup."
             )
@@ -2222,11 +2278,11 @@ class VM(Storage):
                 self._proc.wait(0.5)
             except Exception:
                 pass
-        self._proc = None
-        self._stpm = None
+        self._snap_fetch(server, save=True)
+        self._proc, self._snaps, self._stpm = None, None, None
         self._close_adapters(server)
-        self._event = cancel_nul(server, self._event)
         self._usb_clean(server, manager)
+        self._event = cancel_nul(server, self._event)
         # For some reason, using "remove_file" prevents the files from being
         # deleted, but this works *shrug*
         try:
@@ -2431,13 +2487,15 @@ class VM(Storage):
 
 
 class Snapper(object):
-    __slots__ = ("vm", "job", "sock", "name")
+    __slots__ = ("id", "vm", "tag", "done", "sock", "block")
 
-    def __init__(self, vm, job, sock, name):
+    def __init__(self, id, vm, sock, tag):
+        self.id = id
         self.vm = vm
-        self.job = job
+        self.tag = tag
+        self.done = False
         self.sock = sock
-        self.name = name
+        self.block = list()
         self.sock.setblocking(False)
 
     def close(self):
@@ -2446,19 +2504,80 @@ class Snapper(object):
     def fileno(self):
         return self.sock.fileno()
 
-    def result(self, server):
+    def is_done(self, server):
+        try:
+            # The "done" process is in 3 steps
+            #
+            # 1. We receive the Job complete signal (error or success).
+            #     The job data is kept until we dismiss it, so we can wait to
+            #     read the full with error message (if it failed).
+            # 2. Once Step 1 passes, we set "done" to True and issue a "query-block"
+            #     command. This queues up a query and returns False so it's
+            #     pushed back to epoll to wait on instead of us doing it raw.
+            # 3. Once epoll comes back with data, we read the data to see if the
+            #     results from the query are returned. Since we need at least one
+            #     block device to do a Snapshot, the query will return at least one
+            #     entry, that we can use to test if that's the proper value we
+            #     want. If it is, we bail and return True to remove the Snapper
+            #     from the queue. The "complete" call will gather the results.
+            #     This will only run once as the next response should capture it.
+            #
+            # This is all done while the VM is still in a "suspended" state.
+            r = _command_response(_read_full(self.sock, HYDRA_SOCK_BUF_SIZE))
+            if not isinstance(r, list) or len(r) == 0:
+                return False
+            for i in r:
+                if not self.done:
+                    if _is_job_ready(i, self.id):  # Step 1.
+                        server.debug(
+                            f'[m/hydra/VM({self.vm.vmid})]: Snapper "{self.id}" completed, requesting block state..',
+                        )
+                        self.done = True
+                        self.sock.sendall(b'{"execute":"query-block"}\r\n')
+                        return False  # Push to Step 2.
+                    continue
+                if not _is_snapshotable(i):
+                    continue
+                self.block.append(
+                    (i["device"], i["inserted"]["image"].get("snapshots"))
+                )
+            del r
+            return self.done
+        except OSError as err:
+            server.error(
+                f'[m/hydra/VM({self.vm.vmid})]: Cannot read Snapper "{self.id}" result: {err}!',
+                err,
+            )
+            return True
+
+    def complete(self, server):
         try:
             self.sock.sendall(b'{"execute":"query-jobs"}\r\n')
             j = _command_response(_read_full(self.sock, HYDRA_SOCK_BUF_SIZE))
-            r, e = _is_snapshot_done(self.job, j)
+            server.debug(
+                f'[m/hydra/VM({self.vm.vmid})]: Snapper read Job "{self.id}" result: {j}'
+            )
+            r, e = _is_job_done(j, self.id)
             del j
             self.sock.sendall(
-                f'{{"execute":"job-dismiss","arguments":{{"id":"{self.job}"}}}}'.encode(
+                f'{{"execute":"job-dismiss","arguments":{{"id":"{self.id}"}}}}'.encode(
                     "UTF-8"
                 )
             )
+            # "Reactivate" the VM now
+            self.sock.sendall(b'{"execute":"cont"}')
             if nes(e):
-                self.sock.sendall(b'{"execute":"cont"}')
+                # NOTE(dij): This is a common error that happens when the VM snapshot
+                #            doesn't have or can't restore the RAM state for some
+                #            reason. This isn't a super big deal as the VM will still
+                #            revert fine, but will start from a cold boot instead.
+                if e.startswith(
+                    "error while loading state for instance 0x0 of device 'ram':"
+                ):
+                    server.warning(
+                        f'[m/hydra/VM({self.vm.vmid})]: Snapper Job "{self.id}" failed to restore RAM state!'
+                    )
+                    return None
                 return e
             if r:
                 return None
@@ -2469,40 +2588,14 @@ class Snapper(object):
             )
             return str(err)
 
-    def is_done(self, server):
-        try:
-            r = _command_response(_read_full(self.sock, HYDRA_SOCK_BUF_SIZE))
-            if not isinstance(r, list) or len(r) == 0:
-                return False
-            for i in r:
-                if (
-                    "event" not in i
-                    or "data" not in i
-                    or i["event"] != "JOB_STATUS_CHANGE"
-                ):
-                    continue
-                v = i["data"]
-                if not isinstance(v, dict) or len(v) == 0:
-                    continue
-                if v.get("status") == "concluded" and v.get("id") == self.job:
-                    return True
-                del v
-            del r
-            return False
-        except OSError as err:
-            server.error(
-                f"[m/hydra/VM({self.vm.vmid})]: Cannot read Snapper result: {err}!", err
-            )
-            return True
-
 
 class HydraServer(object):
-    __slots__ = ("_vms", "_dns", "_usb", "_poll", "_pages", "_snaps", "_running")
+    __slots__ = ("_dns", "_usb", "_vms", "_poll", "_pages", "_snaps", "_running")
 
     def __init__(self):
-        self._vms = dict()
         self._dns = None
         self._usb = dict()
+        self._vms = dict()
         self._poll = epoll()
         self._pages = dict()
         self._snaps = dict()
@@ -2631,7 +2724,9 @@ class HydraServer(object):
             except OSError as err:
                 server.error("[m/hydra]: Cannot start the Dnsmasq service!", err)
                 return self.stop(server, True)
-            server.debug("[m/debug]: Dnsmasq service was started.")
+            server.debug(
+                f"[m/hydra]: Dnsmasq service was started, PID({self._dns.pid})."
+            )
         else:
             server.warning(
                 "[m/hydra]: Dnsmasq is not installed, VMs will lack network connectivity!"
@@ -2672,7 +2767,7 @@ class HydraServer(object):
             except OSError as err:
                 server.error("[m/hydra]: Cannot start the Samba service!", err)
                 return self.stop(server, True)
-            server.debug("[m/debug]: Samba service was started.")
+            server.debug("[m/hydra]: Samba service was started.")
         else:
             server.warning(
                 "[m/hydra]: Samba is not installed, VMs will lack file sharing!"
@@ -2781,13 +2876,17 @@ class HydraServer(object):
                 if f not in self._snaps:
                     continue
                 v = self._snaps[f]
-                server.debug(f"[m/hydra/VM({v.vm.vmid})]: Snapper has poll data.")
+                server.debug(
+                    f'[m/hydra/VM({v.vm.vmid})]: Snapper "{v.id}" has poll data..'
+                )
                 if not v.is_done(server):
                     continue
-                server.debug(f"[m/hydra/VM({v.vm.vmid})]: Snapper is complete!")
+                server.debug(
+                    f'[m/hydra/VM({v.vm.vmid})]: Snapper "{v.id}" is complete!'
+                )
                 self._poll.unregister(f)
                 del self._snaps[f]
-                v.vm._snap_done(server, v.job, v.name, v.result(server))
+                v.vm._snap_done(server, v, v.complete(server))
                 v.close()
                 del v
         except OSError as err:
@@ -2965,7 +3064,6 @@ class HydraServer(object):
             v = x._status()
             try:
                 v["snaps"] = x._snap_list(server)
-                v["snap_current"] = x._snap_last(server)
             except OSError as err:
                 server.error(
                     f"[m/hydra/VM({x.vmid})]: Cannot read the Snapshot data!", err
@@ -3148,12 +3246,12 @@ class HydraServer(object):
         del x
         server.debug(f"[m/hydra/VM({vmid})]: Added {size} pages of reserved memory.")
 
-    def _register_snap(self, server, vm, job, sock, name):
-        v = Snapper(vm, job, sock, name)
+    def _register_snap(self, server, vm, id, sock, tag):
+        v = Snapper(id, vm, sock, tag)
         f = v.fileno()
         self._snaps[f] = v
         self._poll.register(f, EPOLLIN | EPOLLHUP | EPOLLERR)
         server.debug(
-            f"[m/hydra/VM({vm.vmid})]: Registered a Snapper with FD({f}) and Job({job})."
+            f"[m/hydra/VM({vm.vmid})]: Registered a Snapper with FD({f}) and Job({id})."
         )
         del f, v

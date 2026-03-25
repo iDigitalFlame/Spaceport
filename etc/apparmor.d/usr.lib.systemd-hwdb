@@ -46,14 +46,15 @@ profile systemd-hwdb /usr/{bin,lib/systemd}/systemd-hwdb flags=(enforce, attach_
 
     @{sysconfig}/etc/udev/hwdb.d/{,*}   r,
 
+    /                                   r,
     /etc/udev/hwdb.d/{,*}               r,
     /usr/{bin,lib/systemd}/systemd-hwdb rm,
 
     owner /proc/@{pid}/stat             r,
 
-    /etc/udev/.#hwdb.bin*               wl ->  /etc/udev/#*,
+    /etc/udev/.#hwdb.bin*               wl -> /etc/udev/#*,
     /{etc,usr/lib}/udev/#*              rwl,
-    /usr/lib/udev/.#hwdb.bin*           wl -> /usr/lib/udev/#*,
+    /usr/lib/udev/{,.#}hwdb.bin*        wl -> /usr/lib/udev/#*,
     /{etc,usr/lib}/udev/hwdb.bin        w,
 
     include if exists <local/usr.lib.systemd-hwdb>

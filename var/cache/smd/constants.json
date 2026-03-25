@@ -38,5 +38,6 @@
     "name": "spaceport",
     "log_level": "info",
     "log_ticks": false,
-    "log_payload": false
+    "log_payload": false,
+    "log_default_perms": 420
 }

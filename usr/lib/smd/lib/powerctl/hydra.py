@@ -40,12 +40,17 @@ from time import sleep
 from uuid import uuid4
 from os import fork, execl
 from os.path import basename
-from datetime import datetime
 from lib.util import nes, num
 from lib.util.file import expand, read_json
 from socket import AF_UNIX, SOCK_STREAM, socket
 from lib import check_error, print_error, send_message
-from lib.shared.hydra import load_vm, get_devices, get_device_name, valid_snap_name
+from lib.shared.hydra import (
+    Snapshots,
+    load_vm,
+    get_devices,
+    get_device_name,
+    valid_snap_name,
+)
 from lib.constants.config import (
     HYDRA_DIR,
     CONFIG_CLIENT,
@@ -273,6 +278,18 @@ _SCHEMA = """# HydraVM Schema v4-release
 
                           This setting can have a String or Boolean value. The false
                           value is the same as "none".
+
+        "state_storage"  <String, Optional>
+                          Specify the name of the disk to be used for saving the
+                          VM state when capturing Snapshots. This must be the name
+                          of a disk capable of storing Snapshots, such as QCOW
+                          or VDMK.
+
+                          If the disk specified does not exist, Snapshots will
+                          not function and cannot be taken.
+
+                          If this is omitted, the first capable disk, sorted by
+                          disk name will be used.
 
         [TPM Information, Optional]
         "tpm": {
@@ -542,30 +559,6 @@ def _usb(e):
     del d
 
 
-def _time(n, s):
-    if not isinstance(s, (float, int)) or s == 0:
-        return ""
-    v = datetime.fromtimestamp(s)
-    if v.year < 1971:
-        return ""
-    if n == v:
-        return "0s"
-    if (n - v).days > 0:
-        return v.strftime("%H:%M %m/%d/%y")
-    m, y = divmod((n - v).seconds, 60)
-    h, m = divmod(m, 60)
-    if h > 12:
-        if h >= n.hour:
-            return v.strftime("%H:%M %m/%d/%y")
-        return v.strftime("%H:%M")
-    del v
-    if h > 0:
-        return f"{h}h {m}m"
-    if m > 0:
-        return f"{m}m {y}s"
-    return f"{y}s"
-
-
 def _vm(x, n, p):
     if nes(n):
         if len(n) > 25:
@@ -626,46 +619,6 @@ def _get_check(args, vm):
     if vm is not None:
         return vm
     return _get_vm(args)
-
-
-def _print_snaps(snaps, sel):
-    if not isinstance(snaps, list) or len(snaps) == 0:
-        return
-    n = datetime.now()
-    if sel == snaps[0]["name"]:
-        print(
-            f' - *{snaps[0]["name"]} - {_time(n, snaps[0]["date"])} [Base Snapshot] [You are Here]'
-        )
-    else:
-        print(f' - {snaps[0]["name"]} - {_time(n, snaps[0]["date"])} [Base Snapshot]')
-    if len(snaps) == 1:
-        return
-    c, z = 0, None
-    for x in range(1, len(snaps)):
-        s = sel == snaps[x]["name"]
-        if z is None:
-            print(
-                f'{" " * (c + 1)} - {"*" if s else ""}{snaps[x]["name"]} - '
-                f'{_time(n, snaps[x]["date"])}{" [You are Here]" if s else ""}'
-            )
-            z = snaps[x]
-            continue
-        if (
-            z["id"] > snaps[x]["id"]
-            and z["date"] > snaps[x]["date"]
-            and z["order"] < snaps[x]["order"]
-        ):
-            c -= 1
-        else:
-            c += 1
-        if c < 0:
-            c = 0
-        print(
-            f'{" " * (c + 1)} - {"*" if s else ""}{snaps[x]["name"]} - '
-            f'{_time(n, snaps[x]["date"])}{" [You are Here]" if s else ""}'
-        )
-        z = snaps[x]
-    del c, n, z
 
 
 def _get_vm(args, name=None):
@@ -1141,16 +1094,12 @@ def vm_snap_list(args, vm=None):
     except OSError as err:
         return print_error("Cannot list Snapshots!", err)
     check_error(r, "Cannot list Snapshots")
-    if len(r["snaps"]) == 0:
+    s = Snapshots()
+    s.load(r.snaps)
+    if len(s) == 0:
         return print("No Snapshots found.")
-    n = 0
-    for k, v in r["snaps"].items():
-        if n > 0:
-            print()
-        n += 1
-        print(f'Snapshots of "{k}" ({v["file"]})')
-        _print_snaps(v["snaps"], r.get("snap_current"))
-    del n, r, vm
+    print(f'{_vm(r["vmid"], r["name"], r["file"])} - Snapshots\n{"=" * 60}')
+    s.print()
     return True
 
 

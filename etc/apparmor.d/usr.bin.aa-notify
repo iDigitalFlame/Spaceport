@@ -46,6 +46,7 @@ profile aa-notify /usr/bin/aa-notify flags=(enforce) {
 
     @{sysconfig}/etc/apparmor/notify.conf r,
 
+    /                                     r,
     /usr/bin/                             r,
     /etc/inputrc                          r,
     /usr/bin/aa-notify                    r,

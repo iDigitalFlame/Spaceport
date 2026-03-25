@@ -48,8 +48,8 @@ profile systemd-rfkill /usr/lib/systemd/systemd-rfkill flags=(enforce, attach_di
 
     ptrace read peer=unconfined,
 
+    /                                                                  r,
     /usr/lib/systemd/systemd-rfkill                                    rm,
-
     /sys/devices/pci*/*/usb*/*/uevent                                  r,
     /sys/devices/**/rfkill*/{uevent,name}                              r,
     /sys/firmware/efi/efivars/SecureBoot-*                             r,

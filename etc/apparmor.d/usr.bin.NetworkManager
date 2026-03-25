@@ -66,9 +66,11 @@ profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnec
 
     signal send set=(term) peer=dnsmasq,
 
+    @{sysconfig}/etc/hostname                           r,
     @{sysconfig}/etc/NetworkManager/NetworkManager.conf r,
 
     /{,etc/}                                            r,
+    /etc/hostname                                       r,
     /etc/iproute2/*                                     r,
     /etc/machine-id                                     r,
     /usr/bin/NetworkManager                             rm,

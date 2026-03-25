@@ -105,6 +105,7 @@ LOG_TICKS = True
 LOG_LEVEL = "warning"
 LOG_PAYLOAD = False
 LOG_FRAME_LIMIT = 15
+LOG_DEFAULT_PERMS = 0o0600
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 LOG_FORMAT_JOURNAL = "[%(levelname)s]: %(message)s"
@@ -134,7 +135,7 @@ HYDRA_WAIT_TIME = 10
 HYDRA_VM_CONFIGS = ["vm.conf", "vm.json", "vmx"]
 HYDRA_PATH_MOUNTS = "/proc/self/mounts"
 HYDRA_FILE_SMBIOS = "/sys/firmware/dmi/tables/DMI"
-HYDRA_SOCK_BUF_SIZE = 4096
+HYDRA_SOCK_BUF_SIZE = 8192
 
 HYDRA_BRIDGE = "vmi0"
 HYDRA_BRIDGE_NAME = f"vm.{NAME}"
@@ -180,6 +181,8 @@ HYDRA_FILE_USB_DEVICES = "/usr/share/hwdata/usb.ids"
 
 HYDRA_RESERVE = "/proc/sys/vm/nr_hugepages"
 HYDRA_RESERVE_SIZE = 2
+
+HYDRA_SNAP_MAX_DEPTH = 64
 
 HYDRA_DISPLAY = (1920, 1080)
 
