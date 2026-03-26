@@ -52,7 +52,7 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     owner /dev/shm/swayimg_*          rwk,
 
     /usr/bin/rm                       Cx -> rm,
-    /usr/bin/zsh                      ix,
+    /usr/bin/dash                     ix,
     /usr/bin/magick                   Cx -> magick,
     /usr/bin/swaymsg                  ix,
     /usr/bin/wl-copy                  ix,
@@ -64,10 +64,10 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
         include <abstractions/no-network>
         include <abstractions/private-files>
 
-        /usr/bin/rm                    rm,
+        /usr/bin/rm                     rm,
 
-        owner @{HOME}/**/*.@{IMAGES}   w,
-        owner @{MOUNTS}/**/*.@{IMAGES} w,
+        owner @{MOUNTS}/**/*.@{IMAGES}  w,
+        owner @{HOME}/{,**}/*.@{IMAGES} w,
     }
     profile magick flags=(enforce) {
         include <abstractions/base>
@@ -77,8 +77,8 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
         /etc/ImageMagick-*/*.xml            r,
         /usr/share/ImageMagick-*/*.xml      r,
 
-        owner @{HOME}/{,**/}*.@{IMAGES}{,*} rw,
         owner @{MOUNTS}/**/*.@{IMAGES}{,*}  rw,
+        owner @{HOME}/{,**/}*.@{IMAGES}{,*} rw,
 
         /usr/bin/convert                    ixr,
         /usr/bin/{jpegtran,magick}          ixrm,
