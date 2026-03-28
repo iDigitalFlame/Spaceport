@@ -96,6 +96,7 @@ profile wireplumber /usr/bin/wireplumber flags=(enforce) {
     /sys/devices/virtual/dmi/id/{bios,sys}_vendor      r,
 
     /proc/@{pid}/                                      r,
+    /proc/@{pid}/c{group,mdline}                       r,
 
     @{run}/systemd/users/{*,*/}                        r,
     @{run}/udev/data/{c*,+sound:card*,+usb:*}          r,

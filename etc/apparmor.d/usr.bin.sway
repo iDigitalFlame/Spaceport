@@ -36,12 +36,104 @@
 
 include <tunables/spaceport>
 
-profile sway /usr/bin/sway{,fx} flags=(default_allow) {
-    # NOTE(dij): I've tried a couple times to confine Sway.
-    #            it seems that it fails even when it's in complain
-    #            mode. Not sure why it does this??!
+profile sway /usr/bin/sway{,fx} flags=(enforce, attach_disconnected) {
+    include <abstractions/dri>
+    include <abstractions/gui>
+    include <abstractions/mesa>
+    include <abstractions/fonts>
+    include <abstractions/opengl>
+    include <abstractions/vulkan>
+    include <abstractions/no-network>
+    include <abstractions/private-files>
+
+    capability                                      mknod,
+    capability                                      ipc_lock,
+    capability                                      sys_nice,
+    capability                                      sys_ptrace,
+    capability                                      sys_resource,
+
+    ptrace read,
+
+    @{sysconfig}/usr/lib/smd/libexec/smd-message    Px -> smd-message,
+
+    /etc/sway/config                                r,
+    /etc/sway/config.d/{,*}                         r,
+    /usr/share/libinput/{,*}                        r,
+
+    /sys/class/drm/                                 r,
+    /sys/{bus,class}/                               r,
+    /sys/class/input/                               r,
+    /sys/devices/pci*:*/**/drm/                     r,
+    /sys/devices/platform/uevent                    r,
+    /sys/devices/pci*:*/{,**/}uevent                r,
+    /sys/devices/virtual/dmi/id/uevent              r,
+    /sys/devices/LNXSYSTM:*/{,**/}uevent            r,
+    /sys/devices/virtual/input/mice/uevent          r,
+    /sys/devices/platform/PNP*/{,**/}uevent         r,
+    /sys/devices/virtual/input/{,**/}uevent         r,
+    /sys/devices/platform/i8042/{,**/}uevent        r,
+    /sys/devices/platform/INTC*/{,**/}uevent        r,
+
+    /proc/@{pid}/stat                               r,
+
+    @{run}/udev/data/c*:*                           r,
+    @{run}/udev/data/+usb*                          r,
+    @{run}/udev/data/+i2c:*                         r,
+    @{run}/udev/data/+pci:*                         r,
+    @{run}/udev/data/+acpi:*                        r,
+    @{run}/udev/data/+input:*                       r,
+    @{run}/udev/data/+sound:*                       r,
+    @{run}/systemd/sessions/*                       r,
+    @{run}/systemd/users/@{uid}                     r,
+    @{run}/udev/data/+d{mi,rm}:*                    r,
+    @{run}/udev/data/+platform:*                    r,
+
+    owner @{CONFIG}/sway/*                          r,
+    owner @{HOMEDATA}/sway.conf                     r,
+
+    /dev/input/event*                               rw,
+
+    owner /dev/shm/swaybg-*                         rw,
+    owner /dev/shm/swayimg_*                        rw,
+    owner /dev/shm/.org.chromium.Chromium.*         rw,
+
+    owner @{run}/user/@{uid}{,/}                    rw,
+    owner @{run}/user/@{uid}/systemd/{,*}           rw,
+    owner @{run}/user/@{uid}/wayland-*{,.lock}      rwk,
+    owner @{run}/user/@{uid}/rofi-wayland-surface   rw,
+    owner @{run}/user/@{uid}/sway-ipc.@{uid}.*.sock rw,
+
+    owner /tmp/.X*-lock                             rw,
+    owner /tmp/.sway_env_@{uid}_user                rw,
+
+    # NOTE(dij): Sway has "ux" perms for scripts as it needs to load
+    #            the user profile scripts on login. While this is super
+    #            permissive it's the easiest way to handle this without
+    #            creating a profile for things like "find", "grep", "cat", etc.
     #
-    #            If anyone solves this let me know.
+    #            Also ALL executions by Sway should be lowercase or "non-stripping"
+    #            of environment vars, as it's used to find the socket and
+    #            display used by XWayland, Sway and some GUI apps. Some
+    #            CLI-only apps can use the "stripping" versions without issue.
+
+    /usr/bin/xpad                                   px -> xpad,
+    /usr/bin/kitty                                  px -> kitty,
+    /usr/bin/uname                                  ix,
+    /usr/bin/wpctl                                  px -> wpctl,
+    /usr/bin/swaybg                                 px -> swaybg,
+    /usr/bin/thunar                                 px -> thunar,
+    /usr/bin/Xwayland                               px -> xwayland,
+    /usr/bin/systemctl                              ux,
+    /usr/bin/{,ba,da}sh                             ux,
+    /usr/bin/swaync-client                          px -> swaync-client,
+    /usr/local/bin/lockctl                          Px -> smd-powerctl,
+    /usr/local/bin/brightnessctl                    Px -> smd-brightnessctl,
+    /usr/lib/smd/libexec/smd-message                Px -> smd-message,
+    # This entry is responsible for pulling in DBus and environment vars and
+    # MUST be unrestricted to work properly!
+    /usr/bin/dbus-update-activation-environment     ux,
+
+    owner @{HOMEDOTS}/.local/bin/sway/*             pux,
 
     include if exists <local/usr.bin.sway>
 }

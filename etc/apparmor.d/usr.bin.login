@@ -51,6 +51,7 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
     capability                             fsetid,
     capability                             setgid,
     capability                             setuid,
+    capability                             setpcap,
     capability                             audit_write,
     capability                             dac_override,
     capability                             sys_resource,

@@ -59,6 +59,7 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
     /usr/bin/{cat,env,file,gawk,realpath,printf,xprop}     ix,
 
     /usr/bin/ghr                                           Px -> ghr,
+    /usr/bin/xdg-open                                      Px -> xdg-open,
     /usr/bin/chrom{e,ium}                                  Px,
     /usr/{bin,lib/signal-desktop}/signal-desktop           Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,

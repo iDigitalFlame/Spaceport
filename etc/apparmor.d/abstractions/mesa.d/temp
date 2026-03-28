@@ -36,6 +36,8 @@
 
 /etc/vdpau_wrapper.cfg                                          r,
 
+owner @{run}/user/@{uid}/mesa/marker                            rw,
+
 owner @{CACHE_TMP}/mesa                                         rw,
 owner @{CACHE_TMP}/mesa/index                                   rw,
 owner @{CACHE_TMP}/mesa/[a-f0-9][a-f0-9]/                       rw,

@@ -40,6 +40,7 @@ profile ss /{,usr/}bin/{netstat,ss} flags=(enforce) {
     include <abstractions/command>
     include <abstractions/nameservice>
 
+    capability                                      net_admin,
     capability                                      sys_ptrace,
     capability                                      dac_override,
     capability                                      dac_read_search,
