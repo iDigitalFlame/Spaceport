@@ -93,9 +93,7 @@ profile sway /usr/bin/sway{,fx} flags=(enforce, attach_disconnected) {
 
     /dev/input/event*                               rw,
 
-    owner /dev/shm/swaybg-*                         rw,
-    owner /dev/shm/swayimg_*                        rw,
-    owner /dev/shm/.org.chromium.Chromium.*         rw,
+    owner /dev/shm/*                                rw,
 
     owner @{run}/user/@{uid}{,/}                    rw,
     owner @{run}/user/@{uid}/systemd/{,*}           rw,
