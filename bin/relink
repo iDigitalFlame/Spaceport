@@ -129,18 +129,6 @@ if [ $# -gt 2 ]; then
         *)
         ;;
     esac
-    case "$1" in
-        "--dry")
-        DRY=1
-        shift
-        ;;
-        "--debug")
-        DEBUG=1
-        shift
-        ;;
-        *)
-        ;;
-    esac
 fi
 
 if [ $DRY -eq 0 ]; then
