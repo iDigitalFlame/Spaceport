@@ -1,7 +1,5 @@
 apparmor.service
 auditd.service
-cups.path
-cups.socket
 fstrim.timer
 logrotate.timer
 NetworkManager-dispatcher.service

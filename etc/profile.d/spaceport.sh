@@ -41,29 +41,36 @@ if [ $USER = "root" ]; then
     export PS1="\[\e[31m\][\[\e[m\]\[\e[38;5;172m\]\u\[\e[m\] ~ ᐅ \[\e[38;5;214m\]\W\[\e[m\]\[\e[31m\]]\[\e[m\]\\$ "
 fi
 
-export ERRFILE="/dev/null"
-
 # Disable Telemetry
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export POWERSHELL_TELEMETRY_OPTOUT=1
 
-export SCREENRC="${HOME}/.screen/screenrc"
-export NO_AT_BRIDGE=1
+# Screen
+export SCREENRC="${HOME}/.config/screen/screenrc"
+export SCREENDIR="${XDG_RUNTIME_DIR}/screen"
+
+# GTK
 export GTK_RC_FILES="${HOME}/.config/gtk-1.0/gtkrc"
 export GTK2_RC_FILES="${HOME}/.config/gtk-2.0/gtkrc"
-export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
 
-# *Just Wayland Things*
+# GTK / GDK
+export GDK_SCALE=0.95
+export GDK_DPI_SCALE=0.95
+
+# Qt
 export QT_QPA_PLATFORM="wayland;xcb"
-export XDG_CURRENT_DESKTOP=sway
-export _JAVA_AWT_WM_NONREPARENTING="1"
-export ELECTRON_OZONE_PLATFORM_HINT="wayland"
+export QT_ENABLE_HIGHDPI_SCALING=1
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
 
-# Python Configuration
+# Java
+export _JAVA_OPTIONS=-Djava.util.prefs.userRoot="${HOME}/.config/java"
+export _JAVA_AWT_WM_NONREPARENTING="1"
+
+# Python
 export PYTHONUTF8=1
 export PYTHON_COLORS=1
+export PYTHON_HISTORY="${HOME}/.cache/python_history"
 export PYTHONOPTIMIZE=2
-export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export PYTHONCOERCECLOCALE="en_US.UTF-8"
 export PYTHONPYCACHEPREFIX="/var/cache/python"
 
@@ -82,42 +89,24 @@ export XDG_DOCUMENTS_DIR="${HOME}/Documents"
 export XDG_TEMPLATES_DIR="${HOME}/Documents/Templates"
 export XDG_PUBLICSHARE_DIR="${HOME}/Documents/Public"
 
-if [ -d "${HOME}/.local/bin" ] && [ ! "$USER" = "root" ]; then
+# SSH
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gcr/ssh"
+
+# Wayland Hints
+export XDG_CURRENT_DESKTOP="sway"
+export ELECTRON_OZONE_PLATFORM_HINT="wayland"
+
+# Make / AUR
+export PKGDEST="/var/cache/makepkg"
+export SRCDEST="${XDG_RUNTIME_DIR}/aur/src"
+export BUILDDIR="${XDG_RUNTIME_DIR}/aur/build"
+
+# Misc
+export ERRFILE="/dev/null"
+export NO_AT_BRIDGE=1
+
+if ! [ "$USER" = "root" ] && [ -d "${HOME}/.local/bin" ]; then
     PATH=$PATH:${HOME}/.local/bin
 fi
 
-if ! [ -d "${PYTHONUSERBASE}/bin" ] && [ ! "$USER" = "root" ]; then
-    mkdir -p "${PYTHONUSERBASE}/bin" 2> /dev/null
-fi
-
-PATH=/usr/lib/smd/bin:/usr/local/bin:$PATH:${PYTHONUSERBASE}/bin
-export PATH
-
-if ! [ -d "${XDG_RUNTIME_DIR}/qt" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/qt" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/gtk" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/gtk" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/mesa" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/mesa" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/slack" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/slack" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/screen" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
-    chmod 0700 "${XDG_RUNTIME_DIR}/screen" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/discord" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/discord" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/firefox" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/firefox" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/mesa_db" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/mesa_db" 2> /dev/null
-fi
-if ! [ -d "${XDG_RUNTIME_DIR}/chromium_cache" ]; then
-    mkdir "${XDG_RUNTIME_DIR}/chromium_cache" 2> /dev/null
-fi
+export PATH=/usr/lib/smd/bin:/usr/local/bin:$PATH:${PYTHONUSERBASE}/bin

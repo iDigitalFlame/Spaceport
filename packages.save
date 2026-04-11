@@ -627,6 +627,7 @@ python-beautifulsoup4
 python-black
 python-cairo
 python-cattrs
+python-certifi
 python-cffi
 python-charset-normalizer
 python-click
@@ -706,7 +707,9 @@ qpdf
 qrencode
 qt5-base
 qt5-declarative
+qt5-location
 qt5-svg
+qt5-tools
 qt5-translations
 qt5-wayland
 qt5-webchannel
@@ -741,7 +744,6 @@ rustup
 samba
 sbc
 sbsigntools
-screen
 sdl2-compat
 sdl3
 sdl3_ttf
@@ -802,6 +804,7 @@ thunar
 tigervnc
 tinysparql
 tk
+tmux
 tpm2-tss
 tslib
 ttf-firacode-nerd

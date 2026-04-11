@@ -69,6 +69,7 @@ profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce, attach_disconnected) {
 
     deny @{CONFIG}/vlc{,/,/*}           w,
     deny /usr/bin/xdg-screensaver       xr,
+    deny @{HOME}/.cache/vlc{,/,/**}     w,
     deny @{HOME}/.local/share/vlc{,/**} w,
 
     include if exists <local/usr.bin.vlc>

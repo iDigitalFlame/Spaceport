@@ -70,7 +70,7 @@ if [ $? -ne 0 ] || [ -z "$key" ]; then
     exit 1
 fi
 
-if ! [ -z "$4" ]; then
+if [ -n "$4" ]; then
     tar -xf "$2" --wildcards "*/data.pak" -O | openssl aes-256-ctr -d -pass env:key -pbkdf2 -in - -out - | tar -xvf - --zstd -C "$3" --wildcards "$4"
 else
     tar -xf "$2" --wildcards "*/data.pak" -O | openssl aes-256-ctr -d -pass env:key -pbkdf2 -in - -out - | tar -xf - --zstd -C "$3"

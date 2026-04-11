@@ -61,6 +61,7 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
 
     profile rm flags=(enforce) {
         include <abstractions/base>
+        include <abstractions/consoles>
         include <abstractions/no-network>
         include <abstractions/private-files>
 
@@ -71,6 +72,7 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     }
     profile magick flags=(enforce) {
         include <abstractions/base>
+        include <abstractions/consoles>
         include <abstractions/no-network>
         include <abstractions/private-files>
 

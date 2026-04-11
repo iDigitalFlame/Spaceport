@@ -54,8 +54,6 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     ptrace read  peer=kitty,
     ptrace trace peer=kitty,
 
-    /usr/bin/kitty                     rm,
-
     /proc/                             r,
 
     owner /proc/@{pid}/stat            r,
@@ -71,6 +69,8 @@ profile kitty /usr/bin/kitty flags=(enforce) {
 
     owner @{HOME}/.cache/kitty{,/,/**} rw,
 
+    /usr/bin/less                      px -> pager,
+    /usr/bin/kitty                     ixrm,
     /usr/bin/kitten                    ix,
     /usr/bin/xdg-open                  Px -> xdg-open,
     /usr/bin/{ba,da,z}sh               Px -> shell,
