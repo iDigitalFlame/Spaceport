@@ -36,7 +36,7 @@
 # Maintainer: iDigitalFlame <idf@idigitalflame.com>
 
 pkgrel=1
-pkgver=1.5.5
+pkgver=1.5.6
 pkgname="smd"
 pkgdesc="System Management Daemon base packages"
 
@@ -94,7 +94,7 @@ depends=(
 
     ## Security / Hardening
     "apparmor"
-    "iptables-nft"
+    "iptables"
     "python-notify2" # aa-notify
     "python-psutil"  # aa-notify
     "tk" # aa-notify

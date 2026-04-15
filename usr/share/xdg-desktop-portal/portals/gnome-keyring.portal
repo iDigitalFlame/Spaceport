@@ -35,6 +35,6 @@
 #
 
 [portal]
-UseIn      = gnome;sway
+UseIn      = gnome;sway;wlroots
 DBusName   = org.freedesktop.secrets
 Interfaces = org.freedesktop.impl.portal.Secret
