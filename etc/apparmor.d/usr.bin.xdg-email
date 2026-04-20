@@ -54,9 +54,15 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
 
     owner @{CONFIG}/mimeapps.list                          r,
 
+    /usr/bin/cat                                           ix,
+    /usr/bin/env                                           ix,
+    /usr/bin/file                                          ix,
+    /usr/bin/gawk                                          ix,
+    /usr/bin/xprop                                         ix,
+    /usr/bin/printf                                        ix,
+    /usr/bin/realpath                                      ix,
     /usr/bin/dbus-send                                     ix,
     /usr/bin/{u,base,host}name                             ix,
-    /usr/bin/{cat,env,file,gawk,realpath,printf,xprop}     ix,
 
     /usr/bin/ghr                                           Px -> ghr,
     /usr/bin/xdg-open                                      Px -> xdg-open,
@@ -64,7 +70,7 @@ profile xdg-email /usr/bin/xdg-email flags=(enforce) {
     /usr/{bin,lib/signal-desktop}/signal-desktop           Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
 
-    owner @{HOMEDATA}/.local/bin/**                        PUx,
+    owner @{HOME_DATA}/.local/bin/**                       PUx,
 
     include if exists <local/usr.bin.xdg-email>
 }

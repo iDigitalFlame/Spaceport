@@ -37,10 +37,8 @@
 include <tunables/spaceport>
 
 profile top /usr/bin/top flags=(enforce) {
-    include <abstractions/base>
     include <abstractions/wutmp>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
+    include <abstractions/command>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
@@ -61,13 +59,15 @@ profile top /usr/bin/top flags=(enforce) {
     /sys/devices/system/node/node*/meminfo    r,
 
     /proc/                                    r,
+    /proc/uptime                              r,
+    /proc/loadavg                             r,
     /proc/@{pid}{,/}                          r,
     /proc/tty/drivers                         r,
     /proc/@{pid}/task/                        r,
+    /proc/@{pid}/wchan                        r,
+    /proc/@{pid}/environ                      r,
     /proc/@{pid}/stat{,m}                     r,
-    /proc/{uptime,loadavg}                    r,
     /proc/@{pid}/c{group,mdline}              r,
-    /proc/@{pid}/{environ,wchan}              r,
     /proc/@{pid}/task/@{tid}/wchan            r,
     /proc/@{pid}/task/@{tid}/cgroup           r,
     /proc/@{pid}/task/@{tid}/cmdline          r,
@@ -80,7 +80,7 @@ profile top /usr/bin/top flags=(enforce) {
 
     @{run}/systemd/sessions/{,*}              r,
 
-    deny @{HOME}/.config/procps{,/*}          rw,
+    deny @{CONFIG}/procps{,/*}                rw,
 
     deny capability                           sys_admin,
 

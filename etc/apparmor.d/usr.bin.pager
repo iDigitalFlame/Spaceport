@@ -45,12 +45,15 @@ profile pager /usr/bin/{head,less,more,pager,tail} flags=(enforce, attach_discon
 
     @{sysconfig}/etc/sysless{,key}    r,
 
-    /etc/sysless{,key}                r,
-    /usr/bin/{head,tail}              rm,
-    /usr/share/terminfo/{,**}         r,
-    /usr/bin/{less,more,pager}        rm,
+    /{,**}                            r,
 
-    owner @{CONFIG}/lesskey           r,
+    /usr/bin/head                     rm,
+    /usr/bin/less                     rm,
+    /usr/bin/more                     rm,
+    /usr/bin/tail                     rm,
+    /usr/bin/pager                    rm,
+    /etc/sysless{,key}                r,
+    /usr/share/terminfo/{,**}         r,
 
     owner @{HOME}/                    r,
     owner @{HOME}/.lesshs*            r,

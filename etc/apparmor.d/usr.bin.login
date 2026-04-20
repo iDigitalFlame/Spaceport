@@ -84,7 +84,7 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
 
     @{run}/credentials/getty@tty*.service/ r,
 
-    owner /proc/@{pid}/uid_map             r,
+    owner /proc/@{pid}/{g,u}id_map         r,
 
     /dev/tty*                              rw,
 
@@ -101,7 +101,7 @@ profile login /usr/bin/login flags=(enforce, attach_disconnected) {
 
     unix type=stream addr="@*/bus/login/system",
 
-    dbus (send, receive) bus=system interface=org.freedesktop.login1,
+    dbus (receive, send) bus=system interface=org.freedesktop.login1,
 
     include if exists <local/usr.bin.login>
 }

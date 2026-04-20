@@ -44,8 +44,8 @@ profile arduino-builder /usr/bin/arduino-builder flags=(enforce) {
     /usr/bin/                                                 r,
     /usr/avr/lib/**                                           r,
     /usr/avr/include/**                                       r,
-    /usr/bin/arduino-builder                                  rm,
     /usr/share/arduino/{,**}                                  r,
+    /usr/bin/arduino-builder                                  rm,
     /usr/share/doc/arduino/{,**}                              r,
     /usr/share/arduino-builder/{,**}                          r,
 
@@ -60,8 +60,8 @@ profile arduino-builder /usr/bin/arduino-builder flags=(enforce) {
 
     /usr/bin/avr-g++                                          ix,
     /usr/lib/avr/bin/ld                                       ix,
-    /usr/bin/arduino-ctags                                    Px -> arduino-ctags,
     /usr/bin/avr-gcc{,-ar}                                    ix,
+    /usr/bin/arduino-ctags                                    Px -> arduino-ctags,
     /usr/lib/avr/bin/a{s,r}                                   ix,
     /usr/bin/avr{dude,-size}                                  ix,
     /usr/lib/avr/bin/objcopy                                  ix,

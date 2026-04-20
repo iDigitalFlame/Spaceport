@@ -64,9 +64,9 @@ profile ssh /usr/bin/ssh flags=(enforce) {
     owner @{HOME}/.local/ssh/{,*}              r,
     owner @{HOME}/.config/ssh/{,*}             r,
 
-    owner /tmp/ssh-*/{,agent.*}                rwkl,
-
     owner @{run}/user/@{uid}/keyring/ssh       rw,
+
+    owner /tmp/ssh-*/{,agent.*}                rwkl,
 
     owner @{HOME}/.config/ssh/known_hosts{,.*} rwl,
 

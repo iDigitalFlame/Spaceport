@@ -41,5 +41,3 @@ include <abstractions/consoles>
 include <abstractions/no-network>
 
 signal receive set=(cont, hup, kill, stop, term),
-
-/{,**}     r,

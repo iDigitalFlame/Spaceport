@@ -60,8 +60,8 @@ profile corepdf /usr/bin/corepdf flags=(enforce) {
     owner @{CONFIG}/cubocore/coreapps.conf   r,
 
     deny /dev/disk/by-label/                 r,
+
     deny @{CONFIG}/QtProject.conf            w,
-    deny @{CONFIG}/cubocore/coreapps.conf    w,
     deny @{CONFIG}/cubocore/{,coreapps.conf} w,
 
     include if exists <local/usr.bin.corepdf>

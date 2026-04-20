@@ -44,8 +44,8 @@ profile nm-dhcp-helper /usr/lib/nm-dhcp-helper flags=(enforce) {
     network                            inet  dgram,
     network                            inet6 dgram,
 
-    signal send    peer=dhclient,
     signal receive peer=NetworkManager,
+    signal send    peer=dhclient,
 
     ptrace readby peer=NetworkManager,
 

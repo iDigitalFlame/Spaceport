@@ -35,10 +35,15 @@
 #
 
 @{HOMEDIRS}=/home/
-@{HOME}=@{HOMEDIRS}/*/
-@{CONFIG}=@{HOME}/.config/ @{HOME}/.dotfiles/.config/
 
-@{HOMEDOTS}=@{HOME}/ @{HOME}/.dotfiles/
-@{HOMEDATA}=@{HOME}/ @{HOME}/.dotfiles/ @{HOME}/.private/
+@{HOME}=@{HOMEDIRS}/*
+@{HOME_DATA}=@{HOME} @{HOME}/.dotfiles @{HOME}/.private
+
+@{CACHE}=@{HOME}/.cache
+@{CACHE_TEMP}=@{run}/user/@{uid}/temp
+
+@{CONFIG}=@{HOME}/.config @{HOME}/.dotfiles/.config
+
+@{MOUNTS}=/mnt /media @{run}/user/@{uid}/mounts
 
 include if exists <tunables/home.d>

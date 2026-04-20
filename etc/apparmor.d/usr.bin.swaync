@@ -78,11 +78,11 @@ profile swaync /usr/bin/swaync flags=(enforce) {
     /usr/bin/swaync-client                            Px -> swaync-client,
     /usr/lib/smd/bin/powerctl                         Px -> powerctl,
 
-    owner @{HOMEDOTS}/.local/bin/{,sway/}*            PUx,
+    owner @{HOME_DATA}/.local/bin/{,sway/}*           PUx,
 
     dbus bind name=org.erikreider.swaync.cc,
 
-    dbus (send, receive) interface=org.erikreider.swaync.cc,
+    dbus (receive, send) interface=org.erikreider.swaync.cc,
 
     include if exists <local/usr.bin.swaync>
 }

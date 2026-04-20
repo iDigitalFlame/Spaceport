@@ -54,16 +54,13 @@ profile nm-applet /usr/bin/nm-{applet,connection-editor} flags=(enforce) {
     /sys/devices/system/cpu/cpu[0-9]/cpu_capacity          r,
 
     @{run}/udev/data/{c,n}*{,/**/uevent}                   r,
-    @{run}/udev/data/+usb:*{,/**/uevent}                   r,
-    @{run}/udev/data/+pci:*{,/**/uevent}                   r,
     @{run}/udev/data/+virtio:*{,/**/uevent}                r,
+    @{run}/udev/data/+{pci,usb}:*{,/**/uevent}             r,
     @{run}/udev/data/+bluetooth:*{,/**/uevent}             r,
 
     owner /proc/@{pid}/mountinfo                           r,
 
     owner /tmp/*                                           r,
-
-    owner @{MOUNTS}/{,**}                                  r,
 
     owner @{HOME}/{,**}                                    r,
 

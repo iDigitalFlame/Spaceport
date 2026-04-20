@@ -38,7 +38,6 @@ include <tunables/spaceport>
 
 profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconnected) {
     include <abstractions/base>
-    include <abstractions/version>
     include <abstractions/dbus-system>
     include <abstractions/private-files>
 
@@ -48,12 +47,13 @@ profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconne
     network                                  alg       seqpacket,
     network                                  netlink   raw,
     network                                  bluetooth raw,
-    network                                  bluetooth seqpacket,
     network                                  bluetooth stream,
+    network                                  bluetooth seqpacket,
 
     @{sysconfig}/etc/bluetooth/{,*.conf}     r,
 
     /                                        r,
+    /etc/{os,arch}-release                   r,
     /etc/bluetooth/{,*.conf}                 r,
     /var/lib/bluetooth/{,**}                 rw,
     /usr/lib/bluetooth/bluetoothd            rm,
@@ -61,8 +61,10 @@ profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconne
     /sys/devices/pci*/**/{uevent,name}       r,
     /sys/devices/pci**/**/rfkill*/name       r,
     /sys/devices/platform/**/rfkill/**/name  r,
+    /sys/devices/virtual/dmi/id/chassis_type r,
     /sys/devices/virtual/misc/uhid/**/uevent r,
 
+    /proc/version                            r,
     /proc/sys/kernel/hostname                r,
 
     @{run}/udev/data/+hid:*                  r,
@@ -75,15 +77,15 @@ profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconne
 
     owner @{run}/systemd/notify              w,
 
-    dbus (send, receive) bus=system interface=org.bluez,
+    dbus (receive, send) bus=system interface=org.bluez,
+
+    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label="{brave,NetworkManager,pulseaudio,upowerd}"),
+    dbus receive bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.hostname1}", label=systemd-hostnamed),
 
     dbus send bus=system path=/MediaEndpoint interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label=pulseaudio),
     dbus send bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name=org.freedesktop.hostname1),
     dbus send bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=InterfacesRemoved peer=(name=org.freedesktop.DBus, label="{jwupd,NetworkManager,pulseaudio,upowerd}"),
     dbus send bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member={Get,GetAll} peer=(name="{*,org.freedesktop.hostname1}", label=systemd-hostnamed),
-
-    dbus receive bus=system path=/ interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label="{brave,NetworkManager,pulseaudio,upowerd}"),
-    dbus receive bus=system path=/org/freedesktop/hostname1 interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.hostname1}", label=systemd-hostnamed),
 
     include if exists <local/usr.lib.bluetoothd>
 }

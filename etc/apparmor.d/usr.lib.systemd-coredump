@@ -42,55 +42,57 @@ profile systemd-coredump /usr/lib/systemd/systemd-coredump flags=(enforce, attac
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    capability                                                           setgid,
-    capability                                                           setuid,
-    capability                                                           setpcap,
-    capability                                                           net_admin,
-    capability                                                           sys_admin,
-    capability                                                           sys_ptrace,
-    capability                                                           dac_override,
-    capability                                                           dac_read_search,
+    capability                                             setgid,
+    capability                                             setuid,
+    capability                                             setpcap,
+    capability                                             net_admin,
+    capability                                             sys_admin,
+    capability                                             sys_ptrace,
+    capability                                             dac_override,
+    capability                                             dac_read_search,
 
     ptrace read,
 
-    @{sysconfig}/etc/systemd/coredump.conf                               r,
-
-    /                                                                    r,
-    /opt/**                                                              r,
-    /usr/share/*/**                                                      r,
-    /usr/{bin,lib,sbin}/**                                               r,
-    /etc/systemd/coredump.conf                                           r,
-    /usr/lib/systemd/systemd-coredump                                    rm,
-    /etc/systemd/coredump.conf.d/{,**}                                   r,
-
-    /sys/firmware/efi/efivars/SecureBoot-*                               r,
-
-    /proc/cmdline                                                        r,
-    /proc/pressure/*                                                     r,
-    /proc/@{pid}/maps                                                    r,
-    /proc/@{pid}/auxv                                                    r,
-    /proc/@{pid}/limits                                                  r,
-    /proc/@{pid}/environ                                                 r,
-    /proc/@{pid}/fdinfo/*                                                r,
-    /proc/@{pid}/{fd,ns}/                                                r,
-    /proc/@{pid}/mountinfo                                               r,
-    /proc/@{pid}/stat{,us}                                               r,
-    /proc/@{pid}/setgroups                                               r,
-    /proc/@{pid}/{g,u}id_map                                             r,
-    /proc/sys/kernel/osrelease                                           r,
-    /proc/1/{cgroup,environ,sched}                                       r,
-    /proc/sys/kernel/random/boot_id                                      r,
-    /proc/@{pid}/c{group,mdline,omm}                                     r,
-
-    /dev/kmsg                                                            w,
-
-    /sys/fs/cgroup/system.slice/systemd-coredump.service/memory.pressure rw,
-
-    @{run}/systemd/coredump                                              rw,
-
     mount -> /,
 
-    deny /var/lib/systemd/coredump/{,**}                                 rwl,
+    @{sysconfig}/etc/systemd/coredump.conf                 r,
+
+    /                                                      r,
+    /opt/**                                                r,
+    /usr/share/*/**                                        r,
+    /usr/{bin,lib,sbin}/**                                 r,
+    /etc/systemd/coredump.conf                             r,
+    /usr/lib/systemd/systemd-coredump                      rm,
+    /etc/systemd/coredump.conf.d/{,**}                     r,
+
+    /sys/firmware/efi/efivars/SecureBoot-*                 r,
+
+    /proc/1/sched                                          r,
+    /proc/cmdline                                          r,
+    /proc/1/cgroup                                         r,
+    /proc/1/environ                                        r,
+    /proc/pressure/*                                       r,
+    /proc/@{pid}/maps                                      r,
+    /proc/@{pid}/auxv                                      r,
+    /proc/@{pid}/limits                                    r,
+    /proc/@{pid}/environ                                   r,
+    /proc/@{pid}/fdinfo/*                                  r,
+    /proc/@{pid}/{fd,ns}/                                  r,
+    /proc/@{pid}/mountinfo                                 r,
+    /proc/@{pid}/stat{,us}                                 r,
+    /proc/@{pid}/setgroups                                 r,
+    /proc/@{pid}/{g,u}id_map                               r,
+    /proc/sys/kernel/osrelease                             r,
+    /proc/sys/kernel/random/boot_id                        r,
+    /proc/@{pid}/c{group,mdline,omm}                       r,
+
+    /dev/kmsg                                              w,
+
+    @{run}/systemd/coredump                                rw,
+
+    @{CGROUP_SYS}/systemd-coredump.service/memory.pressure rw,
+
+    deny /var/lib/systemd/coredump/{,**}                   rwl,
 
     include if exists <local/usr.lib.systemd-coredump>
 }

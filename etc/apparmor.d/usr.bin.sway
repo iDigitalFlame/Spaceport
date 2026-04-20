@@ -71,8 +71,8 @@ profile sway /usr/bin/sway{,fx} flags=(enforce, attach_disconnected) {
     /sys/devices/virtual/input/mice/uevent          r,
     /sys/devices/platform/PNP*/{,**/}uevent         r,
     /sys/devices/virtual/input/{,**/}uevent         r,
-    /sys/devices/platform/i8042/{,**/}uevent        r,
     /sys/devices/platform/INTC*/{,**/}uevent        r,
+    /sys/devices/platform/i8042/{,**/}uevent        r,
 
     /proc/@{pid}/stat                               r,
 
@@ -89,13 +89,14 @@ profile sway /usr/bin/sway{,fx} flags=(enforce, attach_disconnected) {
     @{run}/udev/data/+platform:*                    r,
 
     owner @{CONFIG}/sway/*                          r,
-    owner @{HOMEDATA}/sway.conf                     r,
+
+    owner @{HOME_DATA}/sway.conf                    r,
 
     /dev/input/event*                               rw,
 
     owner /dev/shm/*                                rw,
 
-    owner @{run}/user/@{uid}{,/}                    rw,
+    owner @{run}/user/@{uid}                        rw,
     owner @{run}/user/@{uid}/systemd/{,*}           rw,
     owner @{run}/user/@{uid}/wayland-*{,.lock}      rwk,
     owner @{run}/user/@{uid}/rofi-wayland-surface   rw,
@@ -120,18 +121,19 @@ profile sway /usr/bin/sway{,fx} flags=(enforce, attach_disconnected) {
     /usr/bin/wpctl                                  px -> wpctl,
     /usr/bin/swaybg                                 px -> swaybg,
     /usr/bin/thunar                                 px -> thunar,
-    /usr/bin/Xwayland                               px -> xwayland,
     /usr/bin/systemctl                              ux,
     /usr/bin/{,ba,da}sh                             ux,
+    /usr/bin/{X,x}wayland                           px -> xwayland,
     /usr/bin/swaync-client                          px -> swaync-client,
     /usr/local/bin/lockctl                          Px -> smd-powerctl,
     /usr/local/bin/brightnessctl                    Px -> smd-brightnessctl,
     /usr/lib/smd/libexec/smd-message                Px -> smd-message,
+
     # This entry is responsible for pulling in DBus and environment vars and
     # MUST be unrestricted to work properly!
     /usr/bin/dbus-update-activation-environment     ux,
 
-    owner @{HOMEDOTS}/.local/bin/sway/*             pux,
+    owner @{HOME_DATA}/.local/bin/sway/*            pux,
 
     include if exists <local/usr.bin.sway>
 }

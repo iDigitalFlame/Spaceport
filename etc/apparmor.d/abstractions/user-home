@@ -49,20 +49,14 @@ include <abstractions/private-files>
 
 owner /tmp/*                            r,
 
-owner @{MOUNTS}/{,**}                   r,
-
 owner @{HOME}/                          r,
 
 # Allow X/Wayland dot-files
-owner @{HOMEDOTS}/.dmrc                 r,
-owner @{HOMEDOTS}/.Xdefaults            r,
-owner @{HOMEDOTS}/.Xresources           r,
+owner @{HOME_DATA}/.dmrc                r,
+owner @{HOME_DATA}/.Xdefaults           r,
+owner @{HOME_DATA}/.Xresources          r,
 
-deny @{HOME}/.*                         rw,
-deny @{HOME}/Desktop/.*                 rw,
-deny @{HOME}/Downloads/.*               rw,
-deny @{HOME}/@{XDG_DESKTOP_DIR}/.*      rw,
-deny @{HOME}/@{XDG_DOWNLOAD_DIR}/.*     rw,
+owner @{MOUNTS}/{,**}                   r,
 
 owner @{HOME}/*                         rw,
 owner @{HOME}/Downloads{,/**}           rw,
@@ -71,10 +65,15 @@ owner @{HOME}/@{XDG_DOWNLOAD_DIR}{,/**} rw,
 owner /mnt/{,**}                        rw,
 owner /media/{,**}                      rw,
 
+deny @{HOME}/.*                         rw,
+deny @{HOME}/Desktop/.*                 rw,
+deny @{HOME}/Downloads/.*               rw,
+deny @{HOME}/@{XDG_DESKTOP_DIR}/.*      rw,
+deny @{HOME}/@{XDG_DOWNLOAD_DIR}/.*     rw,
+
+deny @{HOME_DATA}/.zshenv               rw,
+
 # Allow subdirectories of non dot-files
 owner @{HOME}/[^.]*{,/,**}              rw,
-
-# Explicit Deny Some specific Files
-deny @{HOMEDOTS}/.zshenv                r,
 
 include if exists <abstractions/user-home.d>

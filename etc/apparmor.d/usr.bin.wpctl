@@ -37,10 +37,8 @@
 include <tunables/spaceport>
 
 profile wpctl /usr/bin/{pa,wp}ctl flags=(enforce, attach_disconnected) {
-    include <abstractions/base>
     include <abstractions/audio>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
+    include <abstractions/command>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 

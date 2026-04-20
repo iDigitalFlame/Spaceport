@@ -36,7 +36,9 @@
 
 [Unit]
 After           = default.target
+After           = systemd-tmpfiles-setup.service
 Wants           = default.target
+Wants           = systemd-tmpfiles-setup.service
 BindsTo         = graphical-session.target
 Description     = Sway Desktop
 

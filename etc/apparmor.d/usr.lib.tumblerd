@@ -46,7 +46,6 @@ profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce, attach_disconnec
     include <abstractions/nameservice>
     include <abstractions/user-data-ro>
 
-    # Device wide thumbnails for picture formats.
     /**/*.@{IMAGES}                                                                 r,
 
     /var/tmp/                                                                       r,
@@ -84,23 +83,22 @@ profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce, attach_disconnec
 
     owner /proc/@{pid}/mountinfo                                                    r,
 
+    owner /tmp/tumbler-*                                                            rw,
+    owner /tmp/gsf-thumbnailer-*                                                    rw,
+
     owner @{CACHE}/thumbnails/                                                      rw,
     owner @{CACHE}/gstreamer-*/                                                     rw,
     owner @{CACHE}/thumbnails/{l,n,x}*/*.png{,.*}                                   rw,
-    owner @{CACHE}/thumbnails/{fail,*large,normal}/#*                               rw,
     owner @{CACHE}/gstreamer-*/registry.*.bin{,.tmp*}                               rw,
+    owner @{CACHE}/thumbnails/{fail,*large,normal}/#*                               rw,
     owner @{CACHE}/thumbnails/{l,n,x}*/{,#*,.goutputstream-*}                       rw,
     owner @{CACHE}/thumbnails/{fail,*large,normal}/gnome-thumbnail-factory/{,*.png} rw,
-
-    owner /tmp/tumbler-*                                                            rw,
-    owner /tmp/gsf-thumbnailer-*                                                    rw,
 
     /usr/bin/magick                                                                 ix,
     /usr/bin/*{,-}thumbnailer                                                       ix,
     /usr/lib/glycin-loaders/2+/glycin-*                                             ix,
     /usr/lib/{,gstreamer1.0}gstreamer1.0/gstreamer-1.0/gst-plugin-scanner           ix,
 
-    deny /apparmor/.null                                                            rw,
     deny /systemd/journal/stdout                                                    rw,
 
     include if exists <local/usr.lib.tumblerd>

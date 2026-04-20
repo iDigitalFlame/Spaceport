@@ -39,6 +39,7 @@ include <tunables/spaceport>
 profile swtpm_ioctl /usr/bin/swtpm_ioctl flags=(enforce) {
     include <abstractions/base>
     include <abstractions/no-network>
+    include <abstractions/private-files>
 
     capability           dac_override,
     capability           dac_read_search,

@@ -34,32 +34,30 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-@{sysconfig}/etc/ld.so.preload                      r,
-
-/etc/timezone                                       r,
-/etc/gnutls/config                                  r,
-/etc/ld.so.preload                                  r,
-
-/var/cache/ld.so.cache                              rm,
-
-audit deny /opt/secureboot/{,*}                     rw,
-
 # Allow confined processes to signal they are shutting down to smd-client
 # and smd-daemon.
 signal receive peer=smd-{client,daemon} set=(cont, int, kill, quit, term, stop),
 signal receive peer=unconfined          set=(cont, hup, int, kill, pipe, quit, segv, stop, term),
-signal         peer=@{profile_name},
 signal receive peer=shell               set=(cont, hup, int, kill, quit, term, stop),
-# Ability to kill hanging processes.
+signal         peer=@{profile_name},
 
-# Disconnected Paths
-deny /apparmor/.null                                rw,
+@{sysconfig}/etc/ld.so.preload                 r,
 
-deny /etc/ld.so.preload                             w,
-deny @{sysconfig}/etc/ld.so.preload                 w,
+/etc/timezone                                  r,
+/etc/gnutls/config                             r,
+/etc/ld.so.preload                             r,
 
-deny @{HOME}/.recently-used.xbel{,*}                w,
-deny @{HOME}/.local/share/recently-used.xbel        w,
-deny @{HOME}/.local/share/recently-used.xbel.?????? w,
+/var/cache/ld.so.cache                         rm,
+
+audit deny /opt/secureboot/{,*}                rw,
+
+deny /apparmor/.null                           rw, # Disconnected Paths
+
+deny /etc/ld.so.preload                        w,
+deny @{sysconfig}/etc/ld.so.preload            w,
+
+deny @{HOME}/.recently-used.xbel{,*}           w,
+deny @{HOME}/.local/share/recently-used.xbel   w,
+deny @{HOME}/.local/share/recently-used.xbel.* w,
 
 deny signal send peer=unconfined,

@@ -65,7 +65,7 @@ profile obs /usr/bin/obs flags=(enforce, attach_disconnected) {
 
     owner /proc/@{pid}/stat{,m}             r,
 
-    owner @{HOME}/.config/QtProject.conf    r,
+    owner @{CONFIG}/QtProject.conf          r,
 
     owner /proc/@{pid}/task/@{tid}/**       rw,
 
@@ -75,7 +75,7 @@ profile obs /usr/bin/obs flags=(enforce, attach_disconnected) {
 
     deny /usr/bin/{,ba,da}sh                x,
     deny /usr/bin/xdg-screensaver           xr,
-    owner @{HOME}/.config/QtProject.conf    w,
+    deny @{CONFIG}/QtProject.conf           w,
 
     deny ptrace,
 

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile cropgui /{usr,@{HOMEDOTS}/.local}/bin/crop{,gui} flags=(enforce, attach_disconnected) {
+profile cropgui /{usr,@{HOME_DATA}/.local}/bin/crop{,gui} flags=(enforce, attach_disconnected) {
     include <abstractions/qt>
     include <abstractions/perl>
     include <abstractions/dconf>
@@ -58,19 +58,21 @@ profile cropgui /{usr,@{HOMEDOTS}/.local}/bin/crop{,gui} flags=(enforce, attach_
 
     owner /proc/@{pid}/mount{s,info}    r,
 
-    owner @{MOUNTS}/**                  r,
-    owner @{HOME}/{,**}                 r,
-    owner @{HOMEDOTS}/.local/bin/crop   r,
+    owner @{HOME_DATA}/.local/bin/crop  r,
 
-    owner @{MOUNTS}/**/*.@{IMAGES}{,*}  rw,
     owner @{HOME}/{,**/}*.@{IMAGES}{,*} rw,
 
+    owner @{MOUNTS}/**/*.@{IMAGES}{,*}  rw,
+
+    /usr/bin/env                        ix,
+    /usr/bin/dash                       ixr,
+    /usr/bin/find                       ix,
+    /usr/bin/nice                       ix,
     /usr/bin/magick                     ix,
+    /usr/bin/printf                     ixr,
     /usr/bin/cropgui                    ix,
+    /usr/bin/jpegtran                   ix,
     /usr/bin/c{p,onvert}                ix,
-    /usr/bin/{dash,printf}              ixr,
-    /usr/bin/{env,find,nice}            ix,
-    /usr/bin/{jpegtran,magick}          ix,
     /usr/bin/vendor_perl/exiftool       ixr,
 
     include if exists <local/usr.bin.cropgui>

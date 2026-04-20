@@ -36,9 +36,9 @@
 
 abi <abi/4.0>,
 
-/usr/share/                              r,
-/usr/local/share/                        r,
+/usr/share/                    r,
+/usr/local/share/              r,
 
-owner @{HOMEDATA}/.config/user-dirs.dirs r,
+owner @{CONFIG}/user-dirs.dirs r,
 
 include if exists <abstractions/xdg-desktop.d>

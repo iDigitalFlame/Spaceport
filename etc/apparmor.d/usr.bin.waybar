@@ -53,7 +53,7 @@ profile waybar /usr/bin/waybar flags=(enforce, attach_disconnected) {
 
     /usr/bin/waybar                             rm,
     /etc/machine-id                             r,
-    /opt/*/**/icons/*/*.{ico,png,svg}           r,
+    /opt/*/**/icons/*/*.{ico,png,svg,webp}      r,
 
     /dev/rfkill                                 r,
 

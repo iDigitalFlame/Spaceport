@@ -73,12 +73,12 @@ profile xdg-document-portal /usr/lib/xdg-document-portal flags=(enforce, attach_
 
     /usr/bin/fusermount{,*}       Px -> fusermount,
 
-    unix (send receive) type=stream peer=(label=xdg-document-portal//fusermount),
+    unix (receive, send) type=stream peer=(label=xdg-document-portal//fusermount),
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
 
     dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=xdg-permission-store),
     dbus send bus=session path=/org/freedesktop/impl/portal/PermissionStore interface=org.freedesktop.impl.portal.PermissionStore member=Lookup peer=(name=*, label=xdg-permission-store),
-
-    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
 
     include if exists <local/usr.lib.xdg-document-portal>
 }

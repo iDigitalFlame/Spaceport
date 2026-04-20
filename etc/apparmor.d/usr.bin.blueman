@@ -48,21 +48,21 @@ profile blueman /usr/bin/blueman-* flags=(enforce, attach_disconnected) {
     include <abstractions/private-files>
     include <abstractions/freedesktop.org>
 
-    network                             bluetooth raw,
+    network                          bluetooth raw,
 
-    /usr/bin/                           r,
-    /etc/fstab                          r,
-    /usr/share/blueman/{,**}            r,
-    /usr/share/glib-2.0/schemas/*       r,
+    /usr/bin/                        r,
+    /etc/fstab                       r,
+    /usr/share/blueman/{,**}         r,
+    /usr/share/glib-2.0/schemas/*    r,
 
-    /dev/rfkill                         r,
+    /dev/rfkill                      r,
 
-    owner /proc/@{pid}/fd/              r,
-    owner /proc/@{pid}/cmdline          r,
-    owner /proc/@{pid}/mount{info,s}    r,
+    owner /proc/@{pid}/fd/           r,
+    owner /proc/@{pid}/cmdline       r,
+    owner /proc/@{pid}/mount{info,s} r,
 
-    /usr/bin/blueman-*                  ixr,
-    /usr/lib/gio-launch-desktop         ix,
+    /usr/bin/blueman-*               ixr,
+    /usr/lib/gio-launch-desktop      ix,
 
     include if exists <local/usr.bin.blueman>
 }

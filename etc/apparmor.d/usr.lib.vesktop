@@ -63,6 +63,8 @@ profile vesktop /usr/bin/vesktop flags=(enforce) {
 
     owner @{CONFIG}/vesktop/themes/*.css        r,
 
+    owner @{CACHE_TEMP}/electron/vesktop/{,**}  rwk,
+
     owner @{HOME}/.config/vesktop/{,**}         rwk,
 
     /usr/bin/slurp                              ix,

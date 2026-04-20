@@ -45,7 +45,6 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     include <abstractions/video>
     include <abstractions/cgroup>
     include <abstractions/p11-kit>
-    include <abstractions/version>
     include <abstractions/xdg-open>
     include <abstractions/user-home>
     include <abstractions/dbus-strict>
@@ -60,9 +59,14 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     network                                         inet6 stream,
 
     /                                               r,
+    /etc/{os,arch}-release                          r,
+
     /sys/devices/virtual/dmi/id/bios_vendor         r,
+    /sys/devices/virtual/dmi/id/chassis_type        r,
+    /sys/devices/virtual/dmi/id/product_family      r,
     /sys/kernel/mm/transparent_hugepage/enabled     r,
 
+    /proc/version                                   r,
     /proc/zoneinfo                                  r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6        r,
 
@@ -74,7 +78,8 @@ profile telegram-desktop /usr/bin/{T,t}elegram{,-desktop} flags=(enforce) {
     owner @{run}/user/@{uid}/qtwayland-*            rwk,
     owner @{run}/user/@{uid}/*-wayland{,.lock}      rwk,
 
-    owner @{HOME}/.cache/TelegramDesktop{,/**}      rw,
+    owner @{CACHE}/TelegramDesktop{,/,/**}          rw,
+
     owner @{HOME}/.local/share/TelegramDesktop/**   rwkl,
     owner @{HOME}/.local/share/TelegramDesktop/{,*} rw,
 

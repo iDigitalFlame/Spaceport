@@ -48,15 +48,15 @@ profile freerdp /usr/bin/{sdl-,wl,x}freerdp{,2,3} flags=(enforce) {
     network                                               inet  stream,
     network                                               inet6 stream,
 
-    mount fstype=fuse options=(rw nosuid nodev) -> /tmp/com.freerdp.client.cliprdr.*{,/},
+    mount fstype=fuse options=(rw, nosuid, nodev) -> /tmp/com.freerdp.client.cliprdr.*{,/},
 
     /usr/bin/{sdl-,wl,x}freerdp{,2,3}                     rm,
 
     /dev/fuse                                             rw,
 
-    @{run}/user/@{uid}/#*                                 rw,
-
     owner /dev/shm/com.freerdp.{sdl-,wl,x}freerdp{,2,3}.* rw,
+
+    owner @{run}/user/@{uid}/#*                           rw,
 
     owner /tmp/com.freerdp.client.cliprdr.*{,/}           rw,
 
@@ -65,7 +65,7 @@ profile freerdp /usr/bin/{sdl-,wl,x}freerdp{,2,3} flags=(enforce) {
 
     /usr/bin/fusermount*                                  Px -> fusermount,
 
-    deny @{HOME}/.{dotfiles,private}{,/}                  r,
+    deny @{HOME_DATA}                                     r,
 
     include if exists <local/usr.bin.wlfreerdp>
 }

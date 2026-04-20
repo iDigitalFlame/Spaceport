@@ -46,25 +46,25 @@ profile gpg-agent /usr/bin/gpg-agent flags=(enforce) {
     signal receive peer=scdaemon,
     signal receive peer=pinentry{,-*},
 
-    /usr/share/gnupg/*                                    r,
-    /usr/bin/gpg-agent                                    rm,
+    /usr/bin/gpg-agent                               rm,
+    /usr/share/gnupg/*                               r,
 
-    /proc/@{pid}/fd/                                      r,
+    /proc/@{pid}/fd/                                 r,
 
-    owner @{GPG_SYS_DIR}/.gpg-*                           r,
-    owner @{GPG_SYS_DIR}/*.conf                           r,
+    owner @{GPG_DIR_SYS}/.gpg-*                      r,
+    owner @{GPG_DIR_SYS}/*.conf                      r,
 
-    owner @{GPG_SYS_DIR}/                                 rw,
-    owner @{GPG_SYS_DIR}/.#lk*                            rwkl,
-    owner @{GPG_SYS_DIR}/sshcontrol                       rw,
-    owner @{GPG_SYS_DIR}/crls.d/{,*}                      rw,
-    owner @{GPG_SYS_DIR}/{,d.*/}{,S.*}                    rw,
-    owner @{GPG_SYS_DIR}/openpgp-revocs.d/{,*}            rw,
-    owner @{GPG_SYS_DIR}/private-keys-v1.d/{,*}           rw,
-    owner @{GPG_SYS_DIR}/*.{db,kbx,kbx~,gpg}{,.lock}      rwkl,
+    owner @{GPG_DIR_SYS}/                            rw,
+    owner @{GPG_DIR_SYS}/.#lk*                       rwkl,
+    owner @{GPG_DIR_SYS}/sshcontrol                  rw,
+    owner @{GPG_DIR_SYS}/crls.d/{,*}                 rw,
+    owner @{GPG_DIR_SYS}/{,d.*/}{,S.*}               rw,
+    owner @{GPG_DIR_SYS}/openpgp-revocs.d/{,*}       rw,
+    owner @{GPG_DIR_SYS}/private-keys-v1.d/{,*}      rw,
+    owner @{GPG_DIR_SYS}/*.{db,kbx,kbx~,gpg}{,.lock} rwkl,
 
-    /usr/bin/pinentry{,-*}                                Px,
-    /usr/{bin,lib}/{,gnupg/}scdaemon                      Px -> scdaemon,
+    /usr/bin/pinentry{,-*}                           Px,
+    /usr/{bin,lib}/{,gnupg/}scdaemon                 Px -> scdaemon,
 
     include if exists <local/usr.bin.gpg-agent>
 }

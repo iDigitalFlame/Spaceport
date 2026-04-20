@@ -39,11 +39,10 @@ abi <abi/4.0>,
 include <abstractions/cgroup>
 include <abstractions/nameservice>
 
-signal send set=(int, kill, term) peer=glycin,
-signal send set=(int, kill, term) peer=/usr/bin/bwrap,
-signal send set=(int, kill, term) peer=@{profile_name}//glycin,
-
 signal receive set=(hup, int, kill, term),
+signal send    set=(int, kill, term) peer=glycin,
+signal send    set=(int, kill, term) peer=/usr/bin/bwrap,
+signal send    set=(int, kill, term) peer=@{profile_name}//glycin,
 
 /                                              r,
 /usr/share/glycin-loaders/2+/conf.d{/,/*.conf} r,
@@ -52,4 +51,4 @@ owner /proc/@{pid}/cgroup                      r,
 
 owner /tmp/gdk-pixbuf-glycin-tmp.*             rw,
 
-deny @{HOME}/.cache/glycin{,/**}               w,
+deny @{CACHE}/glycin{,/**}                     w,

@@ -41,24 +41,23 @@ profile vncviewer /usr/bin/vncviewer flags=(enforce, attach_disconnected) {
     include <abstractions/consoles>
     include <abstractions/private-files>
 
-    network                                              inet  stream,
-    network                                              inet6 stream,
+    network                                   inet  stream,
+    network                                   inet6 stream,
 
-    /usr/bin/vncviewer                                   rm,
+    /usr/bin/vncviewer                        rm,
 
-    owner @{CONFIG}/fltk/fltk.org/*.prefs                r,
-    owner @{CONFIG}/tigervnc/default.tigervnc            r,
+    owner @{CONFIG}/fltk/fltk.org/*.prefs     r,
+    owner @{CONFIG}/tigervnc/default.tigervnc r,
 
-    owner @{HOME}/                                       r,
-    owner @{HOME}/.local/share/tigervnc/tigervnc.history r,
+    owner @{HOME}/                            r,
 
-    @{run}/smd/hydra/*.vnc                               rw,
+    @{run}/smd/hydra/*.vnc                    rw,
 
-    deny /etc/fltk{,/,/*}                                rw,
-    deny @{HOME}/.fltk{,/}                               w,
-    deny @{CONFIG}/fltk/fltk.org/*.prefs                 w,
-    deny @{CONFIG}/tigervnc/default.tigervnc             w,
-    deny @{HOME}/.local/share/tigervnc/tigervnc.history  w,
+    deny /etc/fltk{,/,/*}                     rw,
+    deny @{HOME}/.fltk{,/}                    w,
+    deny @{CONFIG}/fltk/fltk.org/*.prefs      w,
+    deny @{HOME}/.local/share/tigervnc{,/**}  rw,
+    deny @{CONFIG}/tigervnc/default.tigervnc  w,
 
     include if exists <local/usr.bin.vncviewer>
 }

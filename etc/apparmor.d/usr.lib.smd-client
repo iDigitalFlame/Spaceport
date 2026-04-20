@@ -40,42 +40,41 @@ profile smd-client /{,opt/spaceport/}usr/lib/smd/libexec/smd-client flags=(enfor
     include <abstractions/smd>
     include <abstractions/wayland>
 
-    signal send                 set=(alrm, cont, int, kill, quit, stop, term, usr1),
-    signal send peer=unconfined set=(alrm, cont, int, kill, quit, stop, term, usr1),
+    signal send set=(alrm, cont, int, kill, quit, stop, term, usr1),
 
-    @{sysconfig}/usr/lib/smd/libexec/*                      Px,
-    @{sysconfig}/usr/lib/smd/bin/powerctl                   Px -> powerctl,
+    @{sysconfig}/usr/lib/smd/libexec/*                     Px,
+    @{sysconfig}/usr/lib/smd/bin/powerctl                  Px -> powerctl,
 
-    /usr/share/icons/**                                     r,
+    /usr/share/icons/**                                    r,
 
-    /sys/class/power_supply/AC/online                       r,
-    /sys/devices/platform/*/power_supply/AC/online          r,
-    /sys/class/graphics/fb0/device/drm/card*/card*/status   r,
-    /sys/class/graphics/fb0/device/drm/card*/card*/enabled  r,
+    /sys/class/power_supply/AC/online                      r,
+    /sys/devices/platform/*/power_supply/AC/online         r,
+    /sys/class/graphics/fb*/device/drm/card*/card*/status  r,
+    /sys/class/graphics/fb*/device/drm/card*/card*/enabled r,
 
-    /proc/acpi/button/lid/LID0/state                        r,
+    /proc/acpi/button/lid/LID*/state                       r,
 
-    owner /proc/@{pid}/cgroup                               r,
+    owner /opt/hydra/*/**                                  r,
 
-    owner /opt/hydra/*/**                                   r,
+    owner /proc/@{pid}/cgroup                              r,
 
-    owner @{CONFIG}/theme/**                                r,
+    owner @{CONFIG}/theme/**                               r,
 
-    owner @{HOME}/Pictures/Backgrounds{,/}                  r,
-    owner @{HOME}/Pictures/Backgrounds/*.@{IMAGES}          r,
+    owner @{HOME}/Pictures/Backgrounds{,/}                 r,
+    owner @{HOME}/Pictures/Backgrounds/*.@{IMAGES}         r,
 
-    owner @{run}/user/@{uid}/smd-client-*.log               rw,
+    owner @{run}/user/@{uid}/smd-client-*.log              rw,
 
-    owner @{CONFIG}/smd.json                                rw,
+    owner @{CACHE}/smd/*                                   rwl,
 
-    owner @{HOME}/.cache/smd/*                              rwl,
+    owner @{CONFIG}/smd.json                               rw,
 
-    /usr/bin/*                                              Pix,
-    /usr/local/bin/*                                        Pix,
-    /usr/lib/smd/libexec/*                                  Pix,
-    /usr/lib/smd/bin/powerctl                               Px -> powerctl,
+    /usr/bin/*                                             Pix,
+    /usr/local/bin/*                                       Pix,
+    /usr/lib/smd/libexec/*                                 Pix,
+    /usr/lib/smd/bin/powerctl                              Px -> powerctl,
 
-    owner @{HOMEDOTS}/.local/{apps,bin,lib}/**              Pixr,
+    owner @{HOME_DATA}/.local/{apps,bin,lib}/**            Pixr,
 
     include if exists <local/usr.lib.smd-client>
 }

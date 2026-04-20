@@ -47,7 +47,7 @@ include <abstractions/dbus-system>
 include <abstractions/glycin-base>
 include <abstractions/nameservice>
 include <abstractions/xdg-desktop>
-include <abstractions/private-files>
+include <abstractions/user-data-ro>
 include <abstractions/freedesktop.org>
 include <abstractions/dbus-session-strict>
 
@@ -82,9 +82,9 @@ owner /proc/@{pid}/mountinfo                 r,
 owner /proc/@{pid}/{exe,root}                r,
 owner /proc/@{pid}/task/@{tid}/status        r,
 
-owner @{HOME}/                               r,
-
 owner @{CONFIG}/xdg-desktop-portal{,*}/*     r,
+
+owner @{HOME}/                               r,
 
 /proc/@{pid}/task/@{tid}/comm                rw,
 
@@ -93,6 +93,15 @@ owner /dev/shm/grim-*                        rw,
 /usr/bin/slurp                               ix,
 /usr/bin/{,ba,da,z}sh                        ix,
 /usr/lib/xdg-desktop-portal-validate-icon    ix,
+
+dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Realtime member=MakeThread* peer=(name=:*),
+dbus receive bus=system  path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=InterfacesAdded peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.DBus.Properties member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+dbus receive bus=system  path=/org/freedesktop/NetworkManager{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+dbus receive bus=system  path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=Updated peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
+dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={CheckPermissions,DeviceAdded,DeviceRemoved,StateChanged} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
 
 dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=*, label=rtkit-daemon),
 dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member=Get peer=(name=org.freedesktop.RealtimeKit1),
@@ -108,15 +117,6 @@ dbus send bus=system  path=/org/freedesktop/NetworkManager{,/**} interface=org.f
 dbus send bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={GetDevices,GetPermissions} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
 dbus send bus=system  path=/org/freedesktop/NetworkManager/Settings interface=org.freedesktop.NetworkManager.Settings member=ListConnections peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
 dbus send bus=system  path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=GetSettings peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-
-dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
-dbus receive bus=session path=/org/freedesktop/portal/desktop interface=org.freedesktop.portal.Realtime member=MakeThread* peer=(name=:*),
-dbus receive bus=system  path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=InterfacesAdded peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.DBus.Properties member=CheckPermissions peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-dbus receive bus=system  path=/org/freedesktop/NetworkManager{,/**} interface=org.freedesktop.DBus.Properties member=PropertiesChanged peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-dbus receive bus=system  path=/org/freedesktop/NetworkManager/Settings/* interface=org.freedesktop.NetworkManager.Settings.Connection member=Updated peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
-dbus receive bus=system  path=/org/freedesktop/NetworkManager interface=org.freedesktop.NetworkManager member={CheckPermissions,DeviceAdded,DeviceRemoved,StateChanged} peer=(name="{*,org.freedesktop.NetworkManager}", label=NetworkManager),
 
 deny /.flatpak-info                          r,
 

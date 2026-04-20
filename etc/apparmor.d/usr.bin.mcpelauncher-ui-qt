@@ -51,8 +51,7 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce, attach_disconne
     network                                                inet  stream,
     network                                                inet6 stream,
 
-    # This is here to allow for in-memory blob locking
-    /**                                                    kl,
+    /**                                                    kl, # This is here to allow for in-memory blob locking
 
     /etc/machine-id                                        r,
     /usr/share/mcpelauncher/**                             rm,
@@ -63,11 +62,15 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce, attach_disconne
 
     owner @{HOME}/{,Downloads/}*                           r,
 
+    owner @{CACHE}/Minecraft\ Linux\ Launcher/**           l,
+    owner @{CACHE}/Minecraft\ Linux\ Launcher{,/**}        rw,
+
+    owner @{CACHE_TEMP}/minecraft/**                       l,
+    owner @{CACHE_TEMP}/minecraft{,/**}                    rw,
+
     owner @{HOME}/.local/share/mcpelauncher{,/**}          rwk,
-    owner @{HOME}/.cache/Minecraft\ Linux\ Launcher/**     l,
     owner @{HOME}/.config/Minecraft\ Linux\ Launcher/**    l,
     owner @{HOME}/.local/share/mcpelauncher/versions/*/**  rw,
-    owner @{HOME}/.cache/Minecraft\ Linux\ Launcher{,/**}  rw,
     owner @{HOME}/.config/Minecraft\ Linux\ Launcher{,/**} rwk,
 
     /usr/bin/xdg-open                                      Px -> xdg-open,

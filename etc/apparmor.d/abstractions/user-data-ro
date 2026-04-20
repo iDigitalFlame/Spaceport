@@ -46,10 +46,10 @@ abi <abi/4.0>,
 
 include <abstractions/private-files>
 
-owner /tmp/*          r,
-
-owner @{MOUNTS}/{,**} r,
+owner /tmp/{,**}      r,
 
 owner @{HOME}/{,**}   r,
+
+owner @{MOUNTS}/{,**} r,
 
 include if exists <abstractions/user-data-ro.d>

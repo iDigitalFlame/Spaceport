@@ -48,8 +48,8 @@ include <abstractions/private-files>
 
 owner /tmp/{,**}      rw,
 
-owner @{MOUNTS}/{,**} rw,
-
 owner @{HOME}/{,**}   rw,
+
+owner @{MOUNTS}/{,**} rw,
 
 include if exists <abstractions/user-data.d>

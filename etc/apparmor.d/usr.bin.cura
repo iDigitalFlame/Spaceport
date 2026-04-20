@@ -46,7 +46,6 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
     include <abstractions/vulkan>
     include <abstractions/openssl>
     include <abstractions/consoles>
-    include <abstractions/user-tmp>
     include <abstractions/ssl_certs>
     include <abstractions/user-home>
     include <abstractions/no-network>
@@ -54,8 +53,7 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
     include <abstractions/xdg-desktop>
     include <abstractions/freedesktop.org>
 
-    # This is here to allow for in-memory blob locking
-    /**                                          kl,
+    /**                                          kl, # This is here to allow for in-memory blob locking
 
     /etc/fstab                                   r,
     /etc/machine-id                              r,
@@ -80,8 +78,13 @@ profile cura /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura flags=(enforce) {
 
     /dev/tty{ACM,S,USB}*                         rw,
 
+    owner /tmp/*                                 rw,
+
     owner @{CACHE}/cura/{,**}                    rwkl,
     owner @{CACHE}/Ultimaker\ B.V./{,**}         rwkl,
+
+    owner @{CACHE_TEMP}                          rw,
+    owner @{CACHE_TEMP}/**                       rwkl,
 
     owner @{HOME}/.config/cura/{,**}             rwk,
     owner @{HOME}/.local/share/cura/{,**}        rw,

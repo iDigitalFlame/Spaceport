@@ -104,10 +104,9 @@ owner /dev/shm/{,*}.org.*                                            rwmk,
 owner @{run}/shm/{,*}.org.*                                          rwmk,
 
 owner /proc/@{pid}/comm                                              rw,
-owner /proc/@{pid}/uid_map                                           rw,
-owner /proc/@{pid}/gid_map                                           rw,
 owner /proc/@{pid}/setgroups                                         rw,
 owner /proc/@{pid}/clear_refs                                        w,
+owner /proc/@{pid}/{g,u}id_map                                       rw,
 owner /proc/@{pid}/oom_score_adj                                     w,
 owner /proc/@{pid}/task/@{tid}/comm                                  rw,
 

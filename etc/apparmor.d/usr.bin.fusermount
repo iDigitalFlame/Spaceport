@@ -48,13 +48,13 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     capability                    dac_override,
     capability                    dac_read_search,
 
-    mount options=(rw, nosuid, nodev) /dev/fuse   -> @{run}/user/@{uid}/clipboard-*/,
-    mount options=(rw, nosuid, nodev) /dev/fuse   -> /tmp/com.freerdp.client.cliprdr.*{,/},
-    mount options=(ro, nosuid, nodev) /dev/fuse   -> /tmp/.mount_**,
-    mount options=(ro, nosuid, nodev) *.AppImage  -> /tmp/.mount_**,
-    mount options=(rw, rprivate)                  -> /,
-    mount options=(rw, rbind) @{run}/user/@{uid}/ -> /,
-    mount fstype=fuse.portal                      -> @{run}/user/@{uid}/doc/,
+    mount options=(rw, nosuid, nodev) /dev/fuse          -> /tmp/com.freerdp.client.cliprdr.*{,/},
+    mount options=(ro, nosuid, nodev) /dev/fuse          -> /tmp/.mount_**,
+    mount options=(rw, nosuid, nodev) /dev/fuse          -> @{run}/user/@{uid}/clipboard-*/,
+    mount options=(ro, nosuid, nodev) *.AppImage         -> /tmp/.mount_**,
+    mount options=(rw, rprivate)                         -> /,
+    mount options=(rw, rbind)         @{run}/user/@{uid} -> /,
+    mount fstype=fuse.portal                             -> @{run}/user/@{uid}/doc/,
 
     umount /tmp/.mount_**,
     umount /tmp/com.freerdp.client.cliprdr.*{,/},
@@ -70,15 +70,15 @@ profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) 
     /dev/fuse                             rw,
     /dev/dri/renderD128                   rw,
 
-    /tmp/.mount_**                        rw,
-    /tmp/com.freerdp.client.cliprdr.*{,/} rw,
-
     owner @{run}/user/@{uid}/doc/         rw,
     owner @{run}/user/@{uid}/clipboard-*/ rw,
 
+    /tmp/.mount_**                        rw,
+    /tmp/com.freerdp.client.cliprdr.*{,/} rw,
+
     /usr/bin/{,u}mount                    ix,
 
-    unix (send receive) type=stream peer=(label=xdg-document-portal),
+    unix (receive, send) type=stream peer=(label=xdg-document-portal),
 
     include if exists <local/usr.bin.fusermount>
 }

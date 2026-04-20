@@ -49,6 +49,22 @@ network                                        netlink raw,
 
 signal receive set=(hup, int, kill, quit, term),
 
+mount               options=(rw, rbind)                          -> /newroot/{,**},
+mount               options=(rw, rbind)            /tmp/newroot/ -> /tmp/newroot/,
+mount fstype=tmpfs  options=(rw, nosuid, nodev)            tmpfs -> /newroot/{,**},
+mount fstype=tmpfs  options=(rw, nosuid, nodev)            tmpfs -> /tmp/,
+mount fstype=devpts options=(rw, nosuid, noexec)          devpts -> /newroot/dev/pts/,
+mount               options=(rw, silent, rslave)                 -> /,
+mount               options=(rw, silent, rprivate)               -> /oldroot/,
+
+umount /,
+umount /{new,old}root/,
+
+remount /newroot/{,**},
+
+pivot_root oldroot=/newroot/     /newroot/,
+pivot_root oldroot=/tmp/oldroot/ /tmp/,
+
 @{sysconfig}/usr/share/icons/**                r,
 
 /                                              r,
@@ -63,7 +79,7 @@ signal receive set=(hup, int, kill, quit, term),
 owner /proc/@{pid}/fd/                         r,
 owner /proc/@{pid}/mountinfo                   r,
 
-owner @{HOME}/.cache/thumbnails/**             r,
+owner @{CACHE}/thumbnails/**                   r,
 
 /tmp/{new,old}root{,/}                         rw,
 
@@ -75,20 +91,4 @@ owner /newroot/{,**}                           w,
 /{usr/,}bin/true                               ix,
 /usr/lib/glycin-loaders/2+/glycin-*            ix,
 
-mount               options=(rw rbind)                         -> /newroot/{,**},
-mount               options=(rw rbind)           /tmp/newroot/ -> /tmp/newroot/,
-mount fstype=tmpfs  options=(rw nosuid nodev)            tmpfs -> /newroot/{,**},
-mount fstype=tmpfs  options=(rw nosuid nodev)            tmpfs -> /tmp/,
-mount fstype=devpts options=(rw nosuid noexec)          devpts -> /newroot/dev/pts/,
-mount               options=(rw silent rslave)                 -> /,
-mount               options=(rw silent rprivate)               -> /oldroot/,
-
-umount /,
-umount /{new,old}root/,
-
-remount /newroot/{,**},
-
-pivot_root oldroot=/newroot/     /newroot/,
-pivot_root oldroot=/tmp/oldroot/ /tmp/,
-
-deny @{HOME}/.cache/glycin{,/**}               w,
+deny @{CACHE}/glycin{,/**}                     w,

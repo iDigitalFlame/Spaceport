@@ -46,7 +46,7 @@ profile gnome-connections /usr/bin/gnome-connections flags=(enforce, attach_disc
     include <abstractions/glycin-base>
     include <abstractions/private-files>
 
-    mount fstype=fuse options=(rw nosuid nodev) -> @{run}/user/@{uid}/clipboard-*/,
+    mount fstype=fuse options=(rw, nosuid, nodev) -> @{run}/user/@{uid}/clipboard-*/,
 
     /usr/bin/gnome-connections                rm,
 

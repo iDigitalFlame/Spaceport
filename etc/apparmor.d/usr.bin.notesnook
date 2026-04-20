@@ -37,26 +37,32 @@
 include <tunables/spaceport>
 
 profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce, attach_disconnected) {
-    include <abstractions/version>
     include <abstractions/chromium>
     include <abstractions/user-home>
     include <abstractions/notifications>
 
-    /{,opt/}                              r,
-    /etc/fstab                            r,
-    /opt/notesnook/{,**}                  rm,
+    /{,opt/}                                     r,
+    /etc/fstab                                   r,
+    /opt/notesnook/{,**}                         rm,
+    /etc/{os,arch}-release                       r,
 
-    owner /{tmp,mnt}/**/*.nnbackup{,z}    rw,
+    /sys/devices/virtual/dmi/id/chassis_type     r,
 
-    owner @{HOME}/.config/Notesnook/{,**} rwkl,
+    /proc/version                                r,
 
-    /usr/bin/bwrap                        Cx -> glycin,
-    /usr/bin/xdg-open                     Pix -> xdg-open,
-    /usr/bin/xdg-email                    Pix -> xdg-email,
-    /usr/bin/xdg-settings                 Pix -> xdg-settings,
-    /opt/notesnook/notesnook              ix,
+    owner /{tmp,mnt}/**/*.nnbackup{,z}           rw,
 
-    deny /home/                           r,
+    owner @{CACHE_TEMP}/electron/notesnook/{,**} rwkl,
+
+    owner @{HOME}/.config/Notesnook/{,**}        rwkl,
+
+    /usr/bin/bwrap                               Cx -> glycin,
+    /usr/bin/xdg-open                            Pix -> xdg-open,
+    /usr/bin/xdg-email                           Pix -> xdg-email,
+    /usr/bin/xdg-settings                        Pix -> xdg-settings,
+    /opt/notesnook/notesnook                     ix,
+
+    deny /home/                                  r,
 
     deny ptrace,
 
@@ -64,13 +70,15 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce, attach_disc
         include <abstractions/dri>
         include <abstractions/glycin-bwrap>
 
-        /opt/notesnook/{,**}                    r,
+        /opt/notesnook/{,**}                      r,
 
-        /dev/dri/render*                        rw,
+        /dev/dri/render*                          rw,
 
-        owner /dev/shm/.org.chromium.Chromium.* rw,
+        owner /dev/shm/.org.chromium.Chromium.*   rw,
 
-        owner @{HOME}/.config/Notesnook/**      rw,
+        owner @{CACHE_TEMP}/electron/notesnook/** rw,
+
+        owner @{HOME}/.config/Notesnook/**        rw,
     }
 
     include if exists <local/usr.bin.notesnook>

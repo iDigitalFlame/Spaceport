@@ -44,10 +44,13 @@ profile smd-backupctl /usr/local/bin/backup* flags=(enforce) {
     @{sysconfig}/usr/lib/smd/assets/smb-backup-entries ix,
     @{sysconfig}/usr/lib/smd/assets/smb-backup-extract ix,
 
+    /usr/bin/tar                                       ix,
+    /usr/bin/zstd                                      ix,
     /usr/bin/dash                                      ix,
-    /usr/lib/smd/assets/smb-backup-entries             ix,
-    /usr/lib/smd/assets/smb-backup-extract             ix,
-    /usr/bin/{base64,openssl,printf,tar,zstd}          ix,
+    /usr/bin/base64                                    ix,
+    /usr/bin/printf                                    ix,
+    /usr/bin/openssl                                   ix,
+    /usr/lib/smd/assets/smb-backup-e{ntries,xtract}    ix,
 
     include if exists <local/usr.local.bin.backupctl>
 }

@@ -53,8 +53,7 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     include <abstractions/private-files>
     include <abstractions/freedesktop.org>
 
-    # For USB redirection.
-    capability                                    fowner,
+    capability                                    fowner, # For USB redirection.
 
     /etc/machine-id                               r,
     /usr/share/hwdata/usb.ids                     r,
@@ -94,13 +93,13 @@ profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
     /usr/lib/gstreamer-1.0/gst-plugin-scanner     ix,
     /usr/lib/spice-client-glib-usb-acl-helper     ix,
 
+    dbus receive bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=Changed peer=(name=*, label=polkitd),
+
     dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Properties member=GetAll peer=(name=*, label=polkitd),
     dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=*, label=polkitd),
     dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=*, label=polkitd),
     dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1),
     dbus send bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=CheckAuthorization peer=(name=org.freedesktop.PolicyKit1, label=polkitd),
-
-    dbus receive bus=system path=/org/freedesktop/PolicyKit1/Authority interface=org.freedesktop.PolicyKit1.Authority member=Changed peer=(name=*, label=polkitd),
 
     deny @{HOME}/orcexec{,*}                      rw,
     deny @{CONFIG}/spicy/settings{,*}             w,

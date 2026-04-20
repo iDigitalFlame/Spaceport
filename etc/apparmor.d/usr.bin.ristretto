@@ -43,14 +43,13 @@ profile ristretto /usr/bin/ristretto flags=(enforce) {
     include <abstractions/glycin-base>
     include <abstractions/private-files>
 
-    # Needed to open any files for reading.
-    /**                                                   r,
+    /**                                                   r, # Needed to open any files for reading.
 
     owner @{CONFIG}/xfce4/xfconf/xfce-*-xml/ristretto.xml r,
 
-    owner @{HOME}/.config/ristretto/accels.scm            r,
+    owner @{HOME}/.config/ristretto/accels.scm            rw,
 
-    deny @{HOME}/.config/ristretto/accels.scm             w,
+    deny @{HOME}/.local/share/ristretto{,/**}             rw,
     deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml          w,
 
     include if exists <local/usr.bin.ristretto>

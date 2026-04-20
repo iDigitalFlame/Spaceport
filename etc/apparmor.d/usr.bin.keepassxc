@@ -63,29 +63,34 @@ profile keepassxc /usr/bin/keepassxc flags=(enforce) {
 
     @{run}/udev/data/**                                        r,
 
-    owner @{HOME}/.local/ssh/*                                 r,
-    owner @{HOMEDATA}/keepassxc.{conf,ini}                     rk,
-    owner @{HOME}/.local/lib/keepassxc.ini                     rk,
     owner @{CACHE}/keepassxc/keepassxc.ini                     rkl,
+
     owner @{CONFIG}/keepassxc/keepassxc.ini                    rk,
+
+    owner @{HOME}/.local/ssh/*                                 r,
+    owner @{HOME}/.local/lib/keepassxc.ini                     rk,
+
+    owner @{HOME_DATA}/keepassxc.{conf,ini}                    rk,
 
     /{dev,sys}/bus/usb/{,**}                                   rw,
     /{dev,sys}/bus/usb/devices/{,**}                           rw,
 
     owner @{HOME}/{#*,*.kdbx,*.kdbx.*}                         rwkl,
-    owner @{MOUNTS}/**/*{*.kdbx,*.kdbx.*}                      rwkl,
-    owner @{CACHE}/keepassxc/keepassxc.ini.lock                rwkl,
     owner @{HOME}/Documents/**/{#*,*.kdbx,*.kdbx.*}            rwkl,
-    owner @{HOME}/.config/keepassxc/keepassxc.ini.lock         rwkl,
+    owner @{HOME}/.c{ache,onfig}/keepassxc/keepassxc.ini.lock  rwkl,
     owner @{HOME}/@{XDG_DOCUMENTS_DIR}/**/{#*,*.kdbx,*.kdbx.*} rwkl,
+
+    owner @{MOUNTS}/**/*{*.kdbx,*.kdbx.*}                      rwkl,
 
     /usr/bin/wl-copy                                           ix,
     /usr/bin/xdg-open                                          Px -> xdg-open,
 
-    deny @{HOMEDATA}/keepassxc.{conf,ini}                      w,
-    deny @{HOME}/.local/lib/keepassxc.{conf,ini}               w,
     deny @{CONFIG}/keepassxc/keepassxc.{conf,ini}              w,
+
+    deny @{HOME}/.local/lib/keepassxc.{conf,ini}               w,
     deny @{HOME}/.c{ache,onfig}/keepassxc/keepassxc.{conf,ini} w,
+
+    deny @{HOME_DATA}/keepassxc.{conf,ini}                     w,
 
     include if exists <local/usr.bin.keepassxc>
 }

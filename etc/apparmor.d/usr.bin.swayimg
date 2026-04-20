@@ -43,47 +43,45 @@ profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
     include <abstractions/xdg-desktop>
     include <abstractions/private-files>
 
-    # Needed to open any files for reading.
-    /{,**}                            r,
-    /usr/bin/swayimg                  rm,
+    /{,**}                         r, # Needed to open any files for reading.
+    /usr/bin/swayimg               rm,
 
-    owner @{CONFIG}/swayimg/config    r,
+    owner @{CONFIG}/swayimg/config r,
 
-    owner /dev/shm/swayimg_*          rwk,
+    owner /dev/shm/swayimg_*       rwk,
 
-    /usr/bin/rm                       Cx -> rm,
-    /usr/bin/dash                     ix,
-    /usr/bin/magick                   Cx -> magick,
-    /usr/bin/swaymsg                  ix,
-    /usr/bin/wl-copy                  ix,
+    /usr/bin/rm                    Cx -> rm,
+    /usr/bin/dash                  ix,
+    /usr/bin/magick                Cx -> magick,
+    /usr/bin/swaymsg               ix,
+    /usr/bin/wl-copy               ix,
 
-    owner @{HOMEDOTS}/.local/bin/crop Pxr -> cropgui,
+    owner @{HOME_DATA}/.local/bin/crop Pxr -> cropgui,
 
     profile rm flags=(enforce) {
-        include <abstractions/base>
-        include <abstractions/consoles>
-        include <abstractions/no-network>
+        include <abstractions/command>
         include <abstractions/private-files>
 
         /usr/bin/rm                     rm,
 
-        owner @{MOUNTS}/**/*.@{IMAGES}  w,
         owner @{HOME}/{,**}/*.@{IMAGES} w,
+
+        owner @{MOUNTS}/**/*.@{IMAGES}  w,
     }
     profile magick flags=(enforce) {
-        include <abstractions/base>
-        include <abstractions/consoles>
-        include <abstractions/no-network>
+        include <abstractions/command>
         include <abstractions/private-files>
 
         /etc/ImageMagick-*/*.xml            r,
         /usr/share/ImageMagick-*/*.xml      r,
 
-        owner @{MOUNTS}/**/*.@{IMAGES}{,*}  rw,
         owner @{HOME}/{,**/}*.@{IMAGES}{,*} rw,
 
+        owner @{MOUNTS}/**/*.@{IMAGES}{,*}  rw,
+
+        /usr/bin/magick                     ixrm,
         /usr/bin/convert                    ixr,
-        /usr/bin/{jpegtran,magick}          ixrm,
+        /usr/bin/jpegtran                   ixrm,
     }
 
     include if exists <local/usr.bin.swayimg>

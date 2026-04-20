@@ -82,10 +82,12 @@ profile pipewire /usr/bin/pipewire flags=(enforce, attach_disconnected) {
 
     unix (bind, listen) type=stream addr="@/tmp/dbus-*",
 
-    unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
-    unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
+    unix (accept, connect, receive, send) type=stream addr="@/tmp/dbus-*",
+    unix (accept, connect, receive, send) type=stream peer=(addr="@/tmp/dbus-*"),
 
-    dbus (send, receive) bus=session interface=org.pulseaudio.Server,
+    dbus (receive, send) bus=session interface=org.pulseaudio.Server,
+
+    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
 
     dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.RealtimeKit1 member=MakeThread* peer=(name=*, label=rtkit-daemon),
     dbus send bus=system  path=/org/freedesktop/RealtimeKit1 interface=org.freedesktop.DBus.Properties member=Get peer=(name=org.freedesktop.RealtimeKit1),
@@ -97,8 +99,6 @@ profile pipewire /usr/bin/pipewire flags=(enforce, attach_disconnected) {
     dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={GetConnectionUnixUser,GetConnectionUnixProcessID} peer=(name=org.freedesktop.DBus, label=dbus-session),
     dbus send bus=system  path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-system),
     dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
-
-    dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
 
     include if exists <local/usr.bin.pipewire>
 }

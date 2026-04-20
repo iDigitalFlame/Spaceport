@@ -37,15 +37,13 @@
 include <tunables/spaceport>
 
 profile swaync-client /usr/bin/swaync-client flags=(enforce, attach_disconnected) {
-    include <abstractions/base>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
+    include <abstractions/command>
     include <abstractions/notifications>
     include <abstractions/private-files>
 
     /usr/bin/swaync-client rm,
 
-    dbus (send, receive) interface=org.erikreider.swaync.cc,
+    dbus (receive, send) interface=org.erikreider.swaync.cc,
 
     include if exists <local/usr.bin.swaync-client>
 }

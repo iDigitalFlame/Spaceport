@@ -34,11 +34,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-include <tunables/cache>
 include <tunables/global>
-include <tunables/mounts>
 
-@{GPG_SYS_DIR}=/etc/pacman.d/gnupg /var/db/pacman/gnupg
 @{GPG_DIR}=@{HOME}/.gnupg @{HOME}/.local/share/gnupg @{HOME}/.dotfiles/.local/share/gnupg
+@{GPG_DIR_SYS}=/etc/pacman.d/gnupg /var/db/pacman/gnupg
 
 @{CGROUP}=/sys/fs/cgroup/user.slice/user-@{uid}.slice/user@@{uid}.service /sys/fs/cgroup/user.slice/user-@{uid}.slice/session-*.scope
+@{CGROUP_SYS}=/sys/fs/cgroup/system.slice
+@{CGROUP_USER}=/sys/fs/cgroup/user.slice

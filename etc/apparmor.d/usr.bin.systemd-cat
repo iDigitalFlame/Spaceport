@@ -37,9 +37,7 @@
 include <tunables/spaceport>
 
 profile systemd-cat /usr/bin/systemd-cat flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
+    include <abstractions/command>
     include <abstractions/private-files>
 
     capability            net_admin,

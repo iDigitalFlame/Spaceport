@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
+profile atlauncher @{HOME_DATA}/.local/bin/tools/atlauncher flags=(enforce) {
     include <abstractions/gtk>
     include <abstractions/mesa>
     include <abstractions/audio>
@@ -63,8 +63,8 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     /usr/share/java/*.jar                                            r,
     /usr/share/hwdata/pci.ids                                        r,
     /etc/pipewire/jack.conf.d/                                       r,
-    /etc/ssl/certs/java/cacerts                                      r,
     /etc/java-[0-9]*-openjdk/**                                      r,
+    /etc/ssl/certs/java/cacerts                                      r,
     /usr/share/pipewire/jack.conf                                    r,
     /etc/java-openjdk/logging.properties                             r,
     /etc/java-openjdk/{jaxp,net}.properties                          r,
@@ -81,29 +81,29 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     /sys/fs/cgroup/{,**}                                             r,
     /sys/bus/cpu/devices/                                            r,
     /sys/module/compression                                          r,
-    /sys/kernel/mm/hugepages/                                        r,
     /sys/devices/system/node/                                        r,
+    /sys/kernel/mm/hugepages/                                        r,
     /sys/devices/system/cpu/cpu*/                                    r,
     /sys/devices/system/cpu/uevent                                   r,
     /sys/devices/system/cpu/offline                                  r,
     /sys/devices/system/cpu/cpu*/uevent                              r,
     /sys/devices/system/cpu/hotplug/states                           r,
-    /sys/devices/virtual/dmi/id/bios_vendor                          r,
     /sys/devices/system/cpu/cpu*/topology/*                          r,
+    /sys/devices/virtual/dmi/id/bios_vendor                          r,
     /sys/devices/system/cpu/cpu*/cache/{,**}                         r,
     /sys/devices/system/cpu/vulnerabilities/                         r,
     /sys/devices/system/node/node[0-9]/cpumap                        r,
     /sys/kernel/mm/transparent_hugepage/defrag                       r,
     /sys/devices/system/cpu/{kernel_max,present}                     r,
     /sys/devices/system/cpu/cpu0/microcode/version                   r,
-    /sys/devices/system/cpu/cpufreq/policy*/*_freq                   r,
     /sys/devices/system/cpu/cpu[0-9]/hotplug/state                   r,
+    /sys/devices/system/cpu/cpufreq/policy*/*_freq                   r,
     /sys/kernel/mm/transparent_hugepage/{,shmem_}enabled             r,
 
     /proc/                                                           r,
     /proc/bus/pci/devices                                            r,
-    /proc/c{groups,mdline}                                           r,
     /proc/{version,uptime}                                           r,
+    /proc/c{groups,mdline}                                           r,
     /proc/sys/kernel/pid_max                                         r,
     /proc/sys/vm/max_map_count                                       r,
     /proc/sys/vm/mmap_min_addr                                       r,
@@ -123,7 +123,8 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
 
     owner @{HOME}/                                                   r,
     owner @{HOME}/.config/java/jssc/linux/*.so                       rm,
-    owner @{HOMEDOTS}/.local/bin/tools/atlauncher                    r,
+
+    owner @{HOME_DATA}/.local/bin/tools/atlauncher                   r,
 
     owner /proc/@{pid}/coredump_filter                               rw,
     owner /proc/@{pid}/task/@{tid}/comm                              rw,
@@ -135,12 +136,13 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     owner /tmp/lwjgl*/{,*/,*/*.so,*/.lwjgl.test}                     rwmk,
     owner /tmp/libnetty{-,_}transport{-,_}native{-,_}epoll{,-,_}*.so rwm,
 
-    owner @{run}/user/@{uid}/temp{,/,/**}                            rw,
-    owner @{run}/user/@{uid}/temp/jna*.tmp                           rwm,
-
     owner @{CACHE}/JNA{,/**}                                         rwmkl,
+
+    owner @{CACHE_TEMP}/                                             rw,
+    owner @{CACHE_TEMP}/**                                           rwmkl,
+    owner @{CACHE_TEMP}/jna*.tmp                                     rwm,
+
     owner @{HOME}/.java/fonts{,/,/*/}                                rw,
-    # This is for AtLauncher to download and import files manually.
     owner @{HOME}/Documents/Minecraft/**                             rwmkl,
     owner @{HOME}/Documents/Minecraft{,/}                            rw,
     owner @{HOME}/*.{jar,mcpack,mrpack,zip}                          rw,
@@ -148,17 +150,19 @@ profile atlauncher @{HOMEDOTS}/.local/bin/tools/atlauncher flags=(enforce) {
     owner @{HOME}/Documents/Minecraft/**/bin/*                       rwix,
     owner @{HOME}/.java/fonts/*/fcinfo[0-9]*.tmp                     rw,
     owner @{HOME}/.java/fonts/*/fcinfo-*.properties                  rw,
-    owner @{HOME}/Downloads/*.{jar,mcpack,mrpack,zip}                rw,
+    owner @{HOME}/Downloads/*.{jar,mcpack,mrpack,zip}                rw, # This is for AtLauncher to download and import files manually.
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp              rw,
     owner @{HOME}/Documents/Minecraft/**/lib/jspawnhelper            rwix,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties           rw,
 
     /usr/bin/bwrap                                                   Cx -> glycin,
+    /usr/bin/uname                                                   ix,
     /usr/bin/xrandr                                                  Pix -> xrandr,
+    /usr/bin/getconf                                                 ix,
+    /usr/bin/ldconfig                                                ix,
     /usr/bin/xdg-open                                                Pix -> xdg-open,
     /usr/bin/ls{cpu,pci}                                             ix,
     /usr/lib/gio-launch-desktop                                      Pix -> xdg-open,
-    /usr/bin/{getconf,ldconfig,uname}                                ix,
     /usr/lib/jvm/default{,-runtime}/{,jre/}bin/java                  ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/{,jre/}bin/java                 ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/lib/jspawnhelper                ix,

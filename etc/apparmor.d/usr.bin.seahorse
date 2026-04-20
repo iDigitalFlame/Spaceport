@@ -52,8 +52,7 @@ profile seahorse /usr/bin/seahorse flags=(enforce) {
 
     owner /proc/@{pid}/mountinfo        r,
 
-    # Key Importing
-    owner @{HOME}/{,*}                  r,
+    owner @{HOME}/{,*}                  r, # Key Importing
 
     /usr/bin/gpg{,conf,sm}              ixr,
 

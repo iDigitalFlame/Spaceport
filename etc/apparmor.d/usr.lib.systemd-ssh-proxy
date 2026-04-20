@@ -38,8 +38,8 @@ include <tunables/spaceport>
 
 profile systemd-ssh-proxy /usr/lib/systemd/systemd-ssh-proxy flags=(enforce) {
     # Used to stop "systemd-ssh-proxy" from running.
-    deny /usr/lib/systemd/systemd-ssh-proxy rm,
     # Using "audit deny" causes an assertion in apparmor_parser.
+    deny /usr/lib/systemd/systemd-ssh-proxy rm,
 
     include if exists <local/usr.lib.systemd-ssh-proxy>
 }

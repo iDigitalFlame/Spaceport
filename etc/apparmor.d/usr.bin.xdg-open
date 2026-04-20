@@ -48,20 +48,25 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce, attach_disconnected) {
     include <abstractions/xdg-desktop>
     include <abstractions/user-data-ro>
 
+    @{sysconfig}/bin/ghr                                   Pix -> ghr,
     @{sysconfig}/bin/hostname                              ixr,
+    @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
 
     /proc/version                                          r,
     /proc/sys/kernel/hostname                              r,
 
     owner @{CONFIG}/mimeapps.list                          r,
 
-    @{sysconfig}/bin/ghr                                   Pix -> ghr,
-    @{sysconfig}/etc/xdg/xdg-open-shim.sh                  ixr,
-
+    /usr/bin/cat                                           ix,
+    /usr/bin/env                                           ix,
+    /usr/bin/file                                          ix,
+    /usr/bin/gawk                                          ix,
+    /usr/bin/xprop                                         ix,
+    /usr/bin/printf                                        ix,
+    /usr/bin/realpath                                      ix,
     /usr/bin/dbus-send                                     ix,
     /etc/xdg/xdg-open-shim.sh                              ixr,
     /usr/bin/{u,base,host}name                             ix,
-    /usr/bin/{cat,env,file,gawk,printf,realpath,xprop}     ix,
 
     /usr/bin/ghr                                           Px -> ghr,
     /usr/bin/vlc                                           Px,
@@ -82,7 +87,7 @@ profile xdg-open /usr/bin/xdg-open flags=(enforce, attach_disconnected) {
     /{usr/bin,opt/ultimaker-cura}/{c,UltiMaker-C}ura       Px,
     /usr/{bin,lib}/{firefox,librewolf}/{firefox,librewolf} Px,
 
-    owner @{HOMEDATA}/.local/bin/**                        PUx,
+    owner @{HOME_DATA}/.local/bin/**                       PUx,
 
     include if exists <local/usr.bin.xdg-open>
 }

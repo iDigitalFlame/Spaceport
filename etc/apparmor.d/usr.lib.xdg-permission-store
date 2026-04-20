@@ -46,14 +46,13 @@ profile xdg-permission-store /usr/lib/xdg-permission-store flags=(enforce, attac
 
     signal receive set=(hup, kill, term) peer=unconfined,
 
-    /usr/lib/xdg-permission-store            rm,
+    /usr/lib/xdg-permission-store           rm,
 
-    owner @{HOME}/                           r,
-
-    owner @{HOME}/.local/share/flatpak       rw,
-    owner @{HOME}/.local/share/flatpak/{,**} rw,
+    owner @{HOME}/                          r,
 
     dbus receive bus=session interface=org.freedesktop.DBus.Introspectable member=Introspect peer=(name=:*, label=gnome-shell),
+
+    deny @{HOME}/.local/share/flatpak{,/**} rw,
 
     include if exists <local/usr.lib.xdg-permission-store>
 }

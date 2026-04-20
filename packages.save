@@ -92,7 +92,6 @@ dtc
 duktape
 e2fsprogs
 edk2-aarch64
-edk2-arm
 edk2-ovmf
 efitools
 elfutils

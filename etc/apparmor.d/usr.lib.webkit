@@ -43,27 +43,42 @@ profile webkit /usr/lib/webkit2gtk-*/WebKit*Process flags=(enforce, attach_disco
     include <abstractions/video>
     include <abstractions/cgroup>
     include <abstractions/opengl>
-    include <abstractions/version>
 
     network                                                                        inet  stream,
     network                                                                        inet6 stream,
 
+    /etc/{os,arch}-release                                                         r,
     /usr/share/glib-2.0/schemas/gschemas.compiled                                  r,
 
-    /sys/firmware/acpi/pm_profile                                                  r,
+    /dev/                                                                          r,
 
+    /sys/{bu,clas}s/                                                               r,
+    /sys/firmware/acpi/pm_profile                                                  r,
+    /sys/devices/virtual/dmi/id/chassis_type                                       r,
+
+    /proc/version                                                                  r,
     /proc/zoneinfo                                                                 r,
 
-    owner /proc/@{pid}/{cmdline,smaps,stat,statm}                                  r,
+    owner /proc/@{pid}/smaps                                                       r,
+    owner /proc/@{pid}/cmdline                                                     r,
+    owner /proc/@{pid}/stat{,m}                                                    r,
 
     /dev/udmabuf                                                                   rw,
 
     owner @{run}/user/@{uid}/qtwayland-*                                           rwk,
     owner @{run}/user/@{uid}/*-wayland{,.lock}                                     rwk,
 
+    owner @{CACHE}/gstreamer-1.0/registry.*                                        rw,
+
     owner @{HOME}/.local/share/TelegramDesktop/tdata/user_data/*/cache/**          rw,
     owner @{HOME}/.local/share/TelegramDesktop/tdata/user_data/*/cache/*.sqlite    rwk,
     owner @{HOME}/.local/share/TelegramDesktop/tdata/user_data/*/data/storage/salt rw,
+
+    /usr/lib/gstreamer-1.0/gst-plugin-scanner                                      ix,
+
+    deny /tmp/orcexec{,*}                                                          rw,
+    deny @{HOME}/orcexec{,*}                                                       rw,
+    deny @{run}/user/@{uid}/orcexec{,*}                                            rw,
 
     include if exists <local/usr.lib.webkit>
 }

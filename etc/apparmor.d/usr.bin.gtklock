@@ -53,7 +53,7 @@ profile gtklock /usr/bin/gtklock flags=(enforce) {
     /sys/devices/**/manufacturer                   r,
     /sys/devices/**/{produc,ueven}t                r,
 
-    owner @{CACHE}/smd/*                           r,
+    owner @{CACHE}/smd/*.@{IMAGES}                 r,
 
     owner @{HOME}/.config/Yubico/u2f_keys          r,
     owner @{HOME}/Pictures/Backgrounds/*.@{IMAGES} r,

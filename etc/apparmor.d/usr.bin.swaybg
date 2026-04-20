@@ -50,8 +50,7 @@ profile swaybg /usr/bin/swaybg flags=(enforce, attach_disconnected) {
 
     /usr/bin/swaybg              rm,
 
-    # For pictures and backgrounds.
-    owner @{HOME}/**/*.@{IMAGES} r,
+    owner @{HOME}/**/*.@{IMAGES} r, # For pictures and backgrounds.
 
     /dev/shm/swaybg-*            rw,
 

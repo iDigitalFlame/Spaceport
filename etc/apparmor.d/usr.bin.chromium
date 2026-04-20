@@ -50,9 +50,8 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
 
     /etc/chromium/policies/managed/policies.json             r,
 
-    /sys/devices/pci*/uevent                                 r,
-    /sys/devices/i915/uevent                                 r,
     /sys/{bus,class}{,/,/**}                                 r,
+    /sys/devices/{i915,pci*}/uevent                          r,
     /sys/{bus,class}/usb*/{,devices/}                        r,
     /sys/devices/platform/i8042/uevent                       r,
     /sys/devices/platform/serial*/uevent                     r,
@@ -69,11 +68,12 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
 
     /sys/{bus,class}/usb{,-serial}/{,devices/**}             rw,
 
-    owner @{CACHE_TMP}/chromium_cache/**                     rw,
-    owner @{CACHE_TMP}/chromium_cache/**/*.sqlite            k,
+    owner @{CACHE}/chrom{e,ium}                              rw,
+    owner @{CACHE}/chrom{e,ium}/**                           rwk,
 
-    owner @{CACHE}/chrom{e,ium}/**                           rw,
-    owner @{CACHE}/chrom{e,ium}/**/*.sqlite                  k,
+    owner @{CACHE_TEMP}/browsers/                            rw,
+    owner @{CACHE_TEMP}/browsers/chromium{,_temp}            rw,
+    owner @{CACHE_TEMP}/browsers/chromium{,_temp}/**         rwk,
 
     owner @{HOME}/.config/chrom{e,ium}/**                    rwkl,
     owner @{HOME}/.config/chrom{e,ium}/{,**}                 rwl,
@@ -81,13 +81,13 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     /usr/bin/bwrap                                           Cx -> glycin,
     /usr/bin/xdg-open                                        Pix -> xdg-open,
     /usr/bin/xdg-email                                       Pix -> xdg-email,
-    /usr/bin/xdg-settings                                    Pix -> xdg-settings,
     /usr/bin/chrom{e,ium}                                    ix,
+    /usr/bin/xdg-settings                                    Pix -> xdg-settings,
     /usr/lib/chrom{e,ium}/chrom{e,ium}                       ix,
     /usr/lib/chrom{e,ium}/chrom{e,ium}_crashpad_handler      ix,
 
     # Chrome fuck off
-    deny @{HOME}/.config/                                    r,
+    deny @{CONFIG}/                                          r,
     deny /sys/devices/pnp*/**                                r,
     deny /sys/devices/*point/**                              r,
     deny /sys/devices/cstate_*/**                            r,
@@ -96,27 +96,28 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     deny /sys/devices/system/node/**                         r,
     deny /sys/devices/platform/*.*/**                        r,
     deny /sys/devices/platform/uevent                        r,
-    deny /sys/devices/virtual/block/**                       r,
     deny /sys/devices/system/memory/**                       r,
+    deny /sys/devices/virtual/block/**                       r,
     deny /sys/devices/virtual/devlink/**                     r,
     deny /sys/devices/system/{cpu,edac}/**                   r,
-    deny /sys/devices/virtual/dmi/id/uevent                  r,
     deny /sys/devices/platform/USBC*/uevent                  r,
-    deny /sys/devices/virtual/firmware-*/**                  r,
+    deny /sys/devices/virtual/dmi/id/uevent                  r,
     deny /sys/devices/platform/microcode/**                  r,
+    deny /sys/devices/virtual/firmware-*/**                  r,
     deny /sys/devices/system/machinecheck/**                 r,
+    deny /sys/devices/virtual/tty/tty*/uevent                r,
     deny /sys/{bu,clas}s/{acc,rfk,therm}*/{,**}              r,
     deny /sys/{bu,clas}s/*{p,q,r,u,v,x,y,z}/{,**}            r,
     deny /sys/devices/virtual/w{akeup,orkqueue}/**           r,
     deny /sys/devices/platform/acpi-cpufreq/uevent           r,
     deny /sys/{bu,clas}s/{dev,net,mmc,scsi}*/{,**}           r,
     deny /sys/{bu,clas}s/*{c,e,f,g,h,j,k,n,o}/{,**}          r,
+    deny /sys/{bu,clas}s/{clockevent,mdio_bus}s/{,**}        r,
     deny /sys/devices/platform/{ACPI,INT,PNP,STM}*/**        r,
     deny /sys/devices/virtual/{net,nvme*,powercap}/**        r,
-    deny /sys/{bu,clas}s/{clockevent,mdio_bus}s/{,**}        r,
-    deny /sys/devices/{cpu,faux,intel_*,kprobe,msr}/**       r,
     deny /sys/{bu,clas}s/{dma,mem,pwm,tpm,nvme}*/{,**}       r,
     deny /sys/{bu,clas}s/{acp,me,mipi-ds,sp,wm}i/{,**}       r,
+    deny /sys/devices/{cpu,faux,intel_*,kprobe,msr}/**       r,
     deny /sys/devices/virtual/{iommu,mem*,misc,msr}/**       r,
     deny /sys/devices/virtual/{sound,thermal,vc,vt*}/**      r,
     deny /sys/devices/platform/{dcdbas,dell-*,pcspkr}/**     r,
@@ -129,21 +130,21 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
         include <abstractions/dri>
         include <abstractions/glycin-bwrap>
 
-        /dev/dri/render*                                                  rw,
+        /dev/dri/render*                                                   rw,
 
-        owner /dev/shm/.org.chromium.Chromium.*                           rw,
+        owner /dev/shm/.org.chromium.Chromium.*                            rw,
 
-        owner @{run}/user/@{uid}/chrome_temp_profile/Default/**           rw,
-        owner @{run}/user/@{uid}/chrome_temp_profile/Subresource*/**      rw,
-        owner @{run}/user/@{uid}/chrome_temp_profile/{,Gr}ShaderCache/*   rw,
-        owner @{run}/user/@{uid}/chrome_temp_profile/GraphiteDawnCache/*  rw,
-        owner @{run}/user/@{uid}/chrome_temp_profile/BrowserMetrics/*.pma rw,
+        owner @{CACHE_TEMP}/browsers/chromium{,_temp}/Default/**           rw,
+        owner @{CACHE_TEMP}/browsers/chromium{,_temp}/Subresource*/**      rw,
+        owner @{CACHE_TEMP}/browsers/chromium{,_temp}/{,Gr}ShaderCache/*   rw,
+        owner @{CACHE_TEMP}/browsers/chromium{,_temp}/GraphiteDawnCache/*  rw,
+        owner @{CACHE_TEMP}/browsers/chromium{,_temp}/BrowserMetrics/*.pma rw,
 
-        owner @{HOME}/.config/chromium/Default/**                         rw,
-        owner @{HOME}/.config/chromium/Subresource*/**                    rw,
-        owner @{HOME}/.config/chromium/{,Gr}ShaderCache/*                 rw,
-        owner @{HOME}/.config/chromium/GraphiteDawnCache/*                rw,
-        owner @{HOME}/.config/chromium/BrowserMetrics/*.pma               rw,
+        owner @{HOME}/.config/chromium/Default/**                          rw,
+        owner @{HOME}/.config/chromium/Subresource*/**                     rw,
+        owner @{HOME}/.config/chromium/{,Gr}ShaderCache/*                  rw,
+        owner @{HOME}/.config/chromium/GraphiteDawnCache/*                 rw,
+        owner @{HOME}/.config/chromium/BrowserMetrics/*.pma                rw,
     }
 
     include if exists <local/usr.bin.chromium>

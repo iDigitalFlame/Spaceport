@@ -37,9 +37,7 @@
 include <tunables/spaceport>
 
 profile journalctl /usr/bin/journalctl flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
+    include <abstractions/command>
     include <abstractions/nameservice>
     include <abstractions/private-files>
     include <abstractions/dbus-session-strict>
@@ -51,8 +49,8 @@ profile journalctl /usr/bin/journalctl flags=(enforce) {
     capability                                    dac_override,
     capability                                    dac_read_search,
 
-    signal send               peer=pager,
     signal receive set=(term) peer=unconfined,
+    signal send               peer=pager,
 
     ptrace read,
 

@@ -39,34 +39,40 @@ include <tunables/spaceport>
 profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected, mediate_deleted) {
     include <abstractions/video>
     include <abstractions/cgroup>
-    include <abstractions/version>
     include <abstractions/chromium>
     include <abstractions/user-home>
     include <abstractions/glycin-base>
     include <abstractions/notifications>
 
-    /usr/bin/slack                                           r,
-    /usr/lib/slack/resources/**                              rm,
+    /usr/bin/slack                             r,
+    /etc/{os,arch}-release                     r,
+    /usr/lib/slack/resources/**                rm,
 
-    /sys/devices/virtual/sound/*/uevent                      r,
+    /sys/devices/virtual/sound/*/uevent        r,
+    /sys/devices/virtual/dmi/id/chassis_type   r,
 
-    owner /proc/@{pid}/mem                                   r,
+    /proc/version                              r,
 
-    owner @{HOME}/                                           r,
+    owner /proc/@{pid}/mem                     r,
 
-    @{run}/systemd/inhibit/*.ref                             rw,
+    owner @{HOME}/                             r,
 
-    owner @{HOME}/.config/Slack/{,**}                        rwkl,
+    @{run}/systemd/inhibit/*.ref               rw,
 
-    /proc/self/exe                                           ixr,
-    /usr/bin/xdg-open                                        Pix -> xdg-open,
-    /usr/bin/electron*                                       ixr,
-    /usr/bin/xdg-email                                       Pix -> xdg-email,
-    /usr/lib/electron*/{chrome_crashpad_handler,electron}    ix,
+    owner @{CACHE_TEMP}/electron/slack/{,**}   rwkl,
 
-    deny /usr/bin/ldd                                        rx,
-    deny /usr/bin/{,ba,da}sh                                 rx,
-    deny /usr/bin/xdg-settings                               rx,
+    owner @{HOME}/.config/Slack/{,**}          rwkl,
+
+    /proc/self/exe                             ixr,
+    /usr/bin/xdg-open                          Pix -> xdg-open,
+    /usr/bin/electron*                         ixr,
+    /usr/bin/xdg-email                         Pix -> xdg-email,
+    /usr/lib/electron*/electron                ix,
+    /usr/lib/electron*/chrome_crashpad_handler ix,
+
+    deny /usr/bin/ldd                          rx,
+    deny /usr/bin/{,ba,da}sh                   rx,
+    deny /usr/bin/xdg-settings                 rx,
 
     deny ptrace read,
 

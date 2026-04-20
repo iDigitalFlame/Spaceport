@@ -68,12 +68,13 @@ profile ghr /{opt/spaceport,usr}/bin/ghr flags=(enforce, attach_disconnected) {
     @{HOME}/Documents/Utilities/**              PUx,
     @{HOME}/.local/{apps,bin,lib}/**            PUx,
     @{HOME}/.vscode-oss/extensions/**           PUx,
-    @{HOMEDOTS}/.local/{apps,bin,lib}/**        PUx,
     @{HOME}/.config/VSCodium/Home/extensions/** PUx,
 
-    deny /dev/dri/**                           rw,
-    deny @{CACHE_TMP}/mesa{,_db}/**            rw,
-    deny @{CACHE}/mesa_shader_cache{,_db}/**   rw,
+    @{HOME_DATA}/.local/{apps,bin,lib}/**       PUx,
+
+    deny /dev/dri/**                            rw,
+    deny @{CACHE_TEMP}/gui/{db,mesa}/{,**}      rw,
+    deny @{CACHE}/mesa_shader_cache{,_db}/**    rw,
 
     include if exists <local/usr.bin.ghr>
 }

@@ -34,12 +34,5 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-capability                       dac_read_search,
-
-signal receive peer=smd-daemon,
-
-ptrace readby peer=smd-daemon,
-
-@{run}/smd/hydra/dns.conf        r,
-
-/var/cache/smd/hydra/dhcp.leases rwk,
+owner @{CACHE_TEMP}/gui/font/   rw,
+owner @{CACHE_TEMP}/gui/font/** rwmkl,

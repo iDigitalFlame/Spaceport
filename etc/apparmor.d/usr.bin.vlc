@@ -62,15 +62,16 @@ profile vlc /usr/bin/{,c,n,q,r,s,v}lc flags=(enforce, attach_disconnected) {
     /dev/tty                            r,
     /dev/dvb/**                         r,
 
-    owner @{CONFIG}/vlc{,/,/*}          r,
-    owner @{HOME}/.local/share/vlc/**   r,
-
     owner /proc/@{pid}/cmdline          r,
 
+    owner @{CONFIG}/vlc{,/,/*}          r,
+
+    owner @{HOME}/.local/share/vlc/**   r,
+
+    deny @{CACHE}/vlc{,/,/**}           w,
     deny @{CONFIG}/vlc{,/,/*}           w,
     deny /usr/bin/xdg-screensaver       xr,
-    deny @{HOME}/.cache/vlc{,/,/**}     w,
-    deny @{HOME}/.local/share/vlc{,/**} w,
+    deny @{HOME}/.local/share/vlc{,/**} rw,
 
     include if exists <local/usr.bin.vlc>
 }

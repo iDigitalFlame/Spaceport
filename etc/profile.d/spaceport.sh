@@ -71,6 +71,7 @@ export PYTHONUTF8=1
 export PYTHON_COLORS=1
 export PYTHON_HISTORY="${HOME}/.cache/python_history"
 export PYTHONOPTIMIZE=2
+export PYTHONUSERBASE="${HOME}/.local/lib/python"
 export PYTHONCOERCECLOCALE="en_US.UTF-8"
 export PYTHONPYCACHEPREFIX="/var/cache/python"
 
@@ -98,8 +99,8 @@ export ELECTRON_OZONE_PLATFORM_HINT="wayland"
 
 # Make / AUR
 export PKGDEST="/var/cache/makepkg"
-export SRCDEST="${XDG_RUNTIME_DIR}/aur/src"
-export BUILDDIR="${XDG_RUNTIME_DIR}/aur/build"
+export SRCDEST="${XDG_RUNTIME_DIR}/temp/aur/src"
+export BUILDDIR="${XDG_RUNTIME_DIR}/temp/aur/build"
 
 # Misc
 export ERRFILE="/dev/null"

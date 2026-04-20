@@ -40,40 +40,44 @@ profile systemd-rfkill /usr/lib/systemd/systemd-rfkill flags=(enforce, attach_di
     include <abstractions/base>
     include <abstractions/private-files>
 
-    capability                                                         net_admin,
-    capability                                                         sys_admin,
-    capability                                                         sys_ptrace,
+    capability                                           net_admin,
+    capability                                           sys_admin,
+    capability                                           sys_ptrace,
 
-    network                                                            netlink raw,
+    network                                              netlink raw,
 
     ptrace read peer=unconfined,
 
-    /                                                                  r,
-    /usr/lib/systemd/systemd-rfkill                                    rm,
+    /                                                    r,
+    /usr/lib/systemd/systemd-rfkill                      rm,
 
-    /sys/devices/pci*/*/usb*/*/uevent                                  r,
-    /sys/devices/**/rfkill*/{uevent,name}                              r,
-    /sys/firmware/efi/efivars/SecureBoot-*                             r,
+    /sys/devices/pci*/*/usb*/*/uevent                    r,
+    /sys/devices/**/rfkill*/{uevent,name}                r,
+    /sys/firmware/efi/efivars/SecureBoot-*               r,
 
-    /proc/cmdline                                                      r,
-    /proc/@{pid}/cgroup                                                r,
-    /proc/sys/kernel/osrelease                                         r,
-    /proc/1/{cgroup,environ,sched}                                     r,
-    /proc/pressure/{cpu,io,memory}                                     r,
-    /proc/sys/kernel/random/boot_id                                    r,
+    /proc/1/sched                                        r,
+    /proc/cmdline                                        r,
+    /proc/1/cgroup                                       r,
+    /proc/1/environ                                      r,
+    /proc/pressure/io                                    r,
+    /proc/pressure/cpu                                   r,
+    /proc/@{pid}/cgroup                                  r,
+    /proc/pressure/memory                                r,
+    /proc/sys/kernel/osrelease                           r,
+    /proc/sys/kernel/random/boot_id                      r,
 
-    @{run}/udev/data/+rfkill:*                                         r,
+    @{run}/udev/data/+rfkill:*                           r,
 
-    owner /proc/@{pid}/stat                                            r,
+    owner /proc/@{pid}/stat                              r,
 
-    /var/lib/systemd/rfkill/*                                          rw,
+    /var/lib/systemd/rfkill/*                            rw,
 
-    @{run}/systemd/notify                                              rw,
+    @{run}/systemd/notify                                rw,
 
-    /dev/kmsg                                                          w,
-    /dev/rfkill                                                        rw,
+    /dev/kmsg                                            w,
+    /dev/rfkill                                          rw,
 
-    /sys/fs/cgroup/system.slice/systemd-rfkill.service/memory.pressure rw,
+    @{CGROUP_SYS}/systemd-rfkill.service/memory.pressure rw,
 
     include if exists <local/usr.lib.systemd-rfkill>
 }

@@ -44,18 +44,20 @@ include <abstractions/vulkan>
 /usr/share/qt{,*}/translations/**                     r,
 /usr/share/qt{,*}/qtwebengine_dictionaries/{,**}      r,
 
-owner @{CACHE_TMP}/qt/{,**}                           rwkl,
-
 owner @{CACHE}/#[0-9]*[0-9]                           rw,
 owner @{CACHE}/qtshadercache-*/{,**}                  rwkl,
 owner @{CACHE}/qt_compose_cache_{little,big}_endian_* rwl -> @{CACHE}/#[0-9]*[0-9],
 
+owner @{CACHE_TEMP}/gui/qt/**                         rwkl,
+owner @{CACHE_TEMP}/gui/qt{,/}                        rw,
+
+owner @{CONFIG}/QtProject.conf                        rl -> @{HOME}/.config/#[0-9]*[0-9],
+
 owner @{HOME}/.config/#[0-9]*[0-9]                    rw,
-owner @{HOME}/.config/QtProject.conf                  rl -> @{HOME}/.config/#[0-9]*[0-9],
 owner @{HOME}/.config/QtProject.conf.lock             rwk,
 owner @{HOME}/.config/QtProject.conf.??????           rwl -> @{HOME}/.config/#[0-9]*[0-9],
 
+deny @{CONFIG}/QtProject.conf                         w,
 deny /usr/share/qt{,*}/resources/**                   w,
-deny @{HOME}/.config/QtProject.conf                   w,
 
 include if exists <abstractions/qt.d>

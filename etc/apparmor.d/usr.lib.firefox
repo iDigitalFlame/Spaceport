@@ -56,8 +56,8 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
 
     /sys/devices/pci*/**/                                              r,
     /sys/devices/system/**/meminfo                                     r,
-
-    /sys/devices/system/cpu/cpu*/topology/{core_cpus,thread_siblings}  r,
+    /sys/devices/system/cpu/cpu*/topology/core_cpus                    r,
+    /sys/devices/system/cpu/cpu*/topology/thread_siblings              r,
 
     owner /proc/@{pid}/mem                                             r,
     owner /proc/@{pid}/smaps                                           r,
@@ -67,28 +67,25 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
 
     owner /dev/shm/wayland.mozilla.ipc.[0-9]*                          rw,
 
-    owner @{run}/user/*/wayland-proxy-*                                rwk,
+    owner @{run}/user/@{uid}/wayland-proxy-*                           rwk,
     owner @{run}/shm/wayland.mozilla.ipc.[0-9]*                        rw,
 
-    owner @{CACHE}/mozilla/firefox/**                                  rw,
-    owner @{CACHE}/librewolf/**/*.sqlite                               k,
-    owner @{CACHE}/mozilla/firefox/**/*.sqlite                         k,
-    owner @{CACHE}/{mozilla,librewolf}{,/,/**}                         rw,
+    owner @{CACHE}/{mozilla/firefox,librewolf}{,/,/**}                 rw,
+    owner @{CACHE}/{mozilla/firefox,librewolf}/**/*.sqlite             k,
 
-    owner @{CACHE_TMP}/mozilla/firefox/**                              rw,
-    owner @{CACHE_TMP}/librewolf/**/*.sqlite                           k,
-    owner @{CACHE_TMP}/mozilla/firefox/**/*.sqlite                     k,
-    owner @{CACHE_TMP}/{mozilla,librewolf}{,/,/**}                     rw,
+    owner @{CACHE_TEMP}/browsers/{firefox,librewolf}{,/,/**}           rw,
+    owner @{CACHE_TEMP}/browsers/{firefox,librewolf}/**/*.sqlite       k,
 
-    owner @{HOME}/.config/librewolf/{,**}                              rw,
-    owner @{HOME}/.config/mozilla/firefox/{,**}                        rw,
+    owner @{HOME}/.config/{mozilla/firefox,librewolf}/{,**}            rw,
     owner @{HOME}/.config/librewolf/**/*.{db,parentlock,sqlite}*       k,
     owner @{HOME}/.config/mozilla/firefox/**/*.{db,parentlock,sqlite}* k,
 
+    /usr/bin/tr                                                        ix,
+    /usr/bin/pwd                                                       ix,
     /usr/bin/bwrap                                                     Cx -> glycin,
+    /usr/bin/which                                                     ix,
     /usr/bin/xdg-open                                                  Pix -> xdg-open,
     /usr/bin/xdg-email                                                 Pix -> xdg-email,
-    /usr/bin/{pwd,tr,which}                                            ix,
     /usr/lib/gio-launch-desktop                                        Pix -> xdg-open,
     /usr/lib/{firefox,librewolf}/**                                    ixr,
     /usr/lib/{firefox,librewolf}/browser/extensions/**                 ixrm,
@@ -101,6 +98,9 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     dbus (receive, send) bus=accessibility,
     dbus (receive, send) bus=session path=/org/mozilla/firefox/Remote interface=org.mozilla.firefox member=OpenURL peer=(label=firefox),
 
+    dbus receive bus=session interface=org.a11y.atspi**,
+    dbus receive bus=system path=/org/freedesktop/NetworkManager,
+
     dbus send bus=session peer=(name=org.a11y.Bus),
     dbus send bus=system  path=/org/freedesktop/RealtimeKit1,
     dbus send bus=system  path=/org/freedesktop/NetworkManager member=state,
@@ -110,9 +110,6 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=RequestName peer=(name=org.freedesktop.DBus),
     dbus send bus=session path=/org/gnome/SessionManager interface=org.gnome.SessionManager member={Inhibit,Uninhibit} peer=(label=unconfined),
     dbus send bus=session path=/org/gnome/GConf/Database/* member={AddMatch,AddNotify,AllEntries,LookupExtended,RemoveNotify} peer=(label=unconfined),
-
-    dbus receive bus=session interface=org.a11y.atspi**,
-    dbus receive bus=system path=/org/freedesktop/NetworkManager,
 
     # You don't need this
     deny /sys/devices/virtual/dmi/id/product_sku                       r,

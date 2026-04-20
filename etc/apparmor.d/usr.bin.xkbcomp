@@ -53,11 +53,11 @@ profile xkbcomp /usr/bin/xkbcomp flags=(enforce, attach_disconnected) {
     /dev/dri/render*                          rw,
     /dev/input/event*                         rw,
 
-    owner /tmp/server-*.xkm                   rwk,
-
     owner @{run}/user/@{uid}/server-*.xkm     rwk,
 
-    unix (send, receive) type=stream addr=none peer=(label=xwayland),
+    owner /tmp/server-*.xkm                   rwk,
+
+    unix (receive, send) type=stream addr=none peer=(label=xwayland),
 
     deny /var/log/Xorg.*.log                  rw,
     deny @{HOME}/.xsession-errors{,.*}        rw,

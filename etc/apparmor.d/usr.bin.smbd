@@ -42,7 +42,6 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
     include <abstractions/wutmp>
     include <abstractions/openssl>
     include <abstractions/consoles>
-    include <abstractions/user-tmp>
     include <abstractions/cups-client>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>
@@ -71,11 +70,7 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
     /usr/share/samba/**                           r,
     /usr/{bin,sbin}/smbd                          rm,
     /var/lib/nscd/netgroup                        r,
-    /usr/lib*/samba/vfs/*.so                      rm,
-    /usr/lib*/samba/pdb/*.so                      rm,
-    /usr/lib*/samba/auth/*.so                     rm,
-    /usr/lib*/samba/gensec/*.so                   rm,
-    /usr/lib*/samba/charset/*.so                  rm,
+    /usr/lib*/samba/*/*.so                        rm,
     /var/lib/sss/pubconf/kdcinfo.*                r,
     /usr/lib/@{multiarch}/samba/**/               r,
     /usr/lib*/samba/{lowcase,upcase,valid}.dat    r,
@@ -91,8 +86,8 @@ profile smbd /usr/{bin,sbin}/smbd flags=(enforce, attach_disconnected) {
     @{run}/smd/hydra/smb.conf                     r,
 
     /var/lib/samba/**                             rwk,
-    /var/spool/samba/**                           rw,
     /var/cache/samba/**                           rwk,
+    /var/spool/samba/**                           rw,
     /var/lib/samba/usershares/{,**}               rwkl,
     /var/{cache,lib}/samba/printing/printers.tdb  rwm,
 

@@ -66,31 +66,32 @@ profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected
     @{run}/systemd/notify                   rw,
     @{run}/modem-manager-gui/{,timestamps}  rw,
 
+    /usr/bin/id                             ix,
+    /usr/bin/rm                             ix,
+    /usr/bin/tr                             ix,
+    /usr/bin/sed                            ix,
     /usr/bin/date                           ix,
     /usr/bin/nmcli                          ix,
+    /usr/bin/python3*                       ix,
     /usr/bin/basename                       ix,
     /usr/bin/readlink                       ix,
-    /usr/bin/python3*                       ix,
     /usr/bin/systemctl                      Cx -> systemctl,
     /usr/bin/c{at,howm}                     ix,
     /usr/bin/g{awk,rep}                     ix,
     /usr/bin/{,ba,da}sh                     ix,
     /usr/bin/systemd-cat                    Pix -> systemd-cat,
     /usr/bin/mk{dir,temp}                   ix,
-    /usr/bin/{id,rm,tr,sed}                 ix,
     /etc/NetworkManager/dispatcher.d/**     ixr,
     /usr/lib/NetworkManager/dispatcher.d/** ixr,
 
     dbus bind bus=system name=org.freedesktop.nm_dispatcher,
 
-    dbus (send, receive) bus=system interface=org.freedesktop.nm_dispatcher,
+    dbus (receive, send) bus=system interface=org.freedesktop.nm_dispatcher,
 
     dbus send bus=system path=/org/freedesktop interface=org.freedesktop.DBus.ObjectManager member=GetManagedObjects peer=(name=:*, label=NetworkManager),
 
     profile systemctl {
-        include <abstractions/base>
-        include <abstractions/consoles>
-        include <abstractions/no-network>
+        include <abstractions/command>
         include <abstractions/dbus-system>
         include <abstractions/private-files>
 
@@ -103,8 +104,8 @@ profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected
         /usr/bin/systemctl              rm,
         /etc/systemd/system/            r,
 
-        /proc/cmdline                   r,
         /proc/1/sched                   r,
+        /proc/cmdline                   r,
         /proc/1/cgroup                  r,
         /proc/1/environ                 r,
         /proc/sys/fs/nr_open            r,

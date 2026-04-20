@@ -60,9 +60,9 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /etc/avrdude.conf                                         r,
     /usr/share/java/*.jar                                     r,
     /usr/share/arduino/{,**}                                  r,
-    /etc/ssl/certs/java/cacerts                               r,
     /etc/java-[0-9]*-openjdk/**                               r,
     /usr/share/arduino/lib/*.so                               rm,
+    /etc/ssl/certs/java/cacerts                               r,
     /usr/share/doc/arduino/{,**}                              r,
     /etc/java-openjdk/net.properties                          r,
     /usr/share/arduino-builder/{,**}                          r,
@@ -75,8 +75,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /usr/lib/jvm/java-[0-9]*-openjdk-*/lib/server/classes.jsa rm,
 
     /dev/                                                     r,
-    /dev/bus/usb/                                             r,
-    /dev/bus/usb/*/                                           r,
+    /dev/bus/usb/{,*/}                                        r,
 
     /sys/bus/usb/                                             r,
     /sys/class/tty/                                           r,
@@ -98,8 +97,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     /proc/@{pid}/net/i{f_inet6,pv6_route}                     r,
     /proc/sys/net/ipv6/conf/all/disable_ipv6                  r,
 
-    @{run}/udev/data/c16*:*                                   r,
     @{run}/udev/data/+usb:*                                   r,
+    @{run}/udev/data/c16*:*                                   r,
 
     /tmp/                                                     r,
 
@@ -109,7 +108,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
 
     owner @{HOME}/                                            r,
     owner @{HOME}/.config/java/jssc/linux/*.so                rm,
-    owner @{HOMEDOTS}/.arduino15/preferences.txt              r,
+
+    owner @{HOME_DATA}/.arduino15/preferences.txt             r,
 
     /dev/bus/usb/*/*                                          rwk,
     /dev/tty{ACM,S,USB}*                                      rw,
@@ -126,8 +126,8 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner /{tmp,var/run}/console[0-9]*.tmp                    rw,
     owner /{tmp,var/run}/untitled[0-9]*.tmp                   rw,
     owner /{tmp,var/run}/hsperfdata_*/@{pid}                  rwk,
-    owner /{tmp,var/run}/cc*.{s,res,c,o,ld,le}                rw,
     owner /{tmp,var/run}/build[0-9]*.tmp/{,**}                rw,
+    owner /{tmp,var/run}/cc*.{s,res,c,o,ld,le}                rw,
     owner /{tmp,var/run}/{library,package}*.tmp*              rw,
     owner /{tmp,var/run}/console[0-9]*.tmp/{,**}              rw,
     owner /{tmp,var/run}/untitled[0-9]*.tmp/{,**}             rw,
@@ -142,16 +142,18 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner @{HOME}/.config/java/fonts/*/fcinfo[0-9]*.tmp       rw,
     owner @{HOME}/.config/java/fonts/*/fcinfo-*.properties    rw,
 
+    /usr/bin/ln                                               ix,
     /usr/bin/bwrap                                            Cx -> glycin,
+    /usr/bin/groups                                           ix,
     /usr/bin/{i,se}d                                          ix,
     /usr/bin/xdg-open                                         Pix -> xdg-open,
     /usr/bin/{,e}grep                                         ix,
+    /usr/bin/readlink                                         ix,
     /usr/bin/c{at,hmod}                                       ix,
     /usr/bin/{,ba,da}sh                                       ix,
     /usr/bin/arduino-builder                                  Px -> arduino-builder,
     /usr/bin/{avrdud,dirnam}e                                 ix,
     /usr/share/arduino/arduino                                ix,
-    /usr/bin/{groups,ln,readlink}                             ix,
     /usr/lib/jvm/default{,-runtime}/bin/java                  ix,
     /usr/lib/jvm/java-[0-9]*-openjdk/bin/java                 ix,
     /usr/lib/jvm/java-[0-9]*-openjdk-*/bin/java               ix,
@@ -162,7 +164,7 @@ profile arduino /usr/{bin,share/arduino}/arduino flags=(enforce, attach_disconne
     owner @{HOME}/.arduino*/packages/arduino/tools/**         ixr,
 
     deny /usr/share/arduino/**                                w,
-    deny @{HOMEDOTS}/.arduino15/preferences.txt               w,
+    deny @{HOME_DATA}/.arduino15/preferences.txt              w,
 
     profile glycin flags=(enforce, attach_disconnected) {
         include <abstractions/glycin-bwrap>

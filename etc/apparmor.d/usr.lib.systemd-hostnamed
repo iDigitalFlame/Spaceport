@@ -41,48 +41,53 @@ profile systemd-hostnamed /usr/lib/systemd/systemd-hostnamed flags=(enforce, att
     include <abstractions/dbus-system>
     include <abstractions/private-files>
 
-    capability                                                           sys_admin,
+    capability                                                     sys_admin,
 
     ptrace read,
 
-    network                                                              unix stream,
+    network                                                        unix stream,
 
-    @{sysconfig}/etc/hostname                                            r,
+    @{sysconfig}/etc/hostname                                      r,
 
-    /                                                                    r,
-    /etc/hostname                                                        r,
-    /etc/machine-id                                                      r,
-    /etc/os-release                                                      r,
-    /usr/lib/systemd/systemd-hostnamed                                   rm,
+    /                                                              r,
+    /etc                                                           r,
+    /etc/hostname                                                  r,
+    /etc/machine-id                                                r,
+    /etc/{arch,os}-release                                         r,
+    /usr/lib/systemd/systemd-hostnamed                             rm,
 
-    /sys/firmware/efi/efivars/SecureBoot-*                               r,
+    /sys/firmware/efi/efivars/SecureBoot-*                         r,
 
-    /dev/vsock                                                           r,
+    /dev/vsock                                                     r,
 
-    /proc/cmdline                                                        r,
-    /proc/sys/kernel/hostname                                            r,
-    /proc/sys/kernel/osrelease                                           r,
-    /proc/1/{cgroup,environ,sched}                                       r,
-    /proc/sys/kernel/random/boot_id                                      r,
+    /proc/1/sched                                                  r,
+    /proc/cmdline                                                  r,
+    /proc/version                                                  r,
+    /proc/1/cgroup                                                 r,
+    /proc/1/environ                                                r,
+    /proc/sys/kernel/hostname                                      r,
+    /proc/sys/kernel/osrelease                                     r,
+    /proc/sys/kernel/random/boot_id                                r,
 
-    @{run}/udev/data/+dmi:*                                              r,
+    @{run}/udev/data/+dmi:*                                        r,
 
-    /sys/devices/virtual/dmi/id/                                         r,
-    /sys/firmware/acpi/pm_profile                                        r,
-    /sys/firmware/dmi/entries/*/raw                                      r,
-    /sys/devices/virtual/dmi/id/uevent                                   r,
-    /sys/devices/virtual/dmi/id/sys_vendor                               r,
-    /sys/devices/virtual/dmi/id/board_vendor                             r,
-    /sys/devices/virtual/dmi/id/chassis_type                             r,
-    /sys/devices/virtual/dmi/id/bios_{date,vendor,version}               r,
-    /sys/devices/virtual/dmi/id/product_{name,serial,uuid,version}       r,
+    /sys/devices/virtual/dmi/id/                                   r,
+    /sys/firmware/acpi/pm_profile                                  r,
+    /sys/firmware/dmi/entries/*/raw                                r,
+    /sys/devices/virtual/dmi/id/uevent                             r,
+    /sys/devices/virtual/dmi/id/sys_vendor                         r,
+    /sys/devices/virtual/dmi/id/board_vendor                       r,
+    /sys/devices/virtual/dmi/id/chassis_type                       r,
+    /sys/devices/virtual/dmi/id/bios_{date,vendor,version}         r,
+    /sys/devices/virtual/dmi/id/{board,product}_{family,name}      r,
+    /sys/devices/virtual/dmi/id/product_{name,serial,uuid,version} r,
 
-    owner /proc/@{pid}/stat                                              r,
+    owner /proc/@{pid}/stat                                        r,
 
-    /sys/fs/cgroup/system.slice/systemd-journald.service/memory.pressure rw,
+    @{run}/systemd/notify                                          w,
+    @{run}/systemd/default-hostname                                rw,
 
-    @{run}/systemd/notify                                                w,
-    @{run}/systemd/default-hostname                                      rw,
+    @{CGROUP_SYS}/systemd-journald.service/memory.pressure         rw,
 
     unix bind type=stream addr="@*/bus/systemd-hostnam/system",
 

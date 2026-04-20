@@ -49,12 +49,12 @@ profile ssh-agent /usr/bin/ssh-agent flags=(enforce) {
     owner @{HOME}/.local/ssh/{,*}                r,
     owner @{HOME}/.config/ssh/{,*}               r,
 
-    owner /tmp/ssh-*/                            rw,
-    owner /tmp/ssh-*/agent.*                     rw,
-
     owner @{run}/user/@{uid}/gcr{,/*}            rw,
     owner @{run}/user/@{uid}/openssh_agent       rw,
     owner @{run}/user/@{uid}/ssh-agent.[0-9A-Z]* w,
+
+    owner /tmp/ssh-*/                            rw,
+    owner /tmp/ssh-*/agent.*                     rw,
 
     /usr/bin/gpg-agent                           Px -> gpg-agent,
 

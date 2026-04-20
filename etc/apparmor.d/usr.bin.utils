@@ -45,5 +45,7 @@ profile utils /{,usr/}bin/{bat,cat,diff,echo,grep,ls,lsd,pgrep,printf,*sum} flag
 
     ptrace read,
 
+    /{,**}     r,
+
     include if exists <local/usr.bin.utils>
 }

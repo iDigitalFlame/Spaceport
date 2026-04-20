@@ -37,8 +37,7 @@
 include <tunables/spaceport>
 
 profile unix-chkpwd /usr/bin/unix_chkpwd flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/consoles>
+    include <abstractions/command>
     include <abstractions/nameservice>
     include <abstractions/private-files>
 

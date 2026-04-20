@@ -42,29 +42,36 @@ profile dnsmasq /usr/bin/dnsmasq flags=(enforce, attach_disconnected) {
     include <abstractions/nameservice>
     include <abstractions/private-files>
 
-    capability                     chown,
-    capability                     setgid,
-    capability                     setuid,
-    capability                     net_raw,
-    capability                     net_admin,
-    capability                     dac_override,
-    capability                     net_bind_service,
+    capability                       chown,
+    capability                       setgid,
+    capability                       setuid,
+    capability                       net_raw,
+    capability                       net_admin,
+    capability                       dac_override,
+    capability                       dac_read_search,
+    capability                       net_bind_service,
 
-    network                        inet raw,
-    network                        inet6 raw,
+    network                          inet  raw,
+    network                          inet6 raw,
 
-    /usr/share/dnsmasq{/,/*}       r,
-    /usr/{bin,sbin}/dnsmasq        rm,
+    signal receive peer=smd-daemon,
 
-    /proc/@{pid}/fd/               r,
-    /proc/sys/net/ipv6/conf/*/mtu  r,
+    ptrace readby peer=smd-daemon,
 
-    @{run}/dnsmasq{/,/*}           r,
-    @{run}/dnsmasq-forwarders.conf r,
+    /usr/{bin,sbin}/dnsmasq          rm,
+    /usr/share/dnsmasq{/,/*}         r,
 
-    @{run}/dnsmasq/*               rw,
+    /proc/@{pid}/fd/                 r,
+    /proc/sys/net/ipv6/conf/*/mtu    r,
 
-    @{run}/*dnsmasq*.pid           w,
+    @{run}/dnsmasq{/,/*}             r,
+    @{run}/smd/hydra/dns.conf        r,
+    @{run}/dnsmasq-forwarders.conf   r,
+
+    /var/cache/smd/hydra/dhcp.leases rwk,
+
+    @{run}/dnsmasq/*                 rw,
+    @{run}/*dnsmasq*.pid             w,
 
     include if exists <local/usr.bin.dnsmasq>
     include if exists <local/usr.sbin.dnsmasq>

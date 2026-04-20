@@ -55,10 +55,10 @@ profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_dis
     network                                          bluetooth stream,
     network                                          bluetooth seqpacket,
 
+    signal receive set=(hup, term)       peer=gdm{,-*},
     signal send    set=(hup, kill, term) peer=xdg-*,
     signal send    set=(hup, kill, term) peer=dbus-*,
     signal send    set=(hup, kill, term) peer=dconf-service,
-    signal receive set=(hup, term)       peer=gdm{,-*},
 
     ptrace read,
 
@@ -116,22 +116,22 @@ profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_dis
 
     unix (bind, listen) type=stream addr="@/tmp/dbus-*",
 
-    unix (send, receive) type=stream addr=none peer=(label=gnome-shell, addr=none),
+    unix (receive, send) type=stream addr=none peer=(label=gnome-shell, addr=none),
 
-    unix (connect, send, receive, accept) type=stream addr="@/tmp/dbus-*",
-    unix (connect, send, receive, accept) type=stream peer=(addr="@/tmp/dbus-*"),
+    unix (accept, connect, receive, send) type=stream addr="@/tmp/dbus-*",
+    unix (accept, connect, receive, send) type=stream peer=(addr="@/tmp/dbus-*"),
 
     dbus bind bus=system  name=org.freedesktop.DBus,
     dbus bind bus=session name=org.freedesktop.DBus,
 
-    dbus (send, receive) bus=system  interface=org.freedesktop.DBus path=/{,org/freedesktop/DBus},
-    dbus (send, receive) bus=session interface=org.freedesktop.DBus path=/{,org/freedesktop/{d,D}Bus},
-
-    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-session),
-    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus (receive, send) bus=system  interface=org.freedesktop.DBus path=/{,org/freedesktop/DBus},
+    dbus (receive, send) bus=session interface=org.freedesktop.DBus path=/{,org/freedesktop/{d,D}Bus},
 
     dbus receive bus=system  path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=Hello peer=(name=*),
     dbus receive bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member=Hello peer=(name=*),
+
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={RequestName,ReleaseName} peer=(name=org.freedesktop.DBus, label=dbus-session),
+    dbus send bus=session path=/org/freedesktop/DBus interface=org.freedesktop.DBus member={Hello,AddMatch,RemoveMatch,GetNameOwner,NameHasOwner,StartServiceByName} peer=(name=org.freedesktop.DBus, label=dbus-session),
 
     include if exists <local/usr.bin.dbus>
 }

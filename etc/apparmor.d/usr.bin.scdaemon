@@ -61,10 +61,8 @@ profile scdaemon /usr/{bin,lib}/{,gnupg/}scdaemon flags=(enforce) {
     owner /etc/pacman.d/gnupg/scdaemon.conf          r,
     owner /var/db/pacman/gnupg/scdaemon.conf         r,
 
-    owner @{HOME}/.gpnpg/common.conf                 r,
-    owner @{HOME}/.gpnpg/scdaemon.conf               r,
-    owner @{HOME}/.local/share/gpnpg/common.conf     r,
-    owner @{HOME}/.local/share/gpnpg/scdaemon.conf   r,
+    owner @{GPG_DIR}/common.conf                     r,
+    owner @{GPG_DIR}/scdaemon.conf                   r,
 
     /dev/bus/usb/*/*                                 rwk,
 
@@ -74,9 +72,8 @@ profile scdaemon /usr/{bin,lib}/{,gnupg/}scdaemon flags=(enforce) {
 
     owner @{run}/user/@{uid}/gnupg/{,d.*/}S.scdaemon rw,
 
-    owner @{HOME}/.local/share/gpnpg{,/}             rw,
-    owner @{HOME}/.gpnpg/reader_*.status             rw,
-    owner @{HOME}/.local/share/gpnpg/reader_*.status rw,
+    owner @{GPG_DIR}/                                rw,
+    owner @{GPG_DIR}/reader_*.status                 rw,
 
     include if exists <local/usr.bin.scdaemon>
 }

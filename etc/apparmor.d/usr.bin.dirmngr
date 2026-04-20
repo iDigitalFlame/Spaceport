@@ -51,16 +51,11 @@ profile dirmngr /usr/bin/dirmngr flags=(enforce) {
     /usr/bin/dirmngr                              rm,
     /usr/share/gnupg/*.pem                        r,
 
-    owner @{GPG_SYS_DIR}/dirmngr.conf             r,
-    owner @{GPG_SYS_DIR}/dirmngr_ldapservers.conf r,
-
     owner @{GPG_DIR}/dirmngr.conf                 r,
     owner @{GPG_DIR}/dirmngr_ldapservers.conf     r,
 
-    owner @{GPG_SYS_DIR}/                         rw,
-    owner @{GPG_SYS_DIR}/crls.d/{,*}              rw,
-    owner @{GPG_SYS_DIR}/crls.d/DIR.txt           rw,
-    owner @{GPG_SYS_DIR}/{,d.*/}{,S.dirmngr}      rw,
+    owner @{GPG_DIR_SYS}/dirmngr.conf             r,
+    owner @{GPG_DIR_SYS}/dirmngr_ldapservers.conf r,
 
     owner /proc/@{pid}/task/@{tid}/comm           rw,
 
@@ -71,6 +66,11 @@ profile dirmngr /usr/bin/dirmngr flags=(enforce) {
     owner @{GPG_DIR}/crls.d/{,*}                  rw,
     owner @{GPG_DIR}/crls.d/DIR.txt               rw,
     owner @{GPG_DIR}/{,d.*/}{,S.dirmngr}          rw,
+
+    owner @{GPG_DIR_SYS}/                         rw,
+    owner @{GPG_DIR_SYS}/crls.d/{,*}              rw,
+    owner @{GPG_DIR_SYS}/crls.d/DIR.txt           rw,
+    owner @{GPG_DIR_SYS}/{,d.*/}{,S.dirmngr}      rw,
 
     include if exists <local/usr.bin.dirmngr>
 }

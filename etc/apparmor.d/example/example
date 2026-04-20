@@ -162,7 +162,7 @@ profile profile_name /path/to/binary flags=(enforce[, attach_disconnected]) {
     # Similar to signal/ptrace, operations (send/receive/bind) do not need
     # parentheses if it's a single one.
 
-    unix (send, bind),
+    unix (bind, send),
 
     # DBus rules follow.
     # Similar to unix, operations (send/receive/bind) do not need parentheses
@@ -177,7 +177,7 @@ profile profile_name /path/to/binary flags=(enforce[, attach_disconnected]) {
 
     dbus bind,
 
-    dbus (send, receive) interface=bleh,
+    dbus (receive, send) interface=bleh,
 
     dbus send bus=system,
 

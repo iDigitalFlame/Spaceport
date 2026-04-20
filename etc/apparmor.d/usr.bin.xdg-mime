@@ -46,27 +46,32 @@ profile xdg-mime /usr/bin/xdg-mime flags=(enforce) {
     include <abstractions/user-data-ro>
     include <abstractions/dbus-session-strict>
 
-    /proc/version                                                r,
+    /proc/version                                               r,
 
-    owner /tmp/wl-copy-buffer-*/stdin                            r,
+    owner /tmp/wl-copy-buffer-*/stdin                           r,
 
-    owner @{CONFIG}/mimeapps.list                                r,
+    owner @{CONFIG}/mimeapps.list                               r,
 
-    /usr/bin/printf                                              ix,
-    /usr/bin/c{a,u}t                                             ix,
-    /usr/bin/{,e}grep                                            ix,
-    /usr/bin/{,g,m}awk                                           ix,
-    /usr/bin/s{ed,ort}                                           ix,
-    /usr/bin/w{c,hich}                                           ix,
-    /usr/bin/dbus-send                                           ix,
-    /usr/bin/m{v,ktemp}                                          ix,
-    /usr/bin/{,ba,da}sh                                          ixr,
-    /usr/bin/{u,base}name                                        ix,
-    /usr/bin/rea{dlink,lpath}                                    ix,
-    /usr/bin/{env,file,gio,head}                                 ix,
-    /usr/bin/{mimetype,tr,xprop}                                 ix,
+    /usr/bin/tr                                                 ix,
+    /usr/bin/env                                                ix,
+    /usr/bin/gio                                                ix,
+    /usr/bin/file                                               ix,
+    /usr/bin/head                                               ix,
+    /usr/bin/xprop                                              ix,
+    /usr/bin/printf                                             ix,
+    /usr/bin/c{a,u}t                                            ix,
+    /usr/bin/{,e}grep                                           ix,
+    /usr/bin/mimetype                                           ix,
+    /usr/bin/{,g,m}awk                                          ix,
+    /usr/bin/s{ed,ort}                                          ix,
+    /usr/bin/w{c,hich}                                          ix,
+    /usr/bin/dbus-send                                          ix,
+    /usr/bin/m{v,ktemp}                                         ix,
+    /usr/bin/{,ba,da}sh                                         ixr,
+    /usr/bin/{u,base}name                                       ix,
+    /usr/bin/rea{dlink,lpath}                                   ix,
 
-    deny @{HOMEDOTS}/.local/share/applications/mimeapps.list.new rw,
+    deny @{HOME_DATA}/.local/share/applications/mimeapps.list.* rw,
 
     include if exists <local/usr.bin.xdg-mine>
 }

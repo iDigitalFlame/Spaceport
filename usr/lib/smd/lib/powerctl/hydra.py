@@ -857,7 +857,7 @@ def tokenize(args):
         if vm is None or args.all_reset or args.args[0] == "all":
             return _all(args, HYDRA_RESTART, True)
         return vm_restart(args, vm, True)
-    if c == "hibernate" or args.hibernate:
+    if c == "hibernate" or c == "hib" or args.hibernate:
         if vm is None or args.all_hibernate or args.args[0] == "all":
             return _all(args, HYDRA_HIBERNATE)
         return vm_hibernate(args, vm)
@@ -883,7 +883,7 @@ def tokenize(args):
         if len(args.args) > 1:
             args.input = args.args[1].lower()
         return vm_input(args, vm)
-    if c == "snap" or args.snap:
+    if c == "snap" or c == "snaps" or args.snap:
         if len(args.args) == 1:
             return vm_snap_list(args, vm)
         o = args.args[1].lower() if len(args.args) >= 3 else None

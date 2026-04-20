@@ -34,34 +34,34 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-deny /opt/hydra/*/{,**}                                                   mrwkl,
+deny /opt/hydra/*/{,**}                                                    mrwkl,
 
-deny @{HOME}/.config/                                                     w,
-deny @{HOME}/Machines/{,**}                                               mrwkl,
-deny @{HOME}/.config/smd.json                                             mrwkl,
-deny @{HOME}/.local/lib/zshrc.sh                                          mrwkl,
-deny @{HOME}/.config/openvpn/{,**}                                        mrwkl,
+deny @{HOME}/.config/                                                      w,
+deny @{HOME}/Machines/{,**}                                                mrwkl,
+deny @{HOME}/.config/smd.json                                              mrwkl,
+deny @{HOME}/.local/lib/zshrc.sh                                           mrwkl,
+deny @{HOME}/.config/openvpn/{,**}                                         mrwkl,
 
 # Get alerts on file acccess to weird areas
-audit deny @{run}/user/@{uid}/gcr{,**}                                    mrwkl,
-audit deny @{run}/user/@{uid}/keyring{,**}                                mrwkl,
+audit deny @{run}/user/@{uid}/gcr{,**}                                     mrwkl,
+audit deny @{run}/user/@{uid}/keyring{,**}                                 mrwkl,
 
-audit deny @{CONFIG}/zsh/*                                                wl,
-audit deny @{CONFIG}/.zshenv                                              wl,
+audit deny @{CACHE}/zsh/{,**}                                              mrwkl,
+audit deny @{CACHE}/wget-hsts                                              mrwkl,
 
-audit deny @{CACHE}/wget-hsts                                             mrwkl,
-audit deny @{CACHE}/zsh/{,**}                                             mrwkl,
+audit deny @{CONFIG}/zsh/*                                                 wl,
+audit deny @{CONFIG}/.zshenv                                               wl,
 
-audit deny @{HOME}/.zshenv                                                wl,
-audit deny @{HOME}/.ssh/{,**}                                             mrwkl,
-audit deny @{HOME}/.cert/{,**}                                            mrwkl,
-audit deny @{HOME}/.local/.ssh/{,**}                                      mrwkl,
-audit deny @{HOME}/.config/Yubico{,/**}                                   mrwkl,
-audit deny @{HOME}/.config/openvpn/{,**}                                  mrwkl,
-audit deny @{HOME}/.local/share/gnupg/{,**}                               mrwkl,
-audit deny @{HOME}/.local/lib/rust/cargo/credentials.toml                 mrwkl,
+audit deny @{HOME}/.zshenv                                                 wl,
+audit deny @{HOME}/.ssh/{,**}                                              mrwkl,
+audit deny @{HOME}/.cert/{,**}                                             mrwkl,
+audit deny @{HOME}/.local/.ssh/{,**}                                       mrwkl,
+audit deny @{HOME}/.config/Yubico{,/**}                                    mrwkl,
+audit deny @{HOME}/.config/openvpn/{,**}                                   mrwkl,
+audit deny @{HOME}/.local/share/gnupg/{,**}                                mrwkl,
+audit deny @{HOME}/.local/lib/rust/cargo/credentials.toml                  mrwkl,
 
-audit deny @{HOMEDATA}/.local/bin/{,**}                                   wl,
-audit deny @{HOMEDATA}/.local/share/applications/{,**}                    wl,
-audit deny @{HOMEDATA}/.local/share/applications/mimeinfo.cache           w,
-audit deny @{HOMEDATA}/.local/share/applications/{defaults,mimeapps}.list w,
+audit deny @{HOME_DATA}/.local/bin/{,**}                                   wl,
+audit deny @{HOME_DATA}/.local/share/applications/{,**}                    wl,
+audit deny @{HOME_DATA}/.local/share/applications/mimeinfo.cache           w,
+audit deny @{HOME_DATA}/.local/share/applications/{defaults,mimeapps}.list w,

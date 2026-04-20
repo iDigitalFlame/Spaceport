@@ -46,6 +46,11 @@ profile rofi /{,usr/}bin/rofi flags=(enforce) {
     /usr/bin/rofi                                 rm,
     /usr/share/thumbnailers/{,*}                  r,
 
+    owner @{CONFIG}/rofi/*                        r,
+
+    owner @{run}/user/@{uid}/rofi.pid             rwk,
+    owner @{run}/user/@{uid}/rofi-wayland-surface rw,
+
     /usr/bin/**                                   pux,
     /opt/notesnook/**                             pux,
     /usr/lib{,32,64}/**                           puxm,
@@ -53,13 +58,7 @@ profile rofi /{,usr/}bin/rofi flags=(enforce) {
     /opt/ultimaker-cura/**                        pux,
     /{usr,opt/spaceport}/bin/**                   pux,
 
-    owner @{CONFIG}/rofi/*                        r,
-
-    owner @{run}/user/@{uid}/rofi.pid             rwk,
-    owner @{run}/user/@{uid}/rofi-wayland-surface rw,
-
-    owner @{HOME}/.local/{apps,bin,lib}/**        pux,
-    owner @{HOMEDOTS}/.local/{apps,bin,lib}/**    pux,
+    owner @{HOME_DATA}/.local/{apps,bin,lib}/**   pux,
 
     include if exists <local/usr.bin.rofi>
 }

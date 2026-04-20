@@ -47,7 +47,7 @@ profile nm-priv-helper /usr/lib/nm-priv-helper flags=(enforce) {
 
     dbus bind bus=system name=org.freedesktop.nm_priv_helper,
 
-    dbus (send, receive) bus=system interface=org.freedesktop.nm_priv_helper,
+    dbus (receive, send) bus=system interface=org.freedesktop.nm_priv_helper,
 
     include if exists <local/usr.lib.nm-priv-helper>
 }

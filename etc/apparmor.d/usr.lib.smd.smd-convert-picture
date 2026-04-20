@@ -49,16 +49,17 @@ profile smd-convert-picture /{,opt/spaceport/}usr/lib/smd/libexec/smd-convert-pi
     /usr/share/ImageMagick-*/*.xml                       r,
     /usr/lib/smd/libexec/smd-convert-picture             r,
 
-    # For pictures and backgrounds.
-    owner @{HOME}/**/*.@{IMAGES}                         r,
+    owner @{HOME}/**/*.@{IMAGES}                         r, # For pictures and backgrounds.
 
-    owner @{HOME}/.cache/smd{,/}                         rw,
-    owner @{HOME}/.cache/smd/*.{jp,pn}g                  rw,
+    owner @{CACHE}/smd{,/}                               rw,
+    owner @{CACHE}/smd/*.@{IMAGES}                       rw,
 
+    /usr/bin/cp                                          ix,
+    /usr/bin/ln                                          ix,
     /usr/bin/dash                                        ixr,
-    /usr/bin/{cp,ln}                                     ix,
+    /usr/bin/magick                                      ix,
     /usr/bin/convert                                     ixr,
-    /usr/bin/{jpegtran,magick}                           ix,
+    /usr/bin/jpegtran                                    ix,
 
     include if exists <local/usr.lib.smd.smd-convert-picture>
 }

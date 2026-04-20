@@ -36,23 +36,23 @@
 
 abi <abi/4.0>,
 
-@{sysconfig}/usr/share/applications/{,*.desktop}                     r,
-@{sysconfig}/usr/share/applications/mimeinfo.cache                   r,
-@{sysconfig}/usr/share/applications/{defaults,mimeapps}.list         r,
+@{sysconfig}/usr/share/applications/{,*.desktop}                      r,
+@{sysconfig}/usr/share/applications/mimeinfo.cache                    r,
+@{sysconfig}/usr/share/applications/{defaults,mimeapps}.list          r,
 
-/etc/mime.types                                                      r,
-/usr/share/mime/types                                                r,
-/usr/share/mime/*/*.xml                                              r,
-/usr/share/mime/mime.cache                                           r,
-/usr/share/file/misc/magic.mgc                                       r,
-/usr/share/mime/inode/directory.xml                                  r,
-/usr/share/applications/{,*.desktop}                                 r,
-/usr/share/applications/{defaults,mimeapps}.list                     r,
+/etc/mime.types                                                       r,
+/usr/share/mime/types                                                 r,
+/usr/share/mime/*/*.xml                                               r,
+/usr/share/mime/mime.cache                                            r,
+/usr/share/file/misc/magic.mgc                                        r,
+/usr/share/mime/inode/directory.xml                                   r,
+/usr/share/applications/{,*.desktop}                                  r,
+/usr/share/applications/{defaults,mimeapps}.list                      r,
 
-owner @{HOME}/.local/share/mime/{,**}                                r,
+owner @{HOME}/.local/share/mime/{,**}                                 r,
 
-owner @{HOMEDATA}/.local/share/applications/{,*.desktop}             r,
-owner @{HOMEDATA}/.local/share/applications/mimeinfo.cache           r,
-owner @{HOMEDATA}/.local/share/applications/{defaults,mimeapps}.list r,
+owner @{HOME_DATA}/.local/share/applications/{,*.desktop}             r,
+owner @{HOME_DATA}/.local/share/applications/mimeinfo.cache           r,
+owner @{HOME_DATA}/.local/share/applications/{defaults,mimeapps}.list r,
 
 include if exists <abstractions/mime.d>

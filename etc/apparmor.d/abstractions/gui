@@ -60,14 +60,14 @@ include <abstractions/wayland>
 
 /opt/**/icons/*.{pn,sv}g           r,
 
+owner @{CACHE}/thumbnails/**       r,
+
 owner @{CONFIG}/theme/**           r,
 owner @{CONFIG}/gtk-{2,3,4}.0/{,*} r,
 
-owner @{HOMEDATA}/bookmarks.conf   r,
-owner @{HOME}/.cache/thumbnails/** r,
-
-owner @{HOMEDOTS}/.Xdefaults       r,
-owner @{HOMEDOTS}/.Xresources      r,
+owner @{HOME_DATA}/.Xdefaults      r,
+owner @{HOME_DATA}/.Xresources     r,
+owner @{HOME_DATA}/bookmarks.conf  r,
 
 deny /var/cache/fontconfig/{,**}   w,
 deny @{HOME}/.xsession-errors{,*}  rw,

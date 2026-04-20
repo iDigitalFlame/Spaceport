@@ -46,29 +46,33 @@ profile thunar /usr/bin/{T,t}hunar flags=(enforce, attach_disconnected) {
     include <abstractions/xdg-desktop>
 
     # Needed to open any files for reading.
-    /{,**}                                                r,
+    /{,**}                                                 r,
 
-    /usr/lib/tumbler-*/plugins/*                          rm,
-    /usr/share/thumbnailers/*.thumbnailer                 r,
+    /usr/lib/tumbler-*/plugins/*                           rm,
+    /usr/share/thumbnailers/*.thumbnailer                  r,
 
-    owner @{HOME}/**                                      l,
+    owner @{HOME}/**                                       l,
 
-    owner @{CONFIG}/xfce4/xfconf/xfce-*-xml/thunar.xml    r,
+    owner @{CONFIG}/Thunar/*.xml                           r,
+    owner @{CONFIG}/xfce4/xfconf/xfce-*-xml/thunar.xml     r,
 
-    owner /tmp/**                                         rwkl,
+    owner /tmp/**                                          rwl,
 
-    /usr/bin/dash                                         ix,
-    /usr/bin/kitty                                        Px -> kitty,
-    /usr/bin/xdg-open                                     PUx,
-    /usr/bin/xdg-settings                                 PUx,
-    /usr/bin/ffmpegthumbnailer                            ix,
-    /usr/lib/gio-launch-desktop                           PUx,
-    # NOTE(dij): ^ Thunar has unrestricted open permissions as it's needed to
+    owner @{HOME}/.config/Thunar/accels.scm                rw,
+
+    /usr/bin/dash                                          ix,
+    /usr/bin/kitty                                         Px -> kitty,
+    /usr/bin/xdg-open                                      PUx,
+    /usr/bin/xdg-settings                                  PUx,
+    /usr/bin/ffmpegthumbnailer                             ix,
+    /usr/lib/gio-launch-desktop                            PUx,
+    # NOTE(dij): ^ Thunar has unrestricted execute permissions as it's needed to
     #            open any file when using it to browse the filesystem.
 
-    deny /systemd/journal/stdout                          rw,
-    deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml          w,
-    deny @{HOMEDOTS}/.local/share/applications/mimeapps.* w,
+    deny @{CONFIG}/Thunar/*.xml                            w,
+    deny /systemd/journal/stdout                           rw,
+    deny @{CONFIG}/xfce4/xfconf/xfce-*-xml/*.xml           w,
+    deny @{HOME_DATA}/.local/share/applications/mimeapps.* w,
 
     include if exists <local/usr.bin.thunar>
 }

@@ -74,7 +74,6 @@ profile openvpn /usr/bin/openvpn flags=(enforce, attach_disconnected) {
     /usr/bin/ip                                ix,
     /usr/bin/systemd-ask-password              Px -> systemd-ask-password,
     /usr/lib/nm-openvpn-service-openvpn-helper Px -> nm-openvpn-auth-dialog,
-    /usr/lib/nm-openvpn-service-openvpn-helper Px -> nm-openvpn-auth-dialog,
 
     include if exists <local/usr.bin.openvpn>
 }

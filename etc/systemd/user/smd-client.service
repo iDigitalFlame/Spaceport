@@ -37,6 +37,8 @@
 [Unit]
 After        = sway.service
 After        = graphical-session.target
+After        = systemd-tmpfiles-setup.service
+Wants        = systemd-tmpfiles-setup.service
 Requires     = graphical-session.target
 Description  = System Management Client
 

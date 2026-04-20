@@ -47,10 +47,10 @@ profile xfconfd /usr/lib/xfce4/xfconf/xfconfd flags=(enforce) {
     /etc/xdg/xfce4/xfconf/**                        r,
     /usr/lib/xfce4/xfconf/xfconfd                   rm,
 
+    owner @{CONFIG}/xfce4/xfconf/**/*.xml           r,
+
     owner @{HOME}/                                  r,
     owner @{HOME}/.config/xfce4/xfconf/**           r,
-
-    owner @{CONFIG}/xfce4/xfconf/**/*.xml           r,
 
     owner @{HOME}/.config/xfce4/                    rw,
     owner @{HOME}/.config/xfce4/help{,ers}.rc       rw,

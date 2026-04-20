@@ -45,7 +45,6 @@ profile gcr-ssh-agent /usr/lib/gcr-ssh-agent flags=(enforce) {
 
     /usr/lib/gcr-ssh-agent            rm,
 
-    owner @{HOME}/.ssh{,/,/*}         r,
     owner @{HOME}/.local/ssh{,/,/*}   r,
     owner @{HOME}/.config/ssh{,/,/*}  r,
 

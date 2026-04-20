@@ -37,21 +37,18 @@
 include <tunables/spaceport>
 
 profile swtpm /usr/bin/swtpm flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/consoles>
-    include <abstractions/no-network>
+    include <abstractions/command>
     include <abstractions/nameservice>
 
-    capability                      fsetid,
-    capability                      fowner,
-    capability                      sys_admin,
-    capability                      dac_override,
-    capability                      dac_read_search,
+    capability                                    fsetid,
+    capability                                    fowner,
+    capability                                    sys_admin,
+    capability                                    dac_override,
+    capability                                    dac_read_search,
 
     signal receive set=(cont, int, stop, term) peer=smd-daemon,
 
     /usr/bin/swtpm                                rm,
-    # Read TPM Images
     /**/*.{bin,disk,fd,img,iso,ram,raw}           rk,
 
     /opt/hydra/**/*.{bin,disk,fd,img,iso,ram,raw} rwk,
@@ -60,7 +57,7 @@ profile swtpm /usr/bin/swtpm flags=(enforce) {
 
     unix (bind, listen) type=stream addr="@/tmp/dbus-*",
 
-    unix (send, receive, accept) type=stream addr="@/tmp/dbus-*",
+    unix (accept, receive, send) type=stream addr="@/tmp/dbus-*",
 
     include if exists <local/usr.bin.swtpm>
 }

@@ -37,8 +37,7 @@
 include <tunables/spaceport>
 
 profile nm-openvpn-service /usr/lib/nm-openvpn-service flags=(enforce) {
-    include <abstractions/base>
-    include <abstractions/consoles>
+    include <abstractions/command>
     include <abstractions/nameservice>
 
     capability                                 kill,

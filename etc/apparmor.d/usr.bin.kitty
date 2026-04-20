@@ -47,33 +47,35 @@ profile kitty /usr/bin/kitty flags=(enforce) {
     include <abstractions/no-network>
     include <abstractions/private-files>
 
-    capability                         sys_ptrace,
+    capability                       sys_ptrace,
 
     signal send set=(hup, int, kill, quit, term),
 
     ptrace read  peer=kitty,
     ptrace trace peer=kitty,
 
-    /proc/                             r,
+    /proc/                           r,
 
-    owner /proc/@{pid}/stat            r,
-    owner /proc/@{pid}/cgroup          r,
-    owner /proc/@{pid}/mount{info,s}   r,
+    owner /proc/@{pid}/stat          r,
+    owner /proc/@{pid}/cgroup        r,
+    owner /proc/@{pid}/mount{info,s} r,
 
-    owner @{run}/user/@{uid}/          r,
+    owner @{run}/user/@{uid}/        r,
 
-    owner @{CONFIG}/kitty{,/}          r,
-    owner @{CONFIG}/kitty/kitty.conf   r,
+    owner @{CONFIG}/kitty{,/}        r,
+    owner @{CONFIG}/kitty/kitty.conf r,
 
-    /dev/ptmx                          rw,
+    /dev/ptmx                        rw,
 
-    owner @{HOME}/.cache/kitty{,/,/**} rw,
+    owner @{CACHE}/kitty/{,**}       rw,
 
-    /usr/bin/less                      px -> pager,
-    /usr/bin/kitty                     ixrm,
-    /usr/bin/kitten                    ix,
-    /usr/bin/xdg-open                  Px -> xdg-open,
-    /usr/bin/{ba,da,z}sh               Px -> shell,
+    owner @{CACHE_TEMP}/kitty/{,**}  rw,
+
+    /usr/bin/less                    px -> pager,
+    /usr/bin/kitty                   ixrm,
+    /usr/bin/kitten                  ix,
+    /usr/bin/xdg-open                Px -> xdg-open,
+    /usr/bin/{ba,da,z}sh             Px -> shell,
 
     deny ptrace read,
 

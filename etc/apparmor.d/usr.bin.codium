@@ -39,5 +39,13 @@ include <tunables/spaceport>
 profile codium /{usr/bin,opt/vscodium-bin}/{,bin/}{,vs}codium{,-electron} flags=(default_allow) {
     include <abstractions/glycin-base>
 
+    owner @{CACHE_TEMP}/electron/code/{,**}        rwkl,
+
+    owner @{CONFIG}/VSCodium/User/settings.json    rw,
+    owner @{CONFIG}/VSCodium/User/keybindings.json rw,
+
+    owner @{HOME}/.config/VSCodium/**              rwkl,
+    owner @{HOME}/.local/stae/VSCodium/**          rw,
+
     include if exists <local/usr.bin.codium>
 }
