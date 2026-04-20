@@ -58,6 +58,8 @@ profile cropgui /{usr,@{HOME_DATA}/.local}/bin/crop{,gui} flags=(attach_disconne
 
     owner /proc/@{pid}/mount{s,info}    r,
 
+    owner @{HOME}                       r,
+
     owner @{HOME_DATA}/.local/bin/crop  r,
 
     owner @{HOME}/{,**/}*.@{IMAGES}{,*} rw,
