@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xdg-document-portal /usr/lib/xdg-document-portal flags=(enforce, attach_disconnected) {
+profile xdg-document-portal /usr/lib/xdg-document-portal flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/no-network>

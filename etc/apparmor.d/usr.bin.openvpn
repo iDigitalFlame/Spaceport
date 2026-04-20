@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile openvpn /usr/bin/openvpn flags=(enforce, attach_disconnected) {
+profile openvpn /usr/bin/openvpn flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/nameservice>
 

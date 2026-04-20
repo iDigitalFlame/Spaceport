@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(enforce, attach_disconnected, mediate_deleted) {
+profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(attach_disconnected, enforce, mediate_deleted) {
     include <abstractions/qt>
     include <abstractions/mesa>
     include <abstractions/audio>

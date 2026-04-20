@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile blueman /usr/bin/blueman-* flags=(enforce, attach_disconnected) {
+profile blueman /usr/bin/blueman-* flags=(attach_disconnected, enforce) {
     include <abstractions/gtk>
     include <abstractions/audio>
     include <abstractions/dconf>

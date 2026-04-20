@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce, attach_disconnected) {
+profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(attach_disconnected, enforce) {
     include <abstractions/chromium>
     include <abstractions/user-home>
     include <abstractions/notifications>
@@ -66,7 +66,7 @@ profile notesnook /{usr/bin,opt/notesnook}/notesnook flags=(enforce, attach_disc
 
     deny ptrace,
 
-    profile glycin flags=(enforce, attach_disconnected, mediate_deleted) {
+    profile glycin flags=(attach_disconnected, enforce, mediate_deleted) {
         include <abstractions/dri>
         include <abstractions/glycin-bwrap>
 

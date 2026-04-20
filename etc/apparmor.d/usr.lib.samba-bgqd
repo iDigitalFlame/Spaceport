@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(enforce, attach_disconnected) {
+profile samba-bgqd /usr/lib*/samba/{,samba/}samba-bgqd flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/samba>
     include <abstractions/openssl>

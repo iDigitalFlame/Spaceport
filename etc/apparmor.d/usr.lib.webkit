@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile webkit /usr/lib/webkit2gtk-*/WebKit*Process flags=(enforce, attach_disconnected) {
+profile webkit /usr/lib/webkit2gtk-*/WebKit*Process flags=(attach_disconnected, enforce) {
     include <abstractions/qt>
     include <abstractions/gtk>
     include <abstractions/dconf>

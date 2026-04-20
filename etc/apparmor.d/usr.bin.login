@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile login /usr/bin/login flags=(enforce, attach_disconnected) {
+profile login /usr/bin/login flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/wutmp>
     include <abstractions/consoles>

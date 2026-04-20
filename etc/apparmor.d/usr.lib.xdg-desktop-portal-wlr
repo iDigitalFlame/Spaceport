@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(enforce, attach_disconnected) {
+profile xdg-desktop-portal-wlr /usr/lib/xdg-desktop-portal-wlr flags=(attach_disconnected, enforce) {
     include <abstractions/dri>
     include <abstractions/mesa>
     include <abstractions/wayland>

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile pipewire-pulse /usr/bin/pipewire-pulse flags=(enforce, attach_disconnected) {
+profile pipewire-pulse /usr/bin/pipewire-pulse flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/audio>
     include <abstractions/no-network>

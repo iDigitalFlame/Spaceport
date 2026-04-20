@@ -45,6 +45,7 @@ capability                                        dac_override,
 capability                                        dac_read_search,
 
 @{sysconfig}/usr/lib/smd/{,s}bin{,/*}             r,
+@{sysconfig}/var/cache/smd/defaults.json          r,
 @{sysconfig}/usr/lib/smd/lib{,exec}{,/**}         r,
 @{sysconfig}/var/cache/smd/constants.json         r,
 
@@ -52,6 +53,7 @@ capability                                        dac_read_search,
 
 /usr/bin/                                         r,
 /usr/lib/smd/{,s}bin{,/*}                         r,
+/var/cache/smd/defaults.json                      r,
 /usr/lib/smd/lib{,exec}{,/**}                     r,
 /var/cache/smd/constants.json                     r,
 

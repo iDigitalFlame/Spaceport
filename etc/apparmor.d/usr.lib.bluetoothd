@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(enforce, attach_disconnected) {
+profile bluetoothd /usr/lib/bluetooth/bluetoothd flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/dbus-system>
     include <abstractions/private-files>

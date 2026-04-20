@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile vncviewer /usr/bin/vncviewer flags=(enforce, attach_disconnected) {
+profile vncviewer /usr/bin/vncviewer flags=(attach_disconnected, enforce) {
     include <abstractions/gtk>
     include <abstractions/consoles>
     include <abstractions/private-files>

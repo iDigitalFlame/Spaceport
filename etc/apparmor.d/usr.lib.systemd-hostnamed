@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile systemd-hostnamed /usr/lib/systemd/systemd-hostnamed flags=(enforce, attach_disconnected) {
+profile systemd-hostnamed /usr/lib/systemd/systemd-hostnamed flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/dbus-system>
     include <abstractions/private-files>

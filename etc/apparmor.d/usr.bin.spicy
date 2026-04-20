@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile spicy /usr/bin/spicy flags=(enforce, attach_disconnected) {
+profile spicy /usr/bin/spicy flags=(attach_disconnected, enforce) {
     include <abstractions/gtk>
     include <abstractions/mesa>
     include <abstractions/audio>

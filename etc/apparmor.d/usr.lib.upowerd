@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile upowerd /usr/lib/upowerd flags=(enforce, attach_disconnected) {
+profile upowerd /usr/lib/upowerd flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/no-network>
     include <abstractions/dbus-system>

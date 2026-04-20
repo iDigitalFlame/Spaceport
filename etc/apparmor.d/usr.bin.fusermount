@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile fusermount /usr/bin/fusermount{,*} flags=(enforce, attach_disconnected) {
+profile fusermount /usr/bin/fusermount{,*} flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/no-network>

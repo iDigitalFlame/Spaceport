@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd flags=(enforce, attach_disconnected) {
+profile samba-dcerpcd /usr/lib*/samba/{,samba/}samba-dcerpcd flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/samba-rpcd>
     include <abstractions/private-files>

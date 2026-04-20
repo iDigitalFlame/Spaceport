@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile swaybg /usr/bin/swaybg flags=(enforce, attach_disconnected) {
+profile swaybg /usr/bin/swaybg flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/glycin>
@@ -56,7 +56,7 @@ profile swaybg /usr/bin/swaybg flags=(enforce, attach_disconnected) {
 
     /usr/bin/bwrap               Cx -> glycin,
 
-    profile glycin flags=(enforce, attach_disconnected) {
+    profile glycin flags=(attach_disconnected, enforce) {
         include <abstractions/glycin-bwrap>
 
         owner @{HOME}/**/*.@{IMAGES} r,

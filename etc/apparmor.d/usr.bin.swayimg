@@ -36,25 +36,25 @@
 
 include <tunables/spaceport>
 
-profile swayimg /usr/bin/swayimg flags=(enforce, attach_disconnected) {
+profile swayimg /usr/bin/swayimg flags=(attach_disconnected, enforce) {
     include <abstractions/gui>
     include <abstractions/consoles>
     include <abstractions/no-network>
     include <abstractions/xdg-desktop>
     include <abstractions/private-files>
 
-    /{,**}                         r, # Needed to open any files for reading.
-    /usr/bin/swayimg               rm,
+    /{,**}                             r, # Needed to open any files for reading.
+    /usr/bin/swayimg                   rm,
 
-    owner @{CONFIG}/swayimg/config r,
+    owner @{CONFIG}/swayimg/config     r,
 
-    owner /dev/shm/swayimg_*       rwk,
+    owner /dev/shm/swayimg_*           rwk,
 
-    /usr/bin/rm                    Cx -> rm,
-    /usr/bin/dash                  ix,
-    /usr/bin/magick                Cx -> magick,
-    /usr/bin/swaymsg               ix,
-    /usr/bin/wl-copy               ix,
+    /usr/bin/rm                        Cx -> rm,
+    /usr/bin/dash                      ix,
+    /usr/bin/magick                    Cx -> magick,
+    /usr/bin/swaymsg                   ix,
+    /usr/bin/wl-copy                   ix,
 
     owner @{HOME_DATA}/.local/bin/crop Pxr -> cropgui,
 

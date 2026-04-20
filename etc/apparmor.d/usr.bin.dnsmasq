@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile dnsmasq /usr/bin/dnsmasq flags=(enforce, attach_disconnected) {
+profile dnsmasq /usr/bin/dnsmasq flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/dbus>
     include <abstractions/nameservice>

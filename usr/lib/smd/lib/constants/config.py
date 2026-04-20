@@ -145,7 +145,7 @@ HYDRA_DIR = f"{DIRECTORY_TEMP}/hydra"
 HYDRA_DIR_USB = "/sys/bus/usb/devices/*/idVendor"
 HYDRA_DIR_DHCP = f"{DIRECTORY_CONFIG}/hydra"
 HYDRA_DIR_USER = "/opt/hydra"
-HYDRA_DIR_CACHE = "/var/cache/hydra"
+HYDRA_DIR_CACHE = f"{HYDRA_DIR_DHCP}/cache"
 HYDRA_DIR_SNAPS = f"{HYDRA_DIR_DHCP}/snaps"
 HYDRA_DIR_DEVICES = "/dev/bus/usb"
 
@@ -293,10 +293,10 @@ DISPLAY_BUILTIN = "eDP-1"
 
 ## Screen Utility Paths
 DISPLAY_PATH_LID = "/proc/acpi/button/lid/LID0/state"
-DISPLAY_PATH_ACTIVE = "/sys/class/graphics/fb0/device/drm/card*/card*/enabled"
+DISPLAY_PATH_ACTIVE = "/sys/class/graphics/fb*/device/drm/card*/card*/enabled"
 DISPLAY_PATH_DEFAULT = (
-    f"/sys/class/graphics/fb0/device/drm/card*/card*{DISPLAY_BUILTIN}/enabled"
+    f"/sys/class/graphics/fb*/device/drm/card*/card*{DISPLAY_BUILTIN}/enabled"
 )
-DISPLAY_PATH_CONNECTED = "/sys/class/graphics/fb0/device/drm/card*/card*/status"
+DISPLAY_PATH_CONNECTED = "/sys/class/graphics/fb*/device/drm/card*/card*/status"
 
 import_file(CUSTOM_CONFIG)

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile systemd-resolved /usr/lib/systemd/systemd-resolved flags=(enforce, attach_disconnected) {
+profile systemd-resolved /usr/lib/systemd/systemd-resolved flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/p11-kit>
     include <abstractions/ssl_certs>

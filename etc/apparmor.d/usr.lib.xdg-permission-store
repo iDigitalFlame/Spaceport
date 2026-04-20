@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xdg-permission-store /usr/lib/xdg-permission-store flags=(enforce, attach_disconnected) {
+profile xdg-permission-store /usr/lib/xdg-permission-store flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/no-network>

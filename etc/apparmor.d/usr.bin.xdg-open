@@ -39,7 +39,7 @@ include <tunables/spaceport>
 # NOTE(dij): Only used to transition to xdg-open and open stuff. Only allows
 #            launching most stuff we "own" (user files) and has a specific list
 #            of allowed items who also have their own profiles.
-profile xdg-open /usr/bin/xdg-open flags=(enforce, attach_disconnected) {
+profile xdg-open /usr/bin/xdg-open flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/consoles>

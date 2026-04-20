@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile qemu-system /usr/bin/qemu-system-* flags=(enforce, attach_disconnected) {
+profile qemu-system /usr/bin/qemu-system-* flags=(attach_disconnected, enforce) {
     include <abstractions/dri>
     include <abstractions/base>
     include <abstractions/mesa>

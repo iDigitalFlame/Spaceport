@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile smd-convert-picture /{,opt/spaceport/}usr/lib/smd/libexec/smd-convert-picture flags=(enforce, attach_disconnected) {
+profile smd-convert-picture /{,opt/spaceport/}usr/lib/smd/libexec/smd-convert-picture flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/no-network>

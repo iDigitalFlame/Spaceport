@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xkbcomp /usr/bin/xkbcomp flags=(enforce, attach_disconnected) {
+profile xkbcomp /usr/bin/xkbcomp flags=(attach_disconnected, enforce) {
     include <abstractions/X>
     include <abstractions/base>
     include <abstractions/mesa>

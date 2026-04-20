@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(enforce, attach_disconnected) {
+profile pavucontrol-qt /usr/bin/pavucontrol-qt flags=(attach_disconnected, enforce) {
     include <abstractions/qt>
     include <abstractions/audio>
     include <abstractions/dconf>

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile kmod /usr/bin/{kmod,lsmod,depmod,insmod,rmmod,modinfo,modprobe} flags=(enforce, attach_disconnected) {
+profile kmod /usr/bin/{kmod,lsmod,depmod,insmod,rmmod,modinfo,modprobe} flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/nameservice>

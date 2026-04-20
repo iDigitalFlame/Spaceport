@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile nm-dispatcher /usr/lib/nm-dispatcher flags=(enforce, attach_disconnected) {
+profile nm-dispatcher /usr/lib/nm-dispatcher flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/python>
     include <abstractions/consoles>

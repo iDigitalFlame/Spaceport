@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(enforce, attach_disconnected) {
+profile workdrive @{HOME}/.local/apps/zohoworkdrive/zohoworkdrived flags=(attach_disconnected, enforce) {
     include <abstractions/dri>
     include <abstractions/audio>
     include <abstractions/dconf>

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile sway /usr/bin/sway{,fx} flags=(enforce, attach_disconnected) {
+profile sway /usr/bin/sway{,fx} flags=(attach_disconnected, enforce) {
     include <abstractions/dri>
     include <abstractions/gui>
     include <abstractions/mesa>

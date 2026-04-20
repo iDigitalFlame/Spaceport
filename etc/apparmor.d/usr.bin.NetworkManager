@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile network-manager /usr/bin/NetworkManager flags=(enforce, attach_disconnected) {
+profile network-manager /usr/bin/NetworkManager flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/ssl_certs>
     include <abstractions/dbus-system>

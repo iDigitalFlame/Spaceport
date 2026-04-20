@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile systemd-rfkill /usr/lib/systemd/systemd-rfkill flags=(enforce, attach_disconnected) {
+profile systemd-rfkill /usr/lib/systemd/systemd-rfkill flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/private-files>
 

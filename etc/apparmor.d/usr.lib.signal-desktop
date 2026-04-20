@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(enforce, attach_disconnected) {
+profile signal-desktop /usr/{bin,lib}/signal-desktop/signal-desktop flags=(attach_disconnected, enforce) {
     include <abstractions/video>
     include <abstractions/cgroup>
     include <abstractions/chromium>

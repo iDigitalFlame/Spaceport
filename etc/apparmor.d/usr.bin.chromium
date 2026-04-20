@@ -126,7 +126,7 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
 
     deny ptrace read peer=unconfined,
 
-    profile glycin flags=(enforce, attach_disconnected) {
+    profile glycin flags=(attach_disconnected, enforce) {
         include <abstractions/dri>
         include <abstractions/glycin-bwrap>
 

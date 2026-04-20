@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce, attach_disconnected) {
+profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(attach_disconnected, enforce) {
     include <abstractions/video>
     include <abstractions/cgroup>
     include <abstractions/chromium>
@@ -119,7 +119,7 @@ profile firefox /usr/lib/{firefox,librewolf}/{firefox,librewolf} flags=(enforce,
     deny /usr/lib/{firefox,librewolf}/crashreporter                    rx,
     deny /usr/lib/{firefox,librewolf}/minidump-analyzer                rx,
 
-    profile glycin flags=(enforce, attach_disconnected) {
+    profile glycin flags=(attach_disconnected, enforce) {
         include <abstractions/glycin-bwrap>
 
         owner /tmp/{firefox,librewolf}/.parentlock                            w,

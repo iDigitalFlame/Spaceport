@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile at-spi2-registryd /usr/lib/at-spi2-registryd flags=(enforce, attach_disconnected) {
+profile at-spi2-registryd /usr/lib/at-spi2-registryd flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/no-network>

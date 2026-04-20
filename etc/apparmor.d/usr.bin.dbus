@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(enforce, attach_disconnected) {
+profile dbus /usr/{bin,lib}/dbus-{broker,daemon}{,-*} flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/dbus-system>

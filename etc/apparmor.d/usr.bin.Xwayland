@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xwayland /usr/bin/{X,x}wayland flags=(enforce, attach_disconnected) {
+profile xwayland /usr/bin/{X,x}wayland flags=(attach_disconnected, enforce) {
     include <abstractions/X>
     include <abstractions/base>
     include <abstractions/mesa>

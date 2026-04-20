@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile swaync-client /usr/bin/swaync-client flags=(enforce, attach_disconnected) {
+profile swaync-client /usr/bin/swaync-client flags=(attach_disconnected, enforce) {
     include <abstractions/command>
     include <abstractions/notifications>
     include <abstractions/private-files>

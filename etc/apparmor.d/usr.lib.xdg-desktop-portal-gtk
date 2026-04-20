@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile xdg-desktop-portal-gtk /usr/lib/xdg-desktop-portal-gtk flags=(enforce, attach_disconnected) {
+profile xdg-desktop-portal-gtk /usr/lib/xdg-desktop-portal-gtk flags=(attach_disconnected, enforce) {
     include <abstractions/gui>
     include <abstractions/mesa>
     include <abstractions/vulkan>

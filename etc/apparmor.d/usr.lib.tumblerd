@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(enforce, attach_disconnected) {
+profile tumblerd /usr/lib/tumbler{,-1}/tumblerd flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/mime>
     include <abstractions/fonts>

@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile systemd-journald /usr/lib/systemd/systemd-journald flags=(enforce, attach_disconnected, mediate_deleted) {
+profile systemd-journald /usr/lib/systemd/systemd-journald flags=(attach_disconnected, enforce, mediate_deleted) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/private-files>

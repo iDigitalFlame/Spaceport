@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile pipewire /usr/bin/pipewire flags=(enforce, attach_disconnected) {
+profile pipewire /usr/bin/pipewire flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/audio>
     include <abstractions/video>

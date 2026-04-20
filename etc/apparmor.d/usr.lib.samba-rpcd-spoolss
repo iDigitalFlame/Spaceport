@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss flags=(enforce, attach_disconnected) {
+profile samba-rpcd-spoolss /usr/lib*/samba/{,samba/}rpcd_spoolss flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/samba-rpcd>
     include <abstractions/private-files>

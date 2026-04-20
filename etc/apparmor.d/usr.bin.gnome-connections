@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile gnome-connections /usr/bin/gnome-connections flags=(enforce, attach_disconnected) {
+profile gnome-connections /usr/bin/gnome-connections flags=(attach_disconnected, enforce) {
     include <abstractions/dri>
     include <abstractions/dconf>
     include <abstractions/gnome>

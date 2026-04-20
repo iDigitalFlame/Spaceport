@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile systemd-timesyncd /usr/lib/systemd/systemd-timesyncd flags=(enforce, attach_disconnected) {
+profile systemd-timesyncd /usr/lib/systemd/systemd-timesyncd flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/dbus-system>
     include <abstractions/nameservice>

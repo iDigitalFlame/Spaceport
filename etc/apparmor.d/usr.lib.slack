@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile slack /usr/{bin,lib}/slack{,/slack} flags=(enforce, attach_disconnected, mediate_deleted) {
+profile slack /usr/{bin,lib}/slack{,/slack} flags=(attach_disconnected, enforce, mediate_deleted) {
     include <abstractions/video>
     include <abstractions/cgroup>
     include <abstractions/chromium>

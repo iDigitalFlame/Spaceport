@@ -177,7 +177,7 @@ profile atlauncher @{HOME_DATA}/.local/bin/tools/atlauncher flags=(enforce) {
 
     deny ptrace read peer=xdg-{open,settings},
 
-    profile glycin flags=(enforce, attach_disconnected) {
+    profile glycin flags=(attach_disconnected, enforce) {
         include <abstractions/glycin-bwrap>
 
         owner /tmp/*.tmp                           r,

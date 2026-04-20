@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile rtkit-daemon /usr/lib/rtkit-daemon flags=(enforce, attach_disconnected) {
+profile rtkit-daemon /usr/lib/rtkit-daemon flags=(attach_disconnected, enforce) {
     include <abstractions/base>
     include <abstractions/no-network>
     include <abstractions/dbus-system>

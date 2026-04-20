@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile utils /{,usr/}bin/{bat,cat,diff,echo,grep,ls,lsd,pgrep,printf,*sum} flags=(enforce, attach_disconnected) {
+profile utils /{,usr/}bin/{bat,cat,diff,echo,grep,ls,lsd,pgrep,printf,*sum} flags=(attach_disconnected, enforce) {
     include <abstractions/command>
 
     capability sys_ptrace,

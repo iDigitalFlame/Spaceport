@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile systemd-hwdb /usr/{bin,lib/systemd}/systemd-hwdb flags=(enforce, attach_disconnected, mediate_deleted) {
+profile systemd-hwdb /usr/{bin,lib/systemd}/systemd-hwdb flags=(attach_disconnected, enforce, mediate_deleted) {
     include <abstractions/base>
     include <abstractions/consoles>
     include <abstractions/no-network>

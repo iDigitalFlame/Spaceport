@@ -36,7 +36,7 @@
 
 include <tunables/spaceport>
 
-profile cropgui /{usr,@{HOME_DATA}/.local}/bin/crop{,gui} flags=(enforce, attach_disconnected) {
+profile cropgui /{usr,@{HOME_DATA}/.local}/bin/crop{,gui} flags=(attach_disconnected, enforce) {
     include <abstractions/qt>
     include <abstractions/perl>
     include <abstractions/dconf>
