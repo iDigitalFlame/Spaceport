@@ -72,8 +72,8 @@ profile chromium /usr/{bin,lib/chromium}/chrom{e,ium} flags=(enforce) {
     owner @{CACHE}/chrom{e,ium}/**                           rwk,
 
     owner @{CACHE_TEMP}/browsers/                            rw,
-    owner @{CACHE_TEMP}/browsers/chromium{,_temp}            rw,
     owner @{CACHE_TEMP}/browsers/chromium{,_temp}/**         rwk,
+    owner @{CACHE_TEMP}/browsers/chromium{,_temp}{,/}        rw,
 
     owner @{HOME}/.config/chrom{e,ium}/**                    rwkl,
     owner @{HOME}/.config/chrom{e,ium}/{,**}                 rwl,
