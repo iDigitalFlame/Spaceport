@@ -74,6 +74,7 @@ profile waybar /usr/bin/waybar flags=(attach_disconnected, enforce) {
     /usr/bin/wpctl                              ix,
     /usr/bin/swaymsg                            ix,
     /usr/bin/{,ba,da,z}sh                       ix,
+    /usr/bin/swaync-client                      Px -> swaync-client,
     /usr/bin/pavucontrol-qt                     Px -> pavucontrol-qt,
 
     include if exists <local/usr.bin.waybar>
