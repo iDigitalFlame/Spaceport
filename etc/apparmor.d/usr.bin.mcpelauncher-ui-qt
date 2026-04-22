@@ -41,8 +41,9 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(attach_disconnected, enf
     include <abstractions/mesa>
     include <abstractions/audio>
     include <abstractions/dconf>
-    include <abstractions/video>
+    include <abstractions/opengl>
     include <abstractions/vulkan>
+    include <abstractions/consoles>
     include <abstractions/ssl_certs>
     include <abstractions/glycin-base>
     include <abstractions/nameservice>
@@ -53,14 +54,16 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(attach_disconnected, enf
 
     /**                                                    kl, # This is here to allow for in-memory blob locking
 
+    /usr/bin/                                              r,
     /etc/machine-id                                        r,
     /usr/share/mcpelauncher/**                             rm,
-    /usr/bin/mcpelauncher-ui-qt                            rm,
 
     /dev/input/                                            r,
     /dev/input/event*                                      r,
 
     owner @{HOME}/{,Downloads/}*                           r,
+
+    owner /tmp/Minecraft\ Linux\ Launcher\ UI-*{,/,/**}    rw,
 
     owner @{CACHE}/Minecraft\ Linux\ Launcher/**           l,
     owner @{CACHE}/Minecraft\ Linux\ Launcher{,/**}        rw,
@@ -74,8 +77,12 @@ profile mcpelauncher /usr/bin/mcpelauncher-ui-qt flags=(attach_disconnected, enf
     owner @{HOME}/.config/Minecraft\ Linux\ Launcher{,/**} rwk,
 
     /usr/bin/xdg-open                                      Px -> xdg-open,
+    /usr/bin/mcpelauncher-ui-qt                            ixrm,
     /usr/bin/mcpelauncher-client                           Pxr -> mcpelauncher-client,
     /usr/bin/mcpelauncher-extract                          ix,
+    /usr/bin/mcpelauncher-webview                          Px -> mcpelauncher-webview,
+
+    deny /usr/bin/{,.}/mcpelauncher-error                  ixr,
 
     include if exists <local/usr.bin.mcpelauncher-ui-qt>
 }

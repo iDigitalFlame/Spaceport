@@ -42,6 +42,7 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
     include <abstractions/audio>
     include <abstractions/dconf>
     include <abstractions/video>
+    include <abstractions/opengl>
     include <abstractions/vulkan>
     include <abstractions/consoles>
     include <abstractions/ssl_certs>
@@ -64,6 +65,7 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
     /sys/devices/platform/uevent                          r,
     /sys/devices/LNXSYSTM*/{,**/}uevent                   r,
     /sys/devices/virtual/input/mice/uevent                r,
+    /sys/devices/virtual/dmi/id/bios_vendor               r,
     /sys/devices/platform/i8042/{,**/}uevent              r,
     /sys/devices/system/cpu/{kernel_max,present}          r,
     /sys/devices/**/input*/input*/{,event*/}uevent        r,
@@ -81,6 +83,8 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
     owner /crash/                                         rw,
     owner /bootstrap_settings.json                        rw,
 
+    owner /proc/@{pid}/task/@{tid}/comm                   rw,
+
     owner /tmp/imgui.ini                                  rw,
 
     owner @{CACHE_TEMP}/minecraft/{,**}                   rw,
@@ -91,8 +95,12 @@ profile mcpelauncher-client /usr/bin/mcpelauncher-client flags=(enforce) {
     owner @{HOME}/.local/share/mcpelauncher/versions/*/** rwm,
 
     /usr/bin/dash                                         ix,
+    /usr/bin/mcpelauncher-ui-qt                           Px -> mcpelauncher,
+    /usr/bin/mcpelauncher-webview                         Px -> mcpelauncher-webview,
 
     owner @{HOME_DATA}/.local/bin/zenity                  ixr,
+
+    deny /usr/bin/{,.}/mcpelauncher-error                 ixr,
 
     include if exists <local/usr.bin.mcpelauncher-client>
 }
